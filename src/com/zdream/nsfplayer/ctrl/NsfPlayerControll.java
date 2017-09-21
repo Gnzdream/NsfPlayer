@@ -1,4 +1,4 @@
-package com.zdream.nsfplayer.test;
+package com.zdream.nsfplayer.ctrl;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -13,7 +13,12 @@ import com.zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayer;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayerConfig;
 
-public class TestNsfReader {
+/**
+ * 控制面板 (虽然用的是命令行 / 类似 Shell)
+ * @author Zdream
+ *
+ */
+public class NsfPlayerControll {
 	
 	NsfPlayer player;
 	NsfAudio nsf;
@@ -30,22 +35,23 @@ public class TestNsfReader {
 	
 	Properties conf = new Properties();
 	
-	public static void main(String[] args) throws IOException {
-		
-		TestNsfReader r = new TestNsfReader();
-		r.init();
-		r.play("src\\assets\\test\\mm10nsf.nsf");
-	}
-	
 	{
 		try {
 			conf.load(getClass().getResourceAsStream("in_yansf.properties"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		init();
 	}
 	
-	public void init() {
+	public static void main(String[] args) throws IOException {
+		NsfPlayerControll r = new NsfPlayerControll();
+		r.init();
+		r.open("src\\assets\\test\\Megaman 5.nsf");
+		r.play(0);
+	}
+	
+	private void init() {
 		// 播放器的创建
 		player = new NsfPlayer();
 		nsf = new NsfAudio();
@@ -65,21 +71,23 @@ public class TestNsfReader {
 		config.createValue("LAST_PRESET", "Default");
 		config.createValue("INI_FILE", "");
 		
-		// 负载配置
+		// 读取配置
 		config.loadProperties(conf);
 		
 		if (config.get("MASK_INIT").toInt() != 0) {
 			config.setValue("MASK", new Value(0));
 		}
-		
-		// {in_yansf.dll!Init(void)}
 	}
 	
 	boolean audio_print = false;
 	
-	public void play(String fn) throws IOException {
-		
-		// {in_yansf.dll!WA2NSF::Play(char *)}
+	/**
+	 * 打开 NSF 文件, 并进行循环播放.<br>
+	 * 这个方法内部会调用 <code>play()</code> 方法.
+	 * @param fn
+	 * @throws IOException
+	 */
+	public void open(String fn) throws IOException {
 		nsf.setDefaults(config.getIntValue("PLAY_TIME"), config.getIntValue("FADE_TIME"),
 				config.getIntValue("LOOP_NUM"));
 		
@@ -92,7 +100,27 @@ public class TestNsfReader {
 		nsf.loadFile(fn);
 		player.setPlayFreq(rate);
 		player.setChannels(nch);
-		
+	}
+	
+	/**
+	 * 循环播放已经打开的 NSF 文件.<br>
+	 * 如果播放前没有成功使用过 <code>open()</code> 方法, 该方法会失败;<br>
+	 * 如果成功使用过 <code>open()</code> 方法, 将播放 NSF 文件, 从第一首开始循环播放.
+	 * @throws IOException
+	 */
+	public void play() throws IOException {
+		play(0);
+	}
+	
+	/**
+	 * 循环播放已经打开的 NSF 文件.<br>
+	 * 如果播放前没有成功使用过 <code>open()</code> 方法, 该方法会失败;<br>
+	 * 如果成功使用过 <code>open()</code> 方法, 将播放 NSF 文件, 从第 <code>beginSong</code> 首开始循环播放.
+	 * @param beginSong
+	 *   指定从第几首歌开始播放. 这个值的范围是从 0 开始的.
+	 * @throws IOException
+	 */
+	public void play(int beginSong) throws IOException {
 		int bufferSize = rate / 2;
 		
 		AudioFormat af = new AudioFormat(rate, bps, nch, true, false);
@@ -106,6 +134,7 @@ public class TestNsfReader {
 
 		dateline.start();
 		pause = false;
+		player.setSong(beginSong);
 		player.reset();
 
 		int totle_song = nsf.songs;
@@ -180,9 +209,5 @@ public class TestNsfReader {
 	public NsfPlayerConfig getConfig() {
 		return config;
 	}
-	
-	public static final void debugOut(String text) {
-		
-	}
-	
+
 }
