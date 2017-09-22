@@ -58,7 +58,7 @@ public class NesBank implements IDevice {
 
 		image = new byte[0x1000 * bankMax];
 		int idx = offset & 0xfff;
-		System.arraycopy(data, idx, image, 0, size);
+		System.arraycopy(data, 0, image, idx, size);
 		
 		for (int i = 0; i < bankMax; i++) {
 			bank[i] = (BANK_BYTES_IN_IMAGE * i);

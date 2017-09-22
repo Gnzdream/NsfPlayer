@@ -8,6 +8,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
+import com.zdream.nsfplayer.ctrl.task.ITask;
 import com.zdream.nsfplayer.vcm.Value;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayer;
@@ -18,20 +19,30 @@ import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayerConfig;
  * @author Zdream
  *
  */
-public class NsfPlayerControll {
+public class NsfPlayerControll implements INsfPlayerEnv {
 	
 	NsfPlayer player;
 	NsfAudio nsf;
 	NsfPlayerConfig config;
 	
 	int rate, bps, nch;
+	PlayThread thread;
 	
 	// javax
 	private SourceDataLine dateline;
 	
+	// 缓存
+	private byte[] samples;
+	
 	// 播放时检查的数据
 	boolean kill = false, pause = false, reset = false;
 	int decode_pos;
+	
+	// 补充
+	/**
+	 * 这个主要关注 dateline.start() 是否已经被调用
+	 */
+	boolean started = false;
 	
 	Properties conf = new Properties();
 	
@@ -47,8 +58,8 @@ public class NsfPlayerControll {
 	public static void main(String[] args) throws IOException {
 		NsfPlayerControll r = new NsfPlayerControll();
 		r.init();
-		r.open("src\\assets\\test\\Megaman 5.nsf");
-		r.play(0);
+		r.open("src\\assets\\test\\mm10nsf.nsf");
+		r.play(8);
 	}
 	
 	private void init() {
@@ -77,6 +88,36 @@ public class NsfPlayerControll {
 		if (config.get("MASK_INIT").toInt() != 0) {
 			config.setValue("MASK", new Value(0));
 		}
+		
+		nsf.setDefaults(config.getIntValue("PLAY_TIME"), config.getIntValue("FADE_TIME"),
+				config.getIntValue("LOOP_NUM"));
+		
+		// {in_yansf.dll!WA2InputModule::PlayThread(WA2InputModule *)}
+		
+		rate = config.getIntValue("RATE");
+		bps = config.getIntValue("BPS");
+		nch = config.getIntValue("NCH");
+		
+		player.setPlayFreq(rate);
+		player.setChannels(nch);
+		
+		AudioFormat af = new AudioFormat(rate, bps, nch, true, false);
+		try {
+			dateline = AudioSystem.getSourceDataLine(af);
+			dateline.open(af, rate / 2);
+		} catch (LineUnavailableException e) {
+			System.err.println("初始化音频输出失败。");
+		}
+		
+		// 我自己的补充配置
+		/*
+		 * 音乐播放是一个片段一个片段播放的, 这里给出的是每个片段的时间长短.
+		 * 100 ms = 0.1 s
+		 * 如果在 48000 Hz 的环境下播放, 每个片段要过 4800 个采样点.
+		 * 如果在 16 位深度, 双声道的情况下, 每次送过去的 byte[] 数组长度为 4800 * 2 * 2 = 19200;
+		 */
+		config.createValue("PLAYER_FRAGMENT_IN_MS", 100);
+		config.createValue("PLAYER_FRAGMENT_IN_BYTES", rate * (bps / 2) * nch / 10); // 10 = 1000 / 100
 	}
 	
 	boolean audio_print = false;
@@ -88,18 +129,7 @@ public class NsfPlayerControll {
 	 * @throws IOException
 	 */
 	public void open(String fn) throws IOException {
-		nsf.setDefaults(config.getIntValue("PLAY_TIME"), config.getIntValue("FADE_TIME"),
-				config.getIntValue("LOOP_NUM"));
-		
-		// {in_yansf.dll!WA2InputModule::PlayThread(WA2InputModule *)}
-		
-		rate = config.getIntValue("RATE");
-		bps = config.getIntValue("BPS");
-		nch = config.getIntValue("NCH");
-		
 		nsf.loadFile(fn);
-		player.setPlayFreq(rate);
-		player.setChannels(nch);
 	}
 	
 	/**
@@ -121,17 +151,6 @@ public class NsfPlayerControll {
 	 * @throws IOException
 	 */
 	public void play(int beginSong) throws IOException {
-		int bufferSize = rate / 2;
-		
-		AudioFormat af = new AudioFormat(rate, bps, nch, true, false);
-		try {
-			dateline = AudioSystem.getSourceDataLine(af);
-			dateline.open(af, bufferSize);
-			// dateline.open(af);
-		} catch (LineUnavailableException e) {
-			System.out.println("初始化音频输出失败。");
-		}
-
 		dateline.start();
 		pause = false;
 		player.setSong(beginSong);
@@ -209,5 +228,29 @@ public class NsfPlayerControll {
 	public NsfPlayerConfig getConfig() {
 		return config;
 	}
-
+	
+	public byte[] getLastSampleBytes() {
+		if (samples == null) {
+			samples = new byte[config.getIntValue("PLAYER_FRAGMENT_IN_BYTES")];
+		} else {
+			int bufferSize = config.getIntValue("PLAYER_FRAGMENT_IN_BYTES");
+			if (samples.length != bufferSize) {
+				samples = new byte[bufferSize];
+			}
+		}
+		return samples;
+	}
+	
+	public int writeSamples(int off, int len) {
+		if (!started) {
+			dateline.start();
+			started = true;
+		}
+		return dateline.write(samples, off, len);
+	}
+	
+	public void putTask(ITask task) {
+		thread.queue.add(task);
+	}
+	
 }

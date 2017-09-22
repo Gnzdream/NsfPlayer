@@ -16,7 +16,7 @@ public class NesFME7 implements ISoundChip {
 	protected TrackInfoBasic[] trkinfo = new TrackInfoBasic[5];
 	
 	{
-		for (int i = 0; i < buf.length; i++) {
+		for (int i = 0; i < trkinfo.length; i++) {
 			trkinfo[i] = new TrackInfoBasic();
 		}
 	}

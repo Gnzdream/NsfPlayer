@@ -107,7 +107,7 @@ public class NsfPlayer extends PlayerMSP {
 	public InfoBuffer[] infobuf = new InfoBuffer[NES_TRACK_MAX];
     
 	/**
-	 * 到现在为止生成的波形的字节数
+	 * 到现在为止生成的波形的采样数 (不考虑声道, 多声道按单声道计数)
 	 */
 	public int total_render;
 	/**
@@ -134,6 +134,8 @@ public class NsfPlayer extends PlayerMSP {
 	public NsfAudio nsf;
 	
 	Random rand = new Random();
+
+	NsfPlayerStatus status;
 	
 	{
 		for (int i = 0; i < rconv.length; i++) {
@@ -155,8 +157,8 @@ public class NsfPlayer extends PlayerMSP {
 	        REGION_DENDY = 2;
 
 	public NsfPlayer() {
-		nsf = null;
-
+		status = new NsfPlayerStatus(this);
+		
 		sc[NsfPlayerConfig.APU] = (apu = new NesAPU());
 		sc[NsfPlayerConfig.DMC] = (dmc = new NesDMC());
 		sc[NsfPlayerConfig.FDS] = (fds = new NesFDS());
@@ -352,6 +354,7 @@ public class NsfPlayer extends PlayerMSP {
 	@Override
 	public void setPlayFreq(double r) {
 		rate = r;
+		this.status.rate = r;
 
 		int region = getRegion(nsf.pal_ntsc);
 		boolean pal = (region == REGION_PAL);
@@ -734,7 +737,7 @@ public class NsfPlayer extends PlayerMSP {
 	@Override
 	public int getLength() {
 		if (nsf == null)
-			return 0;
+			return -1;
 		return nsf.getLength();
 	}
 
@@ -779,7 +782,8 @@ public class NsfPlayer extends PlayerMSP {
 	public void getMemory(int[] buf) {
 		int i;
 		IntHolder val = new IntHolder();
-		for (i = 0; i < 65536; i++) {
+		int len = (buf.length < 65536) ? buf.length : 65536;
+		for (i = 0; i < len; i++) {
 			cpu.read(i, val, 0);
 			buf[i] = val.val;
 		}

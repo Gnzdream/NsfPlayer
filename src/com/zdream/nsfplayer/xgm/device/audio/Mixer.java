@@ -8,7 +8,19 @@ import com.zdream.nsfplayer.xgm.device.IRenderable;
 
 public class Mixer implements IRenderable {
 	
-	int fadePos, fadeEnd;
+	/**
+	 * 在 1 首歌播放即将结束后, 会进入渐出阶段. 这个参数将记录从开始渐出算起, 歌曲已经播放的采样数.<br>
+	 * 如果该参数为 0, 则说明歌曲播放未进入渐出阶段.
+	 */
+	int fadePos;
+	
+	/**
+	 * 表示渐出需要的总时间 (采样数).<br>
+	 * 歌曲播放未进入渐出阶段时, 这个参数为 1. 一般为无效值;
+	 * 当歌曲播放进入渐出阶段, 这个数值将计算真正的有效值.
+	 */
+	int fadeEnd;
+	
 	List<IRenderable> dlist = new ArrayList<IRenderable>();
 	
 	public Mixer() {
