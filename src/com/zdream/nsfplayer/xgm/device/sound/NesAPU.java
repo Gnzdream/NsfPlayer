@@ -296,6 +296,8 @@ public class NesAPU implements ISoundChip {
 			out[i] = 0;
 
 		setRate(rate);
+		
+		debug_reader_count = 0;
 	}
 
 	@Override

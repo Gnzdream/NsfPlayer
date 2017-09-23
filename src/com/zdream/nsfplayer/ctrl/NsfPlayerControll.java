@@ -9,6 +9,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 import com.zdream.nsfplayer.ctrl.task.ITask;
+import com.zdream.nsfplayer.ctrl.task.OpenTask;
 import com.zdream.nsfplayer.vcm.Value;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayer;
@@ -57,9 +58,14 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 	
 	public static void main(String[] args) throws IOException {
 		NsfPlayerControll r = new NsfPlayerControll();
-		r.init();
-		r.open("src\\assets\\test\\mm10nsf.nsf");
-		r.play(8);
+//		r.open("src\\assets\\test\\mm10nsf.nsf");
+//		r.play();
+		
+		r.thread = new PlayThread(r);
+		OpenTask t = new OpenTask("src\\assets\\test\\mm10nsf.nsf");
+		t.setOption("s", 8);
+		r.putTask(t);
+		r.thread.run();
 	}
 	
 	private void init() {
@@ -104,7 +110,7 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 		AudioFormat af = new AudioFormat(rate, bps, nch, true, false);
 		try {
 			dateline = AudioSystem.getSourceDataLine(af);
-			dateline.open(af, rate / 2);
+			dateline.open(af, rate);
 		} catch (LineUnavailableException e) {
 			System.err.println("初始化音频输出失败。");
 		}
@@ -112,12 +118,12 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 		// 我自己的补充配置
 		/*
 		 * 音乐播放是一个片段一个片段播放的, 这里给出的是每个片段的时间长短.
-		 * 100 ms = 0.1 s
-		 * 如果在 48000 Hz 的环境下播放, 每个片段要过 4800 个采样点.
-		 * 如果在 16 位深度, 双声道的情况下, 每次送过去的 byte[] 数组长度为 4800 * 2 * 2 = 19200;
+		 * 50 ms = 0.05 s
+		 * 如果在 48000 Hz 的环境下播放, 每个片段要过 2400 个采样点.
+		 * 如果在 16 位深度, 双声道的情况下, 每次送过去的 byte[] 数组长度为 2400 * 2 * 2 = 9600;
 		 */
-		config.createValue("PLAYER_FRAGMENT_IN_MS", 100);
-		config.createValue("PLAYER_FRAGMENT_IN_BYTES", rate * (bps / 2) * nch / 10); // 10 = 1000 / 100
+		config.createValue("PLAYER_FRAGMENT_IN_MS", 50);
+		config.createValue("PLAYER_FRAGMENT_IN_BYTES", rate * (bps / 8) * nch / 20); // 20 = 1000 / 50
 	}
 	
 	boolean audio_print = false;
@@ -203,7 +209,9 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 					asd.toString();
 				}
 				
+				long beginTime = System.currentTimeMillis();
 				dateline.write(bs, 0, samples);
+				System.out.println("耗时: " + (System.currentTimeMillis() - beginTime));
 			}
 			
 			boolean result = player.nextSong(1);
@@ -250,7 +258,7 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 	}
 	
 	public void putTask(ITask task) {
-		thread.queue.add(task);
+		thread.putTask(task);
 	}
 	
 }
