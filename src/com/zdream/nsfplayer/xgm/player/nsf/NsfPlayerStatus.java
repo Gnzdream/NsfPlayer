@@ -50,6 +50,22 @@ public class NsfPlayerStatus {
 	
 	NsfPlayer player;
 	
+	/**
+	 * <p>是否<b>需要暂停</b></p>
+	 * 这里写的是需要暂停, 因为播放操作实质上是一个部分一个部分渲染的.
+	 * 在渲染进行到中途时是不应该被打断的.<br>
+	 * 所有只有在渲染的那一部分结束之后, 开始下一部分的渲染时, 会来查看这个参数的属性.<br>
+	 * 如果需要暂停就停止渲染.<br>
+	 * <p>这个参数一般由 task 控制</p>
+	 */
+	public boolean pause;
+	
+	/**
+	 * <p>是否<b>需要进行切歌操作</b></p>
+	 * <p>这个参数一般由 task 控制</p>
+	 */
+	public boolean replace;
+	
 	public NsfPlayerStatus(NsfPlayer player) {
 		this.player = player;
 	}

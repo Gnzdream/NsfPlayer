@@ -39,7 +39,7 @@ public class OpenTask implements ITask {
 		try {
 			result = env.getNsf().loadFile(filename);
 		} catch (IOException e) {
-			System.out.println("读取文件失败");
+			env.printOut("[Open] 读取文件: %s 失败. 继续播放原音频", filename);
 			return;
 		}
 		
@@ -47,6 +47,9 @@ public class OpenTask implements ITask {
 			// 报告错误
 			return;
 		}
+		
+		// 输出提示文字
+		env.printOut("[Open] 尝试打开文件: %s", filename);
 		
 		if (beginSong <= 0) {
 			// 不更换曲目号, 直接放入播放的 task
@@ -58,6 +61,9 @@ public class OpenTask implements ITask {
 			t.setOption("needReset", true);
 			env.putTask(t);
 		}
+		
+		// 不暂停
+		env.getPlayer().getStatus().pause = false;
 	}
 
 }

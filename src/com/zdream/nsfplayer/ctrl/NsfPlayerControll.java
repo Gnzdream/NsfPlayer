@@ -1,19 +1,25 @@
 package com.zdream.nsfplayer.ctrl;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
+import com.zdream.nsfplayer.ctrl.cmd.BaseHandler;
+import com.zdream.nsfplayer.ctrl.cmd.ICommandHandler;
 import com.zdream.nsfplayer.ctrl.task.ITask;
 import com.zdream.nsfplayer.ctrl.task.OpenTask;
 import com.zdream.nsfplayer.vcm.Value;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayer;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfPlayerConfig;
+import com.zdream.utils.common.CodeSpliter;
 
 /**
  * 控制面板 (虽然用的是命令行 / 类似 Shell)
@@ -47,6 +53,9 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 	
 	Properties conf = new Properties();
 	
+	// 指令解析
+	Map<String, ICommandHandler> handlers = new HashMap<String, ICommandHandler>();
+	
 	{
 		try {
 			conf.load(getClass().getResourceAsStream("in_yansf.properties"));
@@ -54,6 +63,8 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 			e.printStackTrace();
 		}
 		init();
+		
+		attachHandler(new BaseHandler());
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -61,11 +72,7 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 //		r.open("src\\assets\\test\\mm10nsf.nsf");
 //		r.play();
 		
-		r.thread = new PlayThread(r);
-		OpenTask t = new OpenTask("src\\assets\\test\\mm10nsf.nsf");
-		t.setOption("s", 8);
-		r.putTask(t);
-		r.thread.run();
+		r.go();
 	}
 	
 	private void init() {
@@ -124,6 +131,45 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 		 */
 		config.createValue("PLAYER_FRAGMENT_IN_MS", 50);
 		config.createValue("PLAYER_FRAGMENT_IN_BYTES", rate * (bps / 8) * nch / 20); // 20 = 1000 / 50
+	}
+	
+	public void attachHandler(ICommandHandler h) {
+		String[] cmds = h.canHandle();
+		for (int i = 0; i < cmds.length; i++) {
+			handlers.put(cmds[i], h);
+		}
+	}
+	
+	public void go() {
+		this.thread = new PlayThread(this);
+		OpenTask t = new OpenTask("src\\assets\\test\\mm10nsf.nsf");
+		t.setOption("s", 8);
+		putTask(t);
+		
+		Thread thread = new Thread(this.thread, "player");
+		thread.setDaemon(true); // 播放进程是守护进程
+		thread.start();
+		
+		Scanner scan = new Scanner(System.in);
+		String text;
+		boolean exits = false;
+		
+		while (!exits) {
+			text = scan.nextLine();
+			
+			String[] args = CodeSpliter.split(text);
+			try {
+				String cmd = args[0] = args[0].toLowerCase();
+				ICommandHandler h = handlers.get(cmd);
+				if (h != null) {
+					h.handle(args, this);
+				}
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		}
+		// 一般而言不会到这里
+		scan.close();
 	}
 	
 	boolean audio_print = false;
@@ -259,6 +305,19 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 	
 	public void putTask(ITask task) {
 		thread.putTask(task);
+	}
+	
+	@Override
+	public ITask nextTask() {
+		return thread.nextTask();
+	}
+	
+	public void printOut(String text, Object...args) {
+		if (args == null || args.length == 0) {
+			System.out.println(text);
+		} else {
+			System.out.println(String.format(text, args));
+		}
 	}
 	
 }

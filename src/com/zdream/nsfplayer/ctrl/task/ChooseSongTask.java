@@ -38,6 +38,9 @@ public class ChooseSongTask implements ITask {
 	public void execute(INsfPlayerEnv env) {
 		env.getPlayer().setSong(song);
 		
+		// 输出提示文字
+		env.printOut("[ChooseSong] 切换到歌曲: %s", song);
+		
 		if (needReset) {
 			env.getPlayer().reset();
 			env.getNsf().reload();
@@ -45,6 +48,11 @@ public class ChooseSongTask implements ITask {
 		
 		// 放入播放的 task
 		env.putTask(PlayTask.getOne());
+		
+		// 不暂停
+		env.getPlayer().getStatus().pause = false;
+		// 设置切歌结束
+		env.getPlayer().getStatus().replace = false;
 	}
 
 }

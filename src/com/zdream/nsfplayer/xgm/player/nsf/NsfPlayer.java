@@ -745,6 +745,10 @@ public class NsfPlayer extends PlayerMSP {
 	public boolean isStopped() {
 		return mixer.isFadeEnd();
 	}
+	
+	public boolean isPaused() {
+		return status.pause;
+	}
 
 	@Override
 	public boolean setSong(int s) {
@@ -964,6 +968,10 @@ public class NsfPlayer extends PlayerMSP {
 		}
 
 		return REGION_NTSC; // fallback for invalid flags
+	}
+	
+	public NsfPlayerStatus getStatus() {
+		return status;
 	}
 
 }
