@@ -39,7 +39,7 @@ public class OpenTask implements ITask {
 		try {
 			result = env.getNsf().loadFile(filename);
 		} catch (IOException e) {
-			env.printOut("[Open] 读取文件: %s 失败. 继续播放原音频", filename);
+			env.printOut("[OPEN] 读取文件: %s 失败. 继续播放原音频", filename);
 			return;
 		}
 		
@@ -49,7 +49,7 @@ public class OpenTask implements ITask {
 		}
 		
 		// 输出提示文字
-		env.printOut("[Open] 尝试打开文件: %s", filename);
+		env.printOut("[OPEN] 尝试打开文件: %s", filename);
 		
 		if (beginSong <= 0) {
 			// 不更换曲目号, 直接放入播放的 task

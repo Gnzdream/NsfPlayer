@@ -743,6 +743,9 @@ public class NsfPlayer extends PlayerMSP {
 
 	@Override
 	public boolean isStopped() {
+		if (status.replace) {
+			return true;
+		}
 		return mixer.isFadeEnd();
 	}
 	

@@ -28,9 +28,9 @@ public class PlayTask implements ITask {
 	public static final String OPT_REPLAY = "replay";
 	
 	/**
-	 * 如果是从暂停中恢复播放, 这个参数要置为 true
+	 * 如果是从暂停中恢复播放, 这个参数要置为 true. 默认为 true
 	 */
-	boolean replay;
+	boolean replay = true;
 	
 	private PlayTask() {
 		
@@ -71,7 +71,9 @@ public class PlayTask implements ITask {
 		// 循环播放, 所以要再放一个 task
 		ITask t = env.nextTask();
 		if (t == null || t.getClass() != getClass()) {
-			env.putTask(getOne());
+			PlayTask p = getOne();
+			p.replay = false;
+			env.putTask(p);
 		}
 		
 		byte[] b = env.getLastSampleBytes();
@@ -80,7 +82,7 @@ public class PlayTask implements ITask {
 	}
 	
 	public void reset() {
-		replay = false;
+		replay = true;
 	}
 
 }

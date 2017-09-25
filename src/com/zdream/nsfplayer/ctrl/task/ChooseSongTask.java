@@ -39,7 +39,7 @@ public class ChooseSongTask implements ITask {
 		env.getPlayer().setSong(song);
 		
 		// 输出提示文字
-		env.printOut("[ChooseSong] 切换到歌曲: %s", song);
+		env.printOut("[SONG] 切换到歌曲: %s", song);
 		
 		if (needReset) {
 			env.getPlayer().reset();
