@@ -2,7 +2,7 @@ package com.zdream.nsfplayer.xgm.device.misc;
 
 import com.zdream.nsfplayer.xgm.device.IntHolder;
 
-public class NesDetectorEx extends NesDetector implements ILoopDetector {
+public class NesDetectorEx extends NesDetector {
 	
 	/**
 	 * 音频轨道

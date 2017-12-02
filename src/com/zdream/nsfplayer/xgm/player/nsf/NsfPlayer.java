@@ -503,6 +503,9 @@ public class NsfPlayer extends PlayerMSP {
 		return this.config.getIntValue(str);
 	}
 
+	/**
+	 * 检查到一个歌曲已经放完
+	 */
 	protected void detectSilent() {
 		if (mixer.isFading() || playtime_detected || !nsf.playtime_unknown || nsf.useNSFePlaytime())
 			return;
@@ -515,6 +518,9 @@ public class NsfPlayer extends PlayerMSP {
 		}
 	}
 
+	/**
+	 * 检查到一个歌曲已经放完一个循环, 准备开始下一个循环
+	 */
 	protected void detectLoop() {
 		if (mixer.isFading() || playtime_detected || !nsf.playtime_unknown || nsf.useNSFePlaytime())
 			return;
@@ -532,9 +538,12 @@ public class NsfPlayer extends PlayerMSP {
 	protected void checkTerminal() {
 		if (mixer.isFading())
 			return;
-
-		if (time_in_ms + nsf.getFadeTime() >= nsf.getLength())
+		
+		int pos = time_in_ms + nsf.getFadeTime();
+		int len = nsf.getLength();
+		if (pos >= len) {
 			mixer.fadeStart(rate, nsf.getFadeTime());
+		}
 	}
 
 	/**

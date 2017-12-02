@@ -5,14 +5,23 @@ import com.zdream.nsfplayer.xgm.device.IntHolder;
 public class BasicDetector implements ILoopDetector {
 	
 	protected int m_bufmask;
-	protected int[] m_stream_buf, m_time_buf;
-	protected int m_bidx;
+	
+	/**
+	 * <p>用于记录最近在内存中写入的数据以及位置
+	 * </p>
+	 */
+	private int[] m_stream_buf, m_time_buf;
+	private int m_bidx;
+	
 	protected int m_blast;
 	protected int m_wspeed;
 	protected int m_current_time;
 	protected int m_loop_start;
 	protected int m_loop_end;
-	protected boolean m_empty;
+	/**
+	 * 表示整个 Nes 内存在重置之后, 是否写入过数据.
+	 */
+	private boolean m_empty;
 	
 	public BasicDetector(int bufbits) {
 		int m_bufsize = 1 << bufbits;

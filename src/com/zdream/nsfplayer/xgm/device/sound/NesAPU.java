@@ -6,6 +6,7 @@ import com.zdream.nsfplayer.xgm.device.IntHolder;
 import com.zdream.nsfplayer.xgm.device.TrackInfoBasic;
 
 /**
+ * <p>模拟生成矩形波的声音芯片. 共有两个矩形波通道.</p>
  * Upper half of APU
  * @author Zdream
  */
@@ -14,9 +15,9 @@ public class NesAPU implements ISoundChip {
 	public static final int
 			OPT_UNMUTE_ON_RESET = 0,
 			OPT_PHASE_REFRESH = 1,
-	        OPT_NONLINEAR_MIXER = 2,
-	        OPT_DUTY_SWAP = 3,
-	        OPT_END = 4;
+			OPT_NONLINEAR_MIXER = 2,
+			OPT_DUTY_SWAP = 3,
+			OPT_END = 4;
 	
 	public static final int
 			SQR0_MASK = 1,
@@ -44,40 +45,61 @@ public class NesAPU implements ISoundChip {
 	 */
 	protected int[] scounter = new int[2];
 	/**
-	 * phase counter
+	 * <p>相位计数器. 缓存矩形波渲染到一个周期的哪个位置.
+	 * <p>该数值只有低 4 位有效.
+	 * <p>phase counter
+	 * </p>
 	 */
 	protected int[] sphase = new int[2];
 
 	protected int[] duty = new int[2];
+	/**
+	 * <p>音量
+	 * <p>这个音量是指矩形轨道中每个音色的音量.
+	 * 这个值类似于 FamiTracker 中对每个音符设置的音量大小,
+	 * 与用户设置的轨道音量无关.
+	 * <p>有效值在 0 到 15 之间.
+	 * </p>
+	 */
 	protected int[] volume = new int[2];
-    protected int[] freq = new int[2];
-    protected int[] sfreq = new int[2];
+	/**
+	 * <p>频率
+	 * <p>反映指定矩形波中音符音调的值.
+	 * </p>
+	 */
+	protected int[] freq = new int[2];
+	/**
+	 * <p>扫描频率
+	 * <p>暂时不知道作用. 大多数情况为 -1, 仅在歌曲切换时有大于零的有效值.
+	 * </p>
+	 */
+	protected int[] sfreq = new int[2];
 
-    protected boolean[] sweep_enable = new boolean[2];
-    protected boolean[] sweep_mode = new boolean[2];
-    protected boolean[] sweep_write = new boolean[2];
-    protected int[] sweep_div_period = new int[2];
-    protected int[] sweep_div = new int[2];
-    protected int[] sweep_amount = new int[2];
+	protected boolean[] sweep_enable = new boolean[2];
+	protected boolean[] sweep_mode = new boolean[2];
+	protected boolean[] sweep_write = new boolean[2];
+	protected int[] sweep_div_period = new int[2];
+	protected int[] sweep_div = new int[2];
+	protected int[] sweep_amount = new int[2];
 
-    protected boolean[] envelope_disable = new boolean[2];
-    protected boolean[] envelope_loop = new boolean[2];
-    protected boolean[] envelope_write = new boolean[2];
-    protected int[] envelope_div_period = new int[2];
-    protected int[] envelope_div = new int[2];
-    protected int[] envelope_counter = new int[2];
+	protected boolean[] envelope_disable = new boolean[2];
+	protected boolean[] envelope_loop = new boolean[2];
+	protected boolean[] envelope_write = new boolean[2];
+	protected int[] envelope_div_period = new int[2];
+	protected int[] envelope_div = new int[2];
+	protected int[] envelope_counter = new int[2];
 
-    protected int[] length_counter = new int[2];
+	protected int[] length_counter = new int[2];
 
-    protected boolean[] enable = new boolean[2];
-    
-    protected TrackInfoBasic[] trkinfo = new TrackInfoBasic[2];
-    
-	static final int[][] SQRT_BL = {
-			{ 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			{ 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-			{ 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
-			{ 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+	protected boolean[] enable = new boolean[2];
+	
+	protected TrackInfoBasic[] trkinfo = new TrackInfoBasic[2];
+	
+	static final boolean[][] SQRT_BL = {
+			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },
+			{ false, false,  true,  true,  true,  true, false, false, false, false, false, false, false, false, false, false },
+			{ false, false,  true,  true,  true,  true,  true,  true,  true,  true, false, false, false, false, false, false },
+			{  true,  true, false, false, false, false,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true }
 	};
 	
 	{
@@ -102,47 +124,50 @@ public class NesAPU implements ISoundChip {
 			for (int t = 0; t < 2; ++t)
 				sm[c][t] = 128;
 	}
-    
-    /**
-     * calculates target sweep frequency
-     * @param ch
-     */
-    protected void sweepSqr (int ch) {
-    	 int shifted = freq[ch] >> sweep_amount[ch];
-         if (ch == 0 && sweep_mode[ch]) shifted += 1;
-         sfreq[ch] = freq[ch] + (sweep_mode[ch] ? -shifted : shifted);
-         // 建议的 debug
-         //DEBUG_OUT("shifted[%d] = %d (%d >> %d)\n",i,shifted,freq[i],sweep_amount[i]);
-    }
-    
-    protected void frameSequence(int s) {
-    	//DEBUG_OUT("FrameSequence(%d)\n",s);
+	
+	/**
+	 * <p>计算目标扫描频率. 扫描频率将会放在成员变量 <code>sfreq</code> 中.</p>
+	 * calculates target sweep frequency
+	 * @param ch
+	 *   计算第几个矩形通道. 有效值是 0 或者 1.
+	 */
+	protected void sweepSqr (int ch) {
+		 int shifted = freq[ch] >> sweep_amount[ch];
+		 if (ch == 0 && sweep_mode[ch]) shifted += 1;
+		 sfreq[ch] = freq[ch] + (sweep_mode[ch] ? -shifted : shifted);
+		 /*if (sfreq[ch] > 0) {
+			 System.out.println(String.format("sfreq[%d] = %d", ch, sfreq[ch]));
+		 }*/
+	}
+	
+	protected void frameSequence(int s) {
+		//DEBUG_OUT("FrameSequence(%d)\n",s);
 
-        if (s > 3) return; // no operation in step 4
+		if (s > 3) return; // no operation in step 4
 
-        // 240hz clock
+		// 240hz clock
 		for (int i = 0; i < 2; ++i) {
-            boolean divider = false;
-            if (envelope_write[i]) {
-                envelope_write[i] = false;
-                envelope_counter[i] = 15;
-                envelope_div[i] = 0;
-            } else {
-                ++envelope_div[i];
-                if (envelope_div[i] > envelope_div_period[i]) {
-                    divider = true;
-                    envelope_div[i] = 0;
-                }
-            }
-            if (divider) {
-                if (envelope_loop[i] && envelope_counter[i] == 0)
-                    envelope_counter[i] = 15;
-                else if (envelope_counter[i] > 0)
-                    --envelope_counter[i];
-            }
-        }
+			boolean divider = false;
+			if (envelope_write[i]) {
+				envelope_write[i] = false;
+				envelope_counter[i] = 15;
+				envelope_div[i] = 0;
+			} else {
+				++envelope_div[i];
+				if (envelope_div[i] > envelope_div_period[i]) {
+					divider = true;
+					envelope_div[i] = 0;
+				}
+			}
+			if (divider) {
+				if (envelope_loop[i] && envelope_counter[i] == 0)
+					envelope_counter[i] = 15;
+				else if (envelope_counter[i] > 0)
+					--envelope_counter[i];
+			}
+		}
 
-        // 120hz clock
+		// 120hz clock
 		if ((s & 1) == 0) {
 			for (int i = 0; i < 2; ++i) {
 				if (!envelope_loop[i] && (length_counter[i] > 0))
@@ -176,29 +201,29 @@ public class NesAPU implements ISoundChip {
 			}
 		}
 	}
-    
-    /**
-     * 
-     * @param i
-     * @param clocks
-     *   unsigned
-     * @return
-     */
+	
+	/**
+	 * 
+	 * @param i
+	 * @param clocks
+	 *   unsigned
+	 * @return
+	 */
 	protected int calcSqr(int i, int clocks) {
 		scounter[i] += clocks;
 		while (scounter[i] > freq[i]) {
-			sphase[i] = (sphase[i] + 1) & 15;
+			sphase[i] = (sphase[i] + 1) & 15; // 16 为一周期
 			scounter[i] -= (freq[i] + 1);
 		}
 
 		int ret = 0;
 		if (length_counter[i] > 0 && freq[i] >= 8 && sfreq[i] < 0x800) {
 			int v = envelope_disable[i] ? volume[i] : envelope_counter[i];
-			ret = (SQRT_BL[duty[i]][sphase[i]] != 0) ? v : 0;
+			ret = (SQRT_BL[duty[i]][sphase[i]]) ? v : 0;
 		}
 
 		return ret;
-    }
+	}
 
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
@@ -214,8 +239,10 @@ public class NesAPU implements ISoundChip {
 
 	@Override
 	public void tick(int clocks) {
+//		if (i == 0)
+//			System.out.println(freq[i]);
 		out[0] = calcSqr(0, clocks);
-	    out[1] = calcSqr(1, clocks);
+		out[1] = calcSqr(1, clocks);
 	}
 	
 	// debug
@@ -274,7 +301,7 @@ public class NesAPU implements ISoundChip {
 		scounter[0] = 0;
 		scounter[1] = 0;
 		sphase[0] = 0;
-		sphase[0] = 0;
+		sphase[1] = 0;
 
 		sweep_div[0] = 1;
 		sweep_div[1] = 1;
@@ -345,38 +372,19 @@ public class NesAPU implements ISoundChip {
 
 	@Override
 	public boolean write(int adr, int val, int id) {
-		int ch;
-
-	    final int length_table[] = { // len : 32
-	        0x0A, 0xFE,
-	        0x14, 0x02,
-	        0x28, 0x04,
-	        0x50, 0x06,
-	        0xA0, 0x08,
-	        0x3C, 0x0A,
-	        0x0E, 0x0C,
-	        0x1A, 0x0E,
-	        0x0C, 0x10,
-	        0x18, 0x12,
-	        0x30, 0x14,
-	        0x60, 0x16,
-	        0xC0, 0x18,
-	        0x48, 0x1A,
-	        0x10, 0x1C,
-	        0x20, 0x1E
-	    };
-
 		if (0x4000 <= adr && adr < 0x4008) {
 			// DEBUG_OUT("$%04X = %02X\n",adr,val);
 
 			adr &= 0xf;
-			ch = adr >> 2;
+			// System.out.println(adr);
+			int ch = adr >> 2;
 			switch (adr) {
 			case 0x0:
 			case 0x4:
 				volume[ch] = val & 15;
 				envelope_disable[ch] = ((val >> 4) & 1) != 0;
 				envelope_loop[ch] = ((val >> 5) & 1) != 0;
+				// 这里, envelope_div_period[ch] = volume[ch]
 				envelope_div_period[ch] = (val & 15);
 				duty[ch] = (val >> 6) & 3;
 				if (option[OPT_DUTY_SWAP]) {
@@ -407,6 +415,26 @@ public class NesAPU implements ISoundChip {
 
 			case 0x3:
 			case 0x7:
+
+				final int length_table[] = { // len : 32
+					0x0A, 0xFE,
+					0x14, 0x02,
+					0x28, 0x04,
+					0x50, 0x06,
+					0xA0, 0x08,
+					0x3C, 0x0A,
+					0x0E, 0x0C,
+					0x1A, 0x0E,
+					0x0C, 0x10,
+					0x18, 0x12,
+					0x30, 0x14,
+					0x60, 0x16,
+					0xC0, 0x18,
+					0x48, 0x1A,
+					0x10, 0x1C,
+					0x20, 0x1E
+				};
+				
 				freq[ch] = (freq[ch] & 0xFF) | ((val & 0x7) << 8);
 				if (option[OPT_PHASE_REFRESH])
 					sphase[ch] = 0;
