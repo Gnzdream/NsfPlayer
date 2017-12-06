@@ -1,6 +1,8 @@
 package com.zdream.nsfplayer.ftm.format;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 import com.zdream.utils.common.CodeSpliter;
@@ -343,8 +345,6 @@ public class FtmAudioFactoryEntry {
 					throw new FtmParseException(line,
 							"乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 " + strs.length);
 				}
-				System.out.println(java.util.Arrays.toString(strs));
-				
 				Inst2A03 ins = new Inst2A03();
 				ins.seq = Integer.parseInt(strs[1]);
 				
@@ -436,7 +436,7 @@ public class FtmAudioFactoryEntry {
 	 *   解析的数据放到这个里面
 	 * @return
 	 */
-	String parseTrack(String firstLine, FtmTrack track) throws FtmParseException {
+	String parseTrack(final String firstLine, FtmTrack track) throws FtmParseException {
 		String[] strs = CodeSpliter.split(firstLine);
 		
 		track.length = Integer.parseInt(strs[1]);
@@ -458,9 +458,9 @@ public class FtmAudioFactoryEntry {
 		skipBlankLine(1);
 		
 		// 下一行是 ORDER
-		// TODO
 		int seq = 0; // 序号
 		int seq_order; // 这是临时变量, 储存解析出来的序号, 用来和 seq 作对比的
+		ArrayList<int[]> orders = new ArrayList<>();
 		while (true) {
 			str = nextLine();
 			if ("".equals(str)) {
@@ -474,19 +474,252 @@ public class FtmAudioFactoryEntry {
 			
 			if (strs.length != columns.length + 2) {
 				throw new FtmParseException(line,
-						"解析乐曲错误, 这行 ORDER 数据量不正确, 应该是 " + columns.length + ", 而实际是 " + (strs.length - 2));
+						"解析乐曲错误, ORDER 数据量不正确, 应该是 " + columns.length + ", 而实际是 " + (strs.length - 2));
 			}
 			
 			seq_order = Integer.parseInt(strs[0], 16);
 			if (seq_order != seq) {
-				// TODO
+				throw new FtmParseException(line,
+						"解析乐曲错误, ORDER 序号错误, 应该是 " + seq + ", 而实际是 " + seq_order);
+			}
+			seq++;
+			if (!":".equals(strs[1])) {
+				throw new FtmParseException(line, "解析乐曲错误, ORDER 部分 ':' 在期望的位置没有出现");
 			}
 			
-			// TODO
+			int[] os = new int[columns.length];
+			for (int i = 0; i < os.length; i++) {
+				os[i] = Integer.parseInt(strs[i + 2], 16);
+			}
+			orders.add(os);
 		}
 		
+		// 下一行是 PATTERN
+		ArrayList<FtmPattern[]> patterns = new ArrayList<>();
+		while (true) {
+			str = nextLine();
+			if ("".equals(str)) {
+				continue;
+			}
+			
+			if (str.startsWith("PATTERN ")) {
+				patterns.add(parsePattern(str, columns.length, track.length));
+			} else {
+				break;
+			}
+		}
 		
-		return "";
+		track.patterns = new FtmPattern[patterns.size()][];
+		for (int i = 0; i < track.patterns.length; i++) {
+			track.patterns[i] = patterns.get(i);
+		}
+		
+		// Order 关联 Pattern
+		track.orders = new FtmPattern[orders.size()][];
+		for (int i = 0; i < track.orders.length; i++) {
+			FtmPattern[] ps = new FtmPattern[columns.length];
+			int[] os = orders.get(i);
+			
+			for (int j = 0; j < os.length; j++) {
+				ps[j] = track.patterns[os[j]][j];
+			}
+			
+			track.orders[i] = ps;
+		}
+		
+		return str;
+	}
+	
+	/**
+	 * 解析 Track - Pattern 部分
+	 * @param fristLine
+	 *   第一行文本, 类似于 "PATTERN 00"
+	 * @param column
+	 *   期望这个 Pattern 有几个轨道
+	 * @param maxRow
+	 *   最多的行数
+	 * @return
+	 * @throws FtmParseException
+	 */
+	FtmPattern[] parsePattern(final String fristLine, final int column, final int maxRow)
+			throws FtmParseException {
+		// 第一行
+		final int seq = Integer.parseInt(fristLine.substring(8), 16);
+		
+		ArrayList<LinkedList<Integer>> lists = new ArrayList<>(column);
+		for (int i = 0; i < column; i++) {
+			lists.add(new LinkedList<>());
+		}
+		
+		int row = 0; // 期望的行数
+		int row_pattern; // 这是临时变量, 储存解析出来的行数, 用来和 row 作对比的
+		
+		/*
+		 * 是否标识过本行的行号.
+		 * 
+		 * 因为数据存储是这样的:
+		 * 行号0, 改变音调, 改变音量, 行号2, 改变乐器, 改变音量, P效果, 行号6, 改变音量...
+		 * 不是所有的行号都会放上去. 如果本行有要改变的东西, 会先放行号标识;
+		 * 如果本行已经标识过, 就不需要再标识了, 所以需要这个变量记录是否本行已经标识过.
+		 */
+		boolean sign;
+		
+		while (true) {
+			String str = nextLine();
+			if ("".equals(str)) {
+				break;
+			}
+			
+			if (!str.startsWith("ROW ")) {
+				throw new FtmParseException(line, "解析乐曲错误, 这行本应该是 ROW");
+			}
+			String[] strs0 = str.substring(4).split(" : ");
+			if (strs0.length != column + 1) {
+				throw new FtmParseException(line,
+						"解析乐曲错误, ROW 数据量不正确, 应该是 " + column + ", 而实际是 " + (strs0.length - 1));
+			}
+			
+			row_pattern = Integer.parseInt(strs0[0], 16);
+			if (row != row_pattern) {
+				throw new FtmParseException(line,
+						"解析乐曲错误, ROW 行数不正确, 应该是 " + row + ", 而实际是 " + row_pattern);
+			}
+			
+			// 解析每个轨道, 开发用的轨道号: i-1
+			
+			for (int i = 1; i < strs0.length; i++) {
+				String[] strs = CodeSpliter.split(strs0[i]);
+				
+				if (strs.length < 4) {
+					throw new FtmParseException(line,
+							String.format("解析乐曲错误, 第 %d 轨道只有 %d 个数据, 但是实际应该超过 4", i, strs.length));
+				}
+				sign = false;
+				
+				// 0 号数据, note
+				String s = strs[0];
+				CHECK_NOTE: {
+					if ("...".equals(s)) {
+						break CHECK_NOTE;
+					}
+					
+					int v = FtmPattern.parseNoteValue(s);
+					if (v == -1) {
+						throw new FtmParseException(line,
+								String.format("解析乐曲错误, 第 %d 轨道的 %s 无法解析", i, s));
+					}
+					// 标识行号
+					lists.get(i - 1).add(FtmPattern.EFFECT_LINE_HEAD | row);
+					sign = true;
+					
+					lists.get(i - 1).add(v);
+				}
+				
+				// 1 号数据, 乐器
+				s = strs[1];
+				CHECK_INST: {
+					if ("..".equals(s)) {
+						break CHECK_INST;
+					}
+					// 标识行号
+					if (!sign) {
+						lists.get(i - 1).add(FtmPattern.EFFECT_LINE_HEAD | row);
+						sign = true;
+					}
+					
+					lists.get(i - 1).add(FtmPattern.EFFECT_INST_HEAD | Integer.parseInt(s, 16));
+				}
+				
+				// 2 号数据, 音量
+				s = strs[2];
+				CHECK_VOL: {
+					if (".".equals(s)) {
+						break CHECK_VOL;
+					}
+					// 标识行号
+					if (!sign) {
+						lists.get(i - 1).add(FtmPattern.EFFECT_LINE_HEAD | row);
+						sign = true;
+					}
+					
+					lists.get(i - 1).add(FtmPattern.EFFECT_VOL_HEAD | Integer.parseInt(s, 16));
+				}
+				
+				// 其它数据, 效果
+				for (int j = 3; j < strs.length; j++) {
+					s = strs[j];
+					
+					if ("...".equals(s)) {
+						continue;
+					}
+					// 标识行号
+					if (!sign) {
+						lists.get(i - 1).add(FtmPattern.EFFECT_LINE_HEAD | row);
+						sign = true;
+					}
+					
+					lists.get(i - 1).add(FtmPattern.parseEffectValue(s));
+				}
+				
+			}
+			
+			row++;
+		}
+		
+		// print out
+		/*for (int j = 0; j < column; j++) {
+			StringBuilder builder = new StringBuilder(100);
+			builder.append("row ").append(j).append(": ");
+			
+			for (Iterator<Integer> it = lists.get(j).iterator(); it.hasNext();) {
+				int v = it.next();
+				builder.append(Integer.toHexString(v)).append(' ');
+			}
+			System.out.println(builder.toString());
+		}*/
+		// end print out
+		
+		FtmPattern[] patterns = new FtmPattern[column];
+		for (int i = 0; i < patterns.length; i++) {
+			FtmPattern pattern = new FtmPattern();
+			pattern.seq = seq;
+			
+			LinkedList<Integer> list = lists.get(i);
+			int[] effects = new int[list.size()];
+			int j = 0;
+			// 记录出现行号的个数
+			int count = 0;
+			
+			for (Iterator<Integer> it = list.iterator(); it.hasNext();) {
+				int v = it.next();
+				
+				effects[j] = v;
+				if ((v & 0x7FFF0000) == FtmPattern.EFFECT_LINE_HEAD) {
+					count++;
+				}
+				j++;
+			}
+			
+			j = 0;
+			int[] lines = new int[count], lineIdx = new int[count];
+			
+			for (int idx = 0; idx < effects.length; idx++) {
+				int v = effects[idx];
+				if ((v & 0x7FFF0000) == FtmPattern.EFFECT_LINE_HEAD) {
+					lines[j] = v & 0xFFFF;
+					lineIdx[j] = idx;
+					
+					j++;
+				}
+			}
+			
+			pattern.effects = effects;
+			pattern.lines = lines;
+			pattern.lineIdx = lineIdx;
+			patterns[i] = pattern;
+		}
+		
+		return patterns;
 	}
 	
 }

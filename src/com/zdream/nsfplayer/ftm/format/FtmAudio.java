@@ -245,6 +245,10 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	
 	Inst2A03[] inst2a03s;
 	
+	public Inst2A03[] getInst2a03s() {
+		return inst2a03s;
+	}
+	
 	/* **********
 	 *   乐曲   *
 	 ********** */
@@ -253,5 +257,9 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	 */
 	
 	FtmTrack[] tracks;
+	
+	public FtmTrack[] getTracks() {
+		return tracks;
+	}
 
 }

@@ -25,5 +25,21 @@ public final class FtmTrack {
 	 * 名称
 	 */
 	public String name;
+	
+	/* **********
+	 *   模式   *
+	 ********** */
+	/*
+	 * 模式 PATTERN
+	 */
+	public FtmPattern[][] patterns;
+	
+	/* **********
+	 * 曲目顺序 *
+	 ********** */
+	/*
+	 * 顺序 ORDER
+	 */
+	public FtmPattern[][] orders;
 
 }
