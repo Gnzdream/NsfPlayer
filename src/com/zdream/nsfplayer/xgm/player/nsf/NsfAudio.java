@@ -1,7 +1,5 @@
 package com.zdream.nsfplayer.xgm.player.nsf;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -9,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.zdream.nsfplayer.xgm.player.SoundDataMSP;
+import com.zdream.utils.common.FileUtils;
 
 /**
  * NSF 文件内的数据
@@ -180,13 +179,7 @@ public class NsfAudio extends SoundDataMSP {
 	}
 	
 	public boolean loadFile(final String fn) throws IOException {
-		File f = new File(fn);
-		FileInputStream r = new FileInputStream(f);
-		byte[] bs = new byte[(int) f.length()];
-		r.read(bs);
-		r.close();
-		
-		return loadBytes(fn, bs);
+		return loadBytes(fn, FileUtils.readFile(fn));
 	}
 
 	public boolean loadAssets(final String str) throws IOException {
@@ -338,6 +331,12 @@ public class NsfAudio extends SoundDataMSP {
 		song = s % songs;
 	}
 
+	/**
+     * 从二进制的镜像中读取
+     *
+     * @param image 二进制镜像数据组成的 byte 数组
+     * @return 成功时 true 失败时 false
+     */
 	public boolean load(byte[] image) {
 		if (image.length < 4) // no FourCC
 			return false;

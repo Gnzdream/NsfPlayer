@@ -6,16 +6,6 @@ package com.zdream.nsfplayer.xgm.player;
  */
 public class SoundData {
 
-	/**
-     * 从二进制的镜像中读取
-     *
-     * @param image 二进制镜像数据组成的 byte 数组
-     * @return 成功时 true 失败时 false
-     */
-	public boolean load(byte[] data) {
-		return false;
-	}
-
     /**
      * @return 标题
      */
