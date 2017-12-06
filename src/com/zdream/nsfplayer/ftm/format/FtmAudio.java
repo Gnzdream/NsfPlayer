@@ -158,8 +158,7 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 
 	@Override
 	public int getSongNum() {
-		// TODO Auto-generated method stub
-		return 0;
+		return tracks.length;
 	}
 	
 	@Override
