@@ -24,6 +24,7 @@ public class FtmAudioFactoryEntry {
 	static final String HEAD_DPCM_SAMPLES = "# DPCM samples";
 	static final String HEAD_INSTRUMENTS = "# Instruments";
 	static final String HEAD_TRACKS = "# Tracks";
+	static final String HEAD_END = "# End of export";
 	
 	static final String PROP_INST2A03 = "INST2A03";
 	
@@ -91,10 +92,12 @@ public class FtmAudioFactoryEntry {
 			}
 			
 			if (str.charAt(0) == '#') {
-				parseBlock(str);
+				int v = parseBlock(str);
+				if (v == 1) {
+					break;
+				}
 			} else {
-				// throw new FtmParseException(line, "无法解析该行, 这行开头应该是 '#'");
-				break;
+				throw new FtmParseException(line, "无法解析该行, 这行开头应该是 '#'");
 			}
 		}
 		
@@ -127,9 +130,12 @@ public class FtmAudioFactoryEntry {
 	 * 开始解析一个块. 一个块的标题以 '#' 作为开头
 	 * @param str
 	 *   标题行, 以 '#' 开头的行
+	 * @return
+	 *   0 - 系统正常
+	 *   1 - 检测到文本结束符号, 应该停止解析
 	 * @throws FtmParseException
 	 */
-	void parseBlock(String str) throws FtmParseException {
+	int parseBlock(String str) throws FtmParseException {
 		switch (str) {
 		case HEAD_SONG_INFO:
 			parseSongInfo();
@@ -158,10 +164,15 @@ public class FtmAudioFactoryEntry {
 		case HEAD_TRACKS:
 			parseTracks();
 			break;
+			
+		case HEAD_END:
+			return 1;
 
 		default:
 			break;
 		}
+		
+		return 0;
 	}
 	
 	/**
