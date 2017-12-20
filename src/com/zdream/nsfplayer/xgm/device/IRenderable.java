@@ -1,13 +1,13 @@
 package com.zdream.nsfplayer.xgm.device;
 
 /**
- * 界面：可以为语音透视图的接口
+ * 可渲染的数据接口
  * @author Zdream
  */
 public interface IRenderable {
 	
 	/**
-	 * 声音的透视图
+	 * 声音的渲染
 	 * @param bs
 	 *   左频道和右频道的声音数据, 需要是 int[2]
 	 * @return

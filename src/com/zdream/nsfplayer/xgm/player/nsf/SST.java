@@ -1,5 +1,7 @@
 package com.zdream.nsfplayer.xgm.player.nsf;
 
+import java.util.Arrays;
+
 /**
  * sublimate 方法同 delete + getStr()<br>
  * length 方法同 .length<br>
@@ -7,7 +9,7 @@ package com.zdream.nsfplayer.xgm.player.nsf;
  * @author Zdream
  *
  */
-public class SST {
+public class SST implements CharSequence {
 	
 	public static final int
 			SST_BUF_GSIZE = 32,
@@ -21,9 +23,9 @@ public class SST {
 	public void setText(final char[] str) {
 		this.str = str;
 		
-		size = str.length + 1;
-		index = 0 ;
-		length = size - 1;
+		length = str.length;
+		size = length + 1;
+		index = 0;
 	}
 	
 	public int seekoff(int offset) {
@@ -288,6 +290,24 @@ public class SST {
 			}
 		}
 		return new String(cs, 0, i);
+	}
+
+	@Override
+	public int length() {
+		return length;
+	}
+
+	@Override
+	public char charAt(int index) {
+		return this.str[index];
+	}
+
+	@Override
+	public CharSequence subSequence(int start, int end) {
+		char[] sub = Arrays.copyOfRange(str, start, end);
+		SST n = new SST();
+		n.setText(sub);
+		return n;
 	}
 	
 }

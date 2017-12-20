@@ -31,10 +31,10 @@ import com.zdream.nsfplayer.xgm.device.sound.NesN106;
 import com.zdream.nsfplayer.xgm.device.sound.NesVRC6;
 import com.zdream.nsfplayer.xgm.device.sound.NesVRC7;
 import com.zdream.nsfplayer.xgm.player.PlayerConfig;
-import com.zdream.nsfplayer.xgm.player.PlayerMSP;
+import com.zdream.nsfplayer.xgm.player.MultiSongPlayer;
 import com.zdream.nsfplayer.xgm.player.SoundData;
 
-public class NsfPlayer extends PlayerMSP {
+public class NsfPlayer extends MultiSongPlayer {
 	
 	/**
 	 * 类似于轨道编号的枚举

@@ -289,6 +289,11 @@ public class NsfAudio extends SoundDataMSP {
 		int s = song;
 		if (nsfe_plst != null)
 			s = nsfe_plst[song];
+		
+		if (s == -1) {
+			s = song = 0;
+		}
+		
 		if (nsfe_entry[s].fade >= 0) {
 			return nsfe_entry[s].fade;
 		}

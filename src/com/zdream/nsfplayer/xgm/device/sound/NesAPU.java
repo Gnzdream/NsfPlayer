@@ -4,6 +4,7 @@ import com.zdream.nsfplayer.xgm.device.ISoundChip;
 import com.zdream.nsfplayer.xgm.device.ITrackInfo;
 import com.zdream.nsfplayer.xgm.device.IntHolder;
 import com.zdream.nsfplayer.xgm.device.TrackInfoBasic;
+import com.zdream.nsfplayer.xgm.sound.PulseSound;
 
 /**
  * <p>模拟生成矩形波的声音芯片. 共有两个矩形波通道.</p>
@@ -52,6 +53,9 @@ public class NesAPU implements ISoundChip {
 	 */
 	protected int[] sphase = new int[2];
 
+	/**
+	 * <p>音色
+	 */
 	protected int[] duty = new int[2];
 	/**
 	 * <p>音量
@@ -95,6 +99,11 @@ public class NesAPU implements ISoundChip {
 	
 	protected TrackInfoBasic[] trkinfo = new TrackInfoBasic[2];
 	
+	/**
+	 * 矩形波发声器
+	 */
+	PulseSound sound0, sound1;
+	
 	static final boolean[][] SQRT_BL = {
 			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },
 			{ false, false,  true,  true,  true,  true, false, false, false, false, false, false, false, false, false, false },
@@ -135,9 +144,9 @@ public class NesAPU implements ISoundChip {
 		 int shifted = freq[ch] >> sweep_amount[ch];
 		 if (ch == 0 && sweep_mode[ch]) shifted += 1;
 		 sfreq[ch] = freq[ch] + (sweep_mode[ch] ? -shifted : shifted);
-		 /*if (sfreq[ch] > 0) {
+		 if (sfreq[ch] > 0) {
 			 System.out.println(String.format("sfreq[%d] = %d", ch, sfreq[ch]));
-		 }*/
+		 }
 	}
 	
 	protected void frameSequence(int s) {
@@ -376,8 +385,15 @@ public class NesAPU implements ISoundChip {
 			// DEBUG_OUT("$%04X = %02X\n",adr,val);
 
 			adr &= 0xf;
-			// System.out.println(adr);
+			// ch 只有两个值, 0 或者 1
 			int ch = adr >> 2;
+		
+			// debug
+//			if (adr < 4){
+//				System.out.println(String.format("%d:%8s", adr, Integer.toString(val, 2)));
+//			}
+			// debug end
+		
 			switch (adr) {
 			case 0x0:
 			case 0x4:

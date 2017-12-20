@@ -1,6 +1,11 @@
 package com.zdream.nsfplayer.xgm.player;
 
-public abstract class PlayerMSP extends Player {
+/**
+ * <p>能够播放含有多首歌的音乐文件的播放器
+ * @author Zdream
+ * @date 2017-12-06
+ */
+public abstract class MultiSongPlayer extends Player {
 
 	/**
      * 演奏下一首歌

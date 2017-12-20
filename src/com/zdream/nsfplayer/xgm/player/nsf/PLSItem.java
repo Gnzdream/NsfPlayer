@@ -9,7 +9,6 @@ public class PLSItem {
 	public int type;
 	public String filename;
 	public String title;
-	public String memo;
 	public int song;
 
 	public int time_in_ms;
