@@ -2,6 +2,7 @@ package com.zdream.nsfplayer.xgm.player.nsf;
 
 import java.util.Random;
 
+import com.zdream.nsfplayer.vcm.Value;
 import com.zdream.nsfplayer.xgm.device.Bus;
 import com.zdream.nsfplayer.xgm.device.ISoundChip;
 import com.zdream.nsfplayer.xgm.device.ITrackInfo;
@@ -30,8 +31,8 @@ import com.zdream.nsfplayer.xgm.device.sound.NesMMC5;
 import com.zdream.nsfplayer.xgm.device.sound.NesN106;
 import com.zdream.nsfplayer.xgm.device.sound.NesVRC6;
 import com.zdream.nsfplayer.xgm.device.sound.NesVRC7;
-import com.zdream.nsfplayer.xgm.player.PlayerConfig;
 import com.zdream.nsfplayer.xgm.player.MultiSongPlayer;
+import com.zdream.nsfplayer.xgm.player.PlayerConfig;
 import com.zdream.nsfplayer.xgm.player.SoundData;
 
 public class NsfPlayer extends MultiSongPlayer {
@@ -502,6 +503,11 @@ public class NsfPlayer extends MultiSongPlayer {
 	private int intConfig(String str) {
 		return this.config.getIntValue(str);
 	}
+	
+	private int intConfig(String str, int defaultValue) {
+		Value v = config.get(str);
+		return (v == null) ? defaultValue : v.toInt();
+	}
 
 	/**
 	 * 检查到一个歌曲已经放完
@@ -524,8 +530,18 @@ public class NsfPlayer extends MultiSongPlayer {
 	protected void detectLoop() {
 		if (mixer.isFading() || playtime_detected || !nsf.playtime_unknown || nsf.useNSFePlaytime())
 			return;
-
-		if (config.get("AUTO_DETECT") != null) {
+		
+		Value v = config.get("AUTO_DETECT");
+		
+		if (v != null) {
+			/*
+			 * 检查, 如果出现 AUTO_DETECT 被关闭 (为 0) 时,
+			 * 如果碰到能够循环的曲目将会一直循环, 且不会停下并切换曲目
+			 */
+			if (v.toInt() == 0) {
+				return;
+			}
+			
 			if (ld.isLooped(time_in_ms, intConfig("DETECT_TIME"), intConfig("DETECT_INT"))) {
 				playtime_detected = true;
 				nsf.time_in_ms = ld.getLoopEnd();
@@ -534,7 +550,51 @@ public class NsfPlayer extends MultiSongPlayer {
 			}
 		}
 	}
-
+	
+	/**
+	 * <p>询问该播放器是否检查循环.
+	 * @return
+	 * @since v0.0.2
+	 */
+	public boolean isDetectLoop() {
+		Value v = config.get("AUTO_DETECT");
+		if (v == null || v.toInt() == 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * <p>设置播放器是否自动侦测循环.
+	 * <p>设置为 false 时, 播放器遇到会循环的曲目时会一直循环播放下去
+	 * @since v0.0.2
+	 */
+	public void setDetectLoop(boolean b) {
+		config.setValue("AUTO_DETECT", new Value((b) ? 1 : 0));
+	}
+	
+	/**
+	 * <p>询问播放器在播放不循环的歌曲时, 如果播放完毕后, 是否自动跳到下一曲进行播放.
+	 * @return
+	 *   true 会自动跳转到下一曲 (默认)<br>
+	 *   false 会直接停住, 什么都不做
+	 * @since v0.0.2
+	 */
+	public boolean isAutoStop() {
+		return (intConfig("AUTO_STOP", 1) == 0);
+	}
+	
+	/**
+	 * <p>设置播放器在播放不循环的歌曲时, 如果播放完毕后, 是否自动跳到下一曲进行播放.
+	 * @param b
+	 *   true 会自动跳转到下一曲 (默认)<br>
+	 *   false 会直接停住, 什么都不做
+	 * @since v0.0.2
+	 */
+	public void setAutoStop(boolean b) {
+		config.setValue("AUTO_STOP", new Value((b) ? 1 : 0));
+	}
+	
 	protected void checkTerminal() {
 		if (mixer.isFading())
 			return;
