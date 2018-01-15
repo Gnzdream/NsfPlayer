@@ -222,7 +222,7 @@ public class NsfPlayer extends MultiSongPlayer {
 			nsf.nsfe_plst = null;
 		}
 
-		nsf.debugOut();
+		System.out.println(nsf.debugOut());
 		reload();
 		return true;
 	}

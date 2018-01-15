@@ -2,7 +2,6 @@ package com.zdream.nsfplayer.xgm.player.nsf;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -659,58 +658,61 @@ public class NsfAudio extends SoundDataMSP {
 		return true;
 	}
 	
-	public void debugOut() {
+	public String debugOut() {
+		StringBuilder b = new StringBuilder(256);
+		
 		int i;
 		// char buf[256] = "";
-		PrintStream out = System.out;
 
-		out.print(String.format("Magic:    %4s\n", new String(magic)));
-		out.print(String.format("Version:  %d\n", version));
+		b.append(String.format("Magic:    %4s\n", new String(magic)));
+		b.append(String.format("Version:  %d\n", version));
 
-		out.print(String.format("Songs:    %d\n", songs));
-		out.print(String.format("Load:     %04x\n", load_address));
-		out.print(String.format("Init:     %04x\n", init_address));
-		out.print(String.format("Play:     %04x\n", play_address));
-		out.print(String.format("Title:    %s\n", title));
-		out.print(String.format("Artist:   %s\n", artist));
-		out.print(String.format("Copyright:%s\n", copyright));
-		out.print(String.format("Speed(N): %d\n", speed_ntsc));
-		out.print(String.format("Speed(P): %d\n", speed_pal));
+		b.append(String.format("Songs:    %d\n", songs));
+		b.append(String.format("Load:     %04x\n", load_address));
+		b.append(String.format("Init:     %04x\n", init_address));
+		b.append(String.format("Play:     %04x\n", play_address));
+		b.append(String.format("Title:    %s\n", title));
+		b.append(String.format("Artist:   %s\n", artist));
+		b.append(String.format("Copyright:%s\n", copyright));
+		b.append(String.format("Speed(N): %d\n", speed_ntsc));
+		b.append(String.format("Speed(P): %d\n", speed_pal));
 
-		out.print("Bank :");
+		b.append("Bank :");
 		for (i = 0; i < 8; i++) {
-			out.print(String.format("[%02x]", bankswitch[i]));
+			b.append(String.format("[%02x]", bankswitch[i]));
 		}
-		out.print("\n");
+		b.append("\n");
 
 		if ((pal_ntsc & 1) != 0)
-			out.print("PAL mode.\n");
+			b.append("PAL mode.\n");
 		else
-			out.print("NTSC mode.\n");
+			b.append("NTSC mode.\n");
 		if ((pal_ntsc & 2) != 0)
-			out.print("Dual PAL and NTSC mode.\n");
+			b.append("Dual PAL and NTSC mode.\n");
 
 		if ((soundchip & 1) != 0)
-			out.print("VRC6 ");
+			b.append("VRC6 ");
 		if ((soundchip & 2) != 0)
-			out.print("VRC7 ");
+			b.append("VRC7 ");
 		if ((soundchip & 4) != 0)
-			out.print("FDS ");
+			b.append("FDS ");
 		if ((soundchip & 8) != 0)
-			out.print("MMC5 ");
+			b.append("MMC5 ");
 		if ((soundchip & 16) != 0)
-			out.print("Namco 106 ");
+			b.append("Namco 106 ");
 		if ((soundchip & 32) != 0)
-			out.print("FME-07 ");
+			b.append("FME-07 ");
 
-		out.print("\n");
+		b.append("\n");
 
-		out.print("Extra:     ");
+		b.append("Extra:     ");
 		for (i = 0; i < 4; i++) {
-			out.print(String.format("[%02x]", extra[i]));
+			b.append(String.format("[%02x]", extra[i]));
 		}
-		out.print("\n");
-		out.print(String.format("DataSize: %d\n", body.length));
+		b.append("\n");
+		b.append(String.format("DataSize: %d\n", body.length));
+		
+		return b.toString();
 	}
 	
 	public String getTitle(String format, int song) {
