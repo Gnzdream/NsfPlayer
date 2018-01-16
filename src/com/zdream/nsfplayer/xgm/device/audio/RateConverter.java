@@ -11,8 +11,17 @@ public class RateConverter implements IRenderable {
 	protected IRenderable target;
 	protected double clock = 0, rate = 0;
 	protected int mult = 0; // 抽样倍率（奇数）
-	protected int[][] tap = new int[128][2];
-	protected double[] hr = new double[128]; // H(z)
+	
+	/**
+	 * <p>
+	 * <p>原来是 [128][2]
+	 */
+	protected int[][] tap;
+	
+	/**
+	 * 将多个分采样合并 1 个采样, 需要计算每个分采样的权重.
+	 */
+	protected double[] hr; // H(z), 给每一个
 	protected int clocks = 0; // clocks pending Tick execution
 	protected SimpleFIR fir;
 	
@@ -28,22 +37,24 @@ public class RateConverter implements IRenderable {
 			if (mult < 2)
 				return;
 
-			int m = (mult * 2 + 1) / 2;
-
 			// generate resampling window
-			hr[0] = FilterTools.window(0, m);
+			hr = new double[mult + 1];
+			
+			hr[0] = FilterTools.window(0, mult);
 			double gain = hr[0];
-			for (int i = 1; i <= m; i++) {
-				hr[i] = FilterTools.window(i, m);
+			for (int i = 1; i <= mult; i++) {
+				hr[i] = FilterTools.window(i, mult);
 				gain += hr[i] * 2;
 			}
 
 			// normalize window
-			for (int i = 0; i <= m; i++) {
+			for (int i = 0; i <= mult; i++) {
 				hr[i] /= gain;
 			}
 
-			for (int i = 0; i <= mult * 2; i++)
+			int length = mult * 2 + 1;
+			tap = new int[length][2];
+			for (int i = 0; i < length; i++)
 				tap[i][0] = tap[i][1] = 0;
 		}
 	}

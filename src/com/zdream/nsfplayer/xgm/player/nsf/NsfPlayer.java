@@ -361,32 +361,32 @@ public class NsfPlayer extends MultiSongPlayer {
 		boolean pal = (region == REGION_PAL);
 		dmc.setPal(pal);
 
+		// 使用 rate 转换器
+		int[][] MULT = {
+				{ 1, 5, 8, 20 }, // APU1
+				{ 1, 5, 8, 20 }, // DMC
+				{ 1, 5, 8, 8 }, // FME7
+				{ 1, 5, 8, 20 }, // MMC5
+				{ 1, 5, 8, 20 }, // N106
+				{ 1, 5, 8, 20 }, // VRC6
+				{ 1, 3, 3, 3 }, // VRC7
+				{ 1, 5, 8, 20 } // FDS
+		};
+
 		for (int i = 0; i < NsfPlayerConfig.NES_DEVICE_MAX; i++) {
 			int quality = config.getDeviceConfig(i, "QUALITY").toInt();
 
-			// 使用 rate 转换器
-			int[][] MULT = { { 1, 5, 8, 20 }, // APU1
-					{ 1, 5, 8, 20 }, // DMC
-					{ 1, 5, 8, 8 }, // FME7
-					{ 1, 5, 8, 20 }, // MMC5
-					{ 1, 5, 8, 20 }, // N106
-					{ 1, 5, 8, 20 }, // VRC6
-					{ 1, 3, 3, 3 }, // VRC7
-					{ 1, 5, 8, 20 } // FDS
-			};
-
 			double clock;
 			switch (region) {
-			default:
-			case REGION_NTSC:
-				clock = intConfig("NTSC_BASECYCLES");
-				break;
 			case REGION_PAL:
 				clock = intConfig("PAL_BASECYCLES");
 				break;
 			case REGION_DENDY:
 				clock = intConfig("DENDY_BASECYCLES");
 				break;
+			case REGION_NTSC:
+			default:
+				clock = intConfig("NTSC_BASECYCLES");
 			}
 			sc[i].setClock(clock);
 

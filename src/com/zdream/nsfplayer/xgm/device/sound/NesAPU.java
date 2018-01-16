@@ -1,10 +1,10 @@
 package com.zdream.nsfplayer.xgm.device.sound;
 
+import com.zdream.nsfplayer.sound.PulseSound;
 import com.zdream.nsfplayer.xgm.device.ISoundChip;
 import com.zdream.nsfplayer.xgm.device.ITrackInfo;
 import com.zdream.nsfplayer.xgm.device.IntHolder;
 import com.zdream.nsfplayer.xgm.device.TrackInfoBasic;
-import com.zdream.nsfplayer.xgm.sound.PulseSound;
 
 /**
  * <p>模拟生成矩形波的声音芯片. 共有两个矩形波通道.</p>
@@ -245,6 +245,10 @@ public class NesAPU implements ISoundChip {
 		} else
 			return false;
 	}
+	
+	//int ticks = 0;
+	int count = 0;
+	long time = -1;
 
 	@Override
 	public void tick(int clocks) {
@@ -381,6 +385,20 @@ public class NesAPU implements ISoundChip {
 
 	@Override
 	public boolean write(int adr, int val, int id) {
+		if (adr < 0x4000 || adr >= 0x4008 && adr != 0x4015) {
+			return false;
+		}
+		
+		/*if (adr != 0x4015) {
+			count++;
+			//ticks += clocks;
+			if (time == -1) {
+				time = System.currentTimeMillis();
+			}
+			if ((count & 0xFF) == 0)
+				System.out.println(count + ":" + (System.currentTimeMillis() - time) + "ms");
+		}*/
+
 		if (0x4000 <= adr && adr < 0x4008) {
 			// DEBUG_OUT("$%04X = %02X\n",adr,val);
 

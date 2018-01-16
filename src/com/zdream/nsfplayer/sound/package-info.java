@@ -4,4 +4,4 @@
  * @author Zdream
  * @date 2017-12-06
  */
-package com.zdream.nsfplayer.xgm.sound;
+package com.zdream.nsfplayer.sound;

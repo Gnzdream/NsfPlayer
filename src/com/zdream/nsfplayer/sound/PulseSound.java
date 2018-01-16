@@ -1,4 +1,4 @@
-package com.zdream.nsfplayer.xgm.sound;
+package com.zdream.nsfplayer.sound;
 
 import com.zdream.nsfplayer.xgm.device.IRenderable;
 
