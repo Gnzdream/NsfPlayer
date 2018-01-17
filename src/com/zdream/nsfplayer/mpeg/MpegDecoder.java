@@ -58,8 +58,7 @@ public class MpegDecoder{
 		}
 		
 		// 解码的主要方法
-		
-		return null;
+		return decode0();
 	}
 	
 	boolean detectTerminal() {
@@ -89,7 +88,7 @@ public class MpegDecoder{
 		}
 		
 		while (true) {
-			if (audio.datas[pos] == 0xFF) {
+			if (audio.datas[pos] == -1) { // 0xFF -> -1
 				if (isLegalHead()) { // 该方法自己会解析 header
 					break;
 				}
@@ -107,14 +106,7 @@ public class MpegDecoder{
 		// TODO 现在能拿到帧长度. 如果用流来缓存的话, 检查该帧是否已经完全读出来了
 		// 帧长度: header.getFrameSize();
 		
-		if (header.isProtected())
-			pos += 2; // 忽略 CRC-word 字段
-		
 		// 如果已经发现到了最后的话, 那就说明没有数据字段了, 这个肯定不能算
-		if (detectTerminal()) {
-			return false;
-		}
-		
 		return true;
 	}
 	
@@ -152,8 +144,22 @@ public class MpegDecoder{
 				}
 			}
 			
+			byte l = header == null ? 0 : header.getLayer();
+			
 			// 帧头解码
 			header.decode(h);
+			
+			// 看帧头信息, 是否需要更换 Layer
+			if (l != header.getLayer()) {
+				if (header.isLayer3()) {
+					layer = new Layer3();
+				} else if (header.isLayer2()) {
+					
+				} else if (header.isLayer1()) {
+					
+				}
+			}
+			
 			return true;
 		}
 		return false;
@@ -162,8 +168,27 @@ public class MpegDecoder{
 	/**
 	 * 用相应的解码器进行解码
 	 */
-	void decode0() {
+	byte[] decode0() {
+		// 现在 pos 指向帧头
 		
+		int ptr = pos + 4; // 跳过帧头
+		if (header.isProtected())
+			ptr += 2; // 忽略 CRC-word 字段
+		
+		int length = header.getMainDataSize();
+		
+		byte[] ret = null;
+		
+		if (ptr + length <= audio.datas.length && layer != null) {
+			layer.ready(header);
+			ret = layer.decode(audio.datas, ptr, length);
+		}
+		
+		// 现在 pos 指向该帧帧尾, 可能是下一帧的帧头
+		pos += header.getFrameSize();
+		detectTerminal();
+		
+		return ret;
 	}
 
 }

@@ -109,7 +109,7 @@ public class MpegFrameHead {
 	};
 	
 	static {
-		BITRATE[1][3] = BITRATE[1][2];
+		BITRATE[1][2] = BITRATE[1][1];
 	}
 
 	/**
@@ -189,7 +189,6 @@ public class MpegFrameHead {
 		layer = (byte) ((i >> 17) & 3);
 		protection_bit = ((i >> 16) & 0x1) == 0;
 		int bitrate_index = (i >> 12) & 0xF;
-		bitrate = BITRATE[lsf][layer - 1][bitrate_index];
 		
 		samplingFrequency = (i >> 10) & 3;
 		padding = (i >> 9) & 0x1;
@@ -203,18 +202,21 @@ public class MpegFrameHead {
 		samplingRate = SAMPLING_RATE[verID][samplingFrequency];
 
 		switch (layer) {
-		case 1:	
+		case LAYER1:
+			bitrate = BITRATE[lsf][0][bitrate_index];
 			framesize = bitrate * 12000;
 			framesize /= samplingRate;
 			framesize += padding;
 			framesize <<= 2; // 1-slot = 4-byte
 			break;
-		case 2:
+		case LAYER2:
+			bitrate = BITRATE[lsf][1][bitrate_index];
 			framesize  = bitrate * 144000;
 			framesize /= samplingRate;
 			framesize += padding;
 			break;
-		case 3:
+		case LAYER3:
+			bitrate = BITRATE[lsf][2][bitrate_index];
 			framesize = bitrate * 144000;
 			framesize /= samplingRate << lsf;
 			framesize += padding;
@@ -302,20 +304,44 @@ public class MpegFrameHead {
 	public byte getVersion() {
 		return verID;
 	}
+	
+	public boolean isMPEG1() {
+		return verID == MPEG1;
+	}
+	
+	public boolean isMPEG2() {
+		return verID == MPEG2;
+	}
+	
+	public boolean isMPEG25() {
+		return verID == MPEG25;
+	}
 
 	/**
-	 * 获取MPEG编码层。
+	 * 获取 MPEG 编码层。
 	 * 
-	 * @return MPEG编码层：返回值1表示LayerⅠ，2表示LayerⅡ，3表示LayerⅢ。
+	 * @return 见 {@link #LAYER1}, {@link #LAYER2}, {@link #LAYER3}
 	 */
-	public int getLayer() {
+	public byte getLayer() {
 		return layer;
+	}
+	
+	public boolean isLayer1() {
+		return layer == LAYER1;
+	}
+	
+	public boolean isLayer2() {
+		return layer == LAYER2;
+	}
+	
+	public boolean isLayer3() {
+		return layer == LAYER3;
 	}
 
 	/**
 	 * 获取主数据长度。
 	 * 
-	 * @return 当前帧的主数据长度，单位“字节”。
+	 * @return 当前帧的主数据长度，单位 字节。
 	 */
 	public int getMainDataSize() {
 		return maindatasize;
@@ -324,7 +350,7 @@ public class MpegFrameHead {
 	/**
 	 * 获取边信息长度。
 	 * 
-	 * @return 当前帧边信息长度，单位“字节”。
+	 * @return 当前帧边信息长度，单位 字节。
 	 */
 	public int getSideInfoSize() {
 		return sideinfosize;
