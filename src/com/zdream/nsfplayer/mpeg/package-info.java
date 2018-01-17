@@ -5,4 +5,4 @@
  * @author Zdream
  *
  */
-package com.zdream.mpeg;
+package com.zdream.nsfplayer.mpeg;
