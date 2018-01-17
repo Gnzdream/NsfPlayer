@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
-public class Mixer implements IRenderable {
+public class Mixer implements IRenderable0 {
 	
 	/**
 	 * 在 1 首歌播放即将结束后, 会进入渐出阶段. 这个参数将记录从开始渐出算起, 歌曲已经播放的采样数.<br>
@@ -21,7 +21,7 @@ public class Mixer implements IRenderable {
 	 */
 	int fadeEnd;
 	
-	List<IRenderable> dlist = new ArrayList<IRenderable>();
+	List<IRenderable0> dlist = new ArrayList<IRenderable0>();
 	
 	public Mixer() {
 		reset();
@@ -36,7 +36,7 @@ public class Mixer implements IRenderable {
 		dlist.clear();
 	}
 	
-	public final void attach(IRenderable dev) {
+	public final void attach(IRenderable0 dev) {
 		dlist.add(dev);
 	}
 	
@@ -73,8 +73,8 @@ public class Mixer implements IRenderable {
 
 	@Override
 	public void tick(int clocks) {
-		for (Iterator<IRenderable> it = dlist.iterator(); it.hasNext();) {
-			IRenderable r = it.next();
+		for (Iterator<IRenderable0> it = dlist.iterator(); it.hasNext();) {
+			IRenderable0 r = it.next();
 			r.tick(clocks);
 		}
 	}
@@ -84,8 +84,8 @@ public class Mixer implements IRenderable {
 		int[] tmp = new int[2];
 		bs[1] = bs[0] = 0;
 
-		for (Iterator<IRenderable> it = dlist.iterator(); it.hasNext();) {
-			IRenderable r = it.next();
+		for (Iterator<IRenderable0> it = dlist.iterator(); it.hasNext();) {
+			IRenderable0 r = it.next();
 			r.render(tmp);
 			bs[0] += tmp[0];
 			bs[1] += tmp[1];

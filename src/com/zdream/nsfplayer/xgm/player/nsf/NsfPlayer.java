@@ -1,7 +1,5 @@
 package com.zdream.nsfplayer.xgm.player.nsf;
 
-import java.util.Random;
-
 import com.zdream.nsfplayer.vcm.Value;
 import com.zdream.nsfplayer.xgm.device.Bus;
 import com.zdream.nsfplayer.xgm.device.ISoundChip;
@@ -134,8 +132,6 @@ public class NsfPlayer extends MultiSongPlayer {
 	
 	public NsfAudio nsf;
 	
-	Random rand = new Random();
-
 	NsfPlayerStatus status;
 	
 	{

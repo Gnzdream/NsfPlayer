@@ -4,7 +4,7 @@ package com.zdream.nsfplayer.xgm.device;
  * 虚拟声卡
  * @author Zdream
  */
-public interface ISoundChip extends IDevice, IRenderable {
+public interface ISoundChip extends IDevice, IRenderable0 {
 	
 	/**
 	 * 设置芯片的时钟周期

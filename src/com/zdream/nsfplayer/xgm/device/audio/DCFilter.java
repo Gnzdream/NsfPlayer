@@ -1,8 +1,8 @@
 package com.zdream.nsfplayer.xgm.device.audio;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
-public class DCFilter implements IRenderable {
+public class DCFilter implements IRenderable0 {
 	
 	private double r = 0, c = 0;
 	private double a;

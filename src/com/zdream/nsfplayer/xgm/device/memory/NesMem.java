@@ -5,16 +5,21 @@ import com.zdream.nsfplayer.xgm.device.IntHolder;
 import com.zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 
 /**
- * 模拟 NES 的虚拟内存
+ * 模拟 NES 的虚拟内存.
+ * <p>开始的时候设置 0x10000 个 bytes 的内存.
  * @author Zdream
  */
 public class NesMem implements IDevice {
 	
 	protected byte[] image;
+	
+	/**
+	 * 只与 FDS 芯片相关
+	 */
 	protected boolean fdsEnable = false;
 	
 	public NesMem() {
-		// do nothing
+		this.image = new byte[0x10000];
 	}
 
 	@Override
@@ -22,6 +27,7 @@ public class NesMem implements IDevice {
 		for (int i = 0; i < 0x800; i++) {
 			image[i] = (byte) 0;
 		}
+		fdsEnable = false;
 	}
 	
 	/**
@@ -32,16 +38,11 @@ public class NesMem implements IDevice {
 	 *   就是 {@link NsfAudio#load_address}
 	 */
 	public final boolean setImage(byte[] data, int offset, int size) {
-		this.image = new byte[0x10000];
 		if (offset + size < 0x10000) {
-			for (int i = 0; i < size; i++) {
-				this.image[i + offset] = data[i];
-			}
+			System.arraycopy(data, 0, image, offset, size);
 		} else {
 			int length = 0x10000 - offset;
-			for (int i = 0; i < length; i++) {
-				this.image[i + offset] = data[i];
-			}
+			System.arraycopy(data, 0, image, offset, length);
 		}
 		return true;
 	}
@@ -87,11 +88,6 @@ public class NesMem implements IDevice {
 	
 	public final void setFDSMode(boolean t) {
 		fdsEnable = t;
-	}
-
-	@Override
-	public void setOption(int id, int value) {
-		// do nothing
 	}
 
 }

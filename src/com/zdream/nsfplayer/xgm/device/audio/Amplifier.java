@@ -1,13 +1,13 @@
 package com.zdream.nsfplayer.xgm.device.audio;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
 /**
  * 放大器
  * @author Zdream
  */
-public class Amplifier implements IRenderable {
-	protected IRenderable target;
+public class Amplifier implements IRenderable0 {
+	protected IRenderable0 target;
 	protected int mute = 0,
 			volume = 64,
 			threshold = 32767,
@@ -30,7 +30,7 @@ public class Amplifier implements IRenderable {
 			return d;
 	}
 	
-	public void attach(IRenderable p) {
+	public void attach(IRenderable0 p) {
 		this.target = p;
 	}
 	

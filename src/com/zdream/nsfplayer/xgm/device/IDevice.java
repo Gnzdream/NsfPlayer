@@ -6,7 +6,7 @@ package com.zdream.nsfplayer.xgm.device;
  */
 public interface IDevice {
 	
-	public final static double DEFAULT_CLOCK = 1789772.0;
+	public final static int DEFAULT_CLOCK = 1789772;
 	public final static int DEFAULT_RATE = 48000;
 	
 	/**
@@ -50,6 +50,8 @@ public interface IDevice {
 	 * @param id
 	 * @param value
 	 */
-	public void setOption(int id, int value);
+	default void setOption(int id, int value) {
+		// do nothing
+	}
 	
 }

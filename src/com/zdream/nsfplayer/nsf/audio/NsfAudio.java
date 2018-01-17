@@ -142,5 +142,13 @@ public class NsfAudio {
 	NsfAudio() {
 		
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append("NSF 乐曲 ").append(title).append(" - ").append(artist).append(" 总曲目: ").append(total_songs);
+		
+		return b.toString();
+	}
 
 }

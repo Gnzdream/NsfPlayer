@@ -2,9 +2,9 @@ package com.zdream.nsfplayer.xgm.device.audio;
 
 import java.util.Arrays;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
-public class EchoUnit implements IRenderable {
+public class EchoUnit implements IRenderable0 {
 	
 	protected int rate;
 	protected int[] echoBuf = new int[1 << 17];

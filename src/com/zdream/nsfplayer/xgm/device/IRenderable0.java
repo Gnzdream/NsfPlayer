@@ -4,7 +4,7 @@ package com.zdream.nsfplayer.xgm.device;
  * 可渲染的数据接口
  * @author Zdream
  */
-public interface IRenderable {
+public interface IRenderable0 {
 	
 	/**
 	 * 声音的渲染

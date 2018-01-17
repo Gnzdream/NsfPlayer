@@ -1,10 +1,10 @@
 package com.zdream.nsfplayer.xgm.device.audio;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
-public class Filter implements IRenderable {
+public class Filter implements IRenderable0 {
 	
-	protected IRenderable target;
+	protected IRenderable0 target;
 
 	protected int type;
 	protected int[] out = new int[2];
@@ -22,7 +22,7 @@ public class Filter implements IRenderable {
 		out[0] = out[1] = 0;
 	}
 	
-	public final void attach(IRenderable t) {
+	public final void attach(IRenderable0 t) {
 		target = t;
 	}
 

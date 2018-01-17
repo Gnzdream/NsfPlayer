@@ -1,14 +1,16 @@
 package com.zdream.nsfplayer.xgm.device.audio;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
 /**
- * 抽样器
+ * <p>抽样器 / 速率转换器
+ * <p>它在进行采样时, 将接上的音频设备进行多个采样,
+ * 得到的采样结果最后按照加权平均合并成一个采样交给上级.
  * @author Zdream
  */
-public class RateConverter implements IRenderable {
+public class RateConverter implements IRenderable0 {
 	
-	protected IRenderable target;
+	protected IRenderable0 target;
 	protected double clock = 0, rate = 0;
 	protected int mult = 0; // 抽样倍率（奇数）
 	
@@ -25,7 +27,7 @@ public class RateConverter implements IRenderable {
 	protected int clocks = 0; // clocks pending Tick execution
 	protected SimpleFIR fir;
 	
-	public final void attach(IRenderable t) {
+	public final void attach(IRenderable0 t) {
 		target = t;
 	}
 	

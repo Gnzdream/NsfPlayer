@@ -70,7 +70,7 @@ public class NsfAudioFactory {
 			if (image[end] == 0)
 				break;
 		}
-		audio.title = new String(image, ptr, end);
+		audio.title = new String(image, ptr, end - ptr);
 		
 		// 艺术家部分
 		ptr = nextPtr;
@@ -79,7 +79,7 @@ public class NsfAudioFactory {
 			if (image[end] == 0)
 				break;
 		}
-		audio.artist = new String(image, ptr, end);
+		audio.artist = new String(image, ptr, end - ptr);
 		
 		// 版权声明部分
 		ptr = nextPtr;
@@ -88,7 +88,7 @@ public class NsfAudioFactory {
 			if (image[end] == 0)
 				break;
 		}
-		audio.copyright = new String(image, ptr, end);
+		audio.copyright = new String(image, ptr, end - ptr);
 		
 		ptr = nextPtr;
 		audio.speed_ntsc = (image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8);
@@ -118,10 +118,6 @@ public class NsfAudioFactory {
 		
 		return audio;
 
-	}
-	
-	public static void main(String[] args) throws Exception {
-		new NsfAudioFactory().createFromFile("D:\\Program\\Rockman\\Nsf Songs\\Megaman 10.nsf");
 	}
 
 }

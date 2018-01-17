@@ -1,8 +1,8 @@
 package com.zdream.nsfplayer.xgm.device.audio;
 
-import com.zdream.nsfplayer.xgm.device.IRenderable;
+import com.zdream.nsfplayer.xgm.device.IRenderable0;
 
-public class Compressor implements IRenderable {
+public class Compressor implements IRenderable0 {
 	
 	private int strength, limit, threshold;
 	
