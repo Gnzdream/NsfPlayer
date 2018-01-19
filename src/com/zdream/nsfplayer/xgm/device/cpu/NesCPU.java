@@ -1,6 +1,6 @@
 package com.zdream.nsfplayer.xgm.device.cpu;
 
-import com.zdream.nsfplayer.xgm.device.IDevice;
+import com.zdream.nsfplayer.nsf.device.IDevice;
 import com.zdream.nsfplayer.xgm.device.IntHolder;
 import com.zdream.nsfplayer.xgm.device.cpu.km6502.K6502Context;
 import com.zdream.nsfplayer.xgm.device.cpu.km6502.K6502Context.ReadHandler;

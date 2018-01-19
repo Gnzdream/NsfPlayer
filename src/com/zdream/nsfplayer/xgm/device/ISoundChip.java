@@ -1,5 +1,7 @@
 package com.zdream.nsfplayer.xgm.device;
 
+import com.zdream.nsfplayer.nsf.device.IDevice;
+
 /**
  * 虚拟声卡
  * @author Zdream

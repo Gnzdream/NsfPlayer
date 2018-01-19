@@ -1,14 +1,14 @@
-package com.zdream.nsfplayer.xgm.device;
+package com.zdream.nsfplayer.nsf.device;
 
 import java.util.Iterator;
 
+import com.zdream.nsfplayer.xgm.device.IntHolder;
+
 /**
  * 图层
- * 
- * <p>与 Bus 类似, 但不把读写的工作也不让全设备传播.</p>
- * 
+ * <p>与 Bus 类似, 但不会把读写的工作在全部设备间传播.<br>
+ * 当有一个设备确认读写之后, 传播就会停止</p>
  * @author Zdream
- *
  */
 public class Layer extends Bus {
 	

@@ -1,14 +1,16 @@
-package com.zdream.nsfplayer.xgm.device;
+package com.zdream.nsfplayer.nsf.device;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.zdream.nsfplayer.xgm.device.IntHolder;
+
 /**
  * 能够安装多个设备的总线, 提供复位, 写入, 读取等动作
  * @author Zdream
  */
-public class Bus implements IDevice {
+public class Bus implements IDevice, Iterable<IDevice> {
 	
 	protected final List<IDevice> vd = new ArrayList<IDevice>();
 
@@ -81,8 +83,8 @@ public class Bus implements IDevice {
 	}
 
 	@Override
-	public void setOption(int id, int value) {
-		// do nothing
+	public Iterator<IDevice> iterator() {
+		return vd.iterator();
 	}
 
 }

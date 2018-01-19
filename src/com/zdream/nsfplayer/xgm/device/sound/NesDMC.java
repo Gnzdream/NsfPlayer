@@ -2,7 +2,7 @@ package com.zdream.nsfplayer.xgm.device.sound;
 
 import java.util.Random;
 
-import com.zdream.nsfplayer.xgm.device.IDevice;
+import com.zdream.nsfplayer.nsf.device.IDevice;
 import com.zdream.nsfplayer.xgm.device.ISoundChip;
 import com.zdream.nsfplayer.xgm.device.ITrackInfo;
 import com.zdream.nsfplayer.xgm.device.IntHolder;

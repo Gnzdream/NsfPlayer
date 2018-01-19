@@ -4,13 +4,15 @@ import java.util.ArrayList;
 
 import com.zdream.nsfplayer.nsf.audio.NsfAudio;
 import com.zdream.nsfplayer.nsf.audio.NsfAudioException;
-import com.zdream.nsfplayer.xgm.device.Bus;
-import com.zdream.nsfplayer.xgm.device.IDevice;
-import com.zdream.nsfplayer.xgm.device.Layer;
+import com.zdream.nsfplayer.nsf.device.Bus;
+import com.zdream.nsfplayer.nsf.device.IDevice;
+import com.zdream.nsfplayer.nsf.device.Layer;
+import com.zdream.nsfplayer.nsf.device.Pulses;
 import com.zdream.nsfplayer.xgm.device.audio.Mixer;
 import com.zdream.nsfplayer.xgm.device.cpu.NesCPU;
 import com.zdream.nsfplayer.xgm.device.memory.NesBank;
 import com.zdream.nsfplayer.xgm.device.memory.NesMem;
+import com.zdream.nsfplayer.xgm.device.sound.NesDMC;
 
 /**
  * <p>任务是将 NSF 格式的数据 {@link NsfAudio} 输出为 byte[]
@@ -119,13 +121,19 @@ public class NsfConverter {
 	 */
 	ArrayList<IDevice> soundDevices;
 	
+	/*
+	 * 基础芯片, 就是 2A03 (NesAPU) 和 2A07 (NesDMC)
+	 */
+	/**
+	 * 2A03 (NesAPU)
+	 */
+	Pulses pulse;
+	/**
+	 * 2A07 (NesDMC)
+	 */
+	NesDMC dmc;
 	
 	
-/*FDS_TRK0 = 5, MMC5_TRK0 = 6,
-		MMC5_TRK1 = 7, MMC5_TRK2 = 8, FME7_TRK0 = 9, FME7_TRK1 = 10, FME7_TRK2 = 11, FME7_TRK3 = 12, FME7_TRK4 = 13,
-		VRC6_TRK0 = 14, VRC6_TRK1 = 15, VRC6_TRK2 = 16, VRC7_TRK0 = 17, VRC7_TRK1 = 18, VRC7_TRK2 = 19,
-		VRC7_TRK3 = 20, VRC7_TRK4 = 21, VRC7_TRK5 = 22, N106_TRK0 = 23, N106_TRK1 = 24, N106_TRK2 = 25,
-		N106_TRK3 = 26, N106_TRK4 = 27, N106_TRK5 = 28, N106_TRK6 = 29, N106_TRK7 = 30, NES_TRACK_MAX = 31;*/
 
 	/**
 	 * 初始化 NSF 部分
@@ -143,6 +151,9 @@ public class NsfConverter {
 		stack = new Layer();
 		layer = new Layer();
 		mixer = new Mixer();
+		
+		pulse = new Pulses();
+		dmc = new NesDMC();
 		
 		soundDevices = new ArrayList<>();
 	}
@@ -172,7 +183,7 @@ public class NsfConverter {
 				bank.setBankDefault(i + 8, audio.bankswitch[i]);
 		}
 		
-		// 2. 重置所有关键设备, 这里将放弃循环检测器
+		// 2. 重置所有关键设备, TODO 这里暂时放弃循环检测器
 		stack.detachAll();
 		layer.detachAll();
 		mixer.detachAll();
@@ -182,8 +193,9 @@ public class NsfConverter {
 			layer.attach(bank);
 		layer.attach(mem);
 		
-		// 3. 按照
+		// 3. 按照 audio 中所述的使用芯片种类, 重新添加芯片
 		
+		// 设置 pulses
 	}
 
 }

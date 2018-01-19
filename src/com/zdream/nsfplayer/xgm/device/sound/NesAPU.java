@@ -102,7 +102,7 @@ public class NesAPU implements ISoundChip {
 	/**
 	 * 矩形波发声器
 	 */
-	PulseSound sound0, sound1;
+	PulseSound pulse1, pulse2;
 	
 	static final boolean[][] SQRT_BL = {
 			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },
@@ -144,9 +144,9 @@ public class NesAPU implements ISoundChip {
 		 int shifted = freq[ch] >> sweep_amount[ch];
 		 if (ch == 0 && sweep_mode[ch]) shifted += 1;
 		 sfreq[ch] = freq[ch] + (sweep_mode[ch] ? -shifted : shifted);
-		 if (sfreq[ch] > 0) {
+		 /*if (sfreq[ch] > 0) {
 			 System.out.println(String.format("sfreq[%d] = %d", ch, sfreq[ch]));
-		 }
+		 }*/
 	}
 	
 	protected void frameSequence(int s) {

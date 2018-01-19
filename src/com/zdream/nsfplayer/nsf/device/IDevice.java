@@ -1,18 +1,16 @@
-package com.zdream.nsfplayer.xgm.device;
+package com.zdream.nsfplayer.nsf.device;
+
+import com.zdream.nsfplayer.sound.IResetable;
+import com.zdream.nsfplayer.xgm.device.IntHolder;
 
 /**
  * 用仪器、设备使用的装置的抽象
  * @author Zdream
  */
-public interface IDevice {
+public interface IDevice extends IResetable {
 	
 	public final static int DEFAULT_CLOCK = 1789772;
 	public final static int DEFAULT_RATE = 48000;
-	
-	/**
-     * 设备复位
-	 */
-	public void reset();
 	
 	/**
 	 * 数据写入

@@ -1,6 +1,6 @@
 package com.zdream.nsfplayer.xgm.device.cpu.km6502;
 
-import com.zdream.nsfplayer.xgm.device.IDevice;
+import com.zdream.nsfplayer.nsf.device.IDevice;
 
 public final class K6502Context {
 	/**

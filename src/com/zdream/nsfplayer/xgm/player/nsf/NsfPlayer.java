@@ -1,12 +1,12 @@
 package com.zdream.nsfplayer.xgm.player.nsf;
 
+import com.zdream.nsfplayer.nsf.device.Bus;
+import com.zdream.nsfplayer.nsf.device.Layer;
 import com.zdream.nsfplayer.vcm.Value;
-import com.zdream.nsfplayer.xgm.device.Bus;
 import com.zdream.nsfplayer.xgm.device.ISoundChip;
 import com.zdream.nsfplayer.xgm.device.ITrackInfo;
 import com.zdream.nsfplayer.xgm.device.InfoBuffer;
 import com.zdream.nsfplayer.xgm.device.IntHolder;
-import com.zdream.nsfplayer.xgm.device.Layer;
 import com.zdream.nsfplayer.xgm.device.audio.Amplifier;
 import com.zdream.nsfplayer.xgm.device.audio.Compressor;
 import com.zdream.nsfplayer.xgm.device.audio.DCFilter;
@@ -45,11 +45,8 @@ public class NsfPlayer extends MultiSongPlayer {
 			VRC7_TRK3 = 20, VRC7_TRK4 = 21, VRC7_TRK5 = 22, N106_TRK0 = 23, N106_TRK1 = 24, N106_TRK2 = 25,
 			N106_TRK3 = 26, N106_TRK4 = 27, N106_TRK5 = 28, N106_TRK6 = 29, N106_TRK7 = 30, NES_TRACK_MAX = 31;
 	
-	protected static final int PRE_CLICK = 0, CLICKING = 1, POST_CLICK = 2;
-	
 	protected NsfPlayerConfig config;
 	
-	protected int click_mode;
 	protected double rate;
 	protected int nch; // number of channels
 	protected int song;
@@ -427,7 +424,6 @@ public class NsfPlayer extends MultiSongPlayer {
 		time_in_ms = 0;
 		silent_length = 0;
 		playtime_detected = false;
-		click_mode = PRE_CLICK;
 		total_render = 0;
 		frame_render = (int) (rate) / 60; // 演奏数据更新的周期
 		apu_clock_rest = 0.0;

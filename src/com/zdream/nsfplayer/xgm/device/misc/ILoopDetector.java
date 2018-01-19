@@ -1,6 +1,6 @@
 package com.zdream.nsfplayer.xgm.device.misc;
 
-import com.zdream.nsfplayer.xgm.device.IDevice;
+import com.zdream.nsfplayer.nsf.device.IDevice;
 
 public interface ILoopDetector extends IDevice {
 	

@@ -2,7 +2,7 @@ package com.zdream.nsfplayer.xgm.device.memory;
 
 import java.util.Arrays;
 
-import com.zdream.nsfplayer.xgm.device.IDevice;
+import com.zdream.nsfplayer.nsf.device.IDevice;
 import com.zdream.nsfplayer.xgm.device.IntHolder;
 
 public class RAM64K implements IDevice {
