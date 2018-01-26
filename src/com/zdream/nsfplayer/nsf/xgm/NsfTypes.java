@@ -14,4 +14,7 @@ public class NsfTypes {
 		CHIP_INTERNAL = 1,
 		CHIP_VRC6 = 2;
 
+	public static final byte
+		REGION_NTSC = 0,
+		REGION_PAL = 1;
 }

@@ -12,7 +12,6 @@ import com.zdream.nsfplayer.xgm.device.audio.Compressor;
 import com.zdream.nsfplayer.xgm.device.audio.DCFilter;
 import com.zdream.nsfplayer.xgm.device.audio.EchoUnit;
 import com.zdream.nsfplayer.xgm.device.audio.Filter;
-import com.zdream.nsfplayer.xgm.device.audio.MedianFilter;
 import com.zdream.nsfplayer.xgm.device.audio.Mixer;
 import com.zdream.nsfplayer.xgm.device.audio.RateConverter;
 import com.zdream.nsfplayer.xgm.device.cpu.NesCPU;
@@ -94,8 +93,8 @@ public class NsfPlayer extends MultiSongPlayer {
 	/** Logs CPU to file */
 	public CPULogger logcpu = new CPULogger();
 	public EchoUnit echo = new EchoUnit();
-	/** 小的噪音对策的中位数滤波器 */
-	public MedianFilter mfilter; // 在构造函数中生成
+//	/** 小的噪音对策的中位数滤波器 */
+//	public MedianFilter mfilter; // 在构造函数中生成
 	
 	/**
 	 * 所有音轨数据的缓存
@@ -171,7 +170,6 @@ public class NsfPlayer extends MultiSongPlayer {
 			filter[i].attach(rconv[i]);
 			amp[i].attach(filter[i]);
 		}
-		mfilter = new MedianFilter(5);
 
 		nch = 1;
 	}
@@ -420,7 +418,7 @@ public class NsfPlayer extends MultiSongPlayer {
 
 	@Override
 	public void reset() {
-		mfilter.reset();
+//		mfilter.reset();
 		time_in_ms = 0;
 		silent_length = 0;
 		playtime_detected = false;

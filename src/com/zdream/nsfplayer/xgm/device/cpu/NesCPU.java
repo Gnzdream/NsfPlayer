@@ -34,6 +34,12 @@ public class NesCPU implements IDevice {
 	protected int pc_count = 0;
 	
 	public double NES_BASECYCLES;
+	
+	public static final double 
+			NTSC_BASECYCLES = 1789773,
+			PAL_BASECYCLES = 1662607;
+	
+	
 	public NesCPU(double clock) {
 		NES_BASECYCLES = clock;
 		bus = null;
