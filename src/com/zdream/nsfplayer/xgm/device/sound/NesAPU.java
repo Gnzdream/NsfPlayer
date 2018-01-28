@@ -11,7 +11,7 @@ import com.zdream.nsfplayer.xgm.device.TrackInfoBasic;
  * Upper half of APU
  * @author Zdream
  */
-public class NesAPU implements ISoundChip {
+public class NesAPU implements ISoundChip, IFrameSequencer {
 	
 	public static final int
 			OPT_UNMUTE_ON_RESET = 0,
@@ -149,7 +149,8 @@ public class NesAPU implements ISoundChip {
 		 }*/
 	}
 	
-	protected void frameSequence(int s) {
+	@Override
+	public void frameSequence(int s) {
 		//DEBUG_OUT("FrameSequence(%d)\n",s);
 
 		if (s > 3) return; // no operation in step 4
@@ -385,10 +386,6 @@ public class NesAPU implements ISoundChip {
 
 	@Override
 	public boolean write(int adr, int val, int id) {
-		if (adr < 0x4000 || adr >= 0x4008 && adr != 0x4015) {
-			return false;
-		}
-		
 		/*if (adr != 0x4015) {
 			count++;
 			//ticks += clocks;
@@ -497,12 +494,10 @@ public class NesAPU implements ISoundChip {
 
 			reg[adr - 0x4000] = val;
 			return true;
+		} else if (adr == 0x4017) {
+			// TODO
+			return true;
 		}
-
-		// 4017 is handled in nes_dmc.cpp
-		// else if (adr == 0x4017)
-		// {
-		// }
 
 		return false;
 	}

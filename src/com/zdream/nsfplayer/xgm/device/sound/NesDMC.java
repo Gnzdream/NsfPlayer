@@ -12,7 +12,7 @@ import com.zdream.nsfplayer.xgm.device.TrackInfoBasic;
  * Bottom Half of APU
  * @author Zdream
  */
-public class NesDMC implements ISoundChip {
+public class NesDMC implements ISoundChip, IFrameSequencer {
 	
 	public static final int
 			OPT_ENABLE_4011 = 0,
@@ -24,7 +24,6 @@ public class NesDMC implements ISoundChip {
 			OPT_TRI_MUTE = 6,
 			OPT_END = 7;
 	
-	protected static final int GETA_BITS = 20;
 	protected static final int wavlen_table[][] = { // [2][16]
 			  { // NTSC
 				4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068
@@ -69,8 +68,7 @@ public class NesDMC implements ISoundChip {
 	protected double clock;
 	/** unsigned */
 	protected int rate;
-	protected int  pal;
-	protected int  mode;
+	protected int mode;
 	protected boolean irq;
 	protected boolean active;
 
@@ -125,25 +123,30 @@ public class NesDMC implements ISoundChip {
 	/**
 	 * apu is clocked by DMC's frame sequencer
 	 */
-	protected NesAPU apu;
+//	protected NesAPU apu;
 	/**
 	 * current cycle count
 	 */
-	protected int frame_sequence_count;
+	//protected int frame_sequence_count;
 	/**
 	 * CPU cycles per FrameSequence
 	 */
-	protected int frame_sequence_length;
+	//protected int frame_sequence_length;
 	/**
 	 * current step of frame sequence
 	 */
-	protected int frame_sequence_step;
+	//protected int frame_sequence_step;
 	/**
 	 * 4/5 steps per frame
 	 */
-	protected int frame_sequence_steps;
-	protected boolean frame_irq;
-	protected boolean frame_irq_enable;
+	//protected int frame_sequence_steps;
+//	protected boolean frame_irq;
+//	protected boolean frame_irq_enable;
+	
+	/**
+	 * frame sequencer 的大部分参数已经封装成 {@link FrameSequenceCounter} 这个类中.
+	 */
+	FrameSequenceCounter frameCounter;
 	
 	private Random rand = new Random();
 	
@@ -156,7 +159,6 @@ public class NesDMC implements ISoundChip {
 	public NesDMC() {
 		setClock(DEFAULT_CLOCK);
 		setRate(DEFAULT_RATE);
-		setPal(false);
 		option[OPT_ENABLE_4011] = 1;
 		option[OPT_ENABLE_PNOISE] = 1;
 		option[OPT_UNMUTE_ON_RESET] = 1;
@@ -166,11 +168,6 @@ public class NesDMC implements ISoundChip {
 		option[OPT_TRI_MUTE] = 1;
 		tnd_table[0][0][0][0] = 0;
 		tnd_table[1][0][0][0] = 0;
-
-		apu = null;
-		frame_sequence_count = 0;
-		frame_sequence_length = 7458;
-		frame_sequence_steps = 4;
 
 		for (int c = 0; c < 2; ++c)
 			for (int t = 0; t < 3; ++t)
@@ -190,9 +187,15 @@ public class NesDMC implements ISoundChip {
 		sm[0][trk] = mixl;
 		sm[1][trk] = mixr;
 	}
+	
+	public void setFrameCounter(FrameSequenceCounter frameCounter) {
+		this.frameCounter = frameCounter;
+	}
 
 	@Override
 	public ITrackInfo getTrackInfo(int trk) {
+		int pal = frameCounter.pal;
+		
 		switch (trk) {
 		case 0:
 			trkinfo[trk].maxVolume = 255;
@@ -232,19 +235,12 @@ public class NesDMC implements ISoundChip {
 		return trkinfo[trk];
 	}
 	
+	@Override
 	public final void frameSequence(int s) {
 		// DEBUG_OUT("FrameSequence: %d\n",s);
 
 		if (s > 3)
 			return; // no operation in step 4
-
-		if (apu != null) {
-			apu.frameSequence(s);
-		}
-
-		if (s == 0 && (frame_sequence_steps == 4)) {
-			frame_irq = true;
-		}
 
 		// 240hz clock
 		{
@@ -413,20 +409,7 @@ public class NesDMC implements ISoundChip {
 		return (damp << 1) + dac_lsb;
 	}
 	
-	/**
-	 * @param clocks
-	 *   unsigned
-	 */
-	public final void tickFrameSequence(int clocks) {
-		frame_sequence_count += clocks;
-		while (frame_sequence_count > frame_sequence_length) {
-			frameSequence(frame_sequence_step);
-			frame_sequence_count -= frame_sequence_length;
-			++frame_sequence_step;
-			if (frame_sequence_step >= frame_sequence_steps)
-				frame_sequence_step = 0;
-		}
-	}
+	
 
 	@Override
 	public void tick(int clocks) {
@@ -513,16 +496,6 @@ public class NesDMC implements ISoundChip {
 		rate = (int) (r > 0 ? r : -r);
 	}
 	
-	public final void setPal(boolean is_pal) {
-		pal = (is_pal ? 1 : 0);
-		// set CPU cycles in frame_sequence
-		frame_sequence_length = is_pal ? 8314 : 7458;
-	}
-	
-	public final void setApu(NesAPU apu) {
-		this.apu = apu;
-	}
-	
 	public final void initializeTNDTable(double wt, double wn, double wd) {
 
 		// volume adjusted by 0.75 based on empirical measurements
@@ -573,12 +546,6 @@ public class NesDMC implements ISoundChip {
 		length_counter[0] = 0;
 		length_counter[1] = 0;
 		envelope_counter = 0;
-
-		frame_irq = false;
-		frame_irq_enable = false;
-		frame_sequence_count = 0;
-		frame_sequence_steps = 4;
-		frame_sequence_step = 0;
 
 		for (i = 0; i < 0x10; i++)
 			write(0x4008 + i, 0, 0);
@@ -668,22 +635,6 @@ public class NesDMC implements ISoundChip {
 			return true;
 		}
 
-		if (adr == 0x4017) {
-			// DEBUG_OUT("4017 = %02X\n", val);
-			frame_irq_enable = ((val & 0x40) == 0x40);
-			frame_irq = (frame_irq_enable ? frame_irq : false);
-			frame_sequence_count = 0;
-			if ((val & 0x80) != 0) {
-				frame_sequence_steps = 5;
-				frame_sequence_step = 0;
-				frameSequence(frame_sequence_step);
-				++frame_sequence_step;
-			} else {
-				frame_sequence_steps = 4;
-				frame_sequence_step = 1;
-			}
-		}
-
 		if (adr < 0x4008 || 0x4013 < adr)
 			return false;
 
@@ -736,7 +687,7 @@ public class NesDMC implements ISoundChip {
 				noise_tap = (val & 0x80) != 0 ? (1 << 6) : (1 << 1);
 			else
 				noise_tap = (1 << 1);
-			nfreq = wavlen_table[pal][val & 15];
+			nfreq = wavlen_table[frameCounter.pal][val & 15];
 			if (counter[1] > nfreq)
 				counter[1] = nfreq;
 			break;
@@ -752,7 +703,7 @@ public class NesDMC implements ISoundChip {
 
 		case 0x4010:
 			mode = (val >> 6) & 3;
-			dfreq = freq_table[pal][val & 15];
+			dfreq = freq_table[frameCounter.pal][val & 15];
 			if (counter[2] > dfreq)
 				counter[2] = dfreq;
 			break;
@@ -786,12 +737,11 @@ public class NesDMC implements ISoundChip {
 	public boolean read(int adr, IntHolder val, int id) {
 		if (adr == 0x4015) {
 			val.val |= (irq ? 128 : 0)
-					| (frame_irq ? 0x40 : 0)
+					| (frameCounter.frame_irq ? 0x40 : 0)
 					| (active ? 16 : 0)
 					| (length_counter[1] != 0 ? 8 : 0)
 					| (length_counter[0] != 0 ? 4 : 0);
-
-			frame_irq = false;
+			frameCounter.frame_irq = false;
 			return true;
 		} else if (0x4008 <= adr && adr <= 0x4014) {
 			val.val |= reg[adr - 0x4008];

@@ -20,6 +20,7 @@ import com.zdream.nsfplayer.xgm.device.memory.NesMem;
 import com.zdream.nsfplayer.xgm.device.misc.CPULogger;
 import com.zdream.nsfplayer.xgm.device.misc.NesDetector;
 import com.zdream.nsfplayer.xgm.device.misc.NesDetectorEx;
+import com.zdream.nsfplayer.xgm.device.sound.FrameSequenceCounter;
 import com.zdream.nsfplayer.xgm.device.sound.NesAPU;
 import com.zdream.nsfplayer.xgm.device.sound.NesDMC;
 import com.zdream.nsfplayer.xgm.device.sound.NesFDS;
@@ -127,6 +128,7 @@ public class NsfPlayer extends MultiSongPlayer {
 	public NesFDS fds;
 	
 	public NsfAudio nsf;
+	FrameSequenceCounter fsc;
 	
 	NsfPlayerStatus status;
 	
@@ -161,8 +163,14 @@ public class NsfPlayer extends MultiSongPlayer {
 		sc[NsfPlayerConfig.VRC6] = (vrc6 = new NesVRC6());
 		sc[NsfPlayerConfig.VRC7] = (vrc7 = new NesVRC7());
 
-		dmc.setApu(apu); // set APU
+		fsc = new FrameSequenceCounter();
+		
+		// dmc.setApu(apu); // APU 与 DMC 已经解除关联
 		mmc5.setCPU(cpu); // MMC5 PCM read action requires CPU read access
+		dmc.setFrameCounter(fsc);
+		
+		fsc.addSequencer(apu);
+		fsc.addSequencer(dmc);
 
 		/* 放大器 ← 滤芯速率转换器 ← 连接 */
 		for (int i = 0; i < NsfPlayerConfig.NES_DEVICE_MAX; i++) {
@@ -280,6 +288,7 @@ public class NsfPlayer extends MultiSongPlayer {
 		// APU units are combined into a single bus
 		apu_bus.attach(sc[NsfPlayerConfig.APU]);
 		apu_bus.attach(sc[NsfPlayerConfig.DMC]);
+		apu_bus.attach(fsc); // 新加入的
 		stack.attach(apu_bus);
 
 		mixer.attach(amp[NsfPlayerConfig.APU]);
@@ -350,7 +359,7 @@ public class NsfPlayer extends MultiSongPlayer {
 
 		int region = getRegion(nsf.pal_ntsc);
 		boolean pal = (region == REGION_PAL);
-		dmc.setPal(pal);
+		fsc.setPal(pal);
 
 		// 使用 rate 转换器
 		int[][] MULT = {
@@ -619,7 +628,7 @@ public class NsfPlayer extends MultiSongPlayer {
 					cpu_clock_rest -= (double) (real_cpu_clocks);
 
 					// tick APU frame sequencer
-					dmc.tickFrameSequence(real_cpu_clocks);
+					fsc.tickFrameSequence(real_cpu_clocks);
 					if (nsf.useMmc5)
 						mmc5.tickFrameSequence(real_cpu_clocks);
 				}
@@ -724,7 +733,7 @@ public class NsfPlayer extends MultiSongPlayer {
 				cpu_clock_rest -= (double) (real_cpu_clocks);
 
 				// tick APU frame sequencer
-				dmc.tickFrameSequence(real_cpu_clocks);
+				fsc.tickFrameSequence(real_cpu_clocks);
 				if (nsf.useMmc5)
 					mmc5.tickFrameSequence(real_cpu_clocks);
 			}
