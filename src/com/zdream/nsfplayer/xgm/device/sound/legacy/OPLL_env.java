@@ -1,5 +1,9 @@
 package com.zdream.nsfplayer.xgm.device.sound.legacy;
 
+/**
+ * 只在 VRC7 中使用
+ * @author Zdream
+ */
 public class OPLL_env {
 	
 	public static OPLL_env ins = new OPLL_env(); // instance
@@ -16,6 +20,10 @@ public class OPLL_env {
 	    OPLL_2413_TONE = 6,
 	    OPLL_281B_TONE = 7;
 	
+	/**
+	 * 只在 VRC7 中使用
+	 * @author Zdream
+	 */
 	public class OPLL {
 		
 		/** unsigned */
@@ -145,6 +153,25 @@ public class OPLL_env {
 			o.PM = PM;
 			o.WF = WF;
 			return o;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder b = new StringBuilder();
+			b.append("TL:").append(TL).append(',');
+			b.append("FB:").append(FB).append(',');
+			b.append("EG:").append(EG).append(',');
+			b.append("ML:").append(ML).append(',');
+			b.append("AR:").append(AR).append(',');
+			b.append("DR:").append(DR).append(',');
+			b.append("SL:").append(SL).append(',');
+			b.append("RR:").append(RR).append(',');
+			b.append("KR:").append(KR).append(',');
+			b.append("KL:").append(KL).append(',');
+			b.append("AM:").append(AM).append(',');
+			b.append("PM:").append(PM).append(',');
+			b.append("WF:").append(WF);
+			return b.toString();
 		}
 	}
 	
@@ -504,7 +531,7 @@ public class OPLL_env {
 		}
 	}
 	
-	public void dump2patch(int[] dump, int offset, OPLLPatch patch0, OPLLPatch patch1) {
+	private void dump2patch(int[] dump, int offset, OPLLPatch patch0, OPLLPatch patch1) {
 		patch0.AM = (dump[offset] >> 7) & 1;
 		patch1.AM = (dump[1 + offset] >> 7) & 1;
 		patch0.PM = (dump[offset] >> 6) & 1;
@@ -531,7 +558,7 @@ public class OPLL_env {
 		patch1.RR = (dump[7 + offset]) & 15;
 	}
 	
-	public void makeDefaultPatch() {
+	private void makeDefaultPatch() {
 		for (int i = 0; i < OPLL_env.OPLL_TONE_NUM; i++) {
 			for (int j = 0; j < 19; j++) {
 				dump2patch(default_inst[i], j * 16,
@@ -539,7 +566,8 @@ public class OPLL_env {
 			}
 		}
 	}
-	
+
+	// unused
 	public void setPatch (OPLL opll, int[] dump) {
 		OPLLPatch[] patch = { new OPLLPatch(), new OPLLPatch() };
 		int i;
@@ -551,6 +579,7 @@ public class OPLL_env {
 		}
 	}
 
+	// unused
 	public void patch2dump(OPLLPatch patch0, OPLLPatch patch1, int[] dump, int offset) {
 		dump[offset] = 0xFF & ((patch0.AM << 7) + (patch0.PM << 6) + (patch0.EG << 5) + (patch0.KR << 4) + patch0.ML);
 		dump[1 + offset] = 0xFF
@@ -575,7 +604,7 @@ public class OPLL_env {
     Calc Parameters
 *********************************************************** */
 	
-	public int calc_eg_dphase(OPLLSlot slot) {
+	private int calc_eg_dphase(OPLLSlot slot) {
 		switch (slot.eg_mode) {
 		case ATTACK:
 			return dphaseARTable[slot.patch.AR][slot.rks];
@@ -624,7 +653,7 @@ public class OPLL_env {
 	 * Slot key on
 	 * @param slot
 	 */
-	public void slotOn(OPLLSlot slot) {
+	private void slotOn(OPLLSlot slot) {
 		slot.eg_mode = ATTACK;
 		slot.eg_phase = 0;
 		slot.phase = 0;
@@ -635,7 +664,7 @@ public class OPLL_env {
 	 * Slot key on without reseting the phase
 	 * @param slot
 	 */
-	public void slotOn2(OPLLSlot slot) {
+	private void slotOn2(OPLLSlot slot) {
 		slot.eg_mode = ATTACK;
 		slot.eg_phase = 0;
 		slot.eg_dphase = calc_eg_dphase(slot); // UPDATE_EG(slot);
@@ -645,7 +674,7 @@ public class OPLL_env {
 	 * Slot key off
 	 * @param slot
 	 */
-	public void slotOff(OPLLSlot slot) {
+	private void slotOff(OPLLSlot slot) {
 		if (slot.eg_mode == ATTACK)
 			slot.eg_phase = ((AR_ADJUST_TABLE[((slot.eg_phase) >> (EG_DP_BITS - EG_BITS))]) << ((EG_DP_BITS)
 					- (EG_BITS)));
@@ -656,7 +685,7 @@ public class OPLL_env {
 	/**
 	 * Channel key on
 	 */
-	public void keyOn (OPLL opll, int i) {
+	private void keyOn (OPLL opll, int i) {
 		if (opll.slot_on_flag[i * 2] == 0) {
 			slotOn((opll).slot[(i) << 1]); // MOD(opll,i)
 		}
@@ -670,57 +699,57 @@ public class OPLL_env {
 	/**
 	 * Channel key off
 	 */
-	public void keyOff(OPLL opll, int i) {
+	private void keyOff(OPLL opll, int i) {
 		if (opll.slot_on_flag[i * 2 + 1] != 0)
 			slotOff(((opll).slot[((i) << 1) | 1])); // CAR(opll,i)
 		opll.key_status[i] = 0;
 	}
 	
-	public void keyOn_BD(OPLL opll) {
+	private void keyOn_BD(OPLL opll) {
 		keyOn(opll, 6);
 	}
 	
-	public void keyOn_SD(OPLL opll) {
+	private void keyOn_SD(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_SD] == 0)
 			slotOn(((opll).slot[((7) << 1) | 1])); // CAR(opll,7)
 	}
 
-	public void keyOn_TOM(OPLL opll) {
+	private void keyOn_TOM(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_TOM] == 0)
 			slotOn((opll).slot[(8) << 1]); // MOD(opll,8)
 	}
 
-	public void keyOn_HH(OPLL opll) {
+	private void keyOn_HH(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_HH] == 0)
 			slotOn2((opll).slot[(7) << 1]); // MOD(opll,7)
 	}
 	
-	public void keyOn_CYM(OPLL opll) {
+	private void keyOn_CYM(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_CYM] == 0)
 			slotOn2(((opll).slot[((8) << 1) | 1])); // CAR(opll,8)
 	}
 	
 	// Drum key off
-	public void keyOff_BD(OPLL opll) {
+	private void keyOff_BD(OPLL opll) {
 		keyOff(opll, 6);
 	}
 	
-	public void keyOff_SD(OPLL opll) {
+	private void keyOff_SD(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_SD] != 0)
 			slotOff(((opll).slot[((7) << 1) | 1])); // CAR(opll,7)
 	}
 	
-	public void keyOff_TOM(OPLL opll) {
+	private void keyOff_TOM(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_TOM] != 0)
 			slotOff((opll).slot[(8) << 1]); // MOD(opll,8)
 	}
 	
-	public void keyOff_HH (OPLL opll) {
+	private void keyOff_HH (OPLL opll) {
 		if (opll.slot_on_flag[SLOT_HH] != 0)
 			slotOff((opll).slot[(7) << 1]); // MOD(opll,7)
 	}
 	
-	public void keyOff_CYM(OPLL opll) {
+	private void keyOff_CYM(OPLL opll) {
 		if (opll.slot_on_flag[SLOT_CYM] != 0)
 			slotOff(((opll).slot[((8) << 1) | 1])); // CAR(opll,8)
 	}
@@ -728,7 +757,7 @@ public class OPLL_env {
 	/**
 	 *  Change a voice
 	 */
-	public void setPatch(OPLL opll, int i, int num) {
+	private void setPatch(OPLL opll, int i, int num) {
 		opll.patch_number[i] = num;
 		opll.slot[i << 1].patch = opll.patch[num * 2]; // MOD(opll,i)
 		opll.slot[((i) << 1) | 1].patch = opll.patch[num * 2 + 1]; // CAR(opll,i)
@@ -737,14 +766,14 @@ public class OPLL_env {
 	/**
 	 * Change a rhythm voice
 	 */
-	public void setSlotPatch(OPLLSlot slot, OPLLPatch patch) {
+	private void setSlotPatch(OPLLSlot slot, OPLLPatch patch) {
 		slot.patch = patch;
 	}
 	
 	/**
 	 * Set sustine parameter
 	 */
-	public void setSustine(OPLL opll, int c, int sustine) {
+	private void setSustine(OPLL opll, int c, int sustine) {
 		opll.slot[(c << 1) | 1].sustine = sustine; // CAR(opll,c)
 		if (opll.slot[c << 1].type != 0) // MOD(opll,c)
 			opll.slot[c << 1].sustine = sustine; // MOD(opll,c)
@@ -753,18 +782,18 @@ public class OPLL_env {
 	/**
 	 * Volume : 6bit ( Volume register << 2 )
 	 */
-	public void setVolume(OPLL opll, int c, int volume) {
+	private void setVolume(OPLL opll, int c, int volume) {
 		opll.slot[(c << 1) | 1].volume = volume; // CAR(opll,c)
 	}
 	
-	public void setSlotVolume(OPLLSlot slot, int volume) {
+	private void setSlotVolume(OPLLSlot slot, int volume) {
 		slot.volume = volume;
 	}
 	
 	/**
 	 * Set F-Number ( fnum : 9bit ) 
 	 */
-	public void setFnumber(OPLL opll, int c, int fnum) {
+	private void setFnumber(OPLL opll, int c, int fnum) {
 		opll.slot[(c << 1) | 1].fnum = fnum; // CAR(opll,c)
 		opll.slot[c << 1].fnum = fnum; // MOD(opll,c)
 	}
@@ -772,7 +801,7 @@ public class OPLL_env {
 	/**
 	 * Set Block data (block : 3bit )
 	 */
-	public void setBlock(OPLL opll, int c, int block) {
+	private void setBlock(OPLL opll, int c, int block) {
 		opll.slot[(c << 1) | 1].block = block; // CAR(opll,c)
 		opll.slot[c << 1].block = block; // MOD(opll,c)
 	}
@@ -780,7 +809,7 @@ public class OPLL_env {
 	/**
 	 * Change Rhythm Mode
 	 */
-	public void update_rhythm_mode(OPLL opll) {
+	private void update_rhythm_mode(OPLL opll) {
 		if ((opll.patch_number[6] & 0x10) != 0) {
 			if ((opll.slot_on_flag[SLOT_BD2] | (opll.reg[0x0e] & 32)) == 0) {
 				opll.slot[SLOT_BD1].eg_mode = FINISH;
@@ -829,7 +858,7 @@ public class OPLL_env {
 		}
 	}
 	
-	public void update_key_status(OPLL opll) {
+	private void update_key_status(OPLL opll) {
 		int ch;
 
 		for (ch = 0; ch < 9; ch++)
@@ -845,7 +874,7 @@ public class OPLL_env {
 		}
 	}
 	
-	public void copyPatch(OPLL opll, int num, OPLLPatch patch) {
+	private void copyPatch(OPLL opll, int num, OPLLPatch patch) {
 		opll.patch[num] = patch.clone();
 	}
 	
@@ -853,7 +882,7 @@ public class OPLL_env {
     Initializing
 *********************************************************** */
 	
-	public void slotReset(OPLLSlot slot, int type) {
+	private void slotReset(OPLLSlot slot, int type) {
 		slot.type = type;
 		slot.sintbl = waveform[0];
 		slot.phase = 0;
@@ -875,34 +904,34 @@ public class OPLL_env {
 		slot.patch = null_patch;
 	}
 	
-	public void internal_refresh() {
+	private void internal_refresh() {
 
 		// makeDphaseTable()
 		{
-			for (int i = 0; i < AM_PG_WIDTH; i++) {
+			int fnum, block, ML;
+			int[] mltable = { 1, 1 * 2, 2 * 2, 3 * 2, 4 * 2, 5 * 2, 6 * 2, 7 * 2, 8 * 2, 9 * 2, 10 * 2, 10 * 2, 12 * 2,
+					12 * 2, 15 * 2, 15 * 2 };
 
-				// saw begin - inline
-				double d, phase = 2.0 * Math.PI * i / PM_PG_WIDTH;
-				if (phase <= Math.PI / 2)
-					d = phase * 2 / Math.PI;
-				else if (phase <= Math.PI * 3 / 2)
-					d = 2.0 - (phase * 2 / Math.PI);
-				else
-					d = -4.0 + phase * 2 / Math.PI;
-				// saw end - inline
-
-				amtable[i] = (int) ((double) AM_DEPTH / 2 / DB_STEP * (1.0 + d));
+			for (fnum = 0; fnum < 512; fnum++) {
+				for (block = 0; block < 8; block++) {
+					// #define RATE_ADJUST(x) (rate==49716?x:(e_uint32)((double)(x)*clk/72/rate + 0.5))
+					for (ML = 0; ML < 16; ML++) {
+						int x = ((fnum * mltable[ML]) << block) >> (20 - DP_BITS);
+						dphaseTable[fnum][block][ML] = (rate == 49716 ? x
+								: (int) ((double) (x) * clk / 72 / rate + 0.5));
+					}
+				}
 			}
 		}
 
 		// makeDphaseARTable();
 		/* Rate Table for Attack */
 		{
-			int AR, Rks, RM/*, RL*/;
+			int AR, Rks, RM, RL;
 			for (AR = 0; AR < 16; AR++) {
 				for (Rks = 0; Rks < 16; Rks++) {
 					RM = AR + (Rks >> 2);
-//					RL = Rks & 3;
+					RL = Rks & 3;
 					if (RM > 15)
 						RM = 15;
 					switch (AR) {
@@ -913,6 +942,8 @@ public class OPLL_env {
 						dphaseARTable[AR][Rks] = 0;/* EG_DP_WIDTH; */
 						break;
 					default:
+						int x = 3 * (RL + 4) << (RM + 1);
+						dphaseARTable[AR][Rks] = (rate == 49716 ? x : (int) ((double) (x) * clk / 72 / rate + 0.5));
 						break;
 					}
 				}
@@ -936,8 +967,7 @@ public class OPLL_env {
 					default: {
 						int x = (RL + 4) << (RM - 1);
 						dphaseDRTable[DR][Rks] = (rate == 49716 ? x : (int) ((double) (x) * clk / 72 / rate + 0.5));
-					}
-						break;
+					} break;
 					}
 				}
 			}
@@ -956,7 +986,7 @@ public class OPLL_env {
 	 * @param r
 	 *   unsigned
 	 */
-	public void maketables(int c, int r) {
+	private void maketables(int c, int r) {
 		if (c != clk) {
 			clk = c;
 			
@@ -1151,8 +1181,12 @@ public class OPLL_env {
 		for (i = 0; i < 0x40; i++)
 			writeReg(opll, i, 0);
 
-		opll.realstep = (1 << 31) / rate;
-		opll.opllstep = (1 << 31) / (clk / 72);
+		long factor = 1l << 31;
+		opll.realstep = (int) (factor / rate);
+		if (opll.realstep < 0) {
+			System.out.println("opll.realstep < 0");
+		}
+		opll.opllstep = (int) (factor / (clk / 72));
 		opll.oplltime = 0;
 		for (i = 0; i < 14; i++)
 			opll.pan[i] = 2;
@@ -1209,7 +1243,7 @@ public class OPLL_env {
 	 * Update AM, PM unit
 	 * @param opll
 	 */
-	public void update_ampm(OPLL opll) {
+	private void update_ampm(OPLL opll) {
 		opll.pm_phase = (opll.pm_phase + pm_dphase) & (PM_DP_WIDTH - 1);
 		opll.am_phase = (opll.am_phase + am_dphase) & (AM_DP_WIDTH - 1);
 		opll.lfo_am = amtable[(opll.am_phase) >> (AM_DP_BITS - AM_PG_BITS)];
@@ -1219,7 +1253,7 @@ public class OPLL_env {
 	/**
 	 * PG
 	 */
-	public void calc_phase(OPLLSlot slot, int lfo) {
+	private void calc_phase(OPLLSlot slot, int lfo) {
 		if (slot.patch.PM != 0)
 			slot.phase += ((slot.dphase * lfo) >> PM_AMP_BITS);
 		else
@@ -1233,7 +1267,7 @@ public class OPLL_env {
 	/**
 	 * Update Noise unit
 	 */
-	public void update_noise (OPLL opll) {
+	private void update_noise (OPLL opll) {
 		if ((opll.noise_seed & 1) != 0)
 			opll.noise_seed ^= 0x8003020;
 		opll.noise_seed >>= 1;
@@ -1242,7 +1276,7 @@ public class OPLL_env {
 	/**
 	 * EG
 	 */
-	public void calc_envelope(OPLLSlot slot, int lfo) {
+	private void calc_envelope(OPLLSlot slot, int lfo) {
 		int[] SL = new int[16];
 		for (int i = 0; i < SL.length; i++) {
 			SL[i] = (int) ((3.0 * i / SL_STEP) * (int) (SL_STEP / EG_STEP)) << (EG_DP_BITS - EG_BITS);
@@ -1330,7 +1364,7 @@ public class OPLL_env {
 	/**
 	 * CARRIOR
 	 */
-	public int calc_slot_car(OPLLSlot slot, int fm) {
+	private int calc_slot_car(OPLLSlot slot, int fm) {
 		if (slot.egout >= (DB_MUTE - 1)) {
 			slot.output[0] = 0;
 		} else { // #define wave2_8pi(e) ( (e) << ( 2 + PG_BITS - SLOT_AMP_BITS ))
@@ -1345,7 +1379,7 @@ public class OPLL_env {
 	/**
 	 * MODULATOR
 	 */
-	public int calc_slot_mod(OPLLSlot slot) {
+	private int calc_slot_mod(OPLLSlot slot) {
 		int fm;
 
 		slot.output[1] = slot.output[0];
@@ -1368,7 +1402,7 @@ public class OPLL_env {
 	/**
 	 * TOM
 	 */
-	public int calc_slot_tom(OPLLSlot slot) {
+	private int calc_slot_tom(OPLLSlot slot) {
 		if (slot.egout >= (DB_MUTE - 1))
 			return 0;
 
@@ -1380,7 +1414,7 @@ public class OPLL_env {
 	 * @param noise
 	 *   unsigned
 	 */
-	public int calc_slot_snare(OPLLSlot slot, int noise) {
+	private int calc_slot_snare(OPLLSlot slot, int noise) {
 		if (slot.egout >= (DB_MUTE - 1))
 			return 0;
 
@@ -1396,7 +1430,7 @@ public class OPLL_env {
 	 * @param pgout_hh
 	 *   unsigned
 	 */
-	public int calc_slot_cym(OPLLSlot slot, int pgout_hh) {
+	private int calc_slot_cym(OPLLSlot slot, int pgout_hh) {
 		int dbout;
 
 		if (slot.egout >= (DB_MUTE - 1))
@@ -1418,7 +1452,7 @@ public class OPLL_env {
 	 * @param noise
 	 *   unsigned
 	 */
-	public int calc_slot_hat(OPLLSlot slot, int pgout_cym, int noise) {
+	private int calc_slot_hat(OPLLSlot slot, int pgout_cym, int noise) {
 		int dbout;
 
 		if (slot.egout >= (DB_MUTE - 1))
@@ -1443,7 +1477,7 @@ public class OPLL_env {
 		return DB2LIN_TABLE[dbout + slot.egout];
 	}
 	
-	public int calc1(OPLL opll) {
+	private int calc1(OPLL opll) {
 		int inst = 0, perc = 0, out = 0;
 		int i;
 
@@ -1560,7 +1594,7 @@ public class OPLL_env {
 
 		data = data & 0xff;
 		reg = reg & 0x3f;
-		opll.reg[reg] = data & 0x7F;
+		opll.reg[reg] = data;
 
 		switch (reg) {
 		case 0x00:

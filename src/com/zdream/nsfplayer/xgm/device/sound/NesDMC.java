@@ -1,7 +1,5 @@
 package com.zdream.nsfplayer.xgm.device.sound;
 
-import java.util.Random;
-
 import com.zdream.nsfplayer.nsf.device.IDevice;
 import com.zdream.nsfplayer.xgm.device.ISoundChip;
 import com.zdream.nsfplayer.xgm.device.ITrackInfo;
@@ -148,7 +146,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer {
 	 */
 	FrameSequenceCounter frameCounter;
 	
-	private Random rand = new Random();
+//	private Random rand = new Random();
 	
 	{
 		trkinfo[0] = new TrackInfoBasic();
@@ -570,9 +568,9 @@ public class NesDMC implements ISoundChip, IFrameSequencer {
 		daddress = 0;
 		noise = 1;
 		noise_tap = (1 << 1);
-		if (option[OPT_RANDOMIZE_NOISE] != 0) {
+		/*if (option[OPT_RANDOMIZE_NOISE] != 0) {
 			noise |= (rand.nextInt() & 0xFFFF);
-		}
+		}*/
 
 		setRate(rate);
 	}

@@ -751,7 +751,7 @@ public class NsfPlayer extends MultiSongPlayer {
 			// render output
 			mixer.render(buf);
 			outm = (buf[0] + buf[1]) >> 1; // mono mix
-			if (outm == last_out)
+			if (outm == last_out) // 这里用两段时间里面输出采样没变来判定 silent
 				silent_length++;
 			else
 				silent_length = 0;

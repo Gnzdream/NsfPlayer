@@ -39,6 +39,17 @@ public class NesVRC6 implements ISoundChip {
 		}
 	}
 	
+	private static final boolean[][] SQRT_BL = {
+			{false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true},
+			{false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true},
+			{false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true},
+			{false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true},
+			{false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true},
+			{false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true},
+			{false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true},
+			{false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true}
+	};
+	
 	public NesVRC6() {
 		setClock(DEFAULT_CLOCK);
 		setRate(DEFAULT_RATE);
@@ -112,17 +123,6 @@ public class NesVRC6 implements ISoundChip {
 	}
 	
 	public int calc_sqr(int i, int clocks) {
-	    final int sqrtbl[][] = {
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1},
-	      {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1}
-	    };
-
 		if (enable[i] == 0)
 			return 0;
 
@@ -134,7 +134,7 @@ public class NesVRC6 implements ISoundChip {
 			}
 		}
 
-		return (gate[i] != 0 || sqrtbl[duty[i]][phase[i]] != 0) ? volume[i] : 0;
+		return (gate[i] != 0 || SQRT_BL[duty[i]][phase[i]]) ? volume[i] : 0;
 	}
 	
 	public final int calc_saw(int clocks) {
