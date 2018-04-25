@@ -83,6 +83,9 @@ public class FamiTrackerCreater {
 	}
 	
 	private void doCreateNew(FamiTrackerHandler doc, DocumentReader openFile, int version) {
+		
+		doc.allocateTrack(1);
+		
 		/*
 		 * Famitracker 产生的文件由多个块组成.
 		 * 在读取的过程中就需要对逐个块进行处理.
@@ -109,7 +112,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_HEADER: {
-				//errorFlag = readBlock_Header(documentFile);
+				readBlockHeader(doc, block);
 			} break;
 			
 			case FILE_BLOCK_INSTRUMENTS: {
@@ -160,7 +163,7 @@ public class FamiTrackerCreater {
 			}
 		}
 	}
-	
+
 	/**
 	 * <p>处理参数项.
 	 * <br>根据文件里面写明的 param 的块版本号, 确定 {@code block} 里面的文件格式:
@@ -228,15 +231,15 @@ public class FamiTrackerCreater {
 	private void readBlockParameters(FamiTrackerHandler doc, Block block, int fileVersion) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("版本号错误: " + version);
+			throw new FtmParseException("PARAM 版本号错误: " + version);
 		}
-		
-		FtmTrack track = doc.createTrack();
+
+		FtmTrack track = doc.audio.getTrack(0);
 		
 		switch (version) {
 		case 1: case 2:
 			track.speed = block.readAsCInt();
-			block.readAsCInt(); // 轨道数, 忽略
+			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
 			doc.setFramerate(block.readAsCInt());
 			doc.setDefaultSplit();
@@ -245,34 +248,34 @@ public class FamiTrackerCreater {
 			
 		case 3:
 			doc.setChip(block.readByte());
-			block.readAsCInt(); // 轨道数, 忽略
+			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
 			doc.setFramerate(block.readAsCInt());
-			block.readAsCInt(); // 震动模式, 忽略
+			block.skip(4); // 震动模式, 忽略
 			doc.setDefaultSplit();
 			
 			break;
 			
 		case 4: case 5:
 			doc.setChip(block.readByte());
-			block.readAsCInt(); // 轨道数, 忽略
+			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
 			doc.setFramerate(block.readAsCInt());
-			block.readAsCInt(); // 震动模式, 忽略
-			block.readAsCInt(); // 小节间隔 忽略
-			block.readAsCInt(); // 拍间隔, 忽略
+			block.skip(4); // 震动模式, 忽略
+			block.skip(4); // 小节间隔 忽略
+			block.skip(4); // 拍间隔, 忽略
 			doc.setDefaultSplit();
 			
 			break;
 			
 		case 6:
 			doc.setChip(block.readByte());
-			block.readAsCInt(); // 轨道数, 忽略
+			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
 			doc.setFramerate(block.readAsCInt());
-			block.readAsCInt(); // 震动模式, 忽略
-			block.readAsCInt(); // 小节间隔 忽略
-			block.readAsCInt(); // 拍间隔, 忽略
+			block.skip(4); // 震动模式, 忽略
+			block.skip(4); // 小节间隔 忽略
+			block.skip(4); // 拍间隔, 忽略
 			if (doc.audio.useN163) {
 				doc.setNamcoChannels(block.readAsCInt());
 			}
@@ -282,12 +285,12 @@ public class FamiTrackerCreater {
 			
 		default:
 			doc.setChip(block.readByte());
-			block.readAsCInt(); // 轨道数, 忽略
+			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
 			doc.setFramerate(block.readAsCInt());
-			block.readAsCInt(); // 震动模式, 忽略
-			block.readAsCInt(); // 小节间隔 忽略
-			block.readAsCInt(); // 拍间隔, 忽略
+			block.skip(4); // 震动模式, 忽略
+			block.skip(4); // 小节间隔 忽略
+			block.skip(4); // 拍间隔, 忽略
 			if (doc.audio.useN163) {
 				doc.setNamcoChannels(block.readAsCInt());
 			}
@@ -322,6 +325,67 @@ public class FamiTrackerCreater {
 		doc.audio.title = block.readAsString(32);
 		doc.audio.author = block.readAsString(32);
 		doc.audio.copyright = block.readAsString(32);
+	}
+	
+	/**
+	 * <p>处理标识头.
+	 * <br>根据文件里面写明的 header 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * <p>当<b>块版本为 1 </b>时:
+	 * <li>每个轨道的效果列数
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 2 </b>时:
+	 * <li>(总乐曲数 - 1)
+	 * <li>各个乐曲、每个轨道的效果列数
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 3 及以上</b>时:
+	 * <li>(总乐曲数 - 1)
+	 * <li>各个乐曲名称
+	 * <li>各个乐曲、每个轨道的效果列数
+	 * </li>
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param block
+	 */
+	private void readBlockHeader(FamiTrackerHandler doc, Block block) {
+		int version = block.version;
+		if (version < 1) {
+			throw new FtmParseException("HEADER 版本号错误: " + version);
+		}
+		
+		if (version == 1) {
+			// 版本 1 只支持单曲
+			int channelCount = doc.channelCount();
+			for (int i = 0; i < channelCount; ++i) {
+				block.skip(1); // channelType 忽略
+				doc.setEffectColumn(0, i, block.readByte());
+			}
+		} else {
+			int trackCount = block.readUnsignedByte() + 1;  // 0 就是只有 1 个曲子
+			doc.allocateTrack(trackCount);
+			
+			int channelCount = doc.channelCount();
+			
+			// Track 名称
+			if (version >= 3) {
+				for (int i = 0; i < trackCount; ++i) {
+					doc.audio.getTrack(i).name = block.readAsString();
+				}
+			}
+			
+			// Effect Column Count
+			for (int i = 0; i < channelCount; ++i) {
+				block.skip(1); // channelType 忽略
+				for (int j = 0; j < trackCount; ++j) {
+					doc.setEffectColumn(j, i, block.readByte());
+				}
+			}
+			
+			// Highlight 忽略
+		}
 	}
 
 	/**

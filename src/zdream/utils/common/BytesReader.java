@@ -87,6 +87,30 @@ public class BytesReader {
 		return new String(bs, 0, end + 1);
 	}
 	
+	/**
+	 * <p>将后面的数据当成字符串数据, 转换成字符串. 当读到某个位置的数据为 0 时停止.
+	 * <p>当最后读到数据最底端时, 如果最后一位不是 0 则会抛数组越界错误.
+	 * @return
+	 */
+	public String readAsString() {
+		byte c;
+		StringBuilder b = new StringBuilder();
+		
+		while ((c = readByte()) != 0) {
+			b.append((char) c);
+		}
+		
+		return b.toString();
+	}
+	
+	/**
+	 * 跳过数据
+	 * @return
+	 */
+	public void skip(int length) {
+		offset += length;
+	}
+	
 	public boolean isFinished() {
 		return offset >= bs.length;
 	}

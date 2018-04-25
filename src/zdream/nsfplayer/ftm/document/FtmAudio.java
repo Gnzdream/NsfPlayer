@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
 import zdream.nsfplayer.ftm.document.format.IInstParam;
 import zdream.nsfplayer.ftm.document.format.Inst2A03;
-import zdream.nsfplayer.xgm.player.SoundDataMSP;
 
-public class FtmAudio extends SoundDataMSP implements IInstParam {
+public class FtmAudio implements IInstParam {
 	
 	public final FamiTrackerHandler handler;
 	
@@ -75,7 +74,12 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	 */
 	int split;
 	
-	@Override
+	/**
+	 * <p>N163 的轨道数.
+	 * <p>当 {@link #useN163} 为 true 时有效
+	 */
+	int namcoChannels;
+	
 	public String getTitle() {
 		return title;
 	}
@@ -159,21 +163,20 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 		return split;
 	}
 
-	@Override
-	public int getSong() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void setSong(int song) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public int getSongNum() {
+	/**
+	 * 曲目总数
+	 * @return
+	 */
+	public int getTrackCount() {
 		return tracks.size();
+	}
+	
+	/**
+	 * @return
+	 * {@link #namcoChannels}
+	 */
+	public int getNamcoChannels() {
+		return namcoChannels;
 	}
 	
 	@Override
@@ -264,7 +267,7 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	}
 	
 	/* **********
-	 *   乐曲   *
+	 * 乐曲轨道 *
 	 ********** */
 	/*
 	 * 乐曲部分 Tracks
@@ -275,5 +278,38 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	public FtmTrack getTrack(int index) {
 		return tracks.get(index);
 	}
+	
+	/**
+	 * 各个轨道的标识号
+	 */
+	public static final byte
+			CHANNEL_2A03_PULSE1 = 1,
+			CHANNEL_2A03_PULSE2 = 2,
+			CHANNEL_2A03_TRIANGLE = 3,
+			CHANNEL_2A03_NOISE = 4,
+			CHANNEL_2A03_DPCM = 5,
+			
+			CHANNEL_VRC6_PULSE1 = 0x11,
+			CHANNEL_VRC6_PULSE2 = 0x12,
+			CHANNEL_VRC6_SAWTOOTH = 0x13,
+			
+			CHANNEL_VRC7_FM1 = 0x21,
+			CHANNEL_VRC7_FM2 = 0x22,
+			CHANNEL_VRC7_FM3 = 0x23,
+			CHANNEL_VRC7_FM4 = 0x24,
+			CHANNEL_VRC7_FM5 = 0x25,
+			CHANNEL_VRC7_FM6 = 0x26,
+			
+			CHANNEL_FDS = 0x31,
+			
+			CHANNEL_MMC1_PULSE1 = 0x41,
+			CHANNEL_MMC1_PULSE2 = 0x42,
+			
+			CHANNEL_N163_1 = 0x51,
+			CHANNEL_N163_2 = 0x52,
+			CHANNEL_N163_3 = 0x53,
+			CHANNEL_N163_4 = 0x54,
+			CHANNEL_N163_5 = 0x55,
+			CHANNEL_N163_6 = 0x56;
 
 }
