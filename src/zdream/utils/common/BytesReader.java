@@ -43,6 +43,50 @@ public class BytesReader {
 		return value;
 	}
 	
+	/**
+	 * 获取一个 byte 数据
+	 * @return
+	 */
+	public byte readByte() {
+		if (offset + 1 > bs.length) {
+			throw new ArrayIndexOutOfBoundsException("还剩余 " + (bs.length - offset) + " 数据, 无法读取 4 个值");
+		}
+		return bs[offset++];
+	}
+	
+	/**
+	 * 获取一个转成正数的 byte 数据
+	 * @return
+	 */
+	public int readUnsignedByte() {
+		if (offset + 1 > bs.length) {
+			throw new ArrayIndexOutOfBoundsException("还剩余 " + (bs.length - offset) + " 数据, 无法读取 4 个值");
+		}
+		return (bs[offset++] & 0xFF);
+	}
+	
+	/**
+	 * <p>将后面的 length 长度的数据当成字符串数据, 转换成字符串.
+	 * <p>如果字符串后面有一大堆 '\0', 则转换时会去掉这些数据.
+	 * <p>当最后读到数据最底端时, 不会抛数组越界错误.
+	 * @param length
+	 * @return
+	 */
+	public String readAsString(int length) {
+		byte[] bs = new byte[length];
+		int byteReads = read(bs);
+		
+		int end = byteReads - 1;
+		for (; end >= 0; end--) {
+			if (bs[end] == '\0') {
+				continue;
+			}
+			break;
+		}
+		
+		return new String(bs, 0, end + 1);
+	}
+	
 	public boolean isFinished() {
 		return offset >= bs.length;
 	}

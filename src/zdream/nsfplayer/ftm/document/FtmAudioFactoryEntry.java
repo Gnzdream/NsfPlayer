@@ -441,7 +441,7 @@ public class FtmAudioFactoryEntry {
 			}
 		}
 		
-		audio.tracks = tracks.toArray(new FtmTrack[tracks.size()]);
+		audio.tracks = tracks;
 	}
 	
 	/**

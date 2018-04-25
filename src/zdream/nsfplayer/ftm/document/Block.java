@@ -22,7 +22,7 @@ class Block extends BytesReader {
 			break;
 		}
 		
-		this.id = new String(id, 0, end);
+		this.id = new String(id, 0, end + 1);
 	}
 	/**
 	 * 块版本号

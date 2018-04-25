@@ -6,6 +6,10 @@ package zdream.nsfplayer.ftm.document.format;
  */
 public final class FtmTrack {
 	
+	public static final int
+			DEFAULT_NTSC_TEMPO = 150,
+			DEFAULT_PAL_TEMPO = 125;
+	
 	/**
 	 * 每个模块最大的行数
 	 */

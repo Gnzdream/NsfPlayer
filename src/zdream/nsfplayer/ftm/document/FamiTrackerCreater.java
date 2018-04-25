@@ -2,6 +2,8 @@ package zdream.nsfplayer.ftm.document;
 
 import java.io.IOException;
 
+import zdream.nsfplayer.ftm.document.format.FtmTrack;
+
 /**
  * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
  * 允许将转成 .txt 的文件也能够解析.
@@ -17,7 +19,7 @@ public class FamiTrackerCreater {
 	 * FTM 整个文件的头标识
 	 */
 	public static final String FILE_HEADER_ID = "FamiTracker Module";
-	public static final String FILE_BLOCK_PARAMS	 = "PARAMS";
+	public static final String FILE_BLOCK_PARAMS = "PARAMS";
 	public static final String FILE_BLOCK_INFO = "INFO";
 	public static final String FILE_BLOCK_INSTRUMENTS = "INSTRUMENTS";
 	public static final String FILE_BLOCK_SEQUENCES = "SEQUENCES";
@@ -34,17 +36,19 @@ public class FamiTrackerCreater {
 	
 	
 	/**
-	 * 创建 {@link FamiTrackerHandler} 文档
+	 * 创建 {@link FtmAudio} 文档
 	 * @param filename
 	 * @return
 	 * @throws Exception
 	 */
-	public FamiTrackerHandler create(String filename) throws Exception {
-		FamiTrackerHandler doc = new FamiTrackerHandler();
+	public FtmAudio create(String filename) throws Exception {
+		
+		FtmAudio audio = new FtmAudio();
+		FamiTrackerHandler doc = audio.handler;
 		
 		doCreate(filename, doc);
 		
-		return doc;
+		return audio;
 	}
 	
 	/**
@@ -79,13 +83,6 @@ public class FamiTrackerCreater {
 	}
 	
 	private void doCreateNew(FamiTrackerHandler doc, DocumentReader openFile, int version) {
-		// 1191 行
-		
-		if (version < 0x0210) {
-			// This has to be done for older files
-			doc.allocateTrack(0);
-		}
-		
 		/*
 		 * Famitracker 产生的文件由多个块组成.
 		 * 在读取的过程中就需要对逐个块进行处理.
@@ -97,26 +94,22 @@ public class FamiTrackerCreater {
 				break;
 			}
 			
+			System.out.println(block.id);
 			switch (block.id) {
 			
 			case FILE_END_ID: // 已经读取结束
 				break LOOP;
 			
 			case FILE_BLOCK_PARAMS:
-				//errorFlag = readBlock_Parameters(documentFile);
+				readBlockParameters(doc, block, version);
 				break;
 				
 			case FILE_BLOCK_INFO: {
-				/*byte[] bs = new byte[32];
-				
-				documentFile.getBlock(bs);
-				m_strName = new String(bs, FamiTrackerApp.defCharset);
+				readBlockInfo(doc, block);
+			} break;
 			
-				documentFile.getBlock(bs);
-				m_strArtist = new String(bs, FamiTrackerApp.defCharset);
-			
-				documentFile.getBlock(bs);
-				m_strCopyright = new String(bs, FamiTrackerApp.defCharset);*/
+			case FILE_BLOCK_HEADER: {
+				//errorFlag = readBlock_Header(documentFile);
 			} break;
 			
 			case FILE_BLOCK_INSTRUMENTS: {
@@ -137,10 +130,6 @@ public class FamiTrackerCreater {
 			
 			case FILE_BLOCK_DSAMPLES: {
 				//errorFlag = readBlock_DSamples(documentFile);
-			} break;
-			
-			case FILE_BLOCK_HEADER: {
-				//errorFlag = readBlock_Header(documentFile);
 			} break;
 			
 			case FILE_BLOCK_COMMENTS: {
@@ -172,7 +161,169 @@ public class FamiTrackerCreater {
 		}
 	}
 	
+	/**
+	 * <p>处理参数项.
+	 * <br>根据文件里面写明的 param 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * <p>当<b>块版本为 1 或 2 </b>时:
+	 * <li>track[0] 的 speed
+	 * <li>所用的轨道数
+	 * <li>制式
+	 * <li>刷新率
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 3 </b>时:
+	 * <li>扩展芯片码
+	 * <li>所用的轨道数
+	 * <li>制式
+	 * <li>刷新率
+	 * <li>震动模式 (忽略)
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 4 或 5 </b>时:
+	 * <li>扩展芯片码
+	 * <li>所用的轨道数
+	 * <li>制式
+	 * <li>刷新率
+	 * <li>震动模式 (忽略)
+	 * <li>小节间隔 (忽略)
+	 * <li>拍间隔 (忽略)
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 6 </b>时:
+	 * <li>扩展芯片码
+	 * <li>所用的轨道数
+	 * <li>制式
+	 * <li>刷新率
+	 * <li>震动模式 (忽略)
+	 * <li>小节间隔 (忽略)
+	 * <li>拍间隔 (忽略)
+	 * <li>Namco 轨道数 (当上面的扩展芯片码说该音乐使用了 Namco 音源时存在)
+	 * </li>
+	 * 
+	 * <p><b>其它高于 6 的版本</b>时:
+	 * <li>扩展芯片码
+	 * <li>所用的轨道数
+	 * <li>制式
+	 * <li>刷新率
+	 * <li>震动模式 (忽略)
+	 * <li>小节间隔 (忽略)
+	 * <li>拍间隔 (忽略)
+	 * <li>Namco 轨道数 (当上面的扩展芯片码说该音乐使用了 Namco 音源时存在)
+	 * <li>节奏与速度的分割值
+	 * </li>
+	 * 
+	 * <p><b>注意</b>:
+	 * <li>轨道数. 2A03 为 5, 2A03+VRC6 为 8, 等等.
+	 * <br>由于后面轨道数可以用统计的方法累加计算出来, 所以【所用的轨道数】这个数据并不会被记录.
+	 * <li>制式包含 NTSC 和 PAL
+	 * </li>
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param block
+	 * @param fileVersion
+	 *   整个文件的版本号
+	 */
+	private void readBlockParameters(FamiTrackerHandler doc, Block block, int fileVersion) {
+		int version = block.version;
+		if (version < 1) {
+			throw new FtmParseException("版本号错误: " + version);
+		}
+		
+		FtmTrack track = doc.createTrack();
+		
+		switch (version) {
+		case 1: case 2:
+			track.speed = block.readAsCInt();
+			block.readAsCInt(); // 轨道数, 忽略
+			doc.setMechine((byte) block.readAsCInt());
+			doc.setFramerate(block.readAsCInt());
+			doc.setDefaultSplit();
+			
+			break;
+			
+		case 3:
+			doc.setChip(block.readByte());
+			block.readAsCInt(); // 轨道数, 忽略
+			doc.setMechine((byte) block.readAsCInt());
+			doc.setFramerate(block.readAsCInt());
+			block.readAsCInt(); // 震动模式, 忽略
+			doc.setDefaultSplit();
+			
+			break;
+			
+		case 4: case 5:
+			doc.setChip(block.readByte());
+			block.readAsCInt(); // 轨道数, 忽略
+			doc.setMechine((byte) block.readAsCInt());
+			doc.setFramerate(block.readAsCInt());
+			block.readAsCInt(); // 震动模式, 忽略
+			block.readAsCInt(); // 小节间隔 忽略
+			block.readAsCInt(); // 拍间隔, 忽略
+			doc.setDefaultSplit();
+			
+			break;
+			
+		case 6:
+			doc.setChip(block.readByte());
+			block.readAsCInt(); // 轨道数, 忽略
+			doc.setMechine((byte) block.readAsCInt());
+			doc.setFramerate(block.readAsCInt());
+			block.readAsCInt(); // 震动模式, 忽略
+			block.readAsCInt(); // 小节间隔 忽略
+			block.readAsCInt(); // 拍间隔, 忽略
+			if (doc.audio.useN163) {
+				doc.setNamcoChannels(block.readAsCInt());
+			}
+			doc.setDefaultSplit();
+			
+			break;
+			
+		default:
+			doc.setChip(block.readByte());
+			block.readAsCInt(); // 轨道数, 忽略
+			doc.setMechine((byte) block.readAsCInt());
+			doc.setFramerate(block.readAsCInt());
+			block.readAsCInt(); // 震动模式, 忽略
+			block.readAsCInt(); // 小节间隔 忽略
+			block.readAsCInt(); // 拍间隔, 忽略
+			if (doc.audio.useN163) {
+				doc.setNamcoChannels(block.readAsCInt());
+			}
+			doc.setSplit(block.readAsCInt());
+			
+			break;
+		}
+		
+		if (fileVersion == 0x0200) {
+			int speed = track.speed;
+			if (speed < 20)
+				track.speed = speed + 1;
+		}
+		
+		if (version == 1) {
+			if (track.speed > 19) {
+				track.tempo = track.speed;
+				track.speed = 6;
+			} else {
+				track.tempo = (doc.audio.machine == FtmAudio.MACHINE_NTSC) ?
+						FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
+			}
+		}
+	}
 	
+	/**
+	 * 产生音乐的消息, 包含标题、作家和版权说明等
+	 * @param doc
+	 * @param block
+	 */
+	private void readBlockInfo(FamiTrackerHandler doc, Block block) {
+		doc.audio.title = block.readAsString(32);
+		doc.audio.author = block.readAsString(32);
+		doc.audio.copyright = block.readAsString(32);
+	}
+
 	/**
 	 * 检查头部 ID
 	 * @param openFile

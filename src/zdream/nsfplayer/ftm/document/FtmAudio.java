@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.document;
 
+import java.util.ArrayList;
+
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
 import zdream.nsfplayer.ftm.document.format.IInstParam;
 import zdream.nsfplayer.ftm.document.format.Inst2A03;
@@ -7,9 +9,16 @@ import zdream.nsfplayer.xgm.player.SoundDataMSP;
 
 public class FtmAudio extends SoundDataMSP implements IInstParam {
 	
+	public final FamiTrackerHandler handler;
+	
+	{
+		handler = new FamiTrackerHandler(this);
+	}
+	
 	/**
 	 * FamiTracker 导出文本的版本号, 常见的有 0.4.2 0.4.3 ... 0.4.6
 	 */
+	@Deprecated
 	String version;
 	
 	/**
@@ -55,11 +64,14 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	 * 0 for old style vibrato, 1 for new style (这是 Famitracker 文档的原话)
 	 */
 	byte vibrato;
-	
+
+	public static final int DEFAULT_SPEED_SPLIT = 21;
 	/**
-	 * 原话是:
-	 * split point where Fxx effect sets tempo instead of speed<br>
-	 * 'Fxx' 这个函数影响多少, 其实我并不知道.
+	 * <p>节奏与速度的分割值
+	 * <p>split point where Fxx effect sets tempo instead of speed
+	 * <br>'Fxx' 这个函数影响音乐播放的速度.
+	 * <p>当 xx 代表的数值大于 {@code split} 时, 它将解析成 {@link FtmTrack#tempo};
+	 * <br>否则解析成 {@link FtmTrack#speed}
 	 */
 	int split;
 	
@@ -161,7 +173,7 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 
 	@Override
 	public int getSongNum() {
-		return tracks.length;
+		return tracks.size();
 	}
 	
 	@Override
@@ -258,10 +270,10 @@ public class FtmAudio extends SoundDataMSP implements IInstParam {
 	 * 乐曲部分 Tracks
 	 */
 	
-	FtmTrack[] tracks;
+	ArrayList<FtmTrack> tracks = new ArrayList<>();
 	
-	public FtmTrack[] getTracks() {
-		return tracks;
+	public FtmTrack getTrack(int index) {
+		return tracks.get(index);
 	}
 
 }
