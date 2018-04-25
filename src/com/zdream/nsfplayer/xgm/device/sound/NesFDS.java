@@ -84,6 +84,8 @@ public class NesFDS implements ISoundChip {
 		setRate(DEFAULT_RATE);
 		sm[0] = 128;
 		sm[1] = 128;
+		
+		trkinfo = new TrackInfoFDS();
 
 		reset();
 	}

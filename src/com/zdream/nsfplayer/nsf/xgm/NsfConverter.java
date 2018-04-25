@@ -8,7 +8,7 @@ import com.zdream.nsfplayer.nsf.device.Bus;
 import com.zdream.nsfplayer.nsf.device.IDevice;
 import com.zdream.nsfplayer.nsf.device.Layer;
 import com.zdream.nsfplayer.nsf.device.Pulses;
-import com.zdream.nsfplayer.xgm.device.audio.Mixer;
+import com.zdream.nsfplayer.sound.mixer.SoundMixer;
 import com.zdream.nsfplayer.xgm.device.cpu.NesCPU;
 import com.zdream.nsfplayer.xgm.device.memory.NesBank;
 import com.zdream.nsfplayer.xgm.device.memory.NesMem;
@@ -119,7 +119,6 @@ public class NsfConverter {
 	Bus apu_bus;
 	Layer stack;
 	Layer layer;
-	Mixer mixer;
 	
 	/**
 	 * 虚拟音频设备, 比如 APU 部分, DMC 部分, VRC6 部分等
@@ -162,7 +161,6 @@ public class NsfConverter {
 		apu_bus = new Bus();
 		stack = new Layer();
 		layer = new Layer();
-		mixer = new Mixer();
 		
 		pulse = new Pulses();
 		dmc = new NesDMC();
@@ -193,7 +191,6 @@ public class NsfConverter {
 		// 2. 拆分所有关键设备, TODO 这里暂时放弃循环检测器
 		stack.detachAll();
 		layer.detachAll();
-		mixer.detachAll();
 		apu_bus.detachAll();
 		
 		if (bmax != 0)
@@ -263,6 +260,11 @@ public class NsfConverter {
 	/* ***********
 	 *	渲染部分  *
 	 *********** */
+	
+	/**
+	 * 负责采样音频合成的合成器
+	 */
+	SoundMixer mixer;
 	
 	/**
 	 * 曲目号
