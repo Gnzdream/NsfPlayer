@@ -64,6 +64,10 @@ public class FamiTrackerCreater {
 			doc.allocateTrack(0);
 		}
 		
+		/*
+		 * Famitracker 产生的文件由多个块组成.
+		 * 在读取的过程中就需要对逐个块进行处理.
+		 */
 		// TODO
 	}
 	
