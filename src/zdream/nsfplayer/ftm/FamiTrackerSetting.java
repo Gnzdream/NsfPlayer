@@ -1,4 +1,4 @@
-package zdream.famitracker;
+package zdream.nsfplayer.ftm;
 
 /**
  * TODO

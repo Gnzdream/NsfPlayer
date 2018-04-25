@@ -1,12 +1,12 @@
-package zdream.famitracker.document;
+package zdream.nsfplayer.ftm.document;
 
 /**
- * FamiTracker 的文本. 可以产生多个实例
+ * FamiTracker 的文本的操作器. 每一个 {@link FtmAudio}
  * @author Zdream
  */
-public class FamiTrackerDocument {
+public class FamiTrackerHandler {
 	
-	FamiTrackerDocument() {
+	FamiTrackerHandler() {
 		// TODO Auto-generated constructor stub
 	}
 

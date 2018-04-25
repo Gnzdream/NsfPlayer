@@ -1,5 +1,8 @@
-package zdream.nsfplayer.ftm.format;
+package zdream.nsfplayer.ftm.document;
 
+import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.document.format.IInstParam;
+import zdream.nsfplayer.ftm.document.format.Inst2A03;
 import zdream.nsfplayer.xgm.player.SoundDataMSP;
 
 public class FtmAudio extends SoundDataMSP implements IInstParam {

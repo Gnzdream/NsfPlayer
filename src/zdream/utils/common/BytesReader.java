@@ -1,4 +1,4 @@
-package zdream.famitracker.document;
+package zdream.utils.common;
 
 /**
  * byte 数组读取器
@@ -45,6 +45,10 @@ public class BytesReader {
 	
 	public boolean isFinished() {
 		return offset >= bs.length;
+	}
+	
+	public final byte[] bytes() {
+		return bs;
 	}
 
 }

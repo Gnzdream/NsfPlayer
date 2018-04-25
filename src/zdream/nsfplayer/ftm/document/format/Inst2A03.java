@@ -1,6 +1,6 @@
-package zdream.nsfplayer.ftm.format;
+package zdream.nsfplayer.ftm.document.format;
 
-import zdream.nsfplayer.ftm.format.FtmAudio.Macro2A03;
+import zdream.nsfplayer.ftm.document.FtmAudio.Macro2A03;
 
 /**
  * 2A03 乐器部分

@@ -1,13 +1,14 @@
-package zdream.famitracker;
+package zdream.nsfplayer.ftm;
 
 import java.nio.charset.Charset;
 
-import zdream.famitracker.document.FamiTrackerCreater;
-import zdream.famitracker.document.FamiTrackerDocument;
+import zdream.nsfplayer.ftm.document.FamiTrackerCreater;
+import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 
 /**
- * 应用的实体
+ * 应用的实体. 用于打开 FamiTracker 的文件等操作
  * @author Zdream
+ * @date 2018-04-25
  */
 public class FamiTrackerApplication {
 	
@@ -32,7 +33,7 @@ public class FamiTrackerApplication {
 	 * 这是我所定义的方法, 用来加载 FamiTrackerDoc 的文件.
 	 * @param filename
 	 */
-	public FamiTrackerDocument open(String filename) throws Exception {
+	public FamiTrackerHandler open(String filename) throws Exception {
 		return creater.create(filename);
 	}
 	

@@ -1,9 +1,9 @@
-package zdream.famitracker.document;
+package zdream.nsfplayer.ftm.document;
 
 import java.io.IOException;
 
 /**
- * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerDocument}
+ * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
  * 允许将转成 .txt 的文件也能够解析.
  * @author Zdream
  */
@@ -34,13 +34,13 @@ public class FamiTrackerCreater {
 	
 	
 	/**
-	 * 创建 {@link FamiTrackerDocument} 文档
+	 * 创建 {@link FamiTrackerHandler} 文档
 	 * @param filename
 	 * @return
 	 * @throws Exception
 	 */
-	public FamiTrackerDocument create(String filename) throws Exception {
-		FamiTrackerDocument doc = new FamiTrackerDocument();
+	public FamiTrackerHandler create(String filename) throws Exception {
+		FamiTrackerHandler doc = new FamiTrackerHandler();
 		
 		doCreate(filename, doc);
 		
@@ -53,7 +53,7 @@ public class FamiTrackerCreater {
 	 */
 	public static final int COMPATIBLE_VER = 0x0200;
 	
-	private void doCreate(String filename, FamiTrackerDocument doc) throws IOException {
+	private void doCreate(String filename, FamiTrackerHandler doc) throws IOException {
 		DocumentReader openFile = new DocumentReader(filename);
 		int version;
 		
@@ -78,7 +78,7 @@ public class FamiTrackerCreater {
 		}
 	}
 	
-	private void doCreateNew(FamiTrackerDocument doc, DocumentReader openFile, int version) {
+	private void doCreateNew(FamiTrackerHandler doc, DocumentReader openFile, int version) {
 		// 1191 行
 		
 		if (version < 0x0210) {
@@ -224,12 +224,11 @@ public class FamiTrackerCreater {
 		}
 		
 		block.version = openFile.readAsCInt();
-		block.size = openFile.readAsCInt();
+		block.setSize(openFile.readAsCInt());
 		
 		// TODO 原程序判断 version 和 size 的合法性, 这里跳过
 		
-		block.bs = new byte[block.size];
-		bytesRead = openFile.read(block.bs);
+		bytesRead = openFile.read(block.bytes());
 		if (bytesRead != block.size) {
 			throw new RuntimeException("块: " + block.id + " 大小为 " + block.size +
 					" 但是只能读取 " + bytesRead + " 字节. 文件似乎已经损坏");

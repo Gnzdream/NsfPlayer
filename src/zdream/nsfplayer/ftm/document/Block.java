@@ -1,4 +1,6 @@
-package zdream.famitracker.document;
+package zdream.nsfplayer.ftm.document;
+
+import zdream.utils.common.BytesReader;
 
 /**
  * FTM 的文件块
@@ -30,4 +32,9 @@ class Block extends BytesReader {
 	 * 块大小 (字节)
 	 */
 	int size;
+	
+	public void setSize(int size) {
+		this.size = size;
+		bs = new byte[size];
+	}
 }

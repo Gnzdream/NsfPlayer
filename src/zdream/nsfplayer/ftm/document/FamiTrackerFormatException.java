@@ -1,4 +1,4 @@
-package zdream.famitracker.document;
+package zdream.nsfplayer.ftm.document;
 
 public class FamiTrackerFormatException extends RuntimeException {
 

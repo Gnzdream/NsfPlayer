@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.format;
+package zdream.nsfplayer.ftm.document;
 
 public class FtmParseException extends RuntimeException {
 

@@ -1,8 +1,10 @@
-package zdream.famitracker.document;
+package zdream.nsfplayer.ftm.document;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import zdream.utils.common.BytesReader;
 
 public class DocumentReader extends BytesReader {
 	
