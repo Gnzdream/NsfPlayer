@@ -9,6 +9,30 @@ import java.io.IOException;
  */
 public class FamiTrackerCreater {
 	
+	/*
+	 * FTM 的每个块的 ID, 用于标识这个块的内容.
+	 */
+	
+	/**
+	 * FTM 整个文件的头标识
+	 */
+	public static final String FILE_HEADER_ID = "FamiTracker Module";
+	public static final String FILE_BLOCK_PARAMS	 = "PARAMS";
+	public static final String FILE_BLOCK_INFO = "INFO";
+	public static final String FILE_BLOCK_INSTRUMENTS = "INSTRUMENTS";
+	public static final String FILE_BLOCK_SEQUENCES = "SEQUENCES";
+	public static final String FILE_BLOCK_FRAMES	 = "FRAMES";
+	public static final String FILE_BLOCK_PATTERNS = "PATTERNS";
+	public static final String FILE_BLOCK_DSAMPLES = "DPCM SAMPLES";
+	public static final String FILE_BLOCK_HEADER	 = "HEADER";
+	public static final String FILE_BLOCK_COMMENTS = "COMMENTS";
+	/**
+	 * FTM 整个文件的结束标识
+	 */
+	public static final String FILE_END_ID = "END";
+	
+	
+	
 	/**
 	 * 创建 {@link FamiTrackerDocument} 文档
 	 * @param filename
@@ -22,8 +46,6 @@ public class FamiTrackerCreater {
 		
 		return doc;
 	}
-	
-	private static final String FILE_HEADER_ID = "FamiTracker Module";
 	
 	/**
 	 * 最低可以打开的文件版本, v0.1.
@@ -68,7 +90,86 @@ public class FamiTrackerCreater {
 		 * Famitracker 产生的文件由多个块组成.
 		 * 在读取的过程中就需要对逐个块进行处理.
 		 */
-		// TODO
+		while (!openFile.isFinished()) LOOP: {
+			Block block = nextBlock(openFile);
+			if (block.id == null) {
+				// 已经读取结束
+				break;
+			}
+			
+			switch (block.id) {
+			
+			case FILE_END_ID: // 已经读取结束
+				break LOOP;
+			
+			case FILE_BLOCK_PARAMS:
+				//errorFlag = readBlock_Parameters(documentFile);
+				break;
+				
+			case FILE_BLOCK_INFO: {
+				/*byte[] bs = new byte[32];
+				
+				documentFile.getBlock(bs);
+				m_strName = new String(bs, FamiTrackerApp.defCharset);
+			
+				documentFile.getBlock(bs);
+				m_strArtist = new String(bs, FamiTrackerApp.defCharset);
+			
+				documentFile.getBlock(bs);
+				m_strCopyright = new String(bs, FamiTrackerApp.defCharset);*/
+			} break;
+			
+			case FILE_BLOCK_INSTRUMENTS: {
+				//errorFlag = readBlock_Instruments(documentFile);
+			} break;
+			
+			case FILE_BLOCK_SEQUENCES: {
+				//errorFlag = readBlock_Sequences(documentFile);
+			} break;
+			
+			case FILE_BLOCK_FRAMES: {
+				//errorFlag = readBlock_Frames(documentFile);
+			} break;
+			
+			case FILE_BLOCK_PATTERNS: {
+				//errorFlag = readBlock_Patterns(documentFile);
+			} break;
+			
+			case FILE_BLOCK_DSAMPLES: {
+				//errorFlag = readBlock_DSamples(documentFile);
+			} break;
+			
+			case FILE_BLOCK_HEADER: {
+				//errorFlag = readBlock_Header(documentFile);
+			} break;
+			
+			case FILE_BLOCK_COMMENTS: {
+				//errorFlag = readBlock_Comments(documentFile);
+			} break;
+			
+			/*case FILE_BLOCK_SEQUENCES_VRC6: {
+				errorFlag = readBlock_SequencesVRC6(documentFile);
+			} break;
+			
+			// FILE_BLOCK_SEQUENCES_N106 是出于向后兼容的目的
+			case FILE_BLOCK_SEQUENCES_N163: case FILE_BLOCK_SEQUENCES_N106: {
+				errorFlag = readBlock_SequencesN163(documentFile);
+			} break;
+			
+			case FILE_BLOCK_SEQUENCES_S5B: {
+				errorFlag = readBlock_SequencesS5B(documentFile);
+			} break;
+			
+			case "END": {
+				fileFinished = true;
+			} break;*/
+
+			default:
+				System.err.println("出现了未知的 blockID: " + block.id);
+				//errorFlag = true;
+				break;
+			}
+		}
 	}
 	
 	
@@ -94,6 +195,47 @@ public class FamiTrackerCreater {
 		}
 		
 		return true;
+	}
+	
+
+	
+	/**
+	 * 是否还有下一个 block.
+	 * <p>除了最后结尾的 block (END) 以外, 所有的 block 都是由:
+	 * <li>16 字节的块标识
+	 * <li>4 字节的无符号数字, 表示块版本号</li>
+	 * <li>4 字节的无符号数字, 表示块大小</li>
+	 * <li>任意大小的数据</li>
+	 */
+	public Block nextBlock(DocumentReader openFile) {
+		Block block = new Block();
+		
+		byte[] bs = new byte[16];
+		int bytesRead = openFile.read(bs);
+		
+		if (bytesRead == 0) {
+			// 读取不到数据, 意味着文件已经读取完成
+			return block; // 这个 block 就是没有设置 id 的
+		}
+		
+		block.setId(bs);
+		if (FILE_END_ID.equals(block.id)) {
+			return block; // 结束标识, 没有版本、大小、数据
+		}
+		
+		block.version = openFile.readAsCInt();
+		block.size = openFile.readAsCInt();
+		
+		// TODO 原程序判断 version 和 size 的合法性, 这里跳过
+		
+		block.bs = new byte[block.size];
+		bytesRead = openFile.read(block.bs);
+		if (bytesRead != block.size) {
+			throw new RuntimeException("块: " + block.id + " 大小为 " + block.size +
+					" 但是只能读取 " + bytesRead + " 字节. 文件似乎已经损坏");
+		}
+		
+		return block;
 	}
 	
 }
