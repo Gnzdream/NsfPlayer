@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.document.format.FtmChipType;
+import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
 import zdream.nsfplayer.ftm.document.format.IFtmSequence;
@@ -197,10 +198,9 @@ public class FtmAudio {
 	/* **********
 	 *   乐器   *
 	 ********** */
-	/*
+	/**
 	 * 乐器部分 Instruments
 	 */
-	
 	ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
 	
 	/*
@@ -208,6 +208,11 @@ public class FtmAudio {
 	 * int (chip * seqtype.length + seqtype) - seq
 	 */
 	HashMap<Integer, ArrayList<IFtmSequence>> seqs = new HashMap<>();
+	
+	/**
+	 * 采样列表
+	 */
+	ArrayList<FtmDPCMSample> samples = new ArrayList<>();
 	
 	public IFtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
 		ArrayList<IFtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());

@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.document;
 import java.util.ArrayList;
 
 import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
 import zdream.nsfplayer.ftm.document.format.IFtmSequence;
@@ -270,19 +271,7 @@ public class FamiTrackerHandler {
 	public void registerInstrument(AbstractFtmInstrument inst) {
 		int index = inst.seq;
 		ArrayList<AbstractFtmInstrument> list = audio.insts;
-		int size = list.size();
-		int d = index - size;
-		if (d < 0) {
-			list.set(index, inst);
-			return;
-		}
-
-		// 将序列摆到 index 指定的位置, 中间填充 null
-		while (d > 0) {
-			list.add(null);
-			d--;
-		}
-		list.add(inst);
+		registerT(list, inst, index);
 	}
 	
 	/**
@@ -297,19 +286,33 @@ public class FamiTrackerHandler {
 		}
 		
 		int index = seq.getIndex();
+		registerT(list, seq, index);
+	}
+
+	/**
+	 * 注册采样
+	 * @param sample
+	 */
+	public void registerDPCMSample(FtmDPCMSample sample) {
+		int index = sample.index;
+		ArrayList<FtmDPCMSample> list = audio.samples;
+		registerT(list, sample, index);
+	}
+	
+	private <T> void registerT(ArrayList<T> list, T t, int index) {
 		int size = list.size();
 		int d = index - size;
 		if (d < 0) {
-			list.set(index, seq);
+			list.set(index, t);
 			return;
 		}
-		
+
 		// 将序列摆到 index 指定的位置, 中间填充 null
 		while (d > 0) {
 			list.add(null);
 			d--;
 		}
-		list.add(seq);
+		list.add(t);
 	}
 
 }

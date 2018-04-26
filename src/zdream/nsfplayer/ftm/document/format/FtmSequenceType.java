@@ -12,6 +12,7 @@ public enum FtmSequenceType {
 	
 	/**
 	 * Duty / Noise;
+	 * <br>VRC6 里面是 Pulse Width
 	 * <br>N163 里面是 Wave
 	 */
 	DUTY

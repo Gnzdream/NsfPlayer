@@ -2,12 +2,16 @@ package zdream.nsfplayer.ftm.document;
 
 import java.io.IOException;
 
+import zdream.nsfplayer.ftm.FamiTrackerSetting;
+import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.document.format.FtmChipType;
+import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.document.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.document.format.FtmSequence2A03;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.document.format.FtmSequenceVRC6;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
-import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 
 /**
  * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
@@ -37,8 +41,6 @@ public class FamiTrackerCreater {
 	 * FTM 整个文件的结束标识
 	 */
 	public static final String FILE_END_ID = "END";
-	
-	
 	
 	/**
 	 * 创建 {@link FtmAudio} 文档
@@ -436,10 +438,6 @@ public class FamiTrackerCreater {
 			byte type = block.readByte();
 			AbstractFtmInstrument inst = createInstrument(FtmChipType.ofInstrumentType(type), doc, block);
 			inst.seq = index;
-			
-			// Load the instrument
-			/*boolean valid = pInstrument.load(pDocFile);
-			assert(valid);*/
 
 			// 读取乐器名称
 			int size = block.readAsCInt();
@@ -448,38 +446,6 @@ public class FamiTrackerCreater {
 			// 保存乐器到 FtmAudio 中
 			doc.registerInstrument(inst);
 		}
-		
-		/*
-		// int version = pDocFile.getBlockVersion();
-
-		// Number of instruments
-		int count = pDocFile.getBlockInt();
-		assert(count <= MAX_INSTRUMENTS);
-
-		for (int i = 0; i < count; ++i) {
-			// Instrument index
-			int index = pDocFile.getBlockInt();
-			assert(index <= MAX_INSTRUMENTS);
-
-			// Read instrument type and create an instrument
-			byte type = pDocFile.getBlockChar();
-			Instrument pInstrument = createInstrument(type);
-			assert(pInstrument != null);
-
-			// Load the instrument
-			boolean valid = pInstrument.load(pDocFile);
-			assert(valid);
-
-			// Read name
-			int size = pDocFile.getBlockInt();
-			byte[] nameBytes = new byte[size];
-			pDocFile.getBlock(nameBytes);
-			pInstrument.setName(new String(nameBytes, FamiTrackerApp.defCharset));
-
-			// Store instrument
-			m_pInstruments[index] = pInstrument;
-		}
-		 */
 	}
 
 	/**
@@ -493,6 +459,9 @@ public class FamiTrackerCreater {
 		switch (type) {
 		case _2A03:
 			return create2A03Instrument(doc, block);
+			
+		case VRC6:
+			return createVRC6Instrument(doc, block);
 
 		// TODO
 			
@@ -521,68 +490,96 @@ public class FamiTrackerCreater {
 				inst.vol = createSeq2A03(doc, block, index, type);
 				break;
 			case 1:
-				
+				inst.arp = createSeq2A03(doc, block, index, type);
 				break;
 			case 2:
-				
+				inst.pit = createSeq2A03(doc, block, index, type);
 				break;
 			case 3:
-				
+				inst.hip = createSeq2A03(doc, block, index, type);
 				break;
 			case 4:
-				
+				inst.dut = createSeq2A03(doc, block, index, type);
 				break;
 
 			default:
 				break;
 			}
-			/*setSeqEnable(i, pDocFile.getBlockChar());
-			int Index = pDocFile.getBlockChar();
-			assert(Index < MAX_SEQUENCES);
-			setSeqIndex(i, Index);*/
-		}
-		
-		
-		/*
-		int version = pDocFile.getBlockVersion();
-
-		int SeqCnt = pDocFile.getBlockInt();
-		assert(SeqCnt < (SEQUENCE_COUNT + 1));
-
-		for (int i = 0; i < SeqCnt; ++i) {
-			setSeqEnable(i, pDocFile.getBlockChar());
-			int Index = pDocFile.getBlockChar();
-			assert(Index < MAX_SEQUENCES);
-			setSeqIndex(i, Index);
 		}
 
-		int Octaves = (version == 1) ? 6 : OCTAVE_RANGE;
+		// DPCM 部分
+		int octaves = (version == 1) ? 6 : FamiTrackerSetting.OCTAVE_RANGE;
 
-		for (int i = 0; i < Octaves; ++i) {
+		for (int i = 0; i < octaves; ++i) {
 			for (int j = 0; j < 12; ++j) {
-				int index = pDocFile.getBlockChar();
-				if (index > MAX_DSAMPLES)
-					index = 0;
-				setSample(i, j, (byte) index);
-				setSamplePitch(i, j, pDocFile.getBlockChar());
-				if (version > 5) {
-					byte Value = pDocFile.getBlockChar();
-					if (Value != -1 && Value < 0)
-						Value = -1;
-					setSampleDeltaValue(i, j, Value);
+				int index = block.readUnsignedByte();
+				/*
+				 * 没有采用 DPCM 的, index 都为 0.
+				 * 下面如果检测到采用的 DPCM 为 0 时, 就直接跳过.
+				 */
+				if (index == 0) {
+					inst.setEmptySample(i, j);
+					block.skip((version > 5) ? 2 : 1);
+					continue;
 				}
+				
+				FtmDPCMSample sample = createDSample(doc, index);
+				byte pitch = block.readByte();
+				byte delta;
+				if (version > 5) {
+					delta = block.readByte();
+					if (delta < 0) {
+						delta = -1;
+					}
+				} else {
+					delta = -1;
+				}
+				inst.setSample(i, j, sample, pitch, delta);
 			}
 		}
-
-		return true;
-		
-		*/
 		
 		return inst;
 	}
 	
+	private FtmInstrumentVRC6 createVRC6Instrument(FamiTrackerHandler doc, Block block) {
+		FtmInstrumentVRC6 inst = new FtmInstrumentVRC6();
+		
+		int seqCount = block.readAsCInt();
+
+		for (byte type = 0; type < seqCount; ++type) {
+			boolean enable = block.readByte() != 0;
+			int index = block.readUnsignedByte();
+			
+			if (!enable) {
+				continue;
+			}
+			
+			switch (type) {
+			case 0:
+				inst.vol = createSeqVRC6(doc, block, index, type);
+				break;
+			case 1:
+				inst.arp = createSeqVRC6(doc, block, index, type);
+				break;
+			case 2:
+				inst.pit = createSeqVRC6(doc, block, index, type);
+				break;
+			case 3:
+				inst.hip = createSeqVRC6(doc, block, index, type);
+				break;
+			case 4:
+				inst.dut = createSeqVRC6(doc, block, index, type);
+				break;
+
+			default:
+				break;
+			}
+		}
+		return inst;
+	}
+	
 	/**
-	 * 
+	 * 创建 2A03 的序列
 	 */
 	private FtmSequence2A03 createSeq2A03(FamiTrackerHandler doc, Block block, int index, byte type) {
 		FtmSequence2A03 s = new FtmSequence2A03();
@@ -593,6 +590,34 @@ public class FamiTrackerCreater {
 		doc.registerSequence(s);
 		
 		return s;
+	}
+	
+	/**
+	 * 创建 2A03 的序列
+	 */
+	private FtmSequenceVRC6 createSeqVRC6(FamiTrackerHandler doc, Block block, int index, byte type) {
+		FtmSequenceVRC6 s = new FtmSequenceVRC6();
+		s.index = index;
+		s.type = FtmSequenceType.get(type);
+		
+		// 将序列注册到 Ftm 中
+		doc.registerSequence(s);
+		
+		return s;
+	}
+	
+	/**
+	 * 创建 DPCM 采样的数据. 只是一个外壳, 先不读取数据
+	 * @return
+	 */
+	private FtmDPCMSample createDSample(FamiTrackerHandler doc, int index) {
+		FtmDPCMSample sample = new FtmDPCMSample();
+		sample.index = index;
+		
+		// 将采样注册到 Ftm 中
+		doc.registerDPCMSample(sample);
+		
+		return sample;
 	}
 
 	/**

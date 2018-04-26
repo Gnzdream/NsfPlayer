@@ -42,5 +42,8 @@ public class FamiTrackerSetting {
 	public General general = new General();
 	public Sound sound = new Sound();
 	public ChipLevels chipLevels = new ChipLevels();
+	
+	// 其它常数
 
+	public static final int OCTAVE_RANGE = 8;
 }

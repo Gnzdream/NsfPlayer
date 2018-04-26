@@ -8,6 +8,7 @@ public class TestFamiTracker {
 		FtmAudio audio = FamiTrackerApplication.app.open(
 //				"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\22_Of_Devious_Machinations_Clockwork_Tower.ftm"
 				"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
+//				"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\51_Unused_Song.ftm"
 		);
 		System.out.println("完成");
 		System.out.println(audio);
