@@ -1661,7 +1661,7 @@ public class FamiTrackerDoc {
 					StChanNote note2 = pTrack.getPatternData(channel, pattern, row);
 
 					note2.effNumber[0] = effectNumber;
-					note2.effParam[0] = effectParam;
+					note2.effParam[0] = effectParam & 0xFF;
 				} else {
 					for (int n = 0; n < (pTrack.getEffectColumnCount(channel) + 1); ++n) {
 						int effectNumber, effectParam;
@@ -1679,7 +1679,7 @@ public class FamiTrackerDoc {
 						}
 
 						note.effNumber[n] = effectNumber;
-						note.effParam[n] = effectParam;
+						note.effParam[n] = effectParam & 0xFF;
 					}
 				}
 
