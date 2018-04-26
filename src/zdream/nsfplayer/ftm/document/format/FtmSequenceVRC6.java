@@ -31,5 +31,12 @@ public class FtmSequenceVRC6 implements IFtmSequence {
 	public int getIndex() {
 		return index;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder(24);
+		b.append(FtmChipType.VRC6.name()).append(' ').append("Sequence").append(' ').append('#').append(index);
+		return b.toString();
+	}
 
 }

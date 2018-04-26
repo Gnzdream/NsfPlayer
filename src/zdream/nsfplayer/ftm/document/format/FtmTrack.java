@@ -55,5 +55,16 @@ public final class FtmTrack {
 	 * 顺序 ORDER
 	 */
 	public FtmPattern[][] orders;
+	
+	/* **********
+	 *   其它   *
+	 ********** */
+	
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder(24);
+		b.append("Track").append(' ').append(name);
+		return b.toString();
+	}
 
 }

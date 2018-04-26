@@ -20,26 +20,7 @@ public class FtmInstrumentVRC6 extends AbstractFtmInstrument {
 	
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(80);
-		
-		builder.append(name).append("(VRC6)").append(':').append(' ').append('#').append(seq).append('\n');
-		if (vol != null) {
-			builder.append("vol").append(':').append(' ').append(vol).append('\n');
-		}
-		if (arp != null) {
-			builder.append("arp").append(':').append(' ').append(arp).append('\n');
-		}
-		if (pit != null) {
-			builder.append("pit").append(':').append(' ').append(pit).append('\n');
-		}
-		if (hip != null) {
-			builder.append("hip").append(':').append(' ').append(hip).append('\n');
-		}
-		if (dut != null) {
-			builder.append("dut").append(':').append(' ').append(dut).append('\n');
-		}
-		
-		return builder.toString();
+		return String.format("VRC6 Instrument #%d %s", seq, name);
 	}
 
 }
