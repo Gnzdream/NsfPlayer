@@ -3,10 +3,11 @@ package zdream.nsfplayer.ftm.document;
 import java.util.ArrayList;
 
 import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.document.format.FtmChipType;
 import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.document.format.FtmSequence;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
-import zdream.nsfplayer.ftm.document.format.IFtmSequence;
 
 /**
  * FamiTracker 的文本的操作器.
@@ -266,6 +267,45 @@ public class FamiTrackerHandler {
 	 ********** */
 	
 	/**
+	 * 获得序列数据
+	 */
+	public FtmSequence getSequence2A03(FtmSequenceType type, int index) {
+		int key = FtmChipType._2A03.ordinal() + FtmSequenceType.values().length + type.ordinal();
+		ArrayList<FtmSequence> list = audio.seqs.get(key);
+		if (list == null) {
+			return null;
+		}
+		
+		if (index >= list.size()) {
+			return null;
+		}
+		return list.get(index);
+	}
+	
+	/**
+	 * 获得序列数据. 如果没有, 就创建一个
+	 */
+	public FtmSequence getOrCreateSequence2A03(FtmSequenceType type, int index) {
+		int key = FtmChipType._2A03.ordinal() + FtmSequenceType.values().length + type.ordinal();
+		ArrayList<FtmSequence> list = audio.seqs.get(key);
+		if (list == null) {
+			list = new ArrayList<>();
+			audio.seqs.put(key, list);
+		}
+		
+		FtmSequence seq = null;
+		if (index < list.size()) {
+			seq = list.get(index);
+		}
+		
+		if (seq == null) {
+			seq = new FtmSequence(type);
+			registerT(list, seq, index);
+		}
+		return seq;
+	}
+	
+	/**
 	 * 注册乐器
 	 */
 	public void registerInstrument(AbstractFtmInstrument inst) {
@@ -277,9 +317,9 @@ public class FamiTrackerHandler {
 	/**
 	 * 注册序列
 	 */
-	public void registerSequence(IFtmSequence seq) {
-		int key = seq.getChip().ordinal() + FtmSequenceType.values().length + seq.getType().ordinal();
-		ArrayList<IFtmSequence> list = audio.seqs.get(key);
+	public void registerSequence(FtmSequence seq, FtmChipType chip) {
+		int key = chip.ordinal() + FtmSequenceType.values().length + seq.type.ordinal();
+		ArrayList<FtmSequence> list = audio.seqs.get(key);
 		if (list == null) {
 			list = new ArrayList<>();
 			audio.seqs.put(key, list);

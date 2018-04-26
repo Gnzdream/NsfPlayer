@@ -46,4 +46,10 @@ public class FamiTrackerSetting {
 	// 其它常数
 
 	public static final int OCTAVE_RANGE = 8;
+
+	/**
+	 * 序列的最大个数
+	 * <br>Maximum number of sequence lists
+	 */
+	public static final int MAX_SEQUENCES = 128;
 }

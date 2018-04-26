@@ -1,5 +1,8 @@
 package zdream.nsfplayer.ftm.document;
 
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
+import static zdream.nsfplayer.ftm.document.format.FtmSequence.SEQUENCE_COUNT;
+
 import java.io.IOException;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
@@ -8,9 +11,8 @@ import zdream.nsfplayer.ftm.document.format.FtmChipType;
 import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.document.format.FtmInstrumentVRC6;
-import zdream.nsfplayer.ftm.document.format.FtmSequence2A03;
+import zdream.nsfplayer.ftm.document.format.FtmSequence;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
-import zdream.nsfplayer.ftm.document.format.FtmSequenceVRC6;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
 
 /**
@@ -127,7 +129,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_SEQUENCES: {
-				//errorFlag = readBlock_Sequences(documentFile);
+				readBlockSequences(doc, block);
 			} break;
 			
 			case FILE_BLOCK_FRAMES: {
@@ -414,7 +416,9 @@ public class FamiTrackerCreater {
 	/**
 	 * <p>处理乐器.
 	 * <p>里面的数据内容有:
-	 * <li>
+	 * <li>乐器序号
+	 * <li>乐器的所含序列的序号 (类似于指针)
+	 * <li>乐器名称
 	 * </li>
 	 * </p>
 	 * 
@@ -446,6 +450,273 @@ public class FamiTrackerCreater {
 			// 保存乐器到 FtmAudio 中
 			doc.registerInstrument(inst);
 		}
+	}
+
+	/**
+	 * <p>处理序列 (2A03 & MMC5).
+	 * <br>根据文件里面写明的 sequences 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * <p>当<b>块版本为 1 </b>时,
+	 * <br>由于
+	 * <li>每个轨道的效果列数
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 2 </b>时:
+	 * <li>(总乐曲数 - 1)
+	 * <li>各个乐曲、每个轨道的效果列数
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 3 及以上</b>时:
+	 * <li>(总乐曲数 - 1)
+	 * <li>各个乐曲名称
+	 * <li>各个乐曲、每个轨道的效果列数
+	 * </li>
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param block
+	 */
+	private void readBlockSequences(FamiTrackerHandler doc, Block block) {
+		int version = block.version;
+		int count = block.readAsCInt();
+		
+		/*if (version == 1) { // TODO
+			for (int i = 0; i < MAX_SEQUENCES; i++) {
+				m_vTmpSequences.add(new StSequence());
+			}
+			
+			for (int i = 0; i < count; ++i) {
+				int index = block.readAsCInt();
+				byte seqCount = block.readByte();
+				assert(index < MAX_SEQUENCES);
+				assert(seqCount < MAX_SEQUENCE_ITEMS);
+				
+				StSequence s = m_vTmpSequences.get(index);
+				s.count = seqCount;
+				for (int j = 0; j < seqCount; ++j) {
+					s.value[j] = block.readByte();
+					s.length[j] = block.readByte();
+				}
+			}
+		} else if (version == 2) {
+			for (int i = 0; i < MAX_SEQUENCES; i++) {
+				StSequence[] ss = new StSequence[SEQ_COUNT];
+				for (int j = 0; j < ss.length; j++) {
+					ss[i] = new StSequence();
+				}
+				m_vSequences.add(ss);
+			}
+			
+			for (int i = 0; i < count; ++i) {
+				int index = pDocFile.getBlockInt();
+				int type = pDocFile.getBlockInt();
+				byte seqCount = pDocFile.getBlockChar();
+				assert(index < MAX_SEQUENCES);
+				assert(type < SEQ_COUNT);
+				assert(seqCount < MAX_SEQUENCE_ITEMS);
+				StSequence s = m_vSequences.get(index)[type];
+				
+				for (int j = 0; j < seqCount; ++j) {
+					byte value = pDocFile.getBlockChar();
+					byte length = pDocFile.getBlockChar();
+					s.value[j] = value;
+					s.length[j] = length;
+				}
+				s.count = seqCount;
+			}
+		} else */
+		if (version >= 3) {
+			int[] indices = new int[MAX_SEQUENCES * SEQUENCE_COUNT];
+			int[] types = new int[MAX_SEQUENCES * SEQUENCE_COUNT];
+
+			for (int i = 0; i < count; ++i) {
+				int index = block.readAsCInt();
+				int type = block.readAsCInt();
+				int seqCount = block.readUnsignedByte(); // 序列的数组长度
+				int loopPoint = block.readAsCInt(); // Loop 的点的位置
+
+				// Work-around for some older files
+				if (loopPoint == seqCount)
+					loopPoint = -1;
+
+				indices[i] = index;
+				types[i] = type;
+
+				FtmSequence seq = doc.getOrCreateSequence2A03(FtmSequenceType.get(type), index);
+
+				seq.clear();
+				seq.loopPoint = loopPoint;
+
+				/*
+				 * 版本 4 之后加入了 release 点位和 setting 数据项
+				 */
+				if (version == 4) {
+					seq.releasePoint = block.readAsCInt();
+					seq.settings = block.readAsCInt();
+				}
+
+				byte[] data = new byte[seqCount];
+				block.read(data);
+				seq.data = data;
+			}
+
+			if (version == 5) {
+				/*
+				 * 根据源代码, 版本 5 中的 release 点位在保存时出现问题, 这个问题在版本 6 时修复.
+				 */
+				for (int i = 0; i < MAX_SEQUENCES; ++i) {
+					for (int j = 0; j < SEQUENCE_COUNT; ++j) {
+						int releasePoint = block.readAsCInt();
+						int settings = block.readAsCInt();
+						
+						FtmSequence seq = doc.getSequence2A03(FtmSequenceType.get(j), i);
+						if (seq == null) {
+							continue;
+						}
+						
+						seq.releasePoint = releasePoint;
+						seq.settings = settings;
+					}
+				}
+			} else if (version >= 6) {
+				// Read release points correctly stored
+				/*
+				 * 版本 6 的 release 点位数据能够正确地存放
+				 */
+				for (int i = 0; i < count; ++i) {
+					int releasePoint = block.readAsCInt();
+					int settings = block.readAsCInt();
+					int index = indices[i];
+					int type = types[i];
+
+					FtmSequence seq = doc.getSequence2A03(FtmSequenceType.get(type), index);
+					seq.releasePoint = releasePoint;
+					seq.settings = settings;
+				}
+			}
+		} 
+		else {
+			throw new FtmParseException("Sequences 部分暂时不支持老版本");
+		}
+		
+		/*
+		int releasePoint = -1, settings = 0;
+		int version = pDocFile.getBlockVersion();
+
+		int count = pDocFile.getBlockInt();
+		assert(count < (MAX_SEQUENCES * SEQ_COUNT));
+
+		if (version == 1) {
+			for (int i = 0; i < MAX_SEQUENCES; i++) {
+				m_vTmpSequences.add(new StSequence());
+			}
+			
+			for (int i = 0; i < count; ++i) {
+				int index = pDocFile.getBlockInt();
+				byte seqCount = pDocFile.getBlockChar();
+				assert(index < MAX_SEQUENCES);
+				assert(seqCount < MAX_SEQUENCE_ITEMS);
+				
+				StSequence s = m_vTmpSequences.get(index);
+				s.count = seqCount;
+				for (int j = 0; j < seqCount; ++j) {
+					s.value[j] = pDocFile.getBlockChar();
+					s.length[j] = pDocFile.getBlockChar();
+				}
+			}
+		} else if (version == 2) {
+			for (int i = 0; i < MAX_SEQUENCES; i++) {
+				StSequence[] ss = new StSequence[SEQ_COUNT];
+				for (int j = 0; j < ss.length; j++) {
+					ss[i] = new StSequence();
+				}
+				m_vSequences.add(ss);
+			}
+			
+			for (int i = 0; i < count; ++i) {
+				int index = pDocFile.getBlockInt();
+				int type = pDocFile.getBlockInt();
+				byte seqCount = pDocFile.getBlockChar();
+				assert(index < MAX_SEQUENCES);
+				assert(type < SEQ_COUNT);
+				assert(seqCount < MAX_SEQUENCE_ITEMS);
+				StSequence s = m_vSequences.get(index)[type];
+				
+				for (int j = 0; j < seqCount; ++j) {
+					byte value = pDocFile.getBlockChar();
+					byte length = pDocFile.getBlockChar();
+					s.value[j] = value;
+					s.length[j] = length;
+				}
+				s.count = seqCount;
+			}
+		} else if (version >= 3) {
+			int[] indices = new int[MAX_SEQUENCES * SEQ_COUNT];
+			int[] types = new int[MAX_SEQUENCES * SEQ_COUNT];
+
+			for (int i = 0; i < count; ++i) {
+				int index = pDocFile.getBlockInt();
+				int type = pDocFile.getBlockInt();
+				int seqCount = pDocFile.getBlockChar() & 0xFF;
+				int loopPoint = pDocFile.getBlockInt();
+
+				// Work-around for some older files
+				if (loopPoint == seqCount)
+					loopPoint = -1;
+
+				indices[i] = index;
+				types[i] = type;
+
+				assert(index < MAX_SEQUENCES);
+				assert(type < SEQ_COUNT);
+
+				Sequence pSeq = getSequence0(index, type);
+
+				pSeq.clear();
+				pSeq.setItemCount(seqCount < MAX_SEQUENCE_ITEMS ? seqCount : MAX_SEQUENCE_ITEMS);
+				pSeq.setLoopPoint(loopPoint);
+
+				if (version == 4) {
+					releasePoint = pDocFile.getBlockInt();
+					settings = pDocFile.getBlockInt();
+					pSeq.setReleasePoint(releasePoint);
+					pSeq.setSetting(settings);
+				}
+
+				for (int j = 0; j < seqCount; ++j) {
+					byte value = pDocFile.getBlockChar();
+					if (j <= MAX_SEQUENCE_ITEMS)
+						pSeq.setItem(j, value);
+				}
+			}
+
+			if (version == 5) {
+				// Version 5 saved the release points incorrectly, this is fixed in ver 6
+				for (int i = 0; i < MAX_SEQUENCES; ++i) {
+					for (int j = 0; j < SEQ_COUNT; ++j) {
+						releasePoint = pDocFile.getBlockInt();
+						settings = pDocFile.getBlockInt();
+						if (getSequenceItemCount(i, j) > 0) {
+							Sequence pSeq = getSequence0(i, j);
+							pSeq.setReleasePoint(releasePoint);
+							pSeq.setSetting(settings);
+						}
+					}
+				}
+			} else if (version >= 6) {
+				// Read release points correctly stored
+				for (int i = 0; i < count; ++i) {
+					releasePoint = pDocFile.getBlockInt();
+					settings = pDocFile.getBlockInt();
+					int index = indices[i];
+					int type = types[i];
+					Sequence pSeq = getSequence0(index, type);
+					pSeq.setReleasePoint(releasePoint);
+					pSeq.setSetting(settings);
+				}
+			}
+		}
+		*/
 	}
 
 	/**
@@ -487,19 +758,19 @@ public class FamiTrackerCreater {
 			
 			switch (type) {
 			case 0:
-				inst.vol = createSeq2A03(doc, block, index, type);
+				inst.vol = createSequence(doc, block, index, type);
 				break;
 			case 1:
-				inst.arp = createSeq2A03(doc, block, index, type);
+				inst.arp = createSequence(doc, block, index, type);
 				break;
 			case 2:
-				inst.pit = createSeq2A03(doc, block, index, type);
+				inst.pit = createSequence(doc, block, index, type);
 				break;
 			case 3:
-				inst.hip = createSeq2A03(doc, block, index, type);
+				inst.hip = createSequence(doc, block, index, type);
 				break;
 			case 4:
-				inst.dut = createSeq2A03(doc, block, index, type);
+				inst.dut = createSequence(doc, block, index, type);
 				break;
 
 			default:
@@ -581,13 +852,12 @@ public class FamiTrackerCreater {
 	/**
 	 * 创建 2A03 的序列
 	 */
-	private FtmSequence2A03 createSeq2A03(FamiTrackerHandler doc, Block block, int index, byte type) {
-		FtmSequence2A03 s = new FtmSequence2A03();
+	private FtmSequence createSequence(FamiTrackerHandler doc, Block block, int index, byte type) {
+		FtmSequence s = new FtmSequence(FtmSequenceType.get(type));
 		s.index = index;
-		s.type = FtmSequenceType.get(type);
 		
 		// 将序列注册到 Ftm 中
-		doc.registerSequence(s);
+		doc.registerSequence(s, FtmChipType._2A03);
 		
 		return s;
 	}
@@ -595,13 +865,12 @@ public class FamiTrackerCreater {
 	/**
 	 * 创建 2A03 的序列
 	 */
-	private FtmSequenceVRC6 createSeqVRC6(FamiTrackerHandler doc, Block block, int index, byte type) {
-		FtmSequenceVRC6 s = new FtmSequenceVRC6();
+	private FtmSequence createSeqVRC6(FamiTrackerHandler doc, Block block, int index, byte type) {
+		FtmSequence s = new FtmSequence(FtmSequenceType.get(type));
 		s.index = index;
-		s.type = FtmSequenceType.get(type);
 		
 		// 将序列注册到 Ftm 中
-		doc.registerSequence(s);
+		doc.registerSequence(s, FtmChipType.VRC6);
 		
 		return s;
 	}

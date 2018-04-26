@@ -6,9 +6,9 @@ import java.util.HashMap;
 import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.document.format.FtmChipType;
 import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.document.format.FtmSequence;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
-import zdream.nsfplayer.ftm.document.format.IFtmSequence;
 
 public class FtmAudio {
 	
@@ -203,19 +203,19 @@ public class FtmAudio {
 	 */
 	ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
 	
-	/*
+	/**
 	 * 序列
 	 * int (chip * seqtype.length + seqtype) - seq
 	 */
-	HashMap<Integer, ArrayList<IFtmSequence>> seqs = new HashMap<>();
+	HashMap<Integer, ArrayList<FtmSequence>> seqs = new HashMap<>();
 	
 	/**
 	 * 采样列表
 	 */
 	ArrayList<FtmDPCMSample> samples = new ArrayList<>();
 	
-	public IFtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
-		ArrayList<IFtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
+	public FtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
+		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
 		if (list == null) {
 			return null;
 		}
@@ -226,7 +226,7 @@ public class FtmAudio {
 	 * 获得序列的个数
 	 */
 	public int sequenceCount(FtmChipType chip, FtmSequenceType type) {
-		ArrayList<IFtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
+		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
 		if (list == null) {
 			return 0;
 		}
