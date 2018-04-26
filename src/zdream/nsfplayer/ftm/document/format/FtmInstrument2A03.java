@@ -1,30 +1,21 @@
 package zdream.nsfplayer.ftm.document.format;
 
-import zdream.nsfplayer.ftm.document.FtmAudio.Macro2A03;
-
 /**
  * 2A03 乐器部分
  * @author Zdream
  */
-public final class Inst2A03 implements IInst {
+public final class FtmInstrument2A03 extends AbstractFtmInstrument {
 
 	@Override
-	public int instType() {
-		return INST_TYPE_2A03;
+	public FtmChipType instType() {
+		return FtmChipType._2A03;
 	}
 	
-	/**
-	 * 序号, 在同一个 NsfAudio 中, 同一种类型的乐器的 seq 是各不相同的.
-	 * 这个值从 0 开始
-	 */
-	public int seq;
-	
-	public Macro2A03 vol;
-	public Macro2A03 arp;
-	public Macro2A03 pit;
-	public Macro2A03 hip;
-	public Macro2A03 dut;
-	public String name;
+	public FtmSequence2A03 vol;
+	public FtmSequence2A03 arp;
+	public FtmSequence2A03 pit;
+	public FtmSequence2A03 hip;
+	public FtmSequence2A03 dut;
 	
 	@Override
 	public String toString() {

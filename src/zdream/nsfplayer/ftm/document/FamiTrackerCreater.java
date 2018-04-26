@@ -2,7 +2,12 @@ package zdream.nsfplayer.ftm.document;
 
 import java.io.IOException;
 
+import zdream.nsfplayer.ftm.document.format.FtmChipType;
+import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.document.format.FtmSequence2A03;
+import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 
 /**
  * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
@@ -116,7 +121,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_INSTRUMENTS: {
-				//errorFlag = readBlock_Instruments(documentFile);
+				readBlockInstruments(doc, block);
 			} break;
 			
 			case FILE_BLOCK_SEQUENCES: {
@@ -168,8 +173,15 @@ public class FamiTrackerCreater {
 	 * <p>处理参数项.
 	 * <br>根据文件里面写明的 param 的块版本号, 确定 {@code block} 里面的文件格式:
 	 * 
-	 * <p>当<b>块版本为 1 或 2 </b>时:
+	 * <p>当<b>块版本为 1 </b>时:
 	 * <li>track[0] 的 speed
+	 * <li>所用的轨道数
+	 * <li>制式
+	 * <li>刷新率
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 2 </b>时:
+	 * <li>扩展芯片码
 	 * <li>所用的轨道数
 	 * <li>制式
 	 * <li>刷新率
@@ -237,8 +249,17 @@ public class FamiTrackerCreater {
 		FtmTrack track = doc.audio.getTrack(0);
 		
 		switch (version) {
-		case 1: case 2:
+		case 1:
 			track.speed = block.readAsCInt();
+			block.skip(4); // 轨道数, 忽略
+			doc.setMechine((byte) block.readAsCInt());
+			doc.setFramerate(block.readAsCInt());
+			doc.setDefaultSplit();
+			
+			break;
+			
+		case 2:
+			doc.setChip(block.readByte());
 			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
 			doc.setFramerate(block.readAsCInt());
@@ -386,6 +407,192 @@ public class FamiTrackerCreater {
 			
 			// Highlight 忽略
 		}
+	}
+
+	/**
+	 * <p>处理乐器.
+	 * <p>里面的数据内容有:
+	 * <li>
+	 * </li>
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param block
+	 */
+	private void readBlockInstruments(FamiTrackerHandler doc, Block block) {
+		int version = block.version;
+		if (version < 1) {
+			throw new FtmParseException("HEADER 版本号错误: " + version);
+		}
+		
+		// 乐器中, 序号最大的值 + 1
+		int max = block.readAsCInt();
+		
+		for (int i = 0; i < max; ++i) {
+			// 乐器序号
+			int index = block.readAsCInt();
+
+			// 创建乐器实例
+			byte type = block.readByte();
+			AbstractFtmInstrument inst = createInstrument(FtmChipType.ofInstrumentType(type), doc, block);
+			inst.seq = index;
+			
+			// Load the instrument
+			/*boolean valid = pInstrument.load(pDocFile);
+			assert(valid);*/
+
+			// 读取乐器名称
+			int size = block.readAsCInt();
+			inst.name = block.readAsString(size);
+
+			// 保存乐器到 FtmAudio 中
+			doc.registerInstrument(inst);
+		}
+		
+		/*
+		// int version = pDocFile.getBlockVersion();
+
+		// Number of instruments
+		int count = pDocFile.getBlockInt();
+		assert(count <= MAX_INSTRUMENTS);
+
+		for (int i = 0; i < count; ++i) {
+			// Instrument index
+			int index = pDocFile.getBlockInt();
+			assert(index <= MAX_INSTRUMENTS);
+
+			// Read instrument type and create an instrument
+			byte type = pDocFile.getBlockChar();
+			Instrument pInstrument = createInstrument(type);
+			assert(pInstrument != null);
+
+			// Load the instrument
+			boolean valid = pInstrument.load(pDocFile);
+			assert(valid);
+
+			// Read name
+			int size = pDocFile.getBlockInt();
+			byte[] nameBytes = new byte[size];
+			pDocFile.getBlock(nameBytes);
+			pInstrument.setName(new String(nameBytes, FamiTrackerApp.defCharset));
+
+			// Store instrument
+			m_pInstruments[index] = pInstrument;
+		}
+		 */
+	}
+
+	/**
+	 * 创建乐器
+	 * @param type
+	 * @param doc
+	 * @param block
+	 * @return
+	 */
+	private AbstractFtmInstrument createInstrument(FtmChipType type, FamiTrackerHandler doc, Block block) {
+		switch (type) {
+		case _2A03:
+			return create2A03Instrument(doc, block);
+
+		// TODO
+			
+		default:
+			break;
+		}
+		return null;
+	}
+	
+	private FtmInstrument2A03 create2A03Instrument(FamiTrackerHandler doc, Block block) {
+		int version = block.version;
+		FtmInstrument2A03 inst = new FtmInstrument2A03();
+		
+		int seqCount = block.readAsCInt();
+
+		for (byte type = 0; type < seqCount; ++type) {
+			boolean enable = block.readByte() != 0;
+			int index = block.readUnsignedByte();
+			
+			if (!enable) {
+				continue;
+			}
+			
+			switch (type) {
+			case 0:
+				inst.vol = createSeq2A03(doc, block, index, type);
+				break;
+			case 1:
+				
+				break;
+			case 2:
+				
+				break;
+			case 3:
+				
+				break;
+			case 4:
+				
+				break;
+
+			default:
+				break;
+			}
+			/*setSeqEnable(i, pDocFile.getBlockChar());
+			int Index = pDocFile.getBlockChar();
+			assert(Index < MAX_SEQUENCES);
+			setSeqIndex(i, Index);*/
+		}
+		
+		
+		/*
+		int version = pDocFile.getBlockVersion();
+
+		int SeqCnt = pDocFile.getBlockInt();
+		assert(SeqCnt < (SEQUENCE_COUNT + 1));
+
+		for (int i = 0; i < SeqCnt; ++i) {
+			setSeqEnable(i, pDocFile.getBlockChar());
+			int Index = pDocFile.getBlockChar();
+			assert(Index < MAX_SEQUENCES);
+			setSeqIndex(i, Index);
+		}
+
+		int Octaves = (version == 1) ? 6 : OCTAVE_RANGE;
+
+		for (int i = 0; i < Octaves; ++i) {
+			for (int j = 0; j < 12; ++j) {
+				int index = pDocFile.getBlockChar();
+				if (index > MAX_DSAMPLES)
+					index = 0;
+				setSample(i, j, (byte) index);
+				setSamplePitch(i, j, pDocFile.getBlockChar());
+				if (version > 5) {
+					byte Value = pDocFile.getBlockChar();
+					if (Value != -1 && Value < 0)
+						Value = -1;
+					setSampleDeltaValue(i, j, Value);
+				}
+			}
+		}
+
+		return true;
+		
+		*/
+		
+		return inst;
+	}
+	
+	/**
+	 * 
+	 */
+	private FtmSequence2A03 createSeq2A03(FamiTrackerHandler doc, Block block, int index, byte type) {
+		FtmSequence2A03 s = new FtmSequence2A03();
+		s.index = index;
+		s.type = FtmSequenceType.get(type);
+		
+		// 将序列注册到 Ftm 中
+		doc.registerSequence(s);
+		
+		return s;
 	}
 
 	/**

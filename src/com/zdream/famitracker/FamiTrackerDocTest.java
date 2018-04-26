@@ -17,9 +17,9 @@ public class FamiTrackerDocTest {
 			
 			FamiTrackerApp app = FamiTrackerApp.getInstance();
 			boolean b = app.open(
-					"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\22_Of_Devious_Machinations_Clockwork_Tower.ftm"
+					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\22_Of_Devious_Machinations_Clockwork_Tower.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Raf的世界\\track04.ftm"
-					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
+					"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman02\\Wily 1.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\danooct1 FTMs\\2010\\mega man time tangent early draft.ftm"
 					// "D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman other\\MMZ2 - Departure.ftm"

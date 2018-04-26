@@ -1,12 +1,15 @@
 package zdream.nsfplayer.ftm.document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.document.format.FtmChipType;
+import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
-import zdream.nsfplayer.ftm.document.format.IInstParam;
-import zdream.nsfplayer.ftm.document.format.Inst2A03;
+import zdream.nsfplayer.ftm.document.format.IFtmSequence;
 
-public class FtmAudio implements IInstParam {
+public class FtmAudio {
 	
 	public final FamiTrackerHandler handler;
 	
@@ -192,79 +195,39 @@ public class FtmAudio implements IInstParam {
 	}
 	
 	/* **********
-	 * 乐器配置 *
-	 ********** */
-	/*
-	 * Macros
-	 */
-	public static final int MACRO_2A03 = 0;
-	
-	/**
-	 * 乐器接口. 这部分的类因为访问频繁, 不再设置 get set 等封装方法
-	 * @author Zdream
-	 */
-	interface IMacros {
-		public int macrosType();
-	}
-	
-	/**
-	 * 关于音量的配置
-	 * @author Zdream
-	 */
-	public final class Macro2A03 implements IMacros {
-		@Override
-		public int macrosType() {
-			return MACRO_2A03;
-		}
-		/**
-		 * 类型, 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch, 4=duty 
-		 */
-		public int type;
-		public static final int MACRO_TYPE_VOLUME = 0;
-		public static final int MACRO_TYPE_ARPEGGIO = 1;
-		public static final int MACRO_TYPE_PITCH = 2;
-		public static final int MACRO_TYPE_HI_PITCH = 3;
-		public static final int MACRO_TYPE_DUTY = 4;
-		/**
-		 * 编号
-		 */
-		public int seq;
-		/**
-		 * 循环开始的位置. -1 的话说明禁用循环
-		 */
-		public int loop;
-		/**
-		 * 释放开始的位置. -1 的话说明禁用释放
-		 */
-		public int release;
-		/**
-		 * 设置. 这个值我还没有见到除了 0 以外的数.
-		 */
-		public int setting;
-		
-		/**
-		 * 序列
-		 */
-		public int[] macro;
-	}
-	IMacros[] macros;
-	
-	public IMacros[] getMacros() {
-		return macros;
-	}
-	
-	/* **********
 	 *   乐器   *
 	 ********** */
 	/*
 	 * 乐器部分 Instruments
 	 */
 	
-	Inst2A03[] inst2a03s;
+	ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
 	
-	public Inst2A03[] getInst2a03s() {
-		return inst2a03s;
+	/*
+	 * 序列
+	 * int (chip * seqtype.length + seqtype) - seq
+	 */
+	HashMap<Integer, ArrayList<IFtmSequence>> seqs = new HashMap<>();
+	
+	public IFtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
+		ArrayList<IFtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
+		if (list == null) {
+			return null;
+		}
+		return list.get(index);
 	}
+	
+	/**
+	 * 获得序列的个数
+	 */
+	public int sequenceCount(FtmChipType chip, FtmSequenceType type) {
+		ArrayList<IFtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
+		if (list == null) {
+			return 0;
+		}
+		return list.size();
+	}
+	
 	
 	/* **********
 	 * 乐曲轨道 *

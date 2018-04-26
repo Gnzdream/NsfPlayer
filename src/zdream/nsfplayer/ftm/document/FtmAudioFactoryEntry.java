@@ -7,8 +7,8 @@ import java.util.Scanner;
 
 import zdream.nsfplayer.ftm.document.format.FtmPattern;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
-import zdream.nsfplayer.ftm.document.format.IInst;
-import zdream.nsfplayer.ftm.document.format.Inst2A03;
+import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
 import zdream.utils.common.CodeSpliter;
 
 public class FtmAudioFactoryEntry {
@@ -339,7 +339,7 @@ public class FtmAudioFactoryEntry {
 	 */
 	void parseInstruments() throws FtmParseException {
 		// 用来缓存乐器
-		ArrayList<IInst> insts = new ArrayList<>();
+		ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
 		// 现在用来计数, 每个种类的乐器数量
 		int i_2a03 = 0;
 		
@@ -360,7 +360,7 @@ public class FtmAudioFactoryEntry {
 					throw new FtmParseException(line,
 							"乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 " + strs.length);
 				}
-				Inst2A03 ins = new Inst2A03();
+				FtmInstrument2A03 ins = new FtmInstrument2A03();
 				ins.seq = Integer.parseInt(strs[1]);
 				
 				int v;
@@ -404,14 +404,14 @@ public class FtmAudioFactoryEntry {
 		
 		// 循环完成之后
 		
-		audio.inst2a03s = new Inst2A03[i_2a03];
+		//audio.inst2a03s = new FtmInstrument2A03[i_2a03];
 		// 现在计数, 每个种类的乐器里, 成功放到 audio 中的乐器的数量
 		i_2a03 = 0;
 		
-		for (IInst ins : insts) {
+		for (AbstractFtmInstrument ins : insts) {
 			switch (ins.instType()) {
-			case FtmAudio.INST_TYPE_2A03:
-				audio.inst2a03s[i_2a03++] = (Inst2A03) ins;
+			case _2A03:
+				//audio.inst2a03s[i_2a03++] = (FtmInstrument2A03) ins;
 				break;
 
 			default:

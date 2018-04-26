@@ -2,7 +2,10 @@ package zdream.nsfplayer.ftm.document;
 
 import java.util.ArrayList;
 
+import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.document.format.IFtmSequence;
 
 /**
  * FamiTracker 的文本的操作器.
@@ -110,7 +113,7 @@ public class FamiTrackerHandler {
 	}
 	
 	/* **********
-	 * 轨道音源 *
+	 *   轨道   *
 	 ********** */
 	
 	/**
@@ -255,6 +258,58 @@ public class FamiTrackerHandler {
 				audio.tracks.add(new FtmTrack());
 			}
 		}
+	}
+	
+	/* **********
+	 * 乐器序列  *
+	 ********** */
+	
+	/**
+	 * 注册乐器
+	 */
+	public void registerInstrument(AbstractFtmInstrument inst) {
+		int index = inst.seq;
+		ArrayList<AbstractFtmInstrument> list = audio.insts;
+		int size = list.size();
+		int d = index - size;
+		if (d < 0) {
+			list.set(index, inst);
+			return;
+		}
+
+		// 将序列摆到 index 指定的位置, 中间填充 null
+		while (d > 0) {
+			list.add(null);
+			d--;
+		}
+		list.add(inst);
+	}
+	
+	/**
+	 * 注册序列
+	 */
+	public void registerSequence(IFtmSequence seq) {
+		int key = seq.getChip().ordinal() + FtmSequenceType.values().length + seq.getType().ordinal();
+		ArrayList<IFtmSequence> list = audio.seqs.get(key);
+		if (list == null) {
+			list = new ArrayList<>();
+			audio.seqs.put(key, list);
+		}
+		
+		int index = seq.getIndex();
+		int size = list.size();
+		int d = index - size;
+		if (d < 0) {
+			list.set(index, seq);
+			return;
+		}
+		
+		// 将序列摆到 index 指定的位置, 中间填充 null
+		while (d > 0) {
+			list.add(null);
+			d--;
+		}
+		list.add(seq);
 	}
 
 }
