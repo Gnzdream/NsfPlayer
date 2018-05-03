@@ -488,51 +488,6 @@ public class FamiTrackerCreater {
 		int version = block.version;
 		int count = block.readAsCInt();
 		
-		/*if (version == 1) { // TODO
-			for (int i = 0; i < MAX_SEQUENCES; i++) {
-				m_vTmpSequences.add(new StSequence());
-			}
-			
-			for (int i = 0; i < count; ++i) {
-				int index = block.readAsCInt();
-				byte seqCount = block.readByte();
-				assert(index < MAX_SEQUENCES);
-				assert(seqCount < MAX_SEQUENCE_ITEMS);
-				
-				StSequence s = m_vTmpSequences.get(index);
-				s.count = seqCount;
-				for (int j = 0; j < seqCount; ++j) {
-					s.value[j] = block.readByte();
-					s.length[j] = block.readByte();
-				}
-			}
-		} else if (version == 2) {
-			for (int i = 0; i < MAX_SEQUENCES; i++) {
-				StSequence[] ss = new StSequence[SEQ_COUNT];
-				for (int j = 0; j < ss.length; j++) {
-					ss[i] = new StSequence();
-				}
-				m_vSequences.add(ss);
-			}
-			
-			for (int i = 0; i < count; ++i) {
-				int index = pDocFile.getBlockInt();
-				int type = pDocFile.getBlockInt();
-				byte seqCount = pDocFile.getBlockChar();
-				assert(index < MAX_SEQUENCES);
-				assert(type < SEQ_COUNT);
-				assert(seqCount < MAX_SEQUENCE_ITEMS);
-				StSequence s = m_vSequences.get(index)[type];
-				
-				for (int j = 0; j < seqCount; ++j) {
-					byte value = pDocFile.getBlockChar();
-					byte length = pDocFile.getBlockChar();
-					s.value[j] = value;
-					s.length[j] = length;
-				}
-				s.count = seqCount;
-			}
-		} else */
 		if (version >= 3) {
 			int[] indices = new int[MAX_SEQUENCES * SEQUENCE_COUNT];
 			int[] types = new int[MAX_SEQUENCES * SEQUENCE_COUNT];
@@ -606,130 +561,29 @@ public class FamiTrackerCreater {
 		else {
 			throw new FtmParseException("Sequences 部分暂时不支持老版本");
 		}
-		
-		/*
-		int releasePoint = -1, settings = 0;
-		int version = pDocFile.getBlockVersion();
-
-		int count = pDocFile.getBlockInt();
-		assert(count < (MAX_SEQUENCES * SEQ_COUNT));
-
-		if (version == 1) {
-			for (int i = 0; i < MAX_SEQUENCES; i++) {
-				m_vTmpSequences.add(new StSequence());
-			}
-			
-			for (int i = 0; i < count; ++i) {
-				int index = pDocFile.getBlockInt();
-				byte seqCount = pDocFile.getBlockChar();
-				assert(index < MAX_SEQUENCES);
-				assert(seqCount < MAX_SEQUENCE_ITEMS);
-				
-				StSequence s = m_vTmpSequences.get(index);
-				s.count = seqCount;
-				for (int j = 0; j < seqCount; ++j) {
-					s.value[j] = pDocFile.getBlockChar();
-					s.length[j] = pDocFile.getBlockChar();
-				}
-			}
-		} else if (version == 2) {
-			for (int i = 0; i < MAX_SEQUENCES; i++) {
-				StSequence[] ss = new StSequence[SEQ_COUNT];
-				for (int j = 0; j < ss.length; j++) {
-					ss[i] = new StSequence();
-				}
-				m_vSequences.add(ss);
-			}
-			
-			for (int i = 0; i < count; ++i) {
-				int index = pDocFile.getBlockInt();
-				int type = pDocFile.getBlockInt();
-				byte seqCount = pDocFile.getBlockChar();
-				assert(index < MAX_SEQUENCES);
-				assert(type < SEQ_COUNT);
-				assert(seqCount < MAX_SEQUENCE_ITEMS);
-				StSequence s = m_vSequences.get(index)[type];
-				
-				for (int j = 0; j < seqCount; ++j) {
-					byte value = pDocFile.getBlockChar();
-					byte length = pDocFile.getBlockChar();
-					s.value[j] = value;
-					s.length[j] = length;
-				}
-				s.count = seqCount;
-			}
-		} else if (version >= 3) {
-			int[] indices = new int[MAX_SEQUENCES * SEQ_COUNT];
-			int[] types = new int[MAX_SEQUENCES * SEQ_COUNT];
-
-			for (int i = 0; i < count; ++i) {
-				int index = pDocFile.getBlockInt();
-				int type = pDocFile.getBlockInt();
-				int seqCount = pDocFile.getBlockChar() & 0xFF;
-				int loopPoint = pDocFile.getBlockInt();
-
-				// Work-around for some older files
-				if (loopPoint == seqCount)
-					loopPoint = -1;
-
-				indices[i] = index;
-				types[i] = type;
-
-				assert(index < MAX_SEQUENCES);
-				assert(type < SEQ_COUNT);
-
-				Sequence pSeq = getSequence0(index, type);
-
-				pSeq.clear();
-				pSeq.setItemCount(seqCount < MAX_SEQUENCE_ITEMS ? seqCount : MAX_SEQUENCE_ITEMS);
-				pSeq.setLoopPoint(loopPoint);
-
-				if (version == 4) {
-					releasePoint = pDocFile.getBlockInt();
-					settings = pDocFile.getBlockInt();
-					pSeq.setReleasePoint(releasePoint);
-					pSeq.setSetting(settings);
-				}
-
-				for (int j = 0; j < seqCount; ++j) {
-					byte value = pDocFile.getBlockChar();
-					if (j <= MAX_SEQUENCE_ITEMS)
-						pSeq.setItem(j, value);
-				}
-			}
-
-			if (version == 5) {
-				// Version 5 saved the release points incorrectly, this is fixed in ver 6
-				for (int i = 0; i < MAX_SEQUENCES; ++i) {
-					for (int j = 0; j < SEQ_COUNT; ++j) {
-						releasePoint = pDocFile.getBlockInt();
-						settings = pDocFile.getBlockInt();
-						if (getSequenceItemCount(i, j) > 0) {
-							Sequence pSeq = getSequence0(i, j);
-							pSeq.setReleasePoint(releasePoint);
-							pSeq.setSetting(settings);
-						}
-					}
-				}
-			} else if (version >= 6) {
-				// Read release points correctly stored
-				for (int i = 0; i < count; ++i) {
-					releasePoint = pDocFile.getBlockInt();
-					settings = pDocFile.getBlockInt();
-					int index = indices[i];
-					int type = types[i];
-					Sequence pSeq = getSequence0(index, type);
-					pSeq.setReleasePoint(releasePoint);
-					pSeq.setSetting(settings);
-				}
-			}
-		}
-		*/
 	}
 
 	/**
 	 * <p>处理 Frames(2A03 & MMC5).
 	 * <br>根据文件里面写明的 frames 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * <p>当<b>块版本为 1 </b>时不支持
+	 * 
+	 * <p>当<b>块版本为 2 </b>时, 每个曲目有以下信息:
+	 * <li>曲目段落数
+	 * <li>曲目播放速度 speed
+	 * <li>段落的最大行数
+	 * <li>每个轨道、每段的 order
+	 * </li>
+	 * 
+	 * <p>当<b>块版本为 3 </b>时, 每个曲目有以下信息:
+	 * <li>曲目段落数
+	 * <li>曲目播放速度 speed
+	 * <li>曲目播放节奏值 tempo
+	 * <li>段落的最大行数
+	 * <li>每个轨道、每段的 order
+	 * </li>
+	 * </p>
 	 * 
 	 * @param doc
 	 * @param block
@@ -809,71 +663,6 @@ public class FamiTrackerCreater {
 		} else {
 			throw new FtmParseException("Frame 部分暂时不支持老版本");
 		}
-		
-		/*
-		int version = pDocFile.getBlockVersion();
-
-		if (version == 1) {
-			int frameCount = pDocFile.getBlockInt();
-			PatternData pTrack = getTrack0(0);
-			pTrack.setFrameCount(frameCount);
-			m_iChannelsCount = pDocFile.getBlockInt();
-			assert(frameCount <= MAX_FRAMES);
-			assert(m_iChannelsCount <= MAX_CHANNELS);
-			for (int i = 0; i < frameCount; ++i) {
-				for (int j = 0; j < m_iChannelsCount; ++j) {
-					int pattern = pDocFile.getBlockChar() & 0xFF;
-					assert(pattern < MAX_FRAMES);
-					pTrack.setFramePattern(i, j, pattern);
-				}
-			}
-		} else if (version > 1) {
-			for (int y = 0; y < m_iTrackCount; ++y) {
-				int frameCount = pDocFile.getBlockInt();
-				int speed = pDocFile.getBlockInt();
-				assert(frameCount > 0 && frameCount <= MAX_FRAMES);
-				assert(speed > 0);
-
-				PatternData pTrack = getTrack0(y);
-				pTrack.setFrameCount(frameCount);
-
-				if (version == 3) {
-					int tempo = pDocFile.getBlockInt();
-					assert(speed >= 0);
-					assert(tempo >= 0);
-					pTrack.setSongTempo(tempo);
-					pTrack.setSongSpeed(speed);
-				} else {
-					if (speed < 20) {
-						int tempo = (m_iMachine == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
-						assert(tempo >= 0 && tempo <= MAX_TEMPO);
-						//ASSERT_FILE_DATA(Speed >= 0 && Speed <= MAX_SPEED);
-						assert(speed >= 0);
-						pTrack.setSongTempo(tempo);
-						pTrack.setSongSpeed(speed);
-					} else {
-						assert(speed >= 0 && speed <= MAX_TEMPO);
-						pTrack.setSongTempo(speed);
-						pTrack.setSongSpeed(DEFAULT_SPEED);
-					}
-				}
-
-				int patternLength = pDocFile.getBlockInt();
-				assert(patternLength > 0 && patternLength <= MAX_PATTERN_LENGTH);
-
-				pTrack.setPatternLength(patternLength);
-				
-				for (int i = 0; i < frameCount; ++i) {
-					for (int j = 0; j < m_iChannelsCount; ++j) {
-						// Read pattern index
-						int pattern = pDocFile.getBlockChar() & 0xFF;
-						assert(pattern < MAX_PATTERN);
-						pTrack.setFramePattern(i, j, pattern);
-					}
-				}
-			}
-		}
-		 */
 	}
 
 	/**
