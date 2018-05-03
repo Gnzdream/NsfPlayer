@@ -1,7 +1,6 @@
 package zdream.nsfplayer.ftm.document;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 
@@ -687,9 +686,10 @@ public class FtmAudioFactoryEntry {
 		}*/
 		// end print out
 		
-		FtmPattern[] patterns = new FtmPattern[column];
+		// 下面需要修改 TODO
+		/*FtmNote[] patterns = new FtmNote[column];
 		for (int i = 0; i < patterns.length; i++) {
-			FtmPattern pattern = new FtmPattern();
+			FtmNote pattern = new FtmNote();
 			pattern.seq = seq;
 			
 			LinkedList<Integer> list = lists.get(i);
@@ -702,7 +702,7 @@ public class FtmAudioFactoryEntry {
 				int v = it.next();
 				
 				effects[j] = v;
-				if ((v & 0x7FFF0000) == FtmPattern.EFFECT_LINE_HEAD) {
+				if ((v & 0x7FFF0000) == FtmNote.EFFECT_LINE_HEAD) {
 					count++;
 				}
 				j++;
@@ -713,7 +713,7 @@ public class FtmAudioFactoryEntry {
 			
 			for (int idx = 0; idx < effects.length; idx++) {
 				int v = effects[idx];
-				if ((v & 0x7FFF0000) == FtmPattern.EFFECT_LINE_HEAD) {
+				if ((v & 0x7FFF0000) == FtmNote.EFFECT_LINE_HEAD) {
 					lines[j] = v & 0xFFFF;
 					lineIdx[j] = idx;
 					
@@ -725,9 +725,10 @@ public class FtmAudioFactoryEntry {
 			pattern.lines = lines;
 			pattern.lineIdx = lineIdx;
 			patterns[i] = pattern;
-		}
+		}*/
 		
-		return patterns;
+		// return patterns;
+		return null;
 	}
 	
 }

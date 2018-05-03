@@ -1,10 +1,10 @@
 package zdream.nsfplayer.ftm.document;
 
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_FRAMES;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
 import static zdream.nsfplayer.ftm.document.format.FtmSequence.SEQUENCE_COUNT;
 
 import java.io.IOException;
@@ -15,6 +15,7 @@ import zdream.nsfplayer.ftm.document.format.FtmChipType;
 import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.document.format.FtmInstrumentVRC6;
+import zdream.nsfplayer.ftm.document.format.FtmNote;
 import zdream.nsfplayer.ftm.document.format.FtmSequence;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
@@ -56,6 +57,12 @@ public class FamiTrackerCreater {
 	 * 总的曲目的数量
 	 */
 	private int trackCount;
+	
+	/**
+	 * 每个轨道的效果列数
+	 * [trackIdx 曲目号][channelNo 轨道序号]
+	 */
+	private int[][] effColumnCounts;
 
 	/**
 	 * 默认曲目播放的速度
@@ -81,6 +88,7 @@ public class FamiTrackerCreater {
 	
 	private void reset() {
 		trackCount = 0;
+		effColumnCounts = null;
 	}
 	
 	/**
@@ -160,7 +168,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_PATTERNS: {
-				//errorFlag = readBlock_Patterns(documentFile);
+				readBlockPatterns(doc, block, version);
 			} break;
 			
 			case FILE_BLOCK_DSAMPLES: {
@@ -270,7 +278,7 @@ public class FamiTrackerCreater {
 	private void readBlockParameters(FamiTrackerHandler doc, Block block, int fileVersion) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("PARAM 版本号错误: " + version);
+			throw new FtmParseException("PARAM 版本号: " + version + " 不支持");
 		}
 
 		FtmTrack track = doc.audio.getTrack(0);
@@ -401,7 +409,7 @@ public class FamiTrackerCreater {
 	private void readBlockHeader(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("HEADER 版本号错误: " + version);
+			throw new FtmParseException("HEADER 版本号: " + version + " 不支持");
 		}
 		
 		if (version == 1) {
@@ -409,15 +417,17 @@ public class FamiTrackerCreater {
 			trackCount = 1;
 			
 			int channelCount = doc.channelCount();
+			effColumnCounts = new int[trackCount][channelCount];
 			for (int i = 0; i < channelCount; ++i) {
 				block.skip(1); // channelType 忽略
-				doc.setEffectColumn(0, i, block.readByte());
+				effColumnCounts[0][i] = block.readByte();
 			}
 		} else {
 			trackCount = block.readUnsignedByte() + 1;  // 0 就是只有 1 个曲子
 			doc.allocateTrack(trackCount);
 			
 			int channelCount = doc.channelCount();
+			effColumnCounts = new int[trackCount][channelCount];
 			
 			// Track 名称
 			if (version >= 3) {
@@ -430,7 +440,7 @@ public class FamiTrackerCreater {
 			for (int i = 0; i < channelCount; ++i) {
 				block.skip(1); // channelType 忽略
 				for (int j = 0; j < trackCount; ++j) {
-					doc.setEffectColumn(j, i, block.readByte());
+					effColumnCounts[j][i] = block.readByte();
 				}
 			}
 			
@@ -453,7 +463,7 @@ public class FamiTrackerCreater {
 	private void readBlockInstruments(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("INSTRUMENTS 版本号错误: " + version);
+			throw new FtmParseException("INSTRUMENTS 版本号: " + version + " 不支持");
 		}
 		
 		// 乐器中, 序号最大的值 + 1
@@ -564,8 +574,8 @@ public class FamiTrackerCreater {
 	}
 
 	/**
-	 * <p>处理 Frames(2A03 & MMC5).
-	 * <br>根据文件里面写明的 frames 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * <p>处理 Frames.
+	 * <br>根据文件里面写明的 FRAMES 的块版本号, 确定 {@code block} 里面的文件格式:
 	 * 
 	 * <p>当<b>块版本为 1 </b>时不支持
 	 * 
@@ -590,8 +600,8 @@ public class FamiTrackerCreater {
 	 */
 	private void readBlockFrames(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
-		if (version < 1) {
-			throw new FtmParseException("FRAMES 版本号: " + version + " 不合法");
+		if (version <= 1) {
+			throw new FtmParseException("FRAMES 版本号: " + version + " 不支持");
 		}
 		
 		if (version > 1) {
@@ -662,6 +672,143 @@ public class FamiTrackerCreater {
 			
 		} else {
 			throw new FtmParseException("Frame 部分暂时不支持老版本");
+		}
+	}
+
+	/**
+	 * <p>处理 Pattern.
+	 * <br>根据文件里面写明的 PATTERNS 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * <p>当<b>块版本为 1 </b>时不支持
+	 * 
+	 * @param doc
+	 * @param block
+	 * @param fileVersion
+	 *   文件的版本号
+	 */
+	private void readBlockPatterns(FamiTrackerHandler doc, Block block, int fileVersion) {
+		int version = block.version;
+		if (version <= 1) {
+			throw new FtmParseException("PATTERNS 版本号: " + version + " 不支持");
+		}
+		
+		while (!block.isFinished()) {
+			int trackIdx = block.readAsCInt();
+			
+			int channelIdx = block.readAsCInt();
+			int patternIdx = block.readAsCInt();
+			
+			/*
+			 * 有效数据个数.
+			 * 在一个轨道上, 如果某一行的数据不为全空, 有曲调、音量、乐器、效果等数据, 就认为这个是有效数据
+			 */
+			int items = block.readAsCInt();
+			
+			if (channelIdx < 0) {
+				throw new FtmParseException(String.format("曲目 %d 的轨道数 %d 不合法", trackIdx, channelIdx));
+			}
+			if (patternIdx < 0 || patternIdx >= MAX_PATTERN) {
+				throw new FtmParseException(String.format("曲目 %d 的 pattern %d 不合法", trackIdx, patternIdx));
+			}
+			if (items <= 0 || items >= MAX_PATTERN_LENGTH) {
+				throw new FtmParseException(String.format("曲目 %d 的 items %d 不合法", trackIdx, items));
+			}
+			
+			for (int i = 0; i < items; ++i) {
+				int row;
+				if (fileVersion == 0x0200)
+					row = block.readUnsignedByte();
+				else
+					row = block.readAsCInt();
+				
+				if (row >= MAX_PATTERN_LENGTH) {
+					throw new FtmParseException(String.format("曲目 %d 的第 %d 个数据的行数 %d 不合法",
+							trackIdx, i, row));
+				}
+				FtmNote note = doc.getOrCreateNote(trackIdx, patternIdx, channelIdx, row);
+
+				note.note = block.readByte();
+				note.octave = block.readByte();
+				note.instrument = block.readUnsignedByte();
+				note.vol = block.readByte();
+
+				if (fileVersion == 0x0200) {
+					int effectNumber, effectParam;
+					effectNumber = block.readUnsignedByte();
+					effectParam = block.readUnsignedByte();
+					if (version < 3) {
+						if (effectNumber == FtmNote.EF_PORTAOFF) {
+							effectNumber = FtmNote.EF_PORTAMENTO;
+							effectParam = 0;
+						} else if (effectNumber == FtmNote.EF_PORTAMENTO) {
+							if (effectParam < 0xFF)
+								effectParam++;
+						}
+					}
+
+					note.effNumber[0] = effectNumber;
+					note.effParam[0] = effectParam;
+				} else {
+					int effColumnCount = effColumnCounts[trackIdx][channelIdx] + 1; // 默认就有 1 列
+					for (int n = 0; n < effColumnCount; ++n) {
+						int effectNumber, effectParam;
+						effectNumber = block.readUnsignedByte();
+						effectParam = block.readUnsignedByte();
+
+						if (version < 3) {
+							if (effectNumber == FtmNote.EF_PORTAOFF) {
+								effectNumber = FtmNote.EF_PORTAMENTO;
+								effectParam = 0;
+							} else if (effectNumber == FtmNote.EF_PORTAMENTO) {
+								if (effectParam < 0xFF)
+									effectParam++;
+							}
+						}
+
+						note.effNumber[n] = effectNumber;
+						note.effParam[n] = effectParam & 0xFF;
+					}
+				}
+
+				if (note.vol > FtmNote.MAX_VOLUME) {
+					throw new FtmParseException(String.format("曲目 %d, 轨道 %d, 段号 %d, 行号 %d, 音量 %d 不合法",
+							trackIdx, channelIdx, patternIdx, row, note.vol));
+				}
+
+				// Specific for version 2.0
+				if (fileVersion == 0x0200) {
+					if (note.effNumber[0] == FtmNote.EF_SPEED && note.effParam[0] < 20)
+						note.effParam[0]++;
+					
+					if (note.vol == 0)
+						note.vol = FtmNote.MAX_VOLUME;
+					else {
+						note.vol--;
+						note.vol &= 0x0F;
+					}
+
+					if (note.note == 0)
+						note.instrument = -1;
+				}
+
+				if (version == 3) {
+					// Fix for VRC7 portamento TODO
+					/*if (expansionEnabled(SNDCHIP_VRC7) && channel > 4) {
+						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
+							switch (note.effNumber[n]) {
+								case EF_PORTA_DOWN:
+									note.effNumber[n] = EF_PORTA_UP;
+									break;
+								case EF_PORTA_UP:
+									note.effNumber[n] = EF_PORTA_DOWN;
+									break;
+							}
+						}
+					}*/
+					// TODO FDS pitch effect fix
+					
+				}
+			}
 		}
 	}
 

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.document.format.FtmChipType;
 import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.document.format.FtmNote;
+import zdream.nsfplayer.ftm.document.format.FtmPattern;
 import zdream.nsfplayer.ftm.document.format.FtmSequence;
 import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.document.format.FtmTrack;
@@ -136,6 +138,103 @@ public class FamiTrackerHandler {
 		}
 	}
 	
+	/**
+	 * 获取指定索引的 pattern. 如果没有, 创建一个.
+	 * @param trackIdx
+	 *   曲目号
+	 * @param patternIdx
+	 *   pattern 序号, 即 order 值, {@link FtmTrack#orders} 里面存放的数据
+	 * @param channelIdx
+	 *   轨道序号
+	 * @return
+	 */
+	public FtmPattern getOrCreatePattern(final int trackIdx, final int patternIdx, final int channelIdx) {
+		if (channelIdx < 0 || channelIdx >= this.channelCount()) {
+			throw new ArrayIndexOutOfBoundsException(String.format("channelIdx: %d 超出范围 [0, %d)",
+					channelIdx, this.channelCount()));
+		}
+		
+		FtmTrack track = getOrCreateTrack(trackIdx);
+		return getOrCreatePattern(track, channelIdx, patternIdx);
+	}
+
+	/**
+	 * 获取指定索引的 pattern. 如果没有, 创建一个.
+	 * @param track
+	 *   曲目实例
+	 * @param patternIdx
+	 *   pattern 序号, 即 order 值, {@link FtmTrack#orders} 里面存放的数据
+	 * @param channelIdx
+	 *   轨道序号
+	 * @return
+	 */
+	public FtmPattern getOrCreatePattern(final FtmTrack track, final int patternIdx, final int channelIdx) {
+		if (track.patterns == null) {
+			track.patterns = new FtmPattern[track.orders.length][channelCount()];
+		}
+		
+		FtmPattern pattern = track.patterns[patternIdx][channelIdx];
+		
+		if (pattern == null) {
+			track.patterns[patternIdx][channelIdx] = pattern = new FtmPattern();
+		}
+		return pattern;
+	}
+	
+	/**
+	 * 获取指定索引的 note. 如果没有, 创建一个.
+	 * @param trackIdx
+	 *   曲目号
+	 * @param patternIdx
+	 *   pattern 序号, 即 order 值, {@link FtmTrack#orders} 里面存放的数据
+	 * @param channelIdx
+	 *   轨道序号
+	 * @param row
+	 *   行号
+	 * @return
+	 */
+	public FtmNote getOrCreateNote(
+			final int trackIdx,
+			final int patternIdx,  
+			final int channelIdx, 
+			final int row) {
+		return getOrCreateNote(getOrCreateTrack(trackIdx), channelIdx, patternIdx, row);
+	}
+	
+	/**
+	 * 获取指定索引的 note. 如果没有, 创建一个.
+	 * @param track
+	 *   曲目实例
+	 * @param patternIdx
+	 *   pattern 序号, 即 order 值, {@link FtmTrack#orders} 里面存放的数据
+	 * @param channelIdx
+	 *   轨道序号
+	 * @param row
+	 *   行号
+	 * @return
+	 */
+	public FtmNote getOrCreateNote(
+			final FtmTrack track,
+			final int patternIdx,
+			final int channelIdx,
+			final int row) {
+		FtmPattern pattern = getOrCreatePattern(track, channelIdx, patternIdx);
+
+		return getOrCreateNote(pattern, row, track.length);
+	}
+	
+	private static FtmNote getOrCreateNote(final FtmPattern pattern, final int row, final int rowMax) {
+		FtmNote[] notes = pattern.notes;
+		if (pattern.notes == null) {
+			notes = pattern.notes = new FtmNote[rowMax];
+		}
+		
+		if (notes[row] == null) {
+			notes[row] = new FtmNote();
+		}
+		return notes[row];
+	}
+	
 	/* **********
 	 *   轨道   *
 	 ********** */
@@ -251,23 +350,6 @@ public class FamiTrackerHandler {
 		}
 		
 		return channelCode[channel];
-	}
-	
-	/**
-	 * 设置第 {@code channel} 个轨道的效果列数
-	 * @param track
-	 * @param channelNo
-	 *   轨道的序号 (不是轨道号)
-	 * @param column
-	 *   原效果列数 - 1. (0 代表 1 列)
-	 *   有效值 [0, 3]
-	 */
-	public void setEffectColumn(int track, int channelNo, int column) {
-		if (column < 0 || column > 3) {
-			throw new FtmParseException("效果列数错误: " + column);
-		}
-		byte channelCode = this.channelCode[channelNo];
-		audio.getTrack(track).channelEffCount.put(channelCode, column);
 	}
 	
 	/**
