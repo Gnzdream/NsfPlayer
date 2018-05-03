@@ -60,6 +60,11 @@ public class FamiTrackerSetting {
 	 * <p>Maximum number of frames
 	 */
 	public static final int MAX_FRAMES = 128;
+
+	/**
+	 * 最多支持的乐器数量
+	 */
+	public static final int MAX_INSTRUMENTS = 128;
 	
 	/**
 	 * Tempo 支持的最大值.
@@ -77,4 +82,9 @@ public class FamiTrackerSetting {
 	 * <p>Maximum number of patterns per channel
 	 */
 	public static final int MAX_PATTERN = MAX_FRAMES;
+	
+	/**
+	 * Maximum number of DPCM samples, cannot be increased unless the NSF driver is modified.
+	 */
+	public static final int MAX_DSAMPLES = 64;
 }

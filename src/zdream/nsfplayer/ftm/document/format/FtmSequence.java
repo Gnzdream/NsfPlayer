@@ -19,11 +19,6 @@ public class FtmSequence {
 	public final FtmSequenceType type;
 	
 	/**
-	 * 序号
-	 */
-	public int index;
-	
-	/**
 	 * 循环的点位.
 	 * <br>默认 -1, 就是不循环
 	 */
@@ -49,10 +44,6 @@ public class FtmSequence {
 		this.type = type;
 	}
 
-	public int getIndex() {
-		return index;
-	}
-	
 	public	void clear() {
 		loopPoint = -1;
 		releasePoint = -1;
@@ -66,8 +57,21 @@ public class FtmSequence {
 	
 	@Override
 	public String toString() {
-		StringBuilder b = new StringBuilder(24);
-		b.append("Sequence").append(' ').append('#').append(index);
+		StringBuilder b = new StringBuilder(60);
+		
+		b.append("Sequence[");
+		final int length = data.length - 1;
+		for (int i = 0; i < length; i++) {
+			if (loopPoint == i) {
+				b.append("| ");
+			}
+			if (releasePoint == i) {
+				b.append("\\ ");
+			}
+			b.append(data[i]).append(' ');
+		}
+		b.append(data[length]).append(']');
+		
 		return b.toString();
 	}
 

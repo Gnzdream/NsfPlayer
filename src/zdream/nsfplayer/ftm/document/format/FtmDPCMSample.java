@@ -7,9 +7,8 @@ package zdream.nsfplayer.ftm.document.format;
  */
 public class FtmDPCMSample {
 	
-	/**
-	 * 序号
-	 */
-	public int index;
+	public String name;
+	
+	public byte[] data;
 	
 }

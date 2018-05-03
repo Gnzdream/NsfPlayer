@@ -4,7 +4,9 @@ import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_FRAMES;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_DSAMPLES;
 import static zdream.nsfplayer.ftm.document.format.FtmSequence.SEQUENCE_COUNT;
 
 import java.io.IOException;
@@ -172,7 +174,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_DSAMPLES: {
-				//errorFlag = readBlock_DSamples(documentFile);
+				readBlockDSamples(doc, block);
 			} break;
 			
 			case FILE_BLOCK_COMMENTS: {
@@ -676,10 +678,26 @@ public class FamiTrackerCreater {
 	}
 
 	/**
-	 * <p>处理 Pattern.
-	 * <br>根据文件里面写明的 PATTERNS 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * <p>处理段 (Pattern).
+	 * <br>根据文件里面写明的 PATTERNS 的块版本号, 确定 {@code block} 里面的文件格式
+	 * <p>当<b>块版本为 1 </b>时不支持.
 	 * 
-	 * <p>当<b>块版本为 1 </b>时不支持
+	 * <p>每个段 (pattern) 都含以下数据:
+	 * <li>轨道号
+	 * <li>段号 pattern
+	 * <li>键数据个数 note count
+	 * <li>该段的所有键数据
+	 * </li>
+	 * 
+	 * <p>每个键 (note) 都含以下数据:
+	 * <li>行号
+	 * <li>音调
+	 * <li>音阶
+	 * <li>所用的乐器序号
+	 * <li>音量
+	 * <li>效果项与效果参数 (有 1 或 4 个, 取决于 fileVersion)
+	 * </li>
+	 * </p>
 	 * 
 	 * @param doc
 	 * @param block
@@ -705,13 +723,13 @@ public class FamiTrackerCreater {
 			int items = block.readAsCInt();
 			
 			if (channelIdx < 0) {
-				throw new FtmParseException(String.format("曲目 %d 的轨道数 %d 不合法", trackIdx, channelIdx));
+				throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的轨道数 %d 不合法", trackIdx, channelIdx));
 			}
 			if (patternIdx < 0 || patternIdx >= MAX_PATTERN) {
-				throw new FtmParseException(String.format("曲目 %d 的 pattern %d 不合法", trackIdx, patternIdx));
+				throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的 pattern %d 不合法", trackIdx, patternIdx));
 			}
 			if (items <= 0 || items >= MAX_PATTERN_LENGTH) {
-				throw new FtmParseException(String.format("曲目 %d 的 items %d 不合法", trackIdx, items));
+				throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的 items %d 不合法", trackIdx, items));
 			}
 			
 			for (int i = 0; i < items; ++i) {
@@ -722,7 +740,7 @@ public class FamiTrackerCreater {
 					row = block.readAsCInt();
 				
 				if (row >= MAX_PATTERN_LENGTH) {
-					throw new FtmParseException(String.format("曲目 %d 的第 %d 个数据的行数 %d 不合法",
+					throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的第 %d 个数据的行数 %d 不合法",
 							trackIdx, i, row));
 				}
 				FtmNote note = doc.getOrCreateNote(trackIdx, patternIdx, channelIdx, row);
@@ -733,8 +751,9 @@ public class FamiTrackerCreater {
 				note.vol = block.readByte();
 
 				if (fileVersion == 0x0200) {
-					int effectNumber, effectParam;
-					effectNumber = block.readUnsignedByte();
+					byte effectNumber;
+					int effectParam;
+					effectNumber = block.readByte();
 					effectParam = block.readUnsignedByte();
 					if (version < 3) {
 						if (effectNumber == FtmNote.EF_PORTAOFF) {
@@ -751,8 +770,9 @@ public class FamiTrackerCreater {
 				} else {
 					int effColumnCount = effColumnCounts[trackIdx][channelIdx] + 1; // 默认就有 1 列
 					for (int n = 0; n < effColumnCount; ++n) {
-						int effectNumber, effectParam;
-						effectNumber = block.readUnsignedByte();
+						byte effectNumber;
+						int effectParam;
+						effectNumber = block.readByte();
 						effectParam = block.readUnsignedByte();
 
 						if (version < 3) {
@@ -788,7 +808,7 @@ public class FamiTrackerCreater {
 					}
 
 					if (note.note == 0)
-						note.instrument = -1;
+						note.instrument = MAX_INSTRUMENTS;
 				}
 
 				if (version == 3) {
@@ -809,6 +829,53 @@ public class FamiTrackerCreater {
 					
 				}
 			}
+		}
+	}
+	
+	/**
+	 * <p>处理 DSamples.
+	 * <br>根据文件里面写明的 DSAMPLES 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * <p>每个采样 (note) 都含以下数据:
+	 * <li>序号
+	 * <li>名称
+	 * <li>数据
+	 * </li>
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param block
+	 */
+	private void readBlockDSamples(FamiTrackerHandler doc, Block block) {
+		int count = block.readUnsignedByte();
+		if (count < 0 || count >= MAX_DSAMPLES) {
+			throw new FtmParseException(String.format("DSAMPLES: 数量 %d 不合法", count));
+		}
+		
+		for (int i = 0; i < count; ++i) {
+			int index = block.readUnsignedByte();
+			if (index < 0 || index >= MAX_DSAMPLES) {
+				throw new FtmParseException(String.format("DSAMPLES: 第 %d 个采样的序号 %d 不合法", i, index));
+			}
+			
+			FtmDPCMSample sample = doc.getOrCreateDPCMSample(index);
+			int len = block.readAsCInt();
+			
+			// 名称
+			sample.name = block.readAsString(len);
+			
+			// 数据
+			int size = block.readAsCInt();
+			if (size < 0 || size >= 0x8000) {
+				throw new FtmParseException(String.format("DSAMPLES: 第 %d 个采样的数据长度 %d 不合法", i, size));
+			}
+			byte[] bs = new byte[size];
+			int relSize = block.read(bs);
+			if (relSize != size) {
+				throw new FtmParseException(String.format("DSAMPLES: 第 %d 个采样的数据长度 %d 不合法, 实际只能读取 %d",
+						i, size, relSize));
+			}
+			sample.data = bs;
 		}
 	}
 
@@ -851,19 +918,19 @@ public class FamiTrackerCreater {
 			
 			switch (type) {
 			case 0:
-				inst.vol = createSequence(doc, block, index, type);
+				inst.vol = createSequence(doc, index, type);
 				break;
 			case 1:
-				inst.arp = createSequence(doc, block, index, type);
+				inst.arp = createSequence(doc, index, type);
 				break;
 			case 2:
-				inst.pit = createSequence(doc, block, index, type);
+				inst.pit = createSequence(doc, index, type);
 				break;
 			case 3:
-				inst.hip = createSequence(doc, block, index, type);
+				inst.hip = createSequence(doc, index, type);
 				break;
 			case 4:
-				inst.dut = createSequence(doc, block, index, type);
+				inst.dut = createSequence(doc, index, type);
 				break;
 
 			default:
@@ -887,7 +954,7 @@ public class FamiTrackerCreater {
 					continue;
 				}
 				
-				FtmDPCMSample sample = createDSample(doc, index);
+				FtmDPCMSample sample = doc.getOrCreateDPCMSample(index);
 				byte pitch = block.readByte();
 				byte delta;
 				if (version > 5) {
@@ -920,19 +987,19 @@ public class FamiTrackerCreater {
 			
 			switch (type) {
 			case 0:
-				inst.vol = createSeqVRC6(doc, block, index, type);
+				inst.vol = createSeqVRC6(doc, index, type);
 				break;
 			case 1:
-				inst.arp = createSeqVRC6(doc, block, index, type);
+				inst.arp = createSeqVRC6(doc, index, type);
 				break;
 			case 2:
-				inst.pit = createSeqVRC6(doc, block, index, type);
+				inst.pit = createSeqVRC6(doc, index, type);
 				break;
 			case 3:
-				inst.hip = createSeqVRC6(doc, block, index, type);
+				inst.hip = createSeqVRC6(doc, index, type);
 				break;
 			case 4:
-				inst.dut = createSeqVRC6(doc, block, index, type);
+				inst.dut = createSeqVRC6(doc, index, type);
 				break;
 
 			default:
@@ -945,41 +1012,17 @@ public class FamiTrackerCreater {
 	/**
 	 * 创建 2A03 的序列
 	 */
-	private FtmSequence createSequence(FamiTrackerHandler doc, Block block, int index, byte type) {
-		FtmSequence s = new FtmSequence(FtmSequenceType.get(type));
-		s.index = index;
-		
+	private FtmSequence createSequence(FamiTrackerHandler doc, int index, byte type) {
 		// 将序列注册到 Ftm 中
-		doc.registerSequence(s, FtmChipType._2A03);
-		
-		return s;
+		return doc.getOrCreateSequence(FtmChipType._2A03, FtmSequenceType.get(type), index);
 	}
 	
 	/**
 	 * 创建 2A03 的序列
 	 */
-	private FtmSequence createSeqVRC6(FamiTrackerHandler doc, Block block, int index, byte type) {
-		FtmSequence s = new FtmSequence(FtmSequenceType.get(type));
-		s.index = index;
-		
+	private FtmSequence createSeqVRC6(FamiTrackerHandler doc, int index, byte type) {
 		// 将序列注册到 Ftm 中
-		doc.registerSequence(s, FtmChipType.VRC6);
-		
-		return s;
-	}
-	
-	/**
-	 * 创建 DPCM 采样的数据. 只是一个外壳, 先不读取数据
-	 * @return
-	 */
-	private FtmDPCMSample createDSample(FamiTrackerHandler doc, int index) {
-		FtmDPCMSample sample = new FtmDPCMSample();
-		sample.index = index;
-		
-		// 将采样注册到 Ftm 中
-		doc.registerDPCMSample(sample);
-		
-		return sample;
+		return doc.getOrCreateSequence(FtmChipType.VRC6, FtmSequenceType.get(type), index);
 	}
 
 	/**

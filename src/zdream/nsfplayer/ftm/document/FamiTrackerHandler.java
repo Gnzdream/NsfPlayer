@@ -421,7 +421,9 @@ public class FamiTrackerHandler {
 	/**
 	 * 注册序列
 	 */
-	public void registerSequence(FtmSequence seq, FtmChipType chip) {
+	public FtmSequence getOrCreateSequence(FtmChipType chip, FtmSequenceType type, int index) {
+		FtmSequence seq = new FtmSequence(type);
+		
 		int key = chip.ordinal() + FtmSequenceType.values().length + seq.type.ordinal();
 		ArrayList<FtmSequence> list = audio.seqs.get(key);
 		if (list == null) {
@@ -429,18 +431,21 @@ public class FamiTrackerHandler {
 			audio.seqs.put(key, list);
 		}
 		
-		int index = seq.getIndex();
 		registerT(list, seq, index);
+		return seq;
 	}
 
 	/**
 	 * 注册采样
 	 * @param sample
+	 * @return 
 	 */
-	public void registerDPCMSample(FtmDPCMSample sample) {
-		int index = sample.index;
+	public FtmDPCMSample getOrCreateDPCMSample(int index) {
+		FtmDPCMSample sample = new FtmDPCMSample();
 		ArrayList<FtmDPCMSample> list = audio.samples;
 		registerT(list, sample, index);
+		
+		return sample;
 	}
 	
 	private <T> void registerT(ArrayList<T> list, T t, int index) {
