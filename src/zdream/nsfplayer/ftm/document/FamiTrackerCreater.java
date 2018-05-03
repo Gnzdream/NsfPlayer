@@ -1,6 +1,10 @@
 package zdream.nsfplayer.ftm.document;
 
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_FRAMES;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN;
 import static zdream.nsfplayer.ftm.document.format.FtmSequence.SEQUENCE_COUNT;
 
 import java.io.IOException;
@@ -44,6 +48,20 @@ public class FamiTrackerCreater {
 	 */
 	public static final String FILE_END_ID = "END";
 	
+	/*
+	 * 缓存的数据
+	 */
+	
+	/**
+	 * 总的曲目的数量
+	 */
+	private int trackCount;
+
+	/**
+	 * 默认曲目播放的速度
+	 */
+	public static final int DEFAULT_SPEED = 6;
+	
 	/**
 	 * 创建 {@link FtmAudio} 文档
 	 * @param filename
@@ -51,6 +69,7 @@ public class FamiTrackerCreater {
 	 * @throws Exception
 	 */
 	public FtmAudio create(String filename) throws Exception {
+		reset();
 		
 		FtmAudio audio = new FtmAudio();
 		FamiTrackerHandler doc = audio.handler;
@@ -58,6 +77,10 @@ public class FamiTrackerCreater {
 		doCreate(filename, doc);
 		
 		return audio;
+	}
+	
+	private void reset() {
+		trackCount = 0;
 	}
 	
 	/**
@@ -133,7 +156,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_FRAMES: {
-				//errorFlag = readBlock_Frames(documentFile);
+				readBlockFrames(doc, block);
 			} break;
 			
 			case FILE_BLOCK_PATTERNS: {
@@ -383,13 +406,15 @@ public class FamiTrackerCreater {
 		
 		if (version == 1) {
 			// 版本 1 只支持单曲
+			trackCount = 1;
+			
 			int channelCount = doc.channelCount();
 			for (int i = 0; i < channelCount; ++i) {
 				block.skip(1); // channelType 忽略
 				doc.setEffectColumn(0, i, block.readByte());
 			}
 		} else {
-			int trackCount = block.readUnsignedByte() + 1;  // 0 就是只有 1 个曲子
+			trackCount = block.readUnsignedByte() + 1;  // 0 就是只有 1 个曲子
 			doc.allocateTrack(trackCount);
 			
 			int channelCount = doc.channelCount();
@@ -428,7 +453,7 @@ public class FamiTrackerCreater {
 	private void readBlockInstruments(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("HEADER 版本号错误: " + version);
+			throw new FtmParseException("INSTRUMENTS 版本号错误: " + version);
 		}
 		
 		// 乐器中, 序号最大的值 + 1
@@ -700,6 +725,155 @@ public class FamiTrackerCreater {
 			}
 		}
 		*/
+	}
+
+	/**
+	 * <p>处理 Frames(2A03 & MMC5).
+	 * <br>根据文件里面写明的 frames 的块版本号, 确定 {@code block} 里面的文件格式:
+	 * 
+	 * @param doc
+	 * @param block
+	 */
+	private void readBlockFrames(FamiTrackerHandler doc, Block block) {
+		int version = block.version;
+		if (version < 1) {
+			throw new FtmParseException("FRAMES 版本号: " + version + " 不合法");
+		}
+		
+		if (version > 1) {
+			int trackIdx = 0;
+			
+			for (; trackIdx < trackCount; ++trackIdx) {
+				// 曲目的所有段数 Frame
+				int frameCount = block.readAsCInt();
+				if (frameCount <= 0 || frameCount > MAX_FRAMES) {
+					throw new FtmParseException("曲目 " + trackIdx + " 的 Frame 数量: " + frameCount + " 不合法");
+				}
+					
+				int speed = block.readAsCInt();
+				if (speed <= 0) {
+					throw new FtmParseException("曲目 " + trackIdx + " 的 speed: " + speed + " 不合法");
+				}
+				
+				FtmTrack track = doc.getOrCreateTrack(trackIdx);
+				// pTrack.setFrameCount(frameCount);
+
+				if (version == 3) {
+					int tempo = block.readAsCInt();
+					if (tempo <= 0 || tempo > MAX_TEMPO) {
+						throw new FtmParseException("曲目 " + trackIdx + " 的 tempo: " + tempo + " 不合法");
+					}
+					track.tempo = tempo;
+					track.speed = speed;
+					
+				} else {
+					if (speed < 20) {
+						int tempo = (doc.audio.machine == FtmAudio.MACHINE_NTSC) ?
+								FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
+						track.tempo = tempo;
+						track.speed = speed;
+					} else {
+						if (speed > MAX_TEMPO) {
+							throw new FtmParseException("曲目 " + trackIdx + " 的 speed: " + speed + " 不合法");
+						}
+						track.tempo = speed;
+						track.speed = DEFAULT_SPEED;
+					}
+				}
+
+				// 每个段落的行数
+				int rowCount = block.readAsCInt();
+				if (rowCount <= 0 || rowCount > MAX_PATTERN_LENGTH) {
+					throw new FtmParseException("曲目 " + trackIdx + " 的 patternLength: " + rowCount + " 不合法");
+				}
+				
+				track.length = rowCount;
+				int channelsCount = doc.channelCount();
+				track.orders = new int[frameCount][channelsCount];
+				
+				for (int frameIdx = 0; frameIdx < frameCount; ++frameIdx) {
+					for (int channelIdx = 0; channelIdx < channelsCount; ++channelIdx) {
+						// order 就类似于索引指针, 告诉你某个曲目第 x 段应该播放第几号段落.
+						int order = block.readUnsignedByte();
+						if (order < 0 || order >= MAX_PATTERN) {
+							throw new FtmParseException(
+									String.format("曲目 %d, Frame %d, 轨道 %d 的 order: %d 不合法",
+											trackIdx, frameIdx, channelIdx, order));
+						}
+						
+						track.orders[frameIdx][channelIdx] = order;
+					}
+				}
+			}
+			
+		} else {
+			throw new FtmParseException("Frame 部分暂时不支持老版本");
+		}
+		
+		/*
+		int version = pDocFile.getBlockVersion();
+
+		if (version == 1) {
+			int frameCount = pDocFile.getBlockInt();
+			PatternData pTrack = getTrack0(0);
+			pTrack.setFrameCount(frameCount);
+			m_iChannelsCount = pDocFile.getBlockInt();
+			assert(frameCount <= MAX_FRAMES);
+			assert(m_iChannelsCount <= MAX_CHANNELS);
+			for (int i = 0; i < frameCount; ++i) {
+				for (int j = 0; j < m_iChannelsCount; ++j) {
+					int pattern = pDocFile.getBlockChar() & 0xFF;
+					assert(pattern < MAX_FRAMES);
+					pTrack.setFramePattern(i, j, pattern);
+				}
+			}
+		} else if (version > 1) {
+			for (int y = 0; y < m_iTrackCount; ++y) {
+				int frameCount = pDocFile.getBlockInt();
+				int speed = pDocFile.getBlockInt();
+				assert(frameCount > 0 && frameCount <= MAX_FRAMES);
+				assert(speed > 0);
+
+				PatternData pTrack = getTrack0(y);
+				pTrack.setFrameCount(frameCount);
+
+				if (version == 3) {
+					int tempo = pDocFile.getBlockInt();
+					assert(speed >= 0);
+					assert(tempo >= 0);
+					pTrack.setSongTempo(tempo);
+					pTrack.setSongSpeed(speed);
+				} else {
+					if (speed < 20) {
+						int tempo = (m_iMachine == NTSC) ? DEFAULT_TEMPO_NTSC : DEFAULT_TEMPO_PAL;
+						assert(tempo >= 0 && tempo <= MAX_TEMPO);
+						//ASSERT_FILE_DATA(Speed >= 0 && Speed <= MAX_SPEED);
+						assert(speed >= 0);
+						pTrack.setSongTempo(tempo);
+						pTrack.setSongSpeed(speed);
+					} else {
+						assert(speed >= 0 && speed <= MAX_TEMPO);
+						pTrack.setSongTempo(speed);
+						pTrack.setSongSpeed(DEFAULT_SPEED);
+					}
+				}
+
+				int patternLength = pDocFile.getBlockInt();
+				assert(patternLength > 0 && patternLength <= MAX_PATTERN_LENGTH);
+
+				pTrack.setPatternLength(patternLength);
+				
+				for (int i = 0; i < frameCount; ++i) {
+					for (int j = 0; j < m_iChannelsCount; ++j) {
+						// Read pattern index
+						int pattern = pDocFile.getBlockChar() & 0xFF;
+						assert(pattern < MAX_PATTERN);
+						pTrack.setFramePattern(i, j, pattern);
+					}
+				}
+			}
+		}
+		 */
 	}
 
 	/**

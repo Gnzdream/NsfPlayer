@@ -114,6 +114,28 @@ public class FamiTrackerHandler {
 		return track;
 	}
 	
+	/**
+	 * 获取指定索引的 track. 如果没有, 创建一个.
+	 * @param index
+	 * @return
+	 */
+	public FtmTrack getOrCreateTrack(final int index) {
+		ArrayList<FtmTrack> tracks = audio.tracks;
+		
+		if (index <= tracks.size()) {
+			FtmTrack track = tracks.get(index);
+			if (track == null) {
+				track = new FtmTrack();
+				tracks.set(index, track);
+			}
+			return track;
+		} else {
+			FtmTrack track = new FtmTrack();
+			registerT(tracks, track, index);
+			return track;
+		}
+	}
+	
 	/* **********
 	 *   轨道   *
 	 ********** */

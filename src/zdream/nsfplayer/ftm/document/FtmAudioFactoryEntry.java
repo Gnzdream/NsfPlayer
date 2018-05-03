@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-import zdream.nsfplayer.ftm.document.format.FtmPattern;
-import zdream.nsfplayer.ftm.document.format.FtmTrack;
 import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.document.format.FtmPattern;
+import zdream.nsfplayer.ftm.document.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
 
 public class FtmAudioFactoryEntry {
@@ -530,16 +530,9 @@ public class FtmAudioFactoryEntry {
 		}
 		
 		// Order 关联 Pattern
-		track.orders = new FtmPattern[orders.size()][];
+		track.orders = new int[orders.size()][];
 		for (int i = 0; i < track.orders.length; i++) {
-			FtmPattern[] ps = new FtmPattern[columns.length];
-			int[] os = orders.get(i);
-			
-			for (int j = 0; j < os.length; j++) {
-				ps[j] = track.patterns[os[j]][j];
-			}
-			
-			track.orders[i] = ps;
+			track.orders[i] = orders.get(i);
 		}
 		
 		return str;

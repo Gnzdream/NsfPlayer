@@ -54,7 +54,7 @@ public final class FtmTrack {
 	/*
 	 * 顺序 ORDER
 	 */
-	public FtmPattern[][] orders;
+	public int[][] orders;
 	
 	/* **********
 	 *   其它   *
