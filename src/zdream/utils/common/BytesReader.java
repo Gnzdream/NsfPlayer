@@ -14,6 +14,14 @@ public class BytesReader {
 		
 	}
 	
+	public BytesReader(byte[] bs) {
+		set(bs);
+	}
+	
+	public void set(byte[] bs) {
+		this.bs = bs;
+	}
+	
 	public int read(byte[] bs, int offset, int len) {
 		int len0 = (len > this.bs.length - this.offset) ? this.bs.length - this.offset : len;
 		System.arraycopy(this.bs, this.offset, bs, offset, len0);
@@ -117,6 +125,10 @@ public class BytesReader {
 	
 	public final byte[] bytes() {
 		return bs;
+	}
+	
+	public int length() {
+		return bs.length;
 	}
 
 }

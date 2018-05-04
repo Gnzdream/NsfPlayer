@@ -1,15 +1,13 @@
 package zdream.nsfplayer.ftm.factory;
 
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_DSAMPLES;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_FRAMES;
+import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
 import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_DSAMPLES;
-
-import java.io.IOException;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
@@ -23,6 +21,7 @@ import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
+import zdream.utils.common.BytesReader;
 
 /**
  * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
@@ -73,23 +72,6 @@ public class FamiTrackerCreater {
 	 */
 	public static final int DEFAULT_SPEED = 6;
 	
-	/**
-	 * 创建 {@link FtmAudio} 文档
-	 * @param filename
-	 * @return
-	 * @throws Exception
-	 */
-	public FtmAudio create(String filename) throws Exception {
-		reset();
-		
-		FtmAudio audio = new FtmAudio();
-		FamiTrackerHandler doc = audio.handler;
-		
-		doCreate(filename, doc);
-		
-		return audio;
-	}
-	
 	private void reset() {
 		trackCount = 0;
 		effColumnCounts = null;
@@ -101,32 +83,26 @@ public class FamiTrackerCreater {
 	 */
 	public static final int COMPATIBLE_VER = 0x0200;
 	
-	private void doCreate(String filename, FamiTrackerHandler doc) throws IOException {
-		DocumentReader openFile = new DocumentReader(filename);
+	public void doCreate(BytesReader reader, FamiTrackerHandler doc) {
+		reset();
+		
 		int version;
 		
-		openFile.open();
-
-		// 如果是空文件的话, 就直接报错
-		if (openFile.length() == 0) {
-			throw new IOException("文件: " + filename + " 是空文件");
-		}
-		
-		if (!validateHeader(openFile)) {
+		if (!validateHeader(reader)) {
 			throw new FamiTrackerFormatException("文件格式不正确: 文件头不匹配");
 		}
 		
-		version = openFile.readAsCInt();
+		version = reader.readAsCInt();
 
 		if (version < 0x0200) {
 			// 读取低版本的文件
 			throw new FamiTrackerFormatException("文件版本太低, 无法产生");
 		} else if (version >= 0x0200) {
-			doCreateNew(doc, openFile, version);
+			doCreateNew(doc, reader, version);
 		}
 	}
 	
-	private void doCreateNew(FamiTrackerHandler doc, DocumentReader openFile, int version) {
+	private void doCreateNew(FamiTrackerHandler doc, BytesReader reader, int version) {
 		
 		doc.allocateTrack(1);
 		
@@ -134,8 +110,8 @@ public class FamiTrackerCreater {
 		 * Famitracker 产生的文件由多个块组成.
 		 * 在读取的过程中就需要对逐个块进行处理.
 		 */
-		while (!openFile.isFinished()) LOOP: {
-			Block block = nextBlock(openFile);
+		while (!reader.isFinished()) LOOP: {
+			Block block = nextBlock(reader);
 			if (block.id == null) {
 				// 已经读取结束
 				break;
@@ -1029,13 +1005,13 @@ public class FamiTrackerCreater {
 
 	/**
 	 * 检查头部 ID
-	 * @param openFile
+	 * @param reader
 	 * @return
 	 */
-	private boolean validateHeader(DocumentReader openFile) {
+	boolean validateHeader(BytesReader reader) {
 		int len = FILE_HEADER_ID.length();
 		byte[] bs_head = new byte[len];
-		int i = openFile.read(bs_head);
+		int i = reader.read(bs_head);
 		
 		if (i != len) {
 			return false;
@@ -1061,11 +1037,11 @@ public class FamiTrackerCreater {
 	 * <li>4 字节的无符号数字, 表示块大小</li>
 	 * <li>任意大小的数据</li>
 	 */
-	public Block nextBlock(DocumentReader openFile) {
+	public Block nextBlock(BytesReader reader) {
 		Block block = new Block();
 		
 		byte[] bs = new byte[16];
-		int bytesRead = openFile.read(bs);
+		int bytesRead = reader.read(bs);
 		
 		if (bytesRead == 0) {
 			// 读取不到数据, 意味着文件已经读取完成
@@ -1077,12 +1053,12 @@ public class FamiTrackerCreater {
 			return block; // 结束标识, 没有版本、大小、数据
 		}
 		
-		block.version = openFile.readAsCInt();
-		block.setSize(openFile.readAsCInt());
+		block.version = reader.readAsCInt();
+		block.setSize(reader.readAsCInt());
 		
 		// TODO 原程序判断 version 和 size 的合法性, 这里跳过
 		
-		bytesRead = openFile.read(block.bytes());
+		bytesRead = reader.read(block.bytes());
 		if (bytesRead != block.size) {
 			throw new RuntimeException("块: " + block.id + " 大小为 " + block.size +
 					" 但是只能读取 " + bytesRead + " 字节. 文件似乎已经损坏");

@@ -11,10 +11,16 @@ import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
 
-public class FtmAudioFactoryEntry {
+public class FamiTrackerTextCreater {
 	
+	/*
+	 * 整个文本
+	 */
 	String txt;
 	
+	/*
+	 * 行号
+	 */
 	int line;
 	
 	Scanner scan;
@@ -37,7 +43,7 @@ public class FtmAudioFactoryEntry {
 	 */
 	FtmAudio audio;
 	
-	FtmAudioFactoryEntry(String txt) {
+	FamiTrackerTextCreater(String txt) {
 		this.txt = txt;
 	}
 	
@@ -78,7 +84,7 @@ public class FtmAudioFactoryEntry {
 		}
 	}
 	
-	public FtmAudio createAudio() throws FtmParseException {
+	public FtmAudio doCreate() throws FtmParseException {
 		scan = new Scanner(txt);
 		line = 0;
 		

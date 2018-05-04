@@ -15,7 +15,7 @@ public class DocumentReader extends BytesReader {
 	File file;
 	
 	/**
-	 * 打开并创建文件
+	 * 打开并创建文件, 将文件的所有数据以 byte 数组的方式读入.
 	 * @param fileName
 	 * @throws IOException
 	 */
@@ -28,8 +28,14 @@ public class DocumentReader extends BytesReader {
 		reader.close();
 	}
 	
-	public long length() {
-		return file.length();
+	@Override
+	public int length() {
+		return (int) file.length();
+	}
+	
+	@Override
+	public void set(byte[] bs) {
+		// do-nothing
 	}
 
 }
