@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document.format;
+package zdream.nsfplayer.ftm.format;
 
 public enum FtmChipType {
 	

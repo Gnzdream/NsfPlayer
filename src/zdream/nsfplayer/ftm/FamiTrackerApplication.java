@@ -2,8 +2,8 @@ package zdream.nsfplayer.ftm;
 
 import java.nio.charset.Charset;
 
-import zdream.nsfplayer.ftm.document.FamiTrackerCreater;
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.factory.FamiTrackerCreater;
 
 /**
  * 应用的实体. 用于打开 FamiTracker 的文件等操作

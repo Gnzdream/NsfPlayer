@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document.format;
+package zdream.nsfplayer.ftm.format;
 
 /**
  * <p>FTM 每一个有效段号 (pattern) 数据.

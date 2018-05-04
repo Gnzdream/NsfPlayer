@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document.format;
+package zdream.nsfplayer.ftm.format;
 
 /**
  * <p>序列. 每个乐器中音量、音调、音色的变化用数值来定量, 那么这个就是序列.

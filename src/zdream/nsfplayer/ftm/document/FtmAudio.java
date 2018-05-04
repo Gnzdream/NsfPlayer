@@ -3,12 +3,12 @@ package zdream.nsfplayer.ftm.document;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.document.format.FtmChipType;
-import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
-import zdream.nsfplayer.ftm.document.format.FtmSequence;
-import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
-import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.format.FtmChipType;
+import zdream.nsfplayer.ftm.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.format.FtmSequence;
+import zdream.nsfplayer.ftm.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.format.FtmTrack;
 
 public class FtmAudio {
 	
@@ -27,22 +27,17 @@ public class FtmAudio {
 	/**
 	 * 标题 TITLE
 	 */
-	String title;
+	public String title;
 	
 	/**
 	 * 作家 / 创作者 AUTHOR
 	 */
-	String author;
+	public String author;
 	
 	/**
 	 * 版权 COPYRIGHT
 	 */
-	String copyright;
-	
-	/**
-	 * 评论, 列表形式
-	 */
-	String[] comments;
+	public String copyright;
 	
 	/**
 	 * 制式
@@ -83,22 +78,6 @@ public class FtmAudio {
 	 * <p>当 {@link #useN163} 为 true 时有效
 	 */
 	int namcoChannels;
-	
-	public String getTitle() {
-		return title;
-	}
-	
-	public String getAuthor() {
-		return author;
-	}
-	
-	public String getCopyright() {
-		return copyright;
-	}
-	
-	public String[] getComments() {
-		return comments;
-	}
 	
 	/**
 	 * 制式, 包括 {@link #MACHINE_NTSC} 和 {@link #MACHINE_PAL}

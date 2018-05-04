@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document.format;
+package zdream.nsfplayer.ftm.format;
 
 /**
  * VRC6 乐器部分

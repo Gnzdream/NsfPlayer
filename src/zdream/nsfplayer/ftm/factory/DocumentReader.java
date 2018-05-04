@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document;
+package zdream.nsfplayer.ftm.factory;
 
 import java.io.File;
 import java.io.FileInputStream;

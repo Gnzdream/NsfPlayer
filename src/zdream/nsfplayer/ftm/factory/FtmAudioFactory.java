@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document;
+package zdream.nsfplayer.ftm.factory;
 
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.utils.common.FileUtils;

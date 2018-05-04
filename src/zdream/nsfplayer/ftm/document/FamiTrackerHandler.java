@@ -2,14 +2,15 @@ package zdream.nsfplayer.ftm.document;
 
 import java.util.ArrayList;
 
-import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.document.format.FtmChipType;
-import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
-import zdream.nsfplayer.ftm.document.format.FtmNote;
-import zdream.nsfplayer.ftm.document.format.FtmPattern;
-import zdream.nsfplayer.ftm.document.format.FtmSequence;
-import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
-import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.factory.FtmParseException;
+import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.format.FtmChipType;
+import zdream.nsfplayer.ftm.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.format.FtmNote;
+import zdream.nsfplayer.ftm.format.FtmPattern;
+import zdream.nsfplayer.ftm.format.FtmSequence;
+import zdream.nsfplayer.ftm.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
  * FamiTracker 的文本的操作器.

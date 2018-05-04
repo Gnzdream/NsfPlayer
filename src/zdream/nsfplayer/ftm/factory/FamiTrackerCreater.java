@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document;
+package zdream.nsfplayer.ftm.factory;
 
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_FRAMES;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN;
@@ -6,21 +6,23 @@ import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
+import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_DSAMPLES;
-import static zdream.nsfplayer.ftm.document.format.FtmSequence.SEQUENCE_COUNT;
 
 import java.io.IOException;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
-import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.document.format.FtmChipType;
-import zdream.nsfplayer.ftm.document.format.FtmDPCMSample;
-import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
-import zdream.nsfplayer.ftm.document.format.FtmInstrumentVRC6;
-import zdream.nsfplayer.ftm.document.format.FtmNote;
-import zdream.nsfplayer.ftm.document.format.FtmSequence;
-import zdream.nsfplayer.ftm.document.format.FtmSequenceType;
-import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
+import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.format.FtmChipType;
+import zdream.nsfplayer.ftm.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
+import zdream.nsfplayer.ftm.format.FtmNote;
+import zdream.nsfplayer.ftm.format.FtmSequence;
+import zdream.nsfplayer.ftm.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
  * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
@@ -178,7 +180,7 @@ public class FamiTrackerCreater {
 			} break;
 			
 			case FILE_BLOCK_COMMENTS: {
-				//errorFlag = readBlock_Comments(documentFile);
+				// 直接忽略
 			} break;
 			
 			/*case FILE_BLOCK_SEQUENCES_VRC6: {
@@ -334,7 +336,7 @@ public class FamiTrackerCreater {
 			block.skip(4); // 震动模式, 忽略
 			block.skip(4); // 小节间隔 忽略
 			block.skip(4); // 拍间隔, 忽略
-			if (doc.audio.useN163) {
+			if (doc.audio.isUseN163()) {
 				doc.setNamcoChannels(block.readAsCInt());
 			}
 			doc.setDefaultSplit();
@@ -349,7 +351,7 @@ public class FamiTrackerCreater {
 			block.skip(4); // 震动模式, 忽略
 			block.skip(4); // 小节间隔 忽略
 			block.skip(4); // 拍间隔, 忽略
-			if (doc.audio.useN163) {
+			if (doc.audio.isUseN163()) {
 				doc.setNamcoChannels(block.readAsCInt());
 			}
 			doc.setSplit(block.readAsCInt());
@@ -368,7 +370,7 @@ public class FamiTrackerCreater {
 				track.tempo = track.speed;
 				track.speed = 6;
 			} else {
-				track.tempo = (doc.audio.machine == FtmAudio.MACHINE_NTSC) ?
+				track.tempo = (doc.audio.getMachine() == FtmAudio.MACHINE_NTSC) ?
 						FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
 			}
 		}
@@ -634,7 +636,7 @@ public class FamiTrackerCreater {
 					
 				} else {
 					if (speed < 20) {
-						int tempo = (doc.audio.machine == FtmAudio.MACHINE_NTSC) ?
+						int tempo = (doc.audio.getMachine() == FtmAudio.MACHINE_NTSC) ?
 								FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
 						track.tempo = tempo;
 						track.speed = speed;

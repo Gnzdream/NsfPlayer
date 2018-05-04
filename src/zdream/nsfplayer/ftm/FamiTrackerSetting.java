@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm;
 
-import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
  * TODO

@@ -1,13 +1,14 @@
-package zdream.nsfplayer.ftm.document;
+package zdream.nsfplayer.ftm.factory;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-import zdream.nsfplayer.ftm.document.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.document.format.FtmInstrument2A03;
-import zdream.nsfplayer.ftm.document.format.FtmPattern;
-import zdream.nsfplayer.ftm.document.format.FtmTrack;
+import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmPattern;
+import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
 
 public class FtmAudioFactoryEntry {

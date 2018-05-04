@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document.format;
+package zdream.nsfplayer.ftm.format;
 
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
 
