@@ -1,10 +1,10 @@
-package zdream.nsfplayer.xgm.device.cpu;
+package zdream.nsfplayer.nsf.device.cpu;
 
 import zdream.nsfplayer.nsf.device.IDevice;
+import zdream.nsfplayer.nsf.device.cpu.km6502.K6502Context;
+import zdream.nsfplayer.nsf.device.cpu.km6502.K6502Context.ReadHandler;
+import zdream.nsfplayer.nsf.device.cpu.km6502.K6502Context.WriteHandler;
 import zdream.nsfplayer.xgm.device.IntHolder;
-import zdream.nsfplayer.xgm.device.cpu.km6502.K6502Context;
-import zdream.nsfplayer.xgm.device.cpu.km6502.K6502Context.ReadHandler;
-import zdream.nsfplayer.xgm.device.cpu.km6502.K6502Context.WriteHandler;
 import zdream.nsfplayer.xgm.device.misc.CPULogger;
 
 /**

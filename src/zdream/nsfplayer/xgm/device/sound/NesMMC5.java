@@ -1,10 +1,10 @@
 package zdream.nsfplayer.xgm.device.sound;
 
+import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.IntHolder;
 import zdream.nsfplayer.xgm.device.TrackInfoBasic;
-import zdream.nsfplayer.xgm.device.cpu.NesCPU;
 
 public class NesMMC5 implements ISoundChip {
 	

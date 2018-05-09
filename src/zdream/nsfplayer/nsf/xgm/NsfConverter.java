@@ -10,10 +10,10 @@ import zdream.nsfplayer.nsf.device.Bus;
 import zdream.nsfplayer.nsf.device.IDevice;
 import zdream.nsfplayer.nsf.device.Layer;
 import zdream.nsfplayer.nsf.device.Pulses;
+import zdream.nsfplayer.nsf.device.cpu.NesCPU;
+import zdream.nsfplayer.nsf.device.memory.NesBank;
+import zdream.nsfplayer.nsf.device.memory.NesMem;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
-import zdream.nsfplayer.xgm.device.cpu.NesCPU;
-import zdream.nsfplayer.xgm.device.memory.NesBank;
-import zdream.nsfplayer.xgm.device.memory.NesMem;
 import zdream.nsfplayer.xgm.device.sound.NesDMC;
 
 /**
