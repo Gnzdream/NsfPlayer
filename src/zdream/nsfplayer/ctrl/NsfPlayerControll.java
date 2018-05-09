@@ -68,11 +68,6 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 		attachHandler(new SongHandler());
 	}
 	
-	public static void main(String[] args) throws IOException {
-		NsfPlayerControll r = new NsfPlayerControll();
-		r.go();
-	}
-	
 	private void init() {
 		// 播放器的创建
 		player = new NsfPlayer();

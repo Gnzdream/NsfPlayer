@@ -15,6 +15,7 @@ src/db.properties
 /.settings/
 .classpath
 .project
+/target
 
 # virtual machine crash logs, see 
 
