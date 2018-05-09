@@ -19,12 +19,12 @@ public class FamiTrackerDocTest {
 			boolean b = app.open(
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\22_Of_Devious_Machinations_Clockwork_Tower.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Raf的世界\\track04.ftm"
-					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
+					"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman02\\Wily 1.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\danooct1 FTMs\\2010\\mega man time tangent early draft.ftm"
 					// "D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman other\\MMZ2 - Departure.ftm"
 					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman03\\VRC6 - Snake Man.ftm"
-					"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\51_Unused_Song.ftm"
+					//"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\51_Unused_Song.ftm"
 					);
 			System.out.println(Runtime.getRuntime().freeMemory() + " 用时: " + (System.currentTimeMillis() - l));
 			
@@ -35,7 +35,7 @@ public class FamiTrackerDocTest {
 				System.out.println("成功加载.");
 			}
 			
-			app.play(0);
+			app.play(32);
 			
 //			FamitrackerLogger.instance.closeFile();
 		} catch (Exception e) {

@@ -4,14 +4,53 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
+import zdream.utils.common.TextReader;
 
 public class FamiTrackerTextCreater {
+	
+	/**
+	 * 文本读取器
+	 */
+	TextReader reader;
+	
+	public FamiTrackerTextCreater() {
+		// do nothing
+	}
+	
+	/**
+	 * 按照文本内容来生成 {@link FtmAudio}
+	 * @param reader
+	 * @param doc
+	 * @throws FtmParseException
+	 */
+	public void doCreate(TextReader reader, FamiTrackerHandler doc) throws FtmParseException {
+		this.reader = reader;
+		reset();
+		
+		if (!reader.isFinished()) {
+			while (reader.toNextValidLine() >= 0) {
+				reader.toNextValidLine();
+				System.out.println(reader.thisLine().substring(0, 5));
+			}
+		}
+		
+		reader.close();
+	}
+	
+	public void reset() {
+		
+	}
+	
+	
+	
+	
 	
 	/*
 	 * 整个文本
@@ -43,15 +82,11 @@ public class FamiTrackerTextCreater {
 	 */
 	FtmAudio audio;
 	
-	FamiTrackerTextCreater(String txt) {
-		this.txt = txt;
-	}
-	
 	/**
 	 * 读取下一行文本, 行计数器加一
 	 * @return
 	 */
-	String nextLine() {
+	/*String nextLine() {
 		line++;
 		if (bufText != null) {
 			String text = bufText;
@@ -61,20 +96,20 @@ public class FamiTrackerTextCreater {
 		return scan.nextLine();
 	}
 	
-	/**
+	*//**
 	 * 模拟回到上一行
 	 * @param text
-	 */
+	 *//*
 	void storeLine(String text) {
 		line--;
 		this.bufText = text;
 	}
 	
-	/**
+	*//**
 	 * 跳过 count 行空行.
 	 * <p>如果跳过的行不是空行则抛出异常
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void skipBlankLine(int count) {
 		for (int i = 0; i < count; i++) {
 			String str = nextLine();
@@ -84,40 +119,7 @@ public class FamiTrackerTextCreater {
 		}
 	}
 	
-	public FtmAudio doCreate() throws FtmParseException {
-		scan = new Scanner(txt);
-		line = 0;
-		
-		audio = new FtmAudio();
-		audio.version = parseVersion();
-		
-		skipBlankLine(1);
-		
-		// do somrthing
-		while (scan.hasNext()) {
-			String str = nextLine();
-			
-			if (str.equals("")) {
-				continue;
-			}
-			
-			if (str.charAt(0) == '#') {
-				int v = parseBlock(str);
-				if (v == 1) {
-					break;
-				}
-			} else {
-				throw new FtmParseException(line, "无法解析该行, 这行开头应该是 '#'");
-			}
-		}
-		
-		scan.close();
-		scan = null;
-		
-		return audio;
-	}
-	
-	/**
+	*//**
 	 * 检查文本第一行关于版本号的描述.<br>
 	 * 第一行的文本应该是这样的:
 	 * <blockquote>
@@ -127,7 +129,7 @@ public class FamiTrackerTextCreater {
 	 *   版本号文字, 比如 0.4.2
 	 * @throws FtmParseException
 	 *   版本号描述出错
-	 */
+	 *//*
 	String parseVersion() throws FtmParseException {
 		String firstLine = nextLine();
 		if (!firstLine.startsWith("# FamiTracker text export ")) {
@@ -136,7 +138,7 @@ public class FamiTrackerTextCreater {
 		return firstLine.substring("# FamiTracker text export ".length());
 	}
 	
-	/**
+	*//**
 	 * 开始解析一个块. 一个块的标题以 '#' 作为开头
 	 * @param str
 	 *   标题行, 以 '#' 开头的行
@@ -144,7 +146,7 @@ public class FamiTrackerTextCreater {
 	 *   0 - 系统正常
 	 *   1 - 检测到文本结束符号, 应该停止解析
 	 * @throws FtmParseException
-	 */
+	 *//*
 	int parseBlock(String str) throws FtmParseException {
 		switch (str) {
 		case HEAD_SONG_INFO:
@@ -185,11 +187,11 @@ public class FamiTrackerTextCreater {
 		return 0;
 	}
 	
-	/**
+	*//**
 	 * 解析歌曲信息部分.<br>
 	 * 包括标题 (TITLE)、作家 (AUTHOR) 和版权 (COPYRIGHT).
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseSongInfo() throws FtmParseException {
 		for (int i = 0; i < 3; i++) {
 			String str = nextLine();
@@ -241,11 +243,11 @@ public class FamiTrackerTextCreater {
 		}
 	}
 	
-	/**
+	*//**
 	 * <p>解析歌曲的评论、说明部分.
 	 * <p>该部分分为多行, 每条评论占一行.
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseComment() throws FtmParseException {
 		ArrayList<String> comments = new ArrayList<>();
 		
@@ -267,10 +269,10 @@ public class FamiTrackerTextCreater {
 		audio.comments = comments.toArray(new String[comments.size()]);
 	}
 	
-	/**
+	*//**
 	 * <p>解析全局设定部分
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseGlobalSettings() throws FtmParseException {
 		while (true) {
 			String str = nextLine();
@@ -311,10 +313,10 @@ public class FamiTrackerTextCreater {
 		}
 	}
 	
-	/**
+	*//**
 	 * 
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseMacros() throws FtmParseException {
 		while (true) {
 			String str = nextLine();
@@ -325,10 +327,10 @@ public class FamiTrackerTextCreater {
 		}
 	}
 	
-	/**
+	*//**
 	 * 
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseDpcms() throws FtmParseException {
 		while (true) {
 			String str = nextLine();
@@ -339,10 +341,10 @@ public class FamiTrackerTextCreater {
 		}
 	}
 	
-	/**
+	*//**
 	 * 解析乐器部分
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseInstruments() throws FtmParseException {
 		// 用来缓存乐器
 		ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
@@ -426,10 +428,10 @@ public class FamiTrackerTextCreater {
 		}
 	}
 
-	/**
+	*//**
 	 * 解析乐曲部分
 	 * @throws FtmParseException
-	 */
+	 *//*
 	void parseTracks() throws FtmParseException {
 		// 第一行一定是空行
 		skipBlankLine(1);
@@ -450,13 +452,13 @@ public class FamiTrackerTextCreater {
 		audio.tracks = tracks;
 	}
 	
-	/**
+	*//**
 	 * 解析每一个乐曲
 	 * @param firstLine
 	 * @param track
 	 *   解析的数据放到这个里面
 	 * @return
-	 */
+	 *//*
 	String parseTrack(final String firstLine, FtmTrack track) throws FtmParseException {
 		String[] strs = CodeSpliter.split(firstLine);
 		
@@ -544,7 +546,7 @@ public class FamiTrackerTextCreater {
 		return str;
 	}
 	
-	/**
+	*//**
 	 * 解析 Track - Pattern 部分
 	 * @param fristLine
 	 *   第一行文本, 类似于 "PATTERN 00"
@@ -554,7 +556,7 @@ public class FamiTrackerTextCreater {
 	 *   最多的行数
 	 * @return
 	 * @throws FtmParseException
-	 */
+	 *//*
 	FtmPattern[] parsePattern(final String fristLine, final int column, final int maxRow)
 			throws FtmParseException {
 		// 第一行
@@ -568,14 +570,14 @@ public class FamiTrackerTextCreater {
 		int row = 0; // 期望的行数
 		int row_pattern; // 这是临时变量, 储存解析出来的行数, 用来和 row 作对比的
 		
-		/*
+		
 		 * 是否标识过本行的行号.
 		 * 
 		 * 因为数据存储是这样的:
 		 * 行号0, 改变音调, 改变音量, 行号2, 改变乐器, 改变音量, P效果, 行号6, 改变音量...
 		 * 不是所有的行号都会放上去. 如果本行有要改变的东西, 会先放行号标识;
 		 * 如果本行已经标识过, 就不需要再标识了, 所以需要这个变量记录是否本行已经标识过.
-		 */
+		 
 		boolean sign;
 		
 		while (true) {
@@ -681,7 +683,7 @@ public class FamiTrackerTextCreater {
 		}
 		
 		// print out
-		/*for (int j = 0; j < column; j++) {
+		for (int j = 0; j < column; j++) {
 			StringBuilder builder = new StringBuilder(100);
 			builder.append("row ").append(j).append(": ");
 			
@@ -690,11 +692,11 @@ public class FamiTrackerTextCreater {
 				builder.append(Integer.toHexString(v)).append(' ');
 			}
 			System.out.println(builder.toString());
-		}*/
+		}
 		// end print out
 		
 		// 下面需要修改 TODO
-		/*FtmNote[] patterns = new FtmNote[column];
+		FtmNote[] patterns = new FtmNote[column];
 		for (int i = 0; i < patterns.length; i++) {
 			FtmNote pattern = new FtmNote();
 			pattern.seq = seq;
@@ -732,10 +734,10 @@ public class FamiTrackerTextCreater {
 			pattern.lines = lines;
 			pattern.lineIdx = lineIdx;
 			patterns[i] = pattern;
-		}*/
+		}
 		
 		// return patterns;
 		return null;
-	}
+	}*/
 	
 }

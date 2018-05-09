@@ -5,6 +5,7 @@ import java.io.IOException;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.utils.common.BytesReader;
 import zdream.utils.common.FileUtils;
+import zdream.utils.common.TextReader;
 
 /**
  * <p>Famitracker 文本文件的工厂, 负责解析 FTM txt, 生成 FtmAudio 类.
@@ -62,8 +63,13 @@ public class FtmAudioFactory {
 	 * @return
 	 */
 	public FtmAudio createFromText(String txt) throws FtmParseException {
-		FamiTrackerTextCreater entry = new FamiTrackerTextCreater(txt);
-		return entry.doCreate();
+		FamiTrackerTextCreater creater = new FamiTrackerTextCreater();
+		
+		TextReader reader = new TextReader(txt);
+		FtmAudio audio = new FtmAudio();
+		creater.doCreate(reader, audio.handler);
+		
+		return audio;
 	}
 	
 	/**

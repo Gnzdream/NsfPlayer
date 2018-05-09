@@ -12,7 +12,7 @@ public class FamitrackerLogger {
 	public static FamitrackerLogger instance = new FamitrackerLogger();
 	
 	boolean muteToDo = true;
-	boolean muteNote = true;
+	boolean muteNote = false;
 	boolean muteWriteAddress = true;
 	
 	HashSet<String> muteAddressSet = new HashSet<>();
