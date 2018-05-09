@@ -4,8 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import zdream.nsfplayer.nsf.device.IDevice;
+import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.xgm.device.IntHolder;
-import zdream.nsfplayer.xgm.device.cpu.NesCPU;
 import zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 
 /**

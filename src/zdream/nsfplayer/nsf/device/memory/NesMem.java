@@ -1,4 +1,4 @@
-package zdream.nsfplayer.xgm.device.memory;
+package zdream.nsfplayer.nsf.device.memory;
 
 import zdream.nsfplayer.nsf.device.IDevice;
 import zdream.nsfplayer.xgm.device.IntHolder;
