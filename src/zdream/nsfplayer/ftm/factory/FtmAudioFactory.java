@@ -81,13 +81,5 @@ public class FtmAudioFactory {
 	public FtmAudio createFromTextPath(String path) throws IOException, FtmParseException {
 		return createFromText(FileUtils.readFileAsString(path));
 	}
-	
-	public static void main(String[] args) throws Exception {
-		String txt = FileUtils.readFileAsString("src\\assets\\test\\Editor_05.txt");
-		
-		FtmAudioFactory factory = new FtmAudioFactory();
-		FtmAudio fa = factory.createFromText(txt);
-		System.out.println(fa);
-	}
 
 }

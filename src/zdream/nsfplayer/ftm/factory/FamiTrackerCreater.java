@@ -28,7 +28,7 @@ import zdream.utils.common.BytesReader;
  * 允许将转成 .txt 的文件也能够解析.
  * @author Zdream
  */
-public class FamiTrackerCreater {
+public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	
 	/*
 	 * FTM 的每个块的 ID, 用于标识这个块的内容.
@@ -894,21 +894,22 @@ public class FamiTrackerCreater {
 				continue;
 			}
 			
+			createSequence(doc, index, type);
 			switch (type) {
 			case 0:
-				inst.vol = createSequence(doc, index, type);
+				inst.vol = index;
 				break;
 			case 1:
-				inst.arp = createSequence(doc, index, type);
+				inst.arp = index;
 				break;
 			case 2:
-				inst.pit = createSequence(doc, index, type);
+				inst.pit = index;
 				break;
 			case 3:
-				inst.hip = createSequence(doc, index, type);
+				inst.hip = index;
 				break;
 			case 4:
-				inst.dut = createSequence(doc, index, type);
+				inst.dut = index;
 				break;
 
 			default:
@@ -963,21 +964,22 @@ public class FamiTrackerCreater {
 				continue;
 			}
 			
+			createSeqVRC6(doc, index, type);
 			switch (type) {
 			case 0:
-				inst.vol = createSeqVRC6(doc, index, type);
+				inst.vol = index;
 				break;
 			case 1:
-				inst.arp = createSeqVRC6(doc, index, type);
+				inst.arp = index;
 				break;
 			case 2:
-				inst.pit = createSeqVRC6(doc, index, type);
+				inst.pit = index;
 				break;
 			case 3:
-				inst.hip = createSeqVRC6(doc, index, type);
+				inst.hip = index;
 				break;
 			case 4:
-				inst.dut = createSeqVRC6(doc, index, type);
+				inst.dut = index;
 				break;
 
 			default:
@@ -985,22 +987,6 @@ public class FamiTrackerCreater {
 			}
 		}
 		return inst;
-	}
-	
-	/**
-	 * 创建 2A03 的序列
-	 */
-	private FtmSequence createSequence(FamiTrackerHandler doc, int index, byte type) {
-		// 将序列注册到 Ftm 中
-		return doc.getOrCreateSequence(FtmChipType._2A03, FtmSequenceType.get(type), index);
-	}
-	
-	/**
-	 * 创建 2A03 的序列
-	 */
-	private FtmSequence createSeqVRC6(FamiTrackerHandler doc, int index, byte type) {
-		// 将序列注册到 Ftm 中
-		return doc.getOrCreateSequence(FtmChipType.VRC6, FtmSequenceType.get(type), index);
 	}
 
 	/**

@@ -68,6 +68,13 @@ public class FamiTrackerHandler {
 		
 		channelDirt = true;
 	}
+	
+	public void setVibrato(byte vibrato) {
+		if (vibrato != 0 && vibrato != 1) {
+			throw new FtmParseException("振动模式错误: " + vibrato);
+		}
+		audio.vibrato = vibrato;
+	}
 
 	/**
 	 * 设置 N163 轨道数

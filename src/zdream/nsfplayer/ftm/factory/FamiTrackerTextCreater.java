@@ -1,24 +1,48 @@
 package zdream.nsfplayer.ftm.factory;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Scanner;
 
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
-import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
-import zdream.nsfplayer.ftm.format.FtmPattern;
+import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
 import zdream.utils.common.TextReader;
 
-public class FamiTrackerTextCreater {
+public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 	
 	/**
 	 * 文本读取器
 	 */
 	TextReader reader;
+	
+	// 缓存数值
+	
+	/**
+	 * 正在解析的曲目号
+	 */
+	int curTrackIdx = -1;
+	
+	/**
+	 * 正在解析的曲目
+	 */
+	FtmTrack curTrack;
+	
+	/**
+	 * 各列的效果列数
+	 */
+	int[] columns;
+	
+	/**
+	 * order 的列表
+	 */
+	ArrayList<int[]> orders;
+	
+	/**
+	 * pattern 部分
+	 */
+	int patternIdx = -1;
 	
 	public FamiTrackerTextCreater() {
 		// do nothing
@@ -36,8 +60,7 @@ public class FamiTrackerTextCreater {
 		
 		if (!reader.isFinished()) {
 			while (reader.toNextValidLine() >= 0) {
-				reader.toNextValidLine();
-				System.out.println(reader.thisLine().substring(0, 5));
+				handleLine(reader, doc);
 			}
 		}
 		
@@ -48,97 +71,196 @@ public class FamiTrackerTextCreater {
 		
 	}
 	
-	
-	
-	
-	
-	/*
-	 * 整个文本
-	 */
-	String txt;
-	
-	/*
-	 * 行号
-	 */
-	int line;
-	
-	Scanner scan;
-	// 缓存上一行文本
-	String bufText;
-	
-	static final String HEAD_SONG_INFO = "# Song information";
-	static final String HEAD_SONG_COMMENT = "# Song comment";
-	static final String HEAD_GLOBAL_SETTINGS = "# Global settings";
-	static final String HEAD_MACROS = "# Macros";
-	static final String HEAD_DPCM_SAMPLES = "# DPCM samples";
-	static final String HEAD_INSTRUMENTS = "# Instruments";
-	static final String HEAD_TRACKS = "# Tracks";
-	static final String HEAD_END = "# End of export";
-	
-	static final String PROP_INST2A03 = "INST2A03";
-	
-	/**
-	 * 要生成的音频类
-	 */
-	FtmAudio audio;
-	
-	/**
-	 * 读取下一行文本, 行计数器加一
-	 * @return
-	 */
-	/*String nextLine() {
-		line++;
-		if (bufText != null) {
-			String text = bufText;
-			bufText = null;
-			return text;
+	private void handleLine(TextReader reader, FamiTrackerHandler doc) {
+		String[] strs = CodeSpliter.split(reader.thisLine());
+		
+		switch (strs[0]) {
+		
+		// Song information
+		case "TITLE": {
+			doc.audio.title = strs[1];
+		} break;
+		
+		case "AUTHOR": {
+			doc.audio.author = strs[1];
+		} break;
+		
+		case "COPYRIGHT": {
+			doc.audio.copyright = strs[1];
+		} break;
+		
+		// Global settings
+		case "MACHINE": {
+			doc.setMechine(Byte.parseByte(strs[1]));
+		} break;
+		
+		case "FRAMERATE": {
+			doc.setFramerate(Integer.parseInt(strs[1]));
+		} break;
+		
+		case "EXPANSION": {
+			doc.setChip(Byte.parseByte(strs[1]));
+		} break;
+		
+		case "VIBRATO": {
+			doc.setVibrato(Byte.parseByte(strs[1]));
+		} break;
+		
+		case "SPLIT": {
+			doc.setSplit(Integer.parseInt(strs[1]));
+		} break;
+		
+		// Instruments
+		case "INST2A03": {
+			parseInst2A03(reader, doc, strs);
+		} break;
+		
+		// Tracks
+		case "TRACK": {
+			parseTrack(reader, doc, strs);
+		} break;
+		
+		case "COLUMNS": {
+			parseColumns(reader, doc, strs);
+		} break;
+		
+		case "ORDER": {
+			parseOrder(reader, doc, strs);
+		} break;
+		
+		case "PATTERN": {
+			parsePattern(reader, doc, strs);
+		} break;
+		
+		case "ROW": {
+			parseRow(reader, doc, strs);
+		} break;
+
+		default:
+			break;
 		}
-		return scan.nextLine();
 	}
 	
-	*//**
-	 * 模拟回到上一行
-	 * @param text
-	 *//*
-	void storeLine(String text) {
-		line--;
-		this.bufText = text;
+	private void parseInst2A03(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 8) {
+			throw new FtmParseException(reader.line(),
+					"乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 " + strs.length);
+		}
+		
+		FtmInstrument2A03 inst = new FtmInstrument2A03();
+		inst.seq = Integer.parseInt(strs[1]);
+		inst.name = strs[7];
+		
+		inst.vol = Integer.parseInt(strs[2]);
+		if (inst.vol != -1) {
+			createSequence(doc, inst.vol, FtmSequenceType.VOLUME);
+		}
+		
+		inst.arp = Integer.parseInt(strs[3]);
+		if (inst.arp != -1) {
+			createSequence(doc, inst.arp, FtmSequenceType.ARPEGGIO);
+		}
+		
+		inst.pit = Integer.parseInt(strs[4]);
+		if (inst.pit != -1) {
+			createSequence(doc, inst.pit, FtmSequenceType.PITCH);
+		}
+		
+		inst.hip = Integer.parseInt(strs[5]);
+		if (inst.hip != -1) {
+			createSequence(doc, inst.hip, FtmSequenceType.HI_PITCH);
+		}
+		
+		inst.dut = Integer.parseInt(strs[6]);
+		if (inst.dut != -1) {
+			createSequence(doc, inst.dut, FtmSequenceType.DUTY);
+		}
+
+		doc.registerInstrument(inst);
 	}
 	
-	*//**
-	 * 跳过 count 行空行.
-	 * <p>如果跳过的行不是空行则抛出异常
-	 * @throws FtmParseException
-	 *//*
-	void skipBlankLine(int count) {
-		for (int i = 0; i < count; i++) {
-			String str = nextLine();
-			if (!str.equals("")) {
-				throw new FtmParseException(line, "该行原本是空行, 但实际是: " + str);
-			} 
+	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 5) {
+			throw new FtmParseException(reader.line(),
+					"曲目部分解析错误, TRACK 格式规定项数为 5, 但是这里只有 " + strs.length);
+		}
+		
+		this.curTrackIdx++;
+		FtmTrack track = doc.createTrack();
+		curTrack = track;
+		
+		track.length = Integer.parseInt(strs[1]);
+		track.speed = Integer.parseInt(strs[2]);
+		track.tempo = Integer.parseInt(strs[3]);
+		track.name = strs[4];
+		
+		orders = new ArrayList<>();
+		patternIdx = -1;
+	}
+	
+	private void parseColumns(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (!":".equals(strs[1])) {
+			throw new FtmParseException(reader.line(),
+					"曲目部分解析错误, COLUMNS 部分");
+		}
+		
+		columns = new int[strs.length - 2];
+		int length = strs.length - 2;
+		for (int i = 0; i < length; i++) {
+			columns[i] = Integer.parseInt(strs[i + 2]);
 		}
 	}
 	
-	*//**
-	 * 检查文本第一行关于版本号的描述.<br>
-	 * 第一行的文本应该是这样的:
-	 * <blockquote>
-	 * # FamiTracker text export 0.4.2
-	 * </blockquote>
-	 * @return
-	 *   版本号文字, 比如 0.4.2
-	 * @throws FtmParseException
-	 *   版本号描述出错
-	 *//*
-	String parseVersion() throws FtmParseException {
-		String firstLine = nextLine();
-		if (!firstLine.startsWith("# FamiTracker text export ")) {
-			throw new FtmParseException(line, "不是有效的文本导出文件");
+	private void parseOrder(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 3 + columns.length) {
+			throw new FtmParseException(reader.line(),
+					String.format("曲目部分解析错误, ORDER 格式规定项数为 %d, 但是这里只有 %d",
+							3 + columns.length, strs.length));
 		}
-		return firstLine.substring("# FamiTracker text export ".length());
+		if (!":".equals(strs[2])) {
+			throw new FtmParseException(reader.line(),
+					"曲目部分解析错误, COLUMNS 部分");
+		}
+		
+		int index = Integer.parseInt(strs[1], 16);
+		if (index != orders.size()) {
+			throw new FtmParseException(reader.line(),
+					"曲目部分解析错误, ORDER 部分序号不匹配: " + index + " != " + orders.size());
+		}
+		
+		int[] order = new int[columns.length];
+		for (int i = 0; i < order.length; i++) {
+			order[i] = Integer.parseInt(strs[3 + i], 16);
+		}
+		orders.add(order);
 	}
 	
-	*//**
+	private void parsePattern(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 2) {
+			throw new FtmParseException(reader.line(),
+					"曲目部分解析错误, PATTERN 部分");
+		}
+		
+		int patternIdx = Integer.parseInt(strs[1], 16);
+		
+		if (patternIdx == 0) {
+			int len = orders.size();
+			curTrack.orders = new int[len][];
+			for (int i = 0; i < len; i++) {
+				curTrack.orders[i] = orders.get(i);
+			}
+		}
+	}
+	
+	private void parseRow(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		// TODO
+	}
+	
+	
+
+
+	
+	/*//**
 	 * 开始解析一个块. 一个块的标题以 '#' 作为开头
 	 * @param str
 	 *   标题行, 以 '#' 开头的行
