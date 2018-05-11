@@ -1,6 +1,8 @@
 package zdream.nsfplayer.ftm.factory;
 
-public class FamiTrackerFormatException extends RuntimeException {
+import zdream.nsfplayer.ftm.document.FamiTrackerException;
+
+public class FamiTrackerFormatException extends FamiTrackerException {
 
 	private static final long serialVersionUID = 6874694323781455170L;
 

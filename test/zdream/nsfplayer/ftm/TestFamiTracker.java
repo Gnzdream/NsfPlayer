@@ -1,6 +1,9 @@
 package zdream.nsfplayer.ftm;
 
+import com.zdream.famitracker.test.BytesPlayer;
+
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 
 public class TestFamiTracker {
 
@@ -12,6 +15,18 @@ public class TestFamiTracker {
 		);
 		System.out.println("完成");
 		System.out.println(audio);
+		
+		// 播放部分
+		FamiTrackerRenderer renderer = new FamiTrackerRenderer();
+		renderer.ready(audio);
+		
+		BytesPlayer player = new BytesPlayer();
+		byte[] bs = new byte[2400];
+		
+		while (!renderer.isFinished()) {
+			int size = renderer.render(bs, 0, 2400);
+			player.writeSamples(bs, 0, size);
+		}
 	}
 
 }

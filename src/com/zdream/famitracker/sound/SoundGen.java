@@ -367,10 +367,10 @@ public class SoundGen implements IAudioCallback {
 		for (int i = 0; i < 16; ++i) {	// depth 
 			for (int j = 0; j < 16; ++j) {	// phase
 				int value = 0;
-				double angle = (j / 16.0) * (3.1415 / 2.0);
-
 				if (type == VIBRATO_NEW) {
-					value = (int) (Math.sin(angle) * NEW_VIBRATO_DEPTH[i]) /*+ 0.5f*/;
+					double angle = (j / 16.0) * (Math.PI / 2.0);
+					// 加 0.5 是为了将向下取整变成四舍五入
+					value = (int) (Math.sin(angle) * NEW_VIBRATO_DEPTH[i] + 0.5);
 				} else {
 					value = (int) (j * OLD_VIBRATO_DEPTH[i] / 16.0 + 1);
 				}
