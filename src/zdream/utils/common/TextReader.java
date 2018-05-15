@@ -15,7 +15,7 @@ public class TextReader {
 	/*
 	 * 行号
 	 */
-	int l = -1;
+	int l = 0;
 	
 	Scanner scanner;
 	
@@ -38,7 +38,7 @@ public class TextReader {
 	public String nextLine() {
 		if (!scanner.hasNextLine()) {
 			lineBuf = null;
-			l = -1;
+			l = 0;
 		}
 		
 		lineBuf = scanner.nextLine();
@@ -57,7 +57,7 @@ public class TextReader {
 	
 	/**
 	 * @return
-	 *  本行行号, 第一行为 0. 还没读取或已经读取完毕时第一行时为 -1
+	 *  本行行号, 第一行为 1. 还没读取或已经读取完毕时第一行时为 0
 	 */
 	public int line() {
 		return l;
@@ -90,7 +90,7 @@ public class TextReader {
 	/**
 	 * 跳转到下一个有效的行.
 	 * @return
-	 *   当没有下一个有效行时, 返回 -1
+	 *   当没有下一个有效行时, 返回 0
 	 */
 	public int toNextValidLine() {
 		while (scanner.hasNextLine()) {
@@ -100,6 +100,6 @@ public class TextReader {
 				return l;
 			}
 		}
-		return -1;
+		return 0;
 	}
 }

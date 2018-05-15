@@ -77,9 +77,9 @@ public class FtmNote {
 		EF_SWEEPUP = 8,
 		EF_SWEEPDOWN = 9,
 		EF_ARPEGGIO = 10,
-		EF_VIBRATO = 11,
+		EF_VIBRATO = 11, // 4xx
 		EF_TREMOLO = 12,
-		EF_PITCH = 13,
+		EF_PITCH = 13, // Pxx
 		EF_DELAY = 14,
 		EF_DAC = 15,
 		EF_PORTA_UP = 16,
@@ -89,7 +89,7 @@ public class FtmNote {
 		EF_SLIDE_UP = 20,
 		EF_SLIDE_DOWN = 21,
 		EF_VOLUME_SLIDE = 22,
-		EF_NOTE_CUT = 23,
+		EF_NOTE_CUT = 23, // Sxx
 		EF_RETRIGGER = 24,
 		EF_DELAYED_VOLUME = 25, // Unimplemented
 		EF_FDS_MOD_DEPTH = 26,
@@ -103,6 +103,7 @@ public class FtmNote {
 	
 	// Channel effect letters
 	public static final char EFF_CHAR[] = {
+			'.',	// None 这个是我补上去的, 为了和上面的效果数组元素一一对应
 			'F',	// Speed
 			'B',	// Jump 
 			'D',	// Skip 

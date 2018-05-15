@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
@@ -43,6 +44,11 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 	 * pattern 部分
 	 */
 	int patternIdx = -1;
+	
+	/**
+	 * 行数
+	 */
+	int rowIdx = 0;
 	
 	public FamiTrackerTextCreater() {
 		// do nothing
@@ -250,10 +256,91 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 				curTrack.orders[i] = orders.get(i);
 			}
 		}
+		
+		rowIdx = 0; // 行数从 0 开始计
 	}
 	
 	private void parseRow(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		// 预计的 strs 的数组长度
+		int lenExp = 2;
+		for (int i = 0; i < columns.length; i++) {
+			lenExp += (4 + columns[i]);
+		}
+		
+		if (strs.length != lenExp) {
+			throw new FtmParseException(reader.line(),
+				String.format("曲目部分解析错误, ROW 格式规定项数为 %d, 但是这里只有 %d",
+					lenExp, strs.length));
+		}
+		
+		// 行数
+		int row = Integer.parseInt(strs[1], 16);
+		if (row != rowIdx) {
+			throw new FtmParseException(reader.line(),
+				String.format("曲目部分解析错误, ROW 格式中预计行数为 %d, 但是是 %d",
+					rowIdx, reader.line()));
+		}
+		rowIdx++;
+		
+		// 解析部分
+		int offset = 2;
+		for (int column = 0; column < columns.length; column++) {
+			int length = 3 + columns[column];
+			parseColumn(reader, doc, strs, column, offset, length);
+		}
+		
 		// TODO
+	}
+	
+	/**
+	 * 解析一个 note 部分, 产生 {@link FtmNote} 并存到 doc 部分
+	 * @param reader
+	 * @param doc
+	 * @param strs
+	 * @param column
+	 *   第几列
+	 * @param offset
+	 *   输入该列的 strs 是从第几个元素开始起
+	 * @param length
+	 *   属于该列的 strs 的长度, 至少是 5
+	 *   <br>(第一个是 ':', 第二个是音调, 第三个是乐器, 第四个是音量, 第五个以及后面都是效果)
+	 */
+	private void parseColumn(
+			TextReader reader,
+			FamiTrackerHandler doc,
+			String[] strs,
+			final int column,
+			final int offset,
+			final int length) {
+		// 第一个元素必须是 ":"
+		if (!":".equals(strs[offset])) {
+			throw new FtmParseException(reader.line(),
+				String.format("曲目部分解析错误, ROW 格式中第 %d 个元素必须是 ':'",
+					offset, reader.line()));
+		}
+		
+		FtmNote note = new FtmNote();
+		
+		// 音调部分
+		String t = strs[offset + 1];
+		
+		if ("...".equals(t)) {
+			note.note = FtmNote.NOTE_NONE;
+			note.octave = 0;
+		} else if ("---".equals(t)) {
+			note.note = FtmNote.NOTE_HALT;
+			note.octave = 0;
+		} else if ("===".equals(t)) {
+			note.note = FtmNote.NOTE_RELEASE;
+			note.octave = 0;
+		} else {
+			String tt = t.substring(0, 2);
+			
+			
+			
+			System.out.println(tt);
+		}
+		
 	}
 	
 	
