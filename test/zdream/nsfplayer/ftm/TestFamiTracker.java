@@ -40,6 +40,7 @@ public class TestFamiTracker {
 		
 		FtmAudio audio = factory.createFromTextPath(
 				"src\\assets\\test\\Editor_05.txt"
+//				"src\\assets\\test\\mm10nsf.txt"
 		);
 		System.out.println("完成");
 		System.out.println(audio);
