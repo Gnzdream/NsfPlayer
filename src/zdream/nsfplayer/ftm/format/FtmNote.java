@@ -22,6 +22,9 @@ public class FtmNote {
 	 */
 	public byte octave;
 	
+	/**
+	 * 注意, {@link MAX_VOLUMN} 为空
+	 */
 	public byte vol;
 	
 	/**
@@ -31,7 +34,7 @@ public class FtmNote {
 	
 	public final byte[] effNumber = new byte[MAX_EFFECT_COLUMNS];
 	
-	public final int[] effParam = new int[MAX_EFFECT_COLUMNS];
+	public final short[] effParam = new short[MAX_EFFECT_COLUMNS];
 
 	/**
 	 * 效果列最大值

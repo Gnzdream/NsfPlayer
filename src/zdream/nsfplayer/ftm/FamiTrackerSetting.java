@@ -67,6 +67,11 @@ public class FamiTrackerSetting {
 	public static final int MAX_INSTRUMENTS = 128;
 	
 	/**
+	 * 最大音量
+	 */
+	public static final byte MAX_VOLUMN = 16;
+	
+	/**
 	 * Tempo 支持的最大值.
 	 */
 	public static final int MAX_TEMPO = 255;

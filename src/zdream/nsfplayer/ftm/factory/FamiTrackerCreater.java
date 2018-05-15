@@ -730,9 +730,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 
 				if (fileVersion == 0x0200) {
 					byte effectNumber;
-					int effectParam;
+					short effectParam;
 					effectNumber = block.readByte();
-					effectParam = block.readUnsignedByte();
+					effectParam = (short) block.readUnsignedByte();
 					if (version < 3) {
 						if (effectNumber == FtmNote.EF_PORTAOFF) {
 							effectNumber = FtmNote.EF_PORTAMENTO;
@@ -764,7 +764,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 						}
 
 						note.effNumber[n] = effectNumber;
-						note.effParam[n] = effectParam & 0xFF;
+						note.effParam[n] = (short) (effectParam & 0xFF);
 					}
 				}
 
