@@ -16,10 +16,22 @@ public class FamiTrackerSetting {
 		public boolean bNoDPCMReset = false;
 	}
 	
+	/**
+	 * 原 sound.iSampleRate
+	 * 渲染出的采样率
+	 */
+	public int sampleRate = 48000;
+	
+	/**
+	 * 原 sound.iSampleSize
+	 * 渲染每个采样点的位深, 以 bit 计
+	 */
+	public int sampleSize = 16;
+	
 	public class Sound {
 		public int iDevice = 0;
-		public int iSampleRate = 48000;
-		public int iSampleSize = 16;
+		//public int iSampleRate = 48000;
+		//public int iSampleSize = 16;
 		public int iBufferLength = 40;
 		public int iBassFilter = 30;
 		public int iTrebleFilter = 12000;
