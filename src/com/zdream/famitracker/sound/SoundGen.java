@@ -117,7 +117,8 @@ public class SoundGen implements IAudioCallback {
 	/**
 	 * {@link #runFrame()} 这个方法调用了, 但是内容仍不明确
 	 */
-	int m_iTempoFrames;
+	@SuppressWarnings("unused")
+	private int m_iTempoFrames;
 	
 	/**
 	 * 效果 jump (Bxx) 就是跳到另一个 pattern 的开头进行播放. 这里进行暂存数据

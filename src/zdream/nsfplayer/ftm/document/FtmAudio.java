@@ -93,7 +93,12 @@ public class FtmAudio {
 	 */
 	public int getFramerate() {
 		if (framerate == 0) {
-			// TODO return
+			switch (machine) {
+			case MACHINE_NTSC:
+				return 60;
+			case MACHINE_PAL:
+				return 50;
+			}
 		}
 		return framerate;
 	}
