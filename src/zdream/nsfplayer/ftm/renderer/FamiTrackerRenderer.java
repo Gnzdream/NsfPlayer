@@ -222,7 +222,7 @@ public class FamiTrackerRenderer {
 	 * <br>并修改 {@link #sampleCount} 和 {@link #frameCount} 的数据
 	 */
 	private int countNextFrame() {
-		int maxFrameCount = fetcher.audio.getFramerate();
+		int maxFrameCount = fetcher.audio.getFrameRate();
 		int maxSampleCount = setting.sampleRate;
 		
 		if (frameCount == maxFrameCount) {

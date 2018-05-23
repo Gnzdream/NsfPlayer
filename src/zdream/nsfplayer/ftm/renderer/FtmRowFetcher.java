@@ -1,6 +1,9 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import java.util.HashMap;
+
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
@@ -33,7 +36,7 @@ public class FtmRowFetcher {
 	int sectionIdx;
 	
 	/**
-	 * 正在播放的 tempo 值
+	 * 正在播放的节奏值, 计数单位为拍 / 分钟
 	 * @see FtmTrack#tempo
 	 */
 	int tempo;
@@ -54,15 +57,47 @@ public class FtmRowFetcher {
 	 ********** */
 	
 	/**
-	 * tempo 的累加器
+	 * 节奏的累加器.
+	 * 先加上一分钟的 tempo 值, 然后没帧减去一个 {@link #tempoDecrement}
 	 * (accumulate)
 	 */
 	int tempoAccum;
 	
 	/**
+	 * <p>由于节奏值和速度值并不是整数倍的关系, 所以 <code>节奏 / 速度</code> 会产生余数,
+	 * 使得整数个帧之内, 不能将整个节奏解释完. 所以补充这个相当于 "余数" 的量.
+	 * <p>每次确定解释器的速度之后, 这个值就被确定了.
+	 * 除非解释器速度 ({@link #speed} 或 {@link #tempo}) 发生变化, 否则该值不会变.
+	 * </p>
+	 */
+	int tempoRemainder;
+	
+	/**
+	 * 计算的每一帧需要扣掉的节奏数
+	 */
+	int tempoDecrement;
+	
+	/**
 	 * 该帧是否更新了行
 	 */
 	boolean updateRow;
+	
+	/* **********
+	 *  播放行  *
+	 ********** */
+	/**
+	 * 放着正解释的行里面的所有键
+	 */
+	HashMap<Byte, FtmNote> notes = new HashMap<>();
+	
+	/**
+	 * 获取正解释的行里面, 对应轨道的键
+	 * @param channel
+	 * @return
+	 */
+	public FtmNote fetchNote(byte channel) {
+		return notes.get(channel);
+	}
 	
 	/* **********
 	 * 其它方法 *
@@ -76,6 +111,30 @@ public class FtmRowFetcher {
 		this.audio = audio;
 		this.trackIdx = track;
 		this.sectionIdx = section;
+		
+		resetSpeed();
+		notes.clear();
+	}
+	
+	/**
+	 * 重置速度值和节奏值
+	 */
+	void resetSpeed() {
+		speed = audio.getTrack(trackIdx).speed;
+		tempo = audio.getTrack(trackIdx).tempo;
+		
+		setupSpeed();
+		tempoAccum = 0;
+		updateRow = false;
+	}
+	
+	/**
+	 * 重置 {@link #tempoDecrement} 和 {@link #tempoRemainder}
+	 */
+	void setupSpeed() {
+		int i = tempo * 24;
+		tempoDecrement = i / speed;
+		tempoRemainder = i % speed;
 	}
 	
 	/**
@@ -91,10 +150,23 @@ public class FtmRowFetcher {
 			row++;
 			
 			updateRow = true;
-			nextRow();
+			storeRow();
 		}
 		
 		// 第二步: (SoundGen.updatePlayer)
+		if (tempoAccum <= 0) {
+			int ticksPerSec = audio.getFrameRate();
+			// 将拍 / 秒 -> 拍 / 分钟
+			tempoAccum += (60 * ticksPerSec) - tempoRemainder;
+		}
+		tempoAccum -= tempoDecrement;
+	}
+	
+	/**
+	 * 确定现在正在播放的行, 放到 {@link #notes} 中
+	 */
+	public void storeRow() {
+		// TODO
 		
 	}
 	
@@ -105,8 +177,5 @@ public class FtmRowFetcher {
 	 * <li>出现跳转指令 (Bxx, Dxx), 将跳转到指定位置播放
 	 * </li>
 	 */
-	public void nextRow() {
-		// TODO
-	}
 
 }

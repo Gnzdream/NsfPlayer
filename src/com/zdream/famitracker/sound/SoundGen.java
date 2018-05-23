@@ -720,7 +720,7 @@ public class SoundGen implements IAudioCallback {
 	/**
 	 * 重新计算 {@link #m_iTempoDecrement} 和 {@link #m_iTempoRemainder}
 	 */
-	public void setupSpeed() {
+	private void setupSpeed() {
 		int i = m_iTempo * 24;
 		m_iTempoDecrement = i / m_iSpeed;
 		m_iTempoRemainder = i % m_iSpeed;

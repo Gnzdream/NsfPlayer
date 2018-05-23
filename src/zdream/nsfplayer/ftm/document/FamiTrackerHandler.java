@@ -51,7 +51,7 @@ public class FamiTrackerHandler {
 		if (fps < 0 || fps > 800) {
 			throw new FtmParseException("刷新率数据错误: " + fps);
 		}
-		audio.framerate = fps;
+		audio.frameRate = fps;
 	}
 	
 	/**
@@ -291,40 +291,40 @@ public class FamiTrackerHandler {
 		// 补充轨道号
 		channelCode = new byte[channelCount];
 		int codePtr = 0;
-		channelCode[codePtr++] = FtmAudio.CHANNEL_2A03_PULSE1;
-		channelCode[codePtr++] = FtmAudio.CHANNEL_2A03_PULSE2;
-		channelCode[codePtr++] = FtmAudio.CHANNEL_2A03_TRIANGLE;
-		channelCode[codePtr++] = FtmAudio.CHANNEL_2A03_NOISE;
-		channelCode[codePtr++] = FtmAudio.CHANNEL_2A03_DPCM;
+		channelCode[codePtr++] = FtmChannels.CHANNEL_2A03_PULSE1;
+		channelCode[codePtr++] = FtmChannels.CHANNEL_2A03_PULSE2;
+		channelCode[codePtr++] = FtmChannels.CHANNEL_2A03_TRIANGLE;
+		channelCode[codePtr++] = FtmChannels.CHANNEL_2A03_NOISE;
+		channelCode[codePtr++] = FtmChannels.CHANNEL_2A03_DPCM;
 		
 		if (audio.useVcr6) {
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC6_PULSE1;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC6_PULSE2;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC6_SAWTOOTH;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC6_PULSE1;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC6_PULSE2;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC6_SAWTOOTH;
 		}
 		if (audio.useVcr7) {
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC7_FM1;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC7_FM2;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC7_FM3;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC7_FM4;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC7_FM5;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_VRC7_FM6;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC7_FM1;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC7_FM2;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC7_FM3;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC7_FM4;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC7_FM5;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_VRC7_FM6;
 		}
 		if (audio.useFds) {
-			channelCode[codePtr++] = FtmAudio.CHANNEL_FDS;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_FDS;
 		}
 		if (audio.useMmc5) {
-			channelCode[codePtr++] = FtmAudio.CHANNEL_MMC1_PULSE1;
-			channelCode[codePtr++] = FtmAudio.CHANNEL_MMC1_PULSE2;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_MMC1_PULSE1;
+			channelCode[codePtr++] = FtmChannels.CHANNEL_MMC1_PULSE2;
 		}
 		if (audio.useN163) {
 			byte[] cs = new byte[] {
-					FtmAudio.CHANNEL_N163_1,
-					FtmAudio.CHANNEL_N163_2,
-					FtmAudio.CHANNEL_N163_3,
-					FtmAudio.CHANNEL_N163_4,
-					FtmAudio.CHANNEL_N163_5,
-					FtmAudio.CHANNEL_N163_6
+					FtmChannels.CHANNEL_N163_1,
+					FtmChannels.CHANNEL_N163_2,
+					FtmChannels.CHANNEL_N163_3,
+					FtmChannels.CHANNEL_N163_4,
+					FtmChannels.CHANNEL_N163_5,
+					FtmChannels.CHANNEL_N163_6
 			};
 			int length = audio.namcoChannels;
 			for (int i = 0; i < length; i++) {

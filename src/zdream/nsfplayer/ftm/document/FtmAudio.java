@@ -50,7 +50,7 @@ public class FtmAudio {
 	 * fps, 有效值为 [0, 800].<br>
 	 * 如果设置为 0, 则为制式指定默认的数值
 	 */
-	int framerate;
+	int frameRate;
 	
 	/**
 	 * 各种芯片的使用情况
@@ -91,8 +91,8 @@ public class FtmAudio {
 	 * fps
 	 * @return
 	 */
-	public int getFramerate() {
-		if (framerate == 0) {
+	public int getFrameRate() {
+		if (frameRate == 0) {
 			switch (machine) {
 			case MACHINE_NTSC:
 				return 60;
@@ -100,15 +100,15 @@ public class FtmAudio {
 				return 50;
 			}
 		}
-		return framerate;
+		return frameRate;
 	}
 	
 	/**
 	 * 是否是该制式下默认的 fps
 	 * @return
 	 */
-	public boolean isDefaultFramerate() {
-		return framerate == 0;
+	public boolean isDefaultFrameRate() {
+		return frameRate == 0;
 	}
 
 	public boolean isUseVcr6() {
@@ -231,37 +231,4 @@ public class FtmAudio {
 		return tracks.get(index);
 	}
 	
-	/**
-	 * 各个轨道的标识号
-	 */
-	public static final byte
-			CHANNEL_2A03_PULSE1 = 1,
-			CHANNEL_2A03_PULSE2 = 2,
-			CHANNEL_2A03_TRIANGLE = 3,
-			CHANNEL_2A03_NOISE = 4,
-			CHANNEL_2A03_DPCM = 5,
-			
-			CHANNEL_VRC6_PULSE1 = 0x11,
-			CHANNEL_VRC6_PULSE2 = 0x12,
-			CHANNEL_VRC6_SAWTOOTH = 0x13,
-			
-			CHANNEL_VRC7_FM1 = 0x21,
-			CHANNEL_VRC7_FM2 = 0x22,
-			CHANNEL_VRC7_FM3 = 0x23,
-			CHANNEL_VRC7_FM4 = 0x24,
-			CHANNEL_VRC7_FM5 = 0x25,
-			CHANNEL_VRC7_FM6 = 0x26,
-			
-			CHANNEL_FDS = 0x31,
-			
-			CHANNEL_MMC1_PULSE1 = 0x41,
-			CHANNEL_MMC1_PULSE2 = 0x42,
-			
-			CHANNEL_N163_1 = 0x51,
-			CHANNEL_N163_2 = 0x52,
-			CHANNEL_N163_3 = 0x53,
-			CHANNEL_N163_4 = 0x54,
-			CHANNEL_N163_5 = 0x55,
-			CHANNEL_N163_6 = 0x56;
-
 }
