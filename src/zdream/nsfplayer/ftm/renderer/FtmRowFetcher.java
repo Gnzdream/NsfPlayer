@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.renderer;
 
 import java.util.HashMap;
 
+import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
@@ -20,6 +21,11 @@ public class FtmRowFetcher {
 	 * 播放音频数据
 	 */
 	FtmAudio audio;
+	
+	/**
+	 * 查询器
+	 */
+	FamiTrackerQuerier querier;
 	
 	/* **********
 	 * 播放参数 *
@@ -109,6 +115,16 @@ public class FtmRowFetcher {
 	
 	public void ready(FtmAudio audio, int track, int section) {
 		this.audio = audio;
+		this.querier = new FamiTrackerQuerier(audio);
+		ready(track, section);
+	}
+	
+	/**
+	 * 不换曲目的 ready
+	 * @param track
+	 * @param section
+	 */
+	public void ready(int track, int section) {
 		this.trackIdx = track;
 		this.sectionIdx = section;
 		
@@ -117,7 +133,9 @@ public class FtmRowFetcher {
 	}
 	
 	/**
-	 * 重置速度值和节奏值
+	 * <p>重置速度值和节奏值
+	 * <p>以 {@link FtmTrack} 里面定义的速度为准
+	 * </p>
 	 */
 	void resetSpeed() {
 		speed = audio.getTrack(trackIdx).speed;
@@ -147,10 +165,10 @@ public class FtmRowFetcher {
 		// 第一步: (SoundGen.runFrame)
 		if (tempoAccum <= 0) {
 			// Enable this to skip rows on high tempos
-			row++;
-			
 			updateRow = true;
 			storeRow();
+			
+			nextRow();
 		}
 		
 		// 第二步: (SoundGen.updatePlayer)
@@ -160,22 +178,42 @@ public class FtmRowFetcher {
 			tempoAccum += (60 * ticksPerSec) - tempoRemainder;
 		}
 		tempoAccum -= tempoDecrement;
+		
+		System.out.println(String.format("%02x:%02x %c  %s", sectionIdx, row, (updateRow) ? 'T' : 'F', notes));
 	}
 	
 	/**
 	 * 确定现在正在播放的行, 放到 {@link #notes} 中
 	 */
 	public void storeRow() {
-		// TODO
-		
+		int len = querier.channelCount();
+		for (int i = 0; i < len; i++) {
+			notes.put(querier.channelCode(i), querier.getNote(trackIdx, sectionIdx, i, row));
+		}
 	}
 	
 	/**
-	 * 确定下一个播放的行.
+	 * 按照正常的习惯, 确定下一个播放的行.
 	 * <br>一般而言, 下一个播放的行是该行的下一行, 但是在以下情况下, 会有变化:
 	 * <li>当到某段的结尾, 会跳转到下一段的首行;
-	 * <li>出现跳转指令 (Bxx, Dxx), 将跳转到指定位置播放
 	 * </li>
+	 * 这里不处理像 Bxx Dxx 等跳着执行播放的情况
 	 */
+	private void nextRow() {
+		row++;
+		
+		// 是否到段尾
+		int len = querier.maxRow(trackIdx); // 段长
+		if (row >= len) {
+			// 跳到下一段的第 0 行
+			row = 0;
+			sectionIdx++;
+			
+			// Loop
+			if (sectionIdx >= querier.trackCount(trackIdx)) {
+				sectionIdx = 0;
+			}
+		}
+	}
 
 }

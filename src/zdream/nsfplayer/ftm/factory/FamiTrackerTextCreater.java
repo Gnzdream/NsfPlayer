@@ -371,7 +371,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 			note.octave = 0;
 			empty = false;
 		} else {
-			if (doc.channelCount(column) == FtmChannels.CHANNEL_2A03_NOISE) {
+			if (doc.channelCode(column) == FtmChannels.CHANNEL_2A03_NOISE) {
 				parseNoiseNote(t, note);
 			} else {
 				parseAudioNote(t, note);

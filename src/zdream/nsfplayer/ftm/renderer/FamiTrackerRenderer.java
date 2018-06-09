@@ -210,7 +210,11 @@ public class FamiTrackerRenderer {
 	int renderFrame() {
 		int ret = countNextFrame();
 		
-		fetcher.runFrame();
+//		fetcher.runFrame();
+		
+		for (int i = 0; i < 100; i++) {
+			fetcher.runFrame();
+		}
 		
 		
 		

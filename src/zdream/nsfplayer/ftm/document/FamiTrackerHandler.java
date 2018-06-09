@@ -352,7 +352,7 @@ public class FamiTrackerHandler {
 	 * 查看第 {@code channel} 个轨道的轨道号
 	 * @return
 	 */
-	public byte channelCount(int channel) {
+	public byte channelCode(int channel) {
 		if (channelDirt) {
 			reScanChannel();
 		}

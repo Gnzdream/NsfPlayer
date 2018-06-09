@@ -11,7 +11,7 @@ public final class FtmTrack {
 			DEFAULT_PAL_TEMPO = 125;
 	
 	/**
-	 * 每个模块最大的行数
+	 * 每个模式 / 段的最大行数
 	 */
 	public int length;
 	
