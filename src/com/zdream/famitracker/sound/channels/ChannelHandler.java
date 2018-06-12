@@ -220,6 +220,12 @@ public abstract class ChannelHandler extends SequenceHandler {
 	
 	protected abstract void clearRegisters();						// Clear channel registers
 
+	/**
+	 * 立即执行 note 里面的操作.
+	 * 如果有 Gxx 延迟效果, 则延迟结束的那一帧执行该函数.
+	 * @param pNoteData
+	 * @param effColumns
+	 */
 	protected void handleNoteData(StChanNote pNoteData, int effColumns) {
 		int lastInstrument = m_iInstrument;
 		int instrument = pNoteData.instrument;
@@ -474,7 +480,9 @@ public abstract class ChannelHandler extends SequenceHandler {
 	 * @param effColumns
 	 * @return
 	 */
-	protected boolean handleDelay(StChanNote pNoteData, int effColumns) {
+	private boolean handleDelay(StChanNote pNoteData, int effColumns) {
+		// 如果 m_bDelayEnabled = true 说明上一个有效的键 (note) 有延迟效果,
+		// 但是还没等延迟触发, 新的键已经到来了, 这时, 上一个延迟触发的数据将立即执行
 		if (m_bDelayEnabled) {
 			m_bDelayEnabled = false;
 			handleNoteData(m_cnDelayed, m_iDelayEffColumns);
@@ -800,7 +808,9 @@ public abstract class ChannelHandler extends SequenceHandler {
 	protected boolean m_bVolumeUpdate;
 
 	// Delay effect variables
-	
+	/**
+	 * Gxx 延迟的效果是否正在触发
+	 */
 	protected boolean m_bDelayEnabled;
 	
 	

@@ -6,11 +6,14 @@ import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
  * <p>FTM 每一个有效 note 数据.
  * <p>里面存放了一个键的数据, 包含曲调、音量、乐器、效果等数据
  * 
+ * @version 0.2.1
+ *  实现了 {@link Cloneable} 接口
+ * 
  * @author Zdream
  * @date 2018-05-03
- * @version 0.1
+ * @since 0.1
  */
-public class FtmNote {
+public class FtmNote implements Cloneable {
 	
 	/**
 	 * 该参数是 {@link NOTE_NONE} 这类
@@ -210,6 +213,18 @@ public class FtmNote {
 		return b.toString();
 	}
 	
-	
+	@Override
+	public FtmNote clone() {
+		FtmNote n = new FtmNote();
+		n.note = this.note;
+		n.vol = this.vol;
+		n.instrument = this.instrument;
+		n.octave = this.octave;
+		
+		System.arraycopy(this.effNumber, 0, n.effNumber, 0, MAX_EFFECT_COLUMNS);
+		System.arraycopy(this.effParam, 0, n.effParam, 0, MAX_EFFECT_COLUMNS);
+		
+		return n;
+	}
 
 }

@@ -906,7 +906,7 @@ public class SoundGen implements IAudioCallback {
 		FamitrackerLogger.instance.logToDo("后面要写这些");
 	}
 
-	void runFrame() {
+	private void runFrame() {
 		// m_pTrackerView.playerTick();
 
 		if (m_bPlaying) {
@@ -1033,7 +1033,7 @@ public class SoundGen implements IAudioCallback {
 		m_pAPU.process();
 	}
 	
-	void readPatternRow() {
+	private void readPatternRow() {
 		final int Channels = m_pDocument.getChannelCount();
 
 		for (int i = 0; i < Channels; ++i) {
@@ -1084,7 +1084,7 @@ public class SoundGen implements IAudioCallback {
 		return note;
 	}
 	
-	void queueNote(int channel, StChanNote note, int prior) {
+	private void queueNote(int channel, StChanNote note, int prior) {
 		// Queue a note for play
 		TrackerChannel ch = this.m_pTrackerChannels[channel];
 		if (ch == null) {
@@ -1140,7 +1140,7 @@ public class SoundGen implements IAudioCallback {
 		m_pAPU.reset();
 	}
 	
-	void playNote(byte channel, StChanNote note, int effCount) {
+	private void playNote(byte channel, StChanNote note, int effCount) {
 		m_pChannels[channel].playNote(note, effCount);
 	}
 	

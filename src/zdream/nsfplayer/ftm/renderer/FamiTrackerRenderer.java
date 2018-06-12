@@ -4,7 +4,10 @@ import java.util.Arrays;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
+import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.format.FtmNote;
+import zdream.nsfplayer.ftm.renderer.channel.ChannalFactory;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -57,6 +60,8 @@ public class FamiTrackerRenderer {
 			int pattern)
 			throws FamiTrackerException {
 		fetcher.ready(audio, track, pattern);
+		
+		initChannels();
 		
 		// TODO 重置播放相关的数据
 		
@@ -123,7 +128,9 @@ public class FamiTrackerRenderer {
 	 */
 	final FamiTrackerSetting setting = new FamiTrackerSetting();
 	
-	final FtmRowFetcher fetcher = new FtmRowFetcher(this);
+	final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
+	
+	final FtmRowFetcher fetcher = new FtmRowFetcher(runtime);
 	
 	/* **********
 	 * 播放部分 *
@@ -211,9 +218,11 @@ public class FamiTrackerRenderer {
 		int ret = countNextFrame();
 		
 //		fetcher.runFrame();
+//		updateChannels();
 		
 		for (int i = 0; i < 100; i++) {
 			fetcher.runFrame();
+			updateChannels();
 		}
 		
 		
@@ -226,7 +235,7 @@ public class FamiTrackerRenderer {
 	 * <br>并修改 {@link #sampleCount} 和 {@link #frameCount} 的数据
 	 */
 	private int countNextFrame() {
-		int maxFrameCount = fetcher.audio.getFrameRate();
+		int maxFrameCount = fetcher.getFrameRate();
 		int maxSampleCount = setting.sampleRate;
 		
 		if (frameCount == maxFrameCount) {
@@ -249,6 +258,42 @@ public class FamiTrackerRenderer {
 		offset = 0;
 		
 		return ret;
+	}
+	
+	/* **********
+	 *  初始化  *
+	 ********** */
+	
+	/**
+	 * 利用 runtime 已经完成填充的数据, 建立 AbstractFtmChannel.
+	 * 
+	 * 同原工程 SoundGen.createChannels()
+	 */
+	private void initChannels() {
+		final FamiTrackerQuerier querier = runtime.querier;
+		
+		final int len = querier.channelCount();
+		for (int i = 0; i < len; i++) {
+			byte code = querier.channelCode(i);
+			runtime.channels.put(code, ChannalFactory.create(code));
+		}
+		
+	}
+	
+	/**
+	 * 让每个 channel 进行播放操作
+	 */
+	private void updateChannels() {
+		final FamiTrackerQuerier querier = runtime.querier;
+		
+		final int len = querier.channelCount();
+		for (int i = 0; i < len; i++) {
+			byte code = querier.channelCode(i);
+			AbstractFtmChannel channel = runtime.channels.get(code);
+			FtmNote note = runtime.notes.get(code);
+			
+			channel.playNote(note);
+		}
 	}
 	
 }

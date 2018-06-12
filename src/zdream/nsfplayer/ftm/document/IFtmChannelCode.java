@@ -5,7 +5,7 @@ package zdream.nsfplayer.ftm.document;
  * @author Zdream
  * @since v0.2.1
  */
-public class FtmChannels {
+public interface IFtmChannelCode {
 
 	/**
 	 * 各个轨道的标识号

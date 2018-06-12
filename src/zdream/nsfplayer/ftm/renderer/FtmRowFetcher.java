@@ -13,19 +13,19 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
  * @author Zdream
  * @since v0.2.1
  */
-public class FtmRowFetcher {
+public class FtmRowFetcher implements IFtmRuntimeHolder {
 	
-	FamiTrackerRenderer parent;
-	
-	/**
-	 * 播放音频数据
-	 */
-	FtmAudio audio;
+	FamiTrackerRuntime runtime;
 	
 	/**
 	 * 查询器
 	 */
 	FamiTrackerQuerier querier;
+
+	@Override
+	public FamiTrackerRuntime getRuntime() {
+		return runtime;
+	}
 	
 	/* **********
 	 * 播放参数 *
@@ -88,34 +88,23 @@ public class FtmRowFetcher {
 	 */
 	boolean updateRow;
 	
-	/* **********
-	 *  播放行  *
-	 ********** */
-	/**
-	 * 放着正解释的行里面的所有键
-	 */
-	HashMap<Byte, FtmNote> notes = new HashMap<>();
-	
-	/**
-	 * 获取正解释的行里面, 对应轨道的键
-	 * @param channel
-	 * @return
-	 */
-	public FtmNote fetchNote(byte channel) {
-		return notes.get(channel);
+	public int getFrameRate() {
+		return querier.getFrameRate();
 	}
 	
 	/* **********
 	 * 其它方法 *
 	 ********** */
 	
-	public FtmRowFetcher(FamiTrackerRenderer parent) {
-		this.parent = parent;
+	public FtmRowFetcher(FamiTrackerRuntime runtime) {
+		this.runtime = runtime;
+		runtime.fetcher = this;
 	}
 	
 	public void ready(FtmAudio audio, int track, int section) {
-		this.audio = audio;
 		this.querier = new FamiTrackerQuerier(audio);
+		runtime.querier = querier;
+		
 		ready(track, section);
 	}
 	
@@ -129,7 +118,7 @@ public class FtmRowFetcher {
 		this.sectionIdx = section;
 		
 		resetSpeed();
-		notes.clear();
+		runtime.notes.clear();
 	}
 	
 	/**
@@ -138,8 +127,8 @@ public class FtmRowFetcher {
 	 * </p>
 	 */
 	void resetSpeed() {
-		speed = audio.getTrack(trackIdx).speed;
-		tempo = audio.getTrack(trackIdx).tempo;
+		speed = querier.audio.getTrack(trackIdx).speed;
+		tempo = querier.audio.getTrack(trackIdx).tempo;
 		
 		setupSpeed();
 		tempoAccum = 0;
@@ -173,22 +162,24 @@ public class FtmRowFetcher {
 		
 		// 第二步: (SoundGen.updatePlayer)
 		if (tempoAccum <= 0) {
-			int ticksPerSec = audio.getFrameRate();
+			int ticksPerSec = querier.getFrameRate();
 			// 将拍 / 秒 -> 拍 / 分钟
 			tempoAccum += (60 * ticksPerSec) - tempoRemainder;
 		}
 		tempoAccum -= tempoDecrement;
 		
-		System.out.println(String.format("%02x:%02x %c  %s", sectionIdx, row, (updateRow) ? 'T' : 'F', notes));
+		System.out.println(String.format("%02x:%02x %c  %s", sectionIdx, row, (updateRow) ? 'T' : 'F', runtime.notes));
 	}
 	
 	/**
 	 * 确定现在正在播放的行, 放到 {@link #notes} 中
 	 */
 	public void storeRow() {
-		int len = querier.channelCount();
+		final HashMap<Byte, FtmNote> map = runtime.notes;
+		
+		final int len = querier.channelCount();
 		for (int i = 0; i < len; i++) {
-			notes.put(querier.channelCode(i), querier.getNote(trackIdx, sectionIdx, i, row));
+			map.put(querier.channelCode(i), querier.getNote(trackIdx, sectionIdx, i, row));
 		}
 	}
 	
