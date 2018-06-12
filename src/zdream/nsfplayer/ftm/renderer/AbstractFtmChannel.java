@@ -1,9 +1,9 @@
 package zdream.nsfplayer.ftm.renderer;
 
-import static com.zdream.famitracker.FamitrackerTypes.EF_DELAY;
-import static com.zdream.famitracker.FamitrackerTypes.EF_JUMP;
-import static com.zdream.famitracker.FamitrackerTypes.EF_NONE;
-import static com.zdream.famitracker.FamitrackerTypes.EF_SKIP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DELAY;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.format.FtmNote;

@@ -77,7 +77,7 @@ public class FtmNote implements Cloneable {
 		EF_JUMP = 2,
 		EF_SKIP = 3,
 		EF_HALT = 4, // Cxx cancel
-		EF_VOLUME = 5,
+		EF_VOLUME = 5, // 作为效果已经过时, 但是我这里需要用
 		EF_PORTAMENTO = 6,
 		EF_PORTAOFF = 7,
 		EF_SWEEPUP = 8,
