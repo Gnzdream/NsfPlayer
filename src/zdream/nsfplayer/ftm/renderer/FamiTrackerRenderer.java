@@ -1,13 +1,15 @@
 package zdream.nsfplayer.ftm.renderer;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
-import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.renderer.channel.ChannalFactory;
+import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -132,6 +134,8 @@ public class FamiTrackerRenderer {
 	
 	final FtmRowFetcher fetcher = new FtmRowFetcher(runtime);
 	
+	final IFtmEffectConverter converter = new DefaultFtmEffectConverter(runtime);
+	
 	/* **********
 	 * 播放部分 *
 	 ********** */
@@ -220,7 +224,7 @@ public class FamiTrackerRenderer {
 //		fetcher.runFrame();
 //		updateChannels();
 		
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 1000; i++) {
 			fetcher.runFrame();
 			updateChannels();
 		}
@@ -265,19 +269,22 @@ public class FamiTrackerRenderer {
 	 ********** */
 	
 	/**
-	 * 利用 runtime 已经完成填充的数据, 建立 AbstractFtmChannel.
+	 * 利用 runtime 已经完成填充的数据, 建立 AbstractFtmChannel, 还有各个轨道的 EffectBatch
 	 * 
-	 * 同原工程 SoundGen.createChannels()
+	 * 包含原工程 SoundGen.createChannels()
 	 */
 	private void initChannels() {
+		runtime.channels.clear();
+		runtime.effects.clear();
+		
 		final FamiTrackerQuerier querier = runtime.querier;
 		
 		final int len = querier.channelCount();
 		for (int i = 0; i < len; i++) {
 			byte code = querier.channelCode(i);
 			runtime.channels.put(code, ChannalFactory.create(code));
+			runtime.effects.put(code, new HashMap<>());
 		}
-		
 	}
 	
 	/**
@@ -290,9 +297,8 @@ public class FamiTrackerRenderer {
 		for (int i = 0; i < len; i++) {
 			byte code = querier.channelCode(i);
 			AbstractFtmChannel channel = runtime.channels.get(code);
-			FtmNote note = runtime.notes.get(code);
 			
-			channel.playNote(note);
+			// channel.playNote();
 		}
 	}
 	

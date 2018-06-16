@@ -1,11 +1,13 @@
 package zdream.nsfplayer.ftm.renderer;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
-import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
+import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 
 /**
  * 确定 {@link FtmAudio} 已经播放的位置, 并能够获取 {@link FtmAudio} 正在播放的段和行.
@@ -37,7 +39,9 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	int trackIdx;
 	
 	/**
-	 * 正播放的段号 (pattern)
+	 * <p>正播放的段号 (pattern)
+	 * <p>一般取该数据会有误差, 问题详情见 {@link #row}
+	 * </p>
 	 */
 	int sectionIdx;
 	
@@ -54,7 +58,13 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	int speed;
 	
 	/**
-	 * 正播放的行数
+	 * <p>正播放的行号, 从 0 开始.
+	 * <p>当播放器播放第 0 行的音键时, 其实 row = 1, 即已经指向播放行的下一行. 因为 Famitracker 就是这样设计的.
+	 * 这样做的话, 碰到跳行、跳段的效果时, 就不会出现连跳的 BUG 情况.
+	 * <p>试想一下这个情况: 第 0 段第 x 行有跳行的效果 (D00 到下一段首行),
+	 * 然后第 1 段、第 2 段等等第 0 行都有跳行的效果 (D00 到下一段首行), 就会出现连跳的情况.
+	 * 这个在 Famitracker 中是不允许的.
+	 * </p>
 	 */
 	int row;
 	
@@ -105,6 +115,14 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		this.querier = new FamiTrackerQuerier(audio);
 		runtime.querier = querier;
 		
+		// 向 runtime.effects 中添加 map
+		runtime.effects.clear();
+		final int len = querier.channelCount();
+		for (int i = 0; i < len; i++) {
+			byte code = querier.channelCode(i);
+			runtime.effects.put(code, new HashMap<>());
+		}
+		
 		ready(track, section);
 	}
 	
@@ -118,7 +136,9 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		this.sectionIdx = section;
 		
 		resetSpeed();
-		runtime.notes.clear();
+		for (Map<FtmEffectType, IFtmEffect> map : runtime.effects.values()) {
+			map.clear();
+		}
 	}
 	
 	/**
@@ -158,6 +178,8 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 			storeRow();
 			
 			nextRow();
+		} else {
+			runtime.converter.clear();
 		}
 		
 		// 第二步: (SoundGen.updatePlayer)
@@ -168,18 +190,18 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		}
 		tempoAccum -= tempoDecrement;
 		
-		System.out.println(String.format("%02x:%02x %c  %s", sectionIdx, row, (updateRow) ? 'T' : 'F', runtime.notes));
+		System.out.println(String.format("%02x:%03d %c  %s", sectionIdx, row, (updateRow) ? 'T' : 'F', (updateRow) ? runtime.effects : ""));
 	}
 	
 	/**
 	 * 确定现在正在播放的行, 放到 {@link #notes} 中
 	 */
 	public void storeRow() {
-		final HashMap<Byte, FtmNote> map = runtime.notes;
-		
 		final int len = querier.channelCount();
+		runtime.converter.beforeConvert();
+		
 		for (int i = 0; i < len; i++) {
-			map.put(querier.channelCode(i), querier.getNote(trackIdx, sectionIdx, i, row));
+			runtime.converter.convert(querier.channelCode(i), querier.getNote(trackIdx, sectionIdx, i, row));
 		}
 	}
 	

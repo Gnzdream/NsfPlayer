@@ -1,9 +1,13 @@
 package zdream.nsfplayer.ftm.renderer;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.format.FtmNote;
+import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 
 /**
  * Famitracker 运行时状态
@@ -17,6 +21,7 @@ public class FamiTrackerRuntime {
 	 *   成员   *
 	 ********** */
 	public FtmRowFetcher fetcher;
+	public IFtmEffectConverter converter;
 	
 	public final HashMap<Byte, AbstractFtmChannel> channels = new HashMap<>();
 	
@@ -34,8 +39,15 @@ public class FamiTrackerRuntime {
 	 *   数据   *
 	 ********** */
 	/**
-	 * 放着正解释的行里面的所有键
+	 * <p>放着正解释的行里面的所有键的效果集合, 已经经过加工和分拣.
+	 * <p>结构: 轨道号 - 效果集合 (可能为空)
+	 * </p>
 	 */
-	public HashMap<Byte, FtmNote> notes = new HashMap<>();
-
+	public final HashMap<Byte, Map<FtmEffectType, IFtmEffect>> effects = new HashMap<>();
+	
+	/**
+	 * 全局范围的效果集
+	 */
+	public final Map<FtmEffectType, IFtmEffect> geffect = new HashMap<>();
+	
 }

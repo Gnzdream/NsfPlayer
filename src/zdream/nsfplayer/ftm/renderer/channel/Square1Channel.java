@@ -1,7 +1,5 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
-import zdream.nsfplayer.ftm.format.FtmNote;
-
 /**
  * 2A03 矩形轨道 1
  * 
@@ -15,10 +13,10 @@ public class Square1Channel extends Channel2A03 {
 	}
 
 	@Override
-	public void playNote(FtmNote note) {
+	public void playNote() {
 		// TODO Auto-generated method stub
 		
-		super.playNote(note);
+		super.playNote();
 	}
 
 }

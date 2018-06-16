@@ -44,21 +44,39 @@ public enum FtmEffectType {
 	STOP,
 	
 	/**
-	 * Exx 或直接修改 volumn
+	 * <p>Exx 或直接修改 volumn
 	 * 调整音量.
-	 * DPCM, Triangle 无效
+	 * <p>DPCM, Triangle 无效
+	 * </p>
+	 * @see VolumnEffect
 	 */
 	VOLUME,
 	
 	/**
-	 * 直接修改音高或音键
-	 * TODO
+	 * <p>直接修改音高或音键
+	 * </p>
+	 * @see NoteEffect
 	 */
 	NOTE,
 	
 	/**
-	 * 直接修改乐器
-	 * TODO
+	 * <p>直接停止当前音键的播放, 使该轨道静音
+	 * </p>
+	 * @see NoteHaltEffect
+	 */
+	HALT,
+	
+	/**
+	 * <p>直接让当前音键释放. 如果该音键对应的乐器含释放部分, 则播放释放部分
+	 * </p>
+	 * @see NoteReleaseEffect
+	 */
+	RELEASE,
+	
+	/**
+	 * <p>直接修改乐器
+	 * </p>
+	 * @see InstrumentEffect
 	 */
 	INSTRUMENT,
 	

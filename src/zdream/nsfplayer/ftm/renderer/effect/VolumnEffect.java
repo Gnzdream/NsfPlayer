@@ -42,5 +42,10 @@ public class VolumnEffect implements IFtmEffect {
 		// TODO Auto-generated method stub
 		IFtmEffect.super.execute(channelCode, rumtime);
 	}
+	
+	@Override
+	public String toString() {
+		return "Vol:" + Integer.toHexString(volumn);
+	}
 
 }

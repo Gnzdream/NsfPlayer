@@ -64,8 +64,10 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   键, 音符.
 	 *   <br>如果 note = null, 则说明保持原来的 note 不变
 	 */
-	public void playNote(FtmNote note) {
-		if (note != null) {
+	public void playNote() {
+		// TODO 由于 FtmNote 改成 IFtmEffect, 因此这里会大幅度修改.
+		
+		/*if (note != null) {
 			HANDLE: {
 				if (handleDelay(note)) {
 					break HANDLE;
@@ -75,7 +77,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 			}
 			
 			previousNote = note;
-		}
+		}*/
 	}
 	
 	/* **********

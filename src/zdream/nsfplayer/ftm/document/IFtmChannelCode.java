@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.document;
 
 /**
- * 用于轨道号和轨道序号的互相转换
+ * 储存轨道号的静态变量
  * @author Zdream
  * @since v0.2.1
  */
