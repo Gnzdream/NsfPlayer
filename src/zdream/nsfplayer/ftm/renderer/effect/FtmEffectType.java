@@ -9,30 +9,34 @@ package zdream.nsfplayer.ftm.renderer.effect;
 public enum FtmEffectType {
 	
 	/**
-	 * Fxx
-	 * 调速 (调整 speed)
-	 * TODO
+	 * <p>Fxx
+	 * <p>调速 (调整 speed)
+	 * </p>
+	 * @see SpeedEffect
 	 */
 	SPEED,
 	
 	/**
-	 * Fxx
-	 * 调速 (调整 tempo)
-	 * TODO
+	 * <p>Fxx
+	 * <p>调速 (调整 tempo)
+	 * </p>
+	 * @see TempoEffect
 	 */
 	TEMPO,
 	
 	/**
-	 * Bxx
-	 * 跳到下一段的指定行
-	 * TODO
+	 * <p>Bxx
+	 * <p>跳到指定的段
+	 * </p>
+	 * @see JumpEffect
 	 */
 	JUMP,
 	
 	/**
-	 * Dxx
-	 * 跳到指定的段
-	 * TODO
+	 * <p>Dxx
+	 * <p>跳到下一段的指定行
+	 * </p>
+	 * @see SkipEffect
 	 */
 	SKIP,
 	
@@ -117,8 +121,10 @@ public enum FtmEffectType {
 	TREMOLO,
 	
 	/**
-	 * Pxx
-	 * TODO
+	 * <p>Pxx 修改音高
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see PitchEffect
 	 */
 	PITCH,
 	
@@ -147,8 +153,10 @@ public enum FtmEffectType {
 	PORTA_DOWN,
 	
 	/**
-	 * Vxx
-	 * TODO
+	 * <p>Vxx 修改音色
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see DutyEffect
 	 */
 	DUTY_CYCLE,
 	
@@ -171,8 +179,10 @@ public enum FtmEffectType {
 	SLIDE_DOWN,
 	
 	/**
-	 * Axx
-	 * TODO
+	 * <p>Axx 音量随时间线性变化
+	 * <p>Triangle, DPCM 无效
+	 * </p>
+	 * @see VolumnSlideEffect
 	 */
 	VOLUME_SLIDE,
 	

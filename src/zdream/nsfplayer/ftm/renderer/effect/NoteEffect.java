@@ -13,7 +13,7 @@ public class NoteEffect implements IFtmEffect {
 	/**
 	 * 音阶 * 12 + 音符
 	 */
-	public int note;
+	public final int note;
 
 	private NoteEffect(int note) {
 		this.note = note;

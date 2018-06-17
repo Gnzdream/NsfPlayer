@@ -68,7 +68,7 @@ public class FtmAudio {
 	 * <p>节奏与速度的分割值
 	 * <p>split point where Fxx effect sets tempo instead of speed
 	 * <br>'Fxx' 这个函数影响音乐播放的速度.
-	 * <p>当 xx 代表的数值大于 {@code split} 时, 它将解析成 {@link FtmTrack#tempo};
+	 * <p>当 xx 代表的数值大于等于 {@code split} 时, 它将解析成 {@link FtmTrack#tempo};
 	 * <br>否则解析成 {@link FtmTrack#speed}
 	 */
 	int split;

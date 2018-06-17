@@ -10,7 +10,7 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
  */
 public class VolumnEffect implements IFtmEffect {
 	
-	public int volumn;
+	public final int volumn;
 
 	private VolumnEffect(int volumn) {
 		this.volumn = volumn;

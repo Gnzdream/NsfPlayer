@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
@@ -190,7 +191,22 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		}
 		tempoAccum -= tempoDecrement;
 		
-		System.out.println(String.format("%02x:%03d %c  %s", sectionIdx, row, (updateRow) ? 'T' : 'F', (updateRow) ? runtime.effects : ""));
+		// Log
+		StringBuilder b = new StringBuilder(128);
+		b.append(String.format("%02x:%03d %c", sectionIdx, row, (updateRow) ? 'T' : 'F'));
+		if (updateRow) {
+			// (updateRow) ? runtime.effects : "")
+			for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
+				Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
+				b.append(' ').append(Integer.toHexString(entry.getKey())).append('=');
+				b.append(entry.getValue().values());
+			}
+			
+			if (!runtime.geffect.isEmpty()) {
+				b.append(' ').append("G").append('=').append(runtime.geffect.values());
+			}
+		}
+		System.out.println(b);
 	}
 	
 	/**

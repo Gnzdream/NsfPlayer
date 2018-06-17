@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
-import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
