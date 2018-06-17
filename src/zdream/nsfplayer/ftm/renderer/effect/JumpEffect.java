@@ -45,7 +45,6 @@ public class JumpEffect implements IFtmEffect {
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime rumtime) {
 		// TODO Auto-generated method stub
-		IFtmEffect.super.execute(channelCode, rumtime);
 	}
 	
 	@Override

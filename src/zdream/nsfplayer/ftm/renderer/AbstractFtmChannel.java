@@ -5,8 +5,12 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.format.FtmNote;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 
 /**
  * 抽象的 Famitracker 轨道, 用于存储各个轨道的播放局部参数, 比如局部 pitch 等
@@ -78,6 +82,13 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 			
 			previousNote = note;
 		}*/
+		
+		// 效果
+		forceEffect(runtime.effects.get(this.channelCode).values());
+		
+		// 状态
+		triggleState();
+		
 	}
 	
 	/* **********
@@ -201,6 +212,67 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	
 	protected void handleNote(FtmNote note) {
 		// TODO
+	}
+	
+	/* **********
+	 * 强制执行 *
+	 ********** */
+	
+	/**
+	 * <p>状态集合.
+	 * <p>原本这里的延迟状态等, 都视为一个状态
+	 * </p>
+	 */
+	HashSet<IFtmState> states = new HashSet<>();
+	
+	/**
+	 * 添加状态
+	 * @param state
+	 */
+	public void addState(IFtmState state) {
+		states.add(state);
+		state.onAttach(channelCode, runtime);
+	}
+	
+	/**
+	 * 删除状态
+	 * @param state
+	 */
+	public void removeState(IFtmState state) {
+		states.remove(state);
+		state.onDetach(channelCode, runtime);
+	}
+	
+	/**
+	 * 过滤出所有名称匹配的状态集合
+	 * @param name
+	 * @return
+	 */
+	public HashSet<IFtmState> filterStates(String name) {
+		HashSet<IFtmState> set = new HashSet<>();
+		for (IFtmState s : states) {
+			if (s.name().equals(name)) {
+				set.add(s);
+			}
+		}
+		return set;
+	}
+	
+	/**
+	 * 强制、立即执行效果集合
+	 * @param effs
+	 *   效果集合（非全局效果有效）
+	 */
+	public void forceEffect(Collection<IFtmEffect> effs) {
+		for (IFtmEffect eff : effs) {
+			eff.execute(channelCode, runtime);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void triggleState() {
+		((HashSet<IFtmState>) this.states.clone())
+			.forEach((state) -> state.trigger(channelCode, runtime));
 	}
 
 }

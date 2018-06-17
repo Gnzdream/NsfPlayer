@@ -2,6 +2,8 @@ package zdream.nsfplayer.ftm.renderer;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
@@ -9,6 +11,8 @@ import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.channel.ChannalFactory;
 import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 
 /**
@@ -227,6 +231,9 @@ public class FamiTrackerRenderer {
 		for (int i = 0; i < 1000; i++) {
 			fetcher.runFrame();
 			updateChannels();
+			
+			// 测试方法
+			log();
 		}
 		
 		
@@ -282,7 +289,10 @@ public class FamiTrackerRenderer {
 		final int len = querier.channelCount();
 		for (int i = 0; i < len; i++) {
 			byte code = querier.channelCode(i);
-			runtime.channels.put(code, ChannalFactory.create(code));
+			
+			AbstractFtmChannel ch = ChannalFactory.create(code);
+			ch.setRuntime(runtime);
+			runtime.channels.put(code, ch);
 			runtime.effects.put(code, new HashMap<>());
 		}
 	}
@@ -298,8 +308,30 @@ public class FamiTrackerRenderer {
 			byte code = querier.channelCode(i);
 			AbstractFtmChannel channel = runtime.channels.get(code);
 			
-			// channel.playNote();
+			channel.playNote();
 		}
+	}
+	
+	/* **********
+	 * 测试方法 *
+	 ********** */
+	private void log() {
+		StringBuilder b = new StringBuilder(128);
+		b.append(String.format("%02x:%03d", fetcher.sectionIdx, fetcher.row));
+		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
+			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
+			if (entry.getValue().isEmpty()) {
+				continue;
+			}
+			
+			b.append(' ').append(Integer.toHexString(entry.getKey())).append('=');
+			b.append(entry.getValue().values());
+		}
+		
+		if (!runtime.geffect.isEmpty()) {
+			b.append(' ').append("G").append('=').append(runtime.geffect.values());
+		}
+		System.out.println(b);
 	}
 	
 }

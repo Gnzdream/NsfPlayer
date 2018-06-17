@@ -66,9 +66,8 @@ public class VolumnSlideEffect implements IFtmEffect {
 	}
 	
 	@Override
-	public void execute(byte channelCode, FamiTrackerRuntime rumtime) {
+	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
 		// TODO Auto-generated method stub
-		IFtmEffect.super.execute(channelCode, rumtime);
 	}
 	
 	@Override

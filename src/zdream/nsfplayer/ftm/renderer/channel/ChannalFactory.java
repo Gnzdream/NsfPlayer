@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
+import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 
 /**
  * 轨道工厂
@@ -19,6 +20,13 @@ public class ChannalFactory implements IFtmChannelCode {
 		switch (code) {
 		case CHANNEL_2A03_PULSE1:
 			return new Square1Channel();
+			
+		case CHANNEL_2A03_PULSE2:
+		case CHANNEL_2A03_TRIANGLE:
+		case CHANNEL_2A03_NOISE:
+		case CHANNEL_2A03_DPCM:
+			// TODO
+			return new TestFtmChannel(code);
 
 		default:
 			break;

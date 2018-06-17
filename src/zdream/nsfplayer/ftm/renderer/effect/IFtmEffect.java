@@ -22,6 +22,6 @@ public interface IFtmEffect {
 	 *   当前轨道号码
 	 * @param rumtime
 	 */
-	default public void execute(byte channelCode, FamiTrackerRuntime rumtime) {}
+	public void execute(byte channelCode, FamiTrackerRuntime runtime);
 
 }

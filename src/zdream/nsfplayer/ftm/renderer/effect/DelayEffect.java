@@ -2,8 +2,11 @@ package zdream.nsfplayer.ftm.renderer.effect;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
  * <p>延迟播放的效果, Gxx
@@ -20,6 +23,8 @@ public class DelayEffect implements IFtmEffect {
 
 	private DelayEffect(int duration) {
 		this.duration = duration;
+		
+		state = new DelayState(duration);
 	}
 
 	@Override
@@ -54,14 +59,65 @@ public class DelayEffect implements IFtmEffect {
 	}
 	
 	@Override
-	public void execute(byte channelCode, FamiTrackerRuntime rumtime) {
-		// TODO Auto-generated method stub
-		IFtmEffect.super.execute(channelCode, rumtime);
+	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
+		AbstractFtmChannel channel = runtime.channels.get(channelCode);
+		
+		// 如果该当前轨道有延迟状态, 则立即触发
+		HashSet<IFtmState> set = channel.filterStates(state.name());
+		if (!set.isEmpty()) {
+			for (IFtmState s : set) {
+				channel.removeState(s);
+			}
+		}
+		
+		channel.addState(state);
 	}
 	
 	@Override
 	public String toString() {
 		return "Delay:" + duration;
 	}
+	
+	/**
+	 * 内部类, 延迟计数器
+	 * 
+	 * @author Zdream
+	 * @since 0.2.1
+	 */
+	class DelayState implements IFtmState {
+		
+		/**
+		 * 每一帧扣 1, 扣到 0 时延迟的键播放.
+		 */
+		private int delayCounter;
+		
+		public DelayState(int duration) {
+			this.delayCounter = duration;
+		}
+
+		@Override
+		public String name() {
+			return "DELAY";
+		}
+
+		@Override
+		public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+			if (delayCounter > 0) {
+				delayCounter --;
+			} else {
+				// 触发
+				Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
+				for (IFtmEffect eff : effects) {
+					map.put(eff.type(), eff);
+				}
+				
+				AbstractFtmChannel channel = runtime.channels.get(channelCode);
+				channel.forceEffect(effects);
+				channel.removeState(this);
+			}
+		}
+	}
+	
+	DelayState state;
 
 }
