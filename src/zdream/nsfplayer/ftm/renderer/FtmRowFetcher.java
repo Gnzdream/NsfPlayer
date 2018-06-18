@@ -5,9 +5,11 @@ import java.util.Map;
 
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 
 /**
  * 确定 {@link FtmAudio} 已经播放的位置, 并能够获取 {@link FtmAudio} 正在播放的段和行.
@@ -68,13 +70,70 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 */
 	int row;
 	
+	/**
+	 * <p>重设速度值
+	 * <p>原方法在 SoundGen.evaluateGlobalEffects() 中, 处理 EF_SPEED 部分的地方.
+	 * </p>
+	 */
+	public void setSpeed(int speed) {
+		this.speed = speed;
+		setupSpeed();
+	}
+	
+	/**
+	 * <p>重设节奏值
+	 * <p>原方法在 SoundGen.evaluateGlobalEffects() 中, 处理 EF_SPEED 部分的地方.
+	 * </p>
+	 */
+	public void setTempo(int tempo) {
+		this.tempo = tempo;
+		setupSpeed();
+	}
+	
+	/* **********
+	 * 跳转参数 *
+	 ********** */
+	
+	/**
+	 * 跳转到的段号. 默认 -1 表示无效
+	 */
+	int jumpSection = -1;
+	
+	/**
+	 * <p>跳转到的行号. 默认 -1 表示无效
+	 * <p>这里做一个约定. 如果 {@link #jumpSection} 无效, 则为跳转到下一段的 skipRow 行;
+	 * 如果 {@link #jumpSection} 有效, 则跳到 {@link #jumpSection} 段的 skipRow 行.
+	 * </p>
+	 */
+	int skipRow = -1;
+	
+	/**
+	 * 效果, 跳转至 section 段.
+	 * @param section
+	 *   段号
+	 */
+	public void jumpToSection(int section) {
+		jumpSection = section;
+	}
+	
+	/**
+	 * <p>效果, 跳至下一段的 row 行.
+	 * <p>此效果能和 {@link #jumpToSection(int)} 联合使用. 见 {@link #skipRow}
+	 * </p>
+	 * @param row
+	 *   行号.
+	 */
+	public void skipRows(int row) {
+		skipRow = row;
+	}
+	
 	/* **********
 	 * 状态参数 *
 	 ********** */
 	
 	/**
 	 * 节奏的累加器.
-	 * 先加上一分钟的 tempo 值, 然后没帧减去一个 {@link #tempoDecrement}
+	 * 先加上播放一行音键所需的 tempo 值, 然后没帧减去一个 {@link #tempoDecrement}
 	 * (accumulate)
 	 */
 	int tempoAccum;
@@ -171,18 +230,26 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		// 重置
 		updateRow = false;
 		
-		// 第一步: (SoundGen.runFrame)
+		// (SoundGen.runFrame)
 		if (tempoAccum <= 0) {
 			// Enable this to skip rows on high tempos
 			updateRow = true;
+			handleJump();
 			storeRow();
-			
 			nextRow();
 		} else {
 			runtime.converter.clear();
 		}
-		
-		// 第二步: (SoundGen.updatePlayer)
+	}
+	
+	/**
+	 * <p>更新播放状态
+	 * <p>这个调用是在 {@link FtmNote} 的效果处理完之后调用的.
+	 * 这样可以确保改变 speed 的效果可以被计算进去.
+	 * </p>
+	 */
+	public void updateState() {
+		// (SoundGen.updatePlayer)
 		if (tempoAccum <= 0) {
 			int ticksPerSec = querier.getFrameRate();
 			// 将拍 / 秒 -> 拍 / 分钟
@@ -192,7 +259,30 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	}
 	
 	/**
-	 * 确定现在正在播放的行, 放到 {@link #notes} 中
+	 * <p>处理跳行的情况.
+	 * <p>如果上一帧有 Bxx Dxx 等跳着执行播放的效果触发,
+	 * 则 {@link #jumpSection} 或 {@link #skipRow} 不等于 -1. 这时就直接进行跳转;
+	 * </p>
+	 */
+	private void handleJump() {
+		if (skipRow >= 0) {
+			if (jumpSection >= 0) {
+				sectionIdx = jumpSection;
+				jumpSection = -1;
+			} else {
+				sectionIdx++;
+			}
+			row = skipRow;
+			skipRow = -1;
+		} else if (jumpSection >= 0) {
+			sectionIdx = jumpSection;
+			row = 0;
+			jumpSection = -1;
+		}
+	}
+	
+	/**
+	 * 确定现在正在播放的行, 让 {@link IFtmEffectConverter} 获取并处理
 	 */
 	public void storeRow() {
 		final int len = querier.channelCount();
@@ -205,14 +295,12 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	
 	/**
 	 * 按照正常的习惯, 确定下一个播放的行.
-	 * <br>一般而言, 下一个播放的行是该行的下一行, 但是在以下情况下, 会有变化:
-	 * <li>当到某段的结尾, 会跳转到下一段的首行;
-	 * </li>
-	 * 这里不处理像 Bxx Dxx 等跳着执行播放的情况
+	 * <p>一般而言, 下一个播放的行是该行的下一行, 但是在以下情况下, 会有变化:
+	 * <p>当到某段的结尾, 会跳转到下一段的首行;
+	 * </p>
 	 */
 	private void nextRow() {
 		row++;
-		
 		// 是否到段尾
 		int len = querier.maxRow(trackIdx); // 段长
 		if (row >= len) {

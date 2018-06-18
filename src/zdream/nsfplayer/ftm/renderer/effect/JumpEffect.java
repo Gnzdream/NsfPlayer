@@ -44,7 +44,7 @@ public class JumpEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime rumtime) {
-		// TODO Auto-generated method stub
+		rumtime.fetcher.jumpToSection(section);
 	}
 	
 	@Override

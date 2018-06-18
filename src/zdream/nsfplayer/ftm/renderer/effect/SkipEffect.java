@@ -44,7 +44,7 @@ public class SkipEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		// TODO Auto-generated method stub
+		runtime.fetcher.skipRows(row);
 	}
 	
 	@Override

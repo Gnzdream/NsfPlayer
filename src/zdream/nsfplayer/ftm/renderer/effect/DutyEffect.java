@@ -32,7 +32,7 @@ public class DutyEffect implements IFtmEffect {
 	 *   当音色值 <code>duty</code> 不在指定范围内时
 	 */
 	public static DutyEffect of(int duty) throws IllegalArgumentException {
-		if (duty <= 0) {
+		if (duty < 0) {
 			throw new IllegalArgumentException("音色必须是非负数数值");
 		}
 		return new DutyEffect(duty);

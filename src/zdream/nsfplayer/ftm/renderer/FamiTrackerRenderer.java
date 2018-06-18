@@ -228,9 +228,11 @@ public class FamiTrackerRenderer {
 //		fetcher.runFrame();
 //		updateChannels();
 		
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 1600; i++) {
 			fetcher.runFrame();
 			updateChannels();
+			
+			fetcher.updateState();
 			
 			// 测试方法
 			log();
@@ -303,6 +305,10 @@ public class FamiTrackerRenderer {
 	private void updateChannels() {
 		final FamiTrackerQuerier querier = runtime.querier;
 		
+		// 全局效果
+		globalEffectsExecute();
+		
+		// 局部效果
 		final int len = querier.channelCount();
 		for (int i = 0; i < len; i++) {
 			byte code = querier.channelCode(i);
@@ -312,12 +318,21 @@ public class FamiTrackerRenderer {
 		}
 	}
 	
+	/**
+	 * 全局效果的实现
+	 */
+	private void globalEffectsExecute() {
+		for (IFtmEffect eff : runtime.geffect.values()) {
+			eff.execute((byte) 0, runtime);
+		}
+	}
+	
 	/* **********
 	 * 测试方法 *
 	 ********** */
 	private void log() {
 		StringBuilder b = new StringBuilder(128);
-		b.append(String.format("%02x:%03d", fetcher.sectionIdx, fetcher.row));
+		b.append(String.format("%02d:%03d", fetcher.sectionIdx, fetcher.row));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
 			if (entry.getValue().isEmpty()) {
