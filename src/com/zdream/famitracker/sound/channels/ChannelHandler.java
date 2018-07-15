@@ -26,7 +26,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 		note = Math.max(note, 0);
 
 		// Trigger a note, return note period
-		registerKeyState(note);
+		registerKeyState(note); // 空方法
 
 		if (m_pNoteLookupTable == null)
 			return note;
@@ -36,7 +36,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 
 	@Override
 	protected void setVolume(int volume) {
-		m_iSeqVolume = volume;
+		m_iSeqVolume = limitVolume(volume);
 	}
 
 	@Override
@@ -268,10 +268,11 @@ public abstract class ChannelHandler extends SequenceHandler {
 				return;
 		}
 
-		if (newInstrument || trigger) {
+		// 不知道为什么这个有两次, 暂且当成程序错误
+		/*if (newInstrument || trigger) {
 			if (!handleInstrument(m_iInstrument, trigger, newInstrument))
 				return;
-		}
+		}*/
 
 		// Clear release flag
 		if (pNoteData.note != NOTE_RELEASE && pNoteData.note != NOTE_NONE) {
@@ -318,7 +319,8 @@ public abstract class ChannelHandler extends SequenceHandler {
 	}
 
 	/**
-	 * const 方法
+	 * 计算当前的音高. 实际计算的是波长.
+	 * <br>const 方法
 	 * @return
 	 */
 	protected int calculatePeriod() {
@@ -327,7 +329,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 	
 	protected final int calculateVolume() {
 		// Volume calculation
-		int volume = m_iVolume >> VOL_COLUMN_SHIFT;
+		int volume = m_iVolume >> VOL_COLUMN_SHIFT; // [0, 15]
 
 		volume = (m_iSeqVolume * volume) / 15 - getTremolo();
 		volume = Math.max(volume, 0);
@@ -367,11 +369,25 @@ public abstract class ChannelHandler extends SequenceHandler {
 		m_bRelease = true;
 	}
 
+	/**
+	 * 限定波长的范围, 让波长最终落到 [0, {@link #m_iMaxPeriod}] 之间的数值中
+	 * @param period
+	 *   原始波长
+	 * @return
+	 *   修改后的波长. 在范围内的波长不做变动, 而在范围外的波长调整到 0 或 {@link #m_iMaxPeriod}
+	 */
 	protected final int limitPeriod(int period) {
 		period = Math.min(period, m_iMaxPeriod);
 		period = Math.max(period, 0);
 		return period;
 	}
+	/**
+	 * 限定音量的范围, 让波长最终落到 [0, 15] 之间的数值中
+	 * @param period
+	 *   原始音量（粗值）
+	 * @return
+	 *   修改后的音量（粗值）. 在范围内的音量不做变动, 而在范围外的音量调整到 0 或 15
+	 */
 	protected final int limitVolume(int volume) {
 		volume = Math.min(volume, 15);
 		volume = Math.max(volume, 0);
@@ -379,7 +395,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 	}
 
 	protected void registerKeyState(int note) {
-		m_pSoundGen.registerKeyState(m_iChannelID, note);
+		m_pSoundGen.registerKeyState(m_iChannelID, note); // 这个是个空方法
 	}
 
 	/**
@@ -405,6 +421,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 	}
 	
 	protected final int getPitch() {
+		// 这个判断里面的内容, 在只有 2A03 和 VRC6 的情况下, 确定不会调用.
 		if (m_iPitch != 0 && m_iNote != 0 && m_pNoteLookupTable != null) {
 			// Interpolate pitch
 			int lowNote  = Math.max(m_iNote - PITCH_WHEEL_RANGE, 0);
@@ -524,6 +541,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 
 	/**
 	 * Vibrato offset (4xx)
+	 * 颤音, 影响音高
 	 * @return
 	 */
 	protected int getVibrato() {
@@ -551,6 +569,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 	
 	/**
 	 * Tremolo offset (7xx)
+	 * 颤音, 影响音量
 	 * @return
 	 */
 	protected int getTremolo() {
@@ -731,7 +750,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 	/**
 	 * Range for the pitch wheel command (in semitones)
 	 */
-	public static final int PITCH_WHEEL_RANGE = 6;
+	private static final int PITCH_WHEEL_RANGE = 6;
 
 	public static final int VOL_COLUMN_SHIFT = 3;
 	public static final int VOL_COLUMN_MAX = 0x7F;
@@ -782,7 +801,8 @@ public abstract class ChannelHandler extends SequenceHandler {
 	protected int m_iSeqVolume;
 	
 	/**
-	 * Volume
+	 * Volume, 音量（细值）
+	 * <br>据判断, 该值是粗值的 8 倍, 值域为 [0, 127]
 	 */
 	protected int m_iVolume;
 	
@@ -812,19 +832,33 @@ public abstract class ChannelHandler extends SequenceHandler {
 	 * Gxx 延迟的效果是否正在触发
 	 */
 	protected boolean m_bDelayEnabled;
-	
-	
+	/**
+	 * Gxx 延迟的计数器.
+	 * 检测到 Gxx 存在后, 记录延迟的时间, 然后每一帧减一
+	 */
 	protected byte m_cDelayCounter;
-	protected int m_iDelayEffColumns;		
+	/**
+	 * Gxx 延迟键的有效的效果列数
+	 */
+	protected int m_iDelayEffColumns;
+	/**
+	 * Gxx 延迟的键
+	 */
 	protected StChanNote m_cnDelayed = new StChanNote();
 
 	// Vibrato & tremolo
 	protected int m_iVibratoDepth;
 	protected int m_iVibratoSpeed;
+	/**
+	 * 音高颤音的相位
+	 */
 	protected int m_iVibratoPhase;
 
 	protected int m_iTremoloDepth;
 	protected int m_iTremoloSpeed;
+	/**
+	 * 音量颤音的相位
+	 */
 	protected int m_iTremoloPhase;
 
 	/**
@@ -862,6 +896,8 @@ public abstract class ChannelHandler extends SequenceHandler {
 
 	/**
 	 * Note->period table, 原先是个指针
+	 * <br>这里记录的数组是, 每个音符（含音阶）, 在波形图中的波长（可能是相对值）.
+	 * <br>它在 {@link SoundGen#loadMachineSettings()} 中创建. 
 	 */
 	protected int[] m_pNoteLookupTable;
 	

@@ -117,7 +117,7 @@ public class APU {
 	/**
 	 * 240Hz Frame counter (1/4 frame)
 	 */
-	public final void clock_240Hz() {
+	private final void clock_240Hz() {
 		m_pSquare1.envelopeUpdate();
 		m_pSquare2.envelopeUpdate();
 		m_pNoise.envelopeUpdate();
@@ -127,7 +127,7 @@ public class APU {
 	/**
 	 * 120Hz Frame counter (1/2 frame)
 	 */
-	public final void clock_120Hz() {
+	private final void clock_120Hz() {
 		m_pSquare1.sweepUpdate(1);
 		m_pSquare2.sweepUpdate(0);
 
@@ -140,7 +140,7 @@ public class APU {
 	/**
 	 * 60Hz Frame counter (1/1 frame)
 	 */
-	public final void clock_60Hz() {
+	private final void clock_60Hz() {
 		// No IRQs are generated for NSFs
 	}
 
@@ -343,7 +343,7 @@ public class APU {
 	 * APU pin 1
 	 * @param time
 	 */
-	void runAPU1(int time) {
+	private void runAPU1(int time) {
 		while (time > 0) {
 			int period = Math.min(m_pSquare1.getPeriod(), m_pSquare2.getPeriod());
 			period = Math.min(Math.max(period, 7), time);
@@ -357,7 +357,7 @@ public class APU {
 	 * APU pin 2
 	 * @param time
 	 */
-	void runAPU2(int time) {
+	private void runAPU2(int time) {
 		while (time > 0) {
 			int period = Math.min(m_pTriangle.getPeriod(), m_pNoise.getPeriod());
 			period = Math.min(period, m_pDPCM.getPeriod());
@@ -369,7 +369,7 @@ public class APU {
 		}
 	}
 
-	void clockSequence() {
+	private void clockSequence() {
 		m_iSequencerClock += SEQUENCER_PERIOD;
 
 		if (m_iFrameMode == 0) {
@@ -392,7 +392,7 @@ public class APU {
 		}
 	}
 
-	void endFrame() {
+	private void endFrame() {
 		m_pSquare1.endFrame();
 		m_pSquare2.endFrame();
 		m_pTriangle.endFrame();

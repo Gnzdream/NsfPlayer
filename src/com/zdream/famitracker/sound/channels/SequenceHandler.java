@@ -23,7 +23,17 @@ public abstract class SequenceHandler {
 	
 	protected abstract int triggerNote(int note);
 	protected abstract void setVolume(int volume);
+	
+	/**
+	 * 设置波长
+	 * @param period
+	 *   波长（可能是相对值）
+	 */
 	protected abstract void setPeriod(int period);
+	/**
+	 * @return
+	 *   获取波长
+	 */
 	protected abstract int getPeriod();
 	protected abstract void setNote(int note);
 	protected abstract int getNote();

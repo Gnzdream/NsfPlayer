@@ -42,6 +42,10 @@ public class TrackerChannel {
 		}
 	}
 	
+	/**
+	 * Getter {@link #m_bNewNote}
+	 * @return
+	 */
 	public final boolean newNoteData() {
 		return m_bNewNote;
 	}
@@ -58,6 +62,10 @@ public class TrackerChannel {
 		return m_iVolumeMeter;
 	}
 
+	/**
+	 * 暂时确定, 在 2A03 和 VRC6 情况下, 没有调用该方法的地方.
+	 * @param pitch
+	 */
 	public void setPitch(int pitch) {
 		m_iPitch = pitch;
 	}

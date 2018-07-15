@@ -58,7 +58,7 @@ public abstract class ChannelHandler2A03 extends ChannelHandler {
 					m_bManualVolume = true;
 					break;
 				case EF_SWEEPUP:
-					m_iSweep = 0x88 | (effParam & 0x77);
+					m_iSweep = 0x80 | (effParam & 0x77);
 					m_iLastPeriod = 0xFFFF;
 					m_bSweeping = true;
 					break;

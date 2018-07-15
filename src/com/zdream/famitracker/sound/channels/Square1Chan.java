@@ -16,8 +16,8 @@ public final class Square1Chan extends ChannelHandler2A03 {
 		int volume = calculateVolume();
 		byte dutyCycle = (byte) (m_iDutyPeriod & 0x03);
 
-		byte hiFreq = (byte) (period & 0xFF);
-		byte loFreq = (byte) (period >> 8);
+		byte hiFreq = (byte) (period & 0xFF); // 低八位
+		byte loFreq = (byte) (period >> 8); // 高八位
 
 		if (!m_bGate || volume == 0) {
 			writeRegister(0x4000, (byte) 0x30);

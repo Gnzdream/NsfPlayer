@@ -606,7 +606,7 @@ public class SoundGen implements IAudioCallback {
 	}
 
 	/**
-	 * ChannelHandler 调用
+	 * ChannelHandler 调用. 现在已经是空方法
 	 * @param i
 	 */
 	public void registerKeyState(int m_iChannelID, int note) {
@@ -979,7 +979,7 @@ public class SoundGen implements IAudioCallback {
 	/**
 	 * 更新播放器的状态
 	 */
-	void updatePlayer() {
+	private void updatePlayer() {
 		if (m_bUpdateRow && !m_bHaltRequest)
 			checkControl();
 
@@ -993,7 +993,7 @@ public class SoundGen implements IAudioCallback {
 		}
 	}
 
-	void updateChannels() {
+	private void updateChannels() {
 		// Update channels
 		for (int i = 0; i < CHANNELS; ++i) {
 			if (m_pChannels[i] != null) {
@@ -1008,7 +1008,7 @@ public class SoundGen implements IAudioCallback {
 	/**
 	 * Write to APU registers
 	 */
-	void updateAPU() {
+	private void updateAPU() {
 		final int CHANNEL_DELAY = 250;
 
 		m_iConsumedCycles = 0;
@@ -1177,7 +1177,7 @@ public class SoundGen implements IAudioCallback {
 		m_bUpdateRow = false;
 	}
 	
-	void loadMachineSettings() {
+	private void loadMachineSettings() {
 		byte machine = this.m_pDocument.getMachine();
 		int rate = m_pDocument.getFrameRate();
 		
