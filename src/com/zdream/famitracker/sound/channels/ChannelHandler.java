@@ -335,6 +335,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 		volume = Math.max(volume, 0);
 		volume = Math.min(volume, m_iMaxVolume);
 
+		// 实际有声音的轨道（即总音量大于零, seq 音量大于零）, 至少保留 1 点音量
 		if (m_iSeqVolume > 0 && m_iVolume > 0 && volume == 0)
 			volume = 1;
 
@@ -350,6 +351,8 @@ public abstract class ChannelHandler extends SequenceHandler {
 	/**
 	 * <p>Cut currently playing note
 	 * <p>Called on note cut commands
+	 * 
+	 * <p>立刻结束现在播放的 note.
 	 */
 	protected void cutNote() {
 		registerKeyState(-1);
@@ -394,6 +397,12 @@ public abstract class ChannelHandler extends SequenceHandler {
 		return volume;
 	}
 
+	/**
+	 * <p>可能为向外报告该 note 播放状态的改变.
+	 * <p>注: 该方法现阶段没有实际功能
+	 * </p>
+	 * @param note
+	 */
 	protected void registerKeyState(int note) {
 		m_pSoundGen.registerKeyState(m_iChannelID, note); // 这个是个空方法
 	}
@@ -586,12 +595,17 @@ public abstract class ChannelHandler extends SequenceHandler {
 	
 	/**
 	 * Fine pitch setting (Pxx)
+	 * 设置音高 (Pxx)
 	 * @return
 	 */
 	protected int getFinePitch() {
 		return (0x80 - m_iFinePitch);
 	}
 
+	/**
+	 * 用于让 APU 添加更多周期. 现没有被调用.
+	 * @param count
+	 */
 	protected void addCycles(int count) {
 		m_pSoundGen.addCycles(count);
 	}
@@ -809,12 +823,26 @@ public abstract class ChannelHandler extends SequenceHandler {
 	protected byte m_iDutyPeriod;
 
 	/**
-	 * Used by linear slides
+	 * <p>Used by linear slides
+	 * <p>该值在 m_bLinearPitch 启用时有效.
+	 * 它用于记录波长值的更小粒度单位数值, 即波长值的小数点位.
+	 * 值域为 [0, 31], 逢 32 进 1, 进位表现在 m_iPeriod 波长值上.
+	 * 也就是说, m_iPeriodPart 每计算达到 32, 则 m_iPeriod 加一.
+	 * <p>在 m_bLinearPitch 启用时, 在原波长变化时, 并不是直接添加的,
+	 * 而是利用方法 {@link #linearAdd(int)} 和 {@link #linearRemove(int)} 方法
+	 * 更新 m_iPeriodPart 和 m_iPeriod.
+	 * </p>
 	 */
 	protected int m_iPeriodPart;
 
 	protected boolean m_bNewVibratoMode;
 	
+	/**
+	 * <p>是否采用线性波长计算方式. 一般为 false.
+	 * <p>当 m_bLinearPitch = true 时, m_iPeriodPart 将被启用.
+	 * </p>
+	 * @see #m_iPeriodPart
+	 */
 	protected boolean m_bLinearPitch;
 
 	/**

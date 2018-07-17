@@ -452,7 +452,7 @@ public class FamiTrackerDoc {
 
 	public final boolean getLinearPitch() {
 		// TODO
-		return false;
+		return DEFAULT_LINEAR_PITCH;
 	}
 	
 	public void setLinearPitch(boolean enable) {
