@@ -3,6 +3,7 @@ package com.zdream.famitracker.sound.emulation;
 import com.zdream.famitracker.sound.IAudioCallback;
 import com.zdream.famitracker.sound.SampleMem;
 import com.zdream.famitracker.sound.emulation.expansion.External;
+import com.zdream.famitracker.sound.emulation.expansion.MMC5;
 import com.zdream.famitracker.sound.emulation.expansion.VRC6;
 import com.zdream.famitracker.test.FamitrackerLogger;
 
@@ -43,6 +44,7 @@ public class APU {
 		m_pDPCM = new DPCM(m_pMixer, pSampleMem, CHANID_DPCM);
 		
 		m_pVRC6 = new VRC6(m_pMixer);
+		m_pMMC5 = new MMC5(m_pMixer);
 		
 		// TODO 其它的芯片, 自己后面加, 什么 VCR7 啊, FDS 啊...
 	}
@@ -192,6 +194,7 @@ public class APU {
 
 	// Expansion chips
 	VRC6 m_pVRC6;
+	MMC5 m_pMMC5;
 	
 //	CMMC5		*m_pMMC5;
 //	CFDS		*m_pFDS;
@@ -507,8 +510,8 @@ public class APU {
 //			exChips.add(m_pVRC7);
 //		if ((chip & SNDCHIP_FDS) != 0)
 //			exChips.add(m_pFDS);
-//		if ((chip & SNDCHIP_MMC5) != 0)
-//			exChips.add(m_pMMC5);
+		if ((chip & SNDCHIP_MMC5) != 0)
+			exChips.add(m_pMMC5);
 //		if ((chip & SNDCHIP_N163) != 0)
 //			exChips.add(m_pN163);
 //		if ((chip & SNDCHIP_S5B) != 0)

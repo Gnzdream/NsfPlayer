@@ -451,7 +451,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 	 * @param effParam
 	 * @return
 	 */
-	protected boolean checkCommonEffects(byte effCmd, byte effParam) {
+	protected boolean checkCommonEffects(int effCmd, int effParam) {
 		switch (effCmd) {
 			case EF_PORTAMENTO:
 				m_iPortaSpeed = effParam & 0xFF;
@@ -472,7 +472,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 					m_iTremoloPhase = 0;
 				break;
 			case EF_ARPEGGIO:
-				m_iArpeggio = effParam;
+				m_iArpeggio = (byte) effParam;
 				m_iEffect = EF_ARPEGGIO;
 				break;
 			case EF_PITCH:
@@ -487,7 +487,7 @@ public abstract class ChannelHandler extends SequenceHandler {
 				m_iEffect = EF_PORTA_UP;
 				break;
 			case EF_VOLUME_SLIDE:
-				m_iVolSlide = effParam;
+				m_iVolSlide = (byte) effParam;
 				break;
 			case EF_NOTE_CUT:
 				m_iNoteCut = (byte) (effParam + 1);

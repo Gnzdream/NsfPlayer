@@ -81,7 +81,7 @@ public class VRC6 extends External {
 	}
 
 	@Override
-	public boolean isMapped() {
+	public boolean isMapped(int address) {
 		return false;
 	}
 

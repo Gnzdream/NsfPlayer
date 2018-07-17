@@ -2,6 +2,7 @@ package com.zdream.famitracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.zdream.famitracker.components.DocumentFile;
 import com.zdream.famitracker.document.DSample;
@@ -185,6 +186,10 @@ public class FamiTrackerDoc {
 	public final int getChannelIndex(int channel) {
 		// TODO
 		return 0;
+	}
+	
+	public final byte getChannelType(int channel) {
+		return m_iChannelTypes[channel];
 	}
 	
 	public final int getChipType(int channel) {
@@ -1080,7 +1085,34 @@ public class FamiTrackerDoc {
 		
 //		m_bFileLoaded = true;
 //		m_bFileLoadFailed = false;
+		
+		handleFinish();
+		
 		return true;
+	}
+	
+	/**
+	 * 在 {@link FamiTrackerDoc} 生成结束之后要做的最后的事情 TODO
+	 * <p>原来的 C++ 工程没有这个方法
+	 */
+	private void handleFinish() {
+		// m_iChannelTypes
+		Arrays.fill(m_iChannelTypes, (byte) 0);
+		
+		m_iChannelTypes[0] = 0;
+		m_iChannelTypes[1] = 1;
+		m_iChannelTypes[2] = 2;
+		m_iChannelTypes[3] = 3;
+		m_iChannelTypes[4] = 4;
+		
+		int i = 5;
+		if ((m_iExpansionChip & SNDCHIP_VRC6) != 0) {
+			m_iChannelTypes[i++] = 5;
+			m_iChannelTypes[i++] = 6;
+			m_iChannelTypes[i++] = 7;
+		}
+		
+		
 	}
 
 	private boolean openDocumentOld(DocumentFile pOpenFile) {
@@ -2011,7 +2043,7 @@ public class FamiTrackerDoc {
 	// Interface variables
 	//
 
-//	private int[] m_iChannelTypes = new int[CHANNELS];
+	private byte[] m_iChannelTypes = new byte[CHANNELS];
 //	private int[] m_iChannelChip = new int[CHANNELS];
 
 
@@ -2058,7 +2090,6 @@ public class FamiTrackerDoc {
 	/**
 	 * The DPCM sample list
 	 */
-	@SuppressWarnings("unused")
 	private DSample[] m_DSamples = new DSample[MAX_DSAMPLES];
 	
 	private Sequence[][] m_pSequences2A03 = new Sequence[MAX_SEQUENCES][SEQ_COUNT];

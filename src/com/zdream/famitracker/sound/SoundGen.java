@@ -7,6 +7,8 @@ import com.zdream.famitracker.document.Sequence;
 import com.zdream.famitracker.document.StChanNote;
 import com.zdream.famitracker.sound.channels.ChannelHandler;
 import com.zdream.famitracker.sound.channels.DPCMChan;
+import com.zdream.famitracker.sound.channels.MMC5Square1Chan;
+import com.zdream.famitracker.sound.channels.MMC5Square2Chan;
 import com.zdream.famitracker.sound.channels.NoiseChan;
 import com.zdream.famitracker.sound.channels.Square1Chan;
 import com.zdream.famitracker.sound.channels.Square2Chan;
@@ -324,6 +326,10 @@ public class SoundGen implements IAudioCallback {
 		assignChannel(new TrackerChannel("Pulse 2", SNDCHIP_VRC6, CHANID_VRC6_PULSE2), new VRC6Square2());
 		assignChannel(new TrackerChannel("Sawtooth", SNDCHIP_VRC6, CHANID_VRC6_SAWTOOTH), new VRC6Sawtooth());
 		
+		// Nintendo MMC5
+		assignChannel(new TrackerChannel("Pulse 1", SNDCHIP_MMC5, CHANID_MMC5_SQUARE1), new MMC5Square1Chan());
+		assignChannel(new TrackerChannel("Pulse 2", SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new MMC5Square2Chan());
+		
 		// TODO 其它芯片的暂时不管
 		
 	}
@@ -476,8 +482,8 @@ public class SoundGen implements IAudioCallback {
 		m_pAPU.write(0x4015, (byte) 0x0F);
 		m_pAPU.write(0x4017, (byte) 0x00);
 
-		// TODO MMC5
-//		m_pAPU->ExternalWrite(0x5015, 0x03);
+		// MMC5
+		m_pAPU.externalWrite(0x5015, (byte) 0x03);
 
 		m_pSampleMem.clear();
 	}
@@ -948,7 +954,7 @@ public class SoundGen implements IAudioCallback {
 
 		// Read notes
 		for (int i = 0; i < channels; ++i) {
-			byte channel = this.m_pTrackerChannels[i].m_iChannelID;
+			byte channel = m_pDocument.getChannelType(i);
 			
 			// Run auto-arpeggio, if enabled
 //			int arpeggio = m_pTrackerView->GetAutoArpeggio(i);
@@ -1242,22 +1248,28 @@ public class SoundGen implements IAudioCallback {
 		m_pChannels[CHANID_SQUARE1].setNoteTable(m_pNoteLookupTable);
 		m_pChannels[CHANID_SQUARE2].setNoteTable(m_pNoteLookupTable);
 		m_pChannels[CHANID_TRIANGLE].setNoteTable(m_pNoteLookupTable);
-		
-//		省略 MMC5
-		
+
+		// VRC6
 		m_pChannels[CHANID_VRC6_PULSE1].setNoteTable(m_iNoteLookupTableNTSC);
 		m_pChannels[CHANID_VRC6_PULSE2].setNoteTable(m_iNoteLookupTableNTSC);
 		m_pChannels[CHANID_VRC6_SAWTOOTH].setNoteTable(m_iNoteLookupTableSaw);
+		
+		// MMC5
+		m_pChannels[CHANID_MMC5_SQUARE1].setNoteTable(m_iNoteLookupTableNTSC);
+		m_pChannels[CHANID_MMC5_SQUARE2].setNoteTable(m_iNoteLookupTableNTSC);
 		
 //		省略 FDS N163
 		
 	}
 	
-	void setUpChip() {
+	private void setUpChip() {
 		m_pAPU.setExternalSound(m_pDocument.getExpansionChip());
 		
 		m_pAPU.write(0x4015, (byte) 0x0F);
 		m_pAPU.write(0x4017, (byte) 0x00);
+		
+		// MMC5
+		m_pAPU.externalWrite(0x5015, (byte) 0x03);
 	}
 	
 }

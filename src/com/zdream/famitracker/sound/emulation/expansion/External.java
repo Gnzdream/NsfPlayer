@@ -14,7 +14,7 @@ public abstract class External {
 
 	public abstract void write(int address, int value);
 	public abstract int read(int address);
-	public abstract boolean isMapped();
+	public abstract boolean isMapped(int address);
 
 	protected Mixer m_pMixer;
 
