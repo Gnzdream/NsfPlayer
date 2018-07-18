@@ -1045,7 +1045,7 @@ public class SoundGen implements IAudioCallback {
 		for (int i = 0; i < Channels; ++i) {
 			StChanNote NoteData = playerGetNote(m_iPlayTrack, m_iPlayFrame, i, m_iPlayRow);
 			if (NoteData != null)
-				queueNote(i, NoteData, TrackerChannel.NOTE_PRIO_1);
+				queueNote(m_pDocument.getChannelType(i), NoteData, TrackerChannel.NOTE_PRIO_1);
 		}
 	}
 
@@ -1090,7 +1090,13 @@ public class SoundGen implements IAudioCallback {
 		return note;
 	}
 	
-	private void queueNote(int channel, StChanNote note, int prior) {
+	/**
+	 * @param channel
+	 *   轨道号, 而非轨道序号
+	 * @param note
+	 * @param prior
+	 */
+	private void queueNote(byte channel, StChanNote note, int prior) {
 		// Queue a note for play
 		TrackerChannel ch = this.m_pTrackerChannels[channel];
 		if (ch == null) {

@@ -1111,8 +1111,12 @@ public class FamiTrackerDoc {
 			m_iChannelTypes[i++] = 6;
 			m_iChannelTypes[i++] = 7;
 		}
+		if ((m_iExpansionChip & SNDCHIP_MMC5) != 0) {
+			m_iChannelTypes[i++] = 8;
+			m_iChannelTypes[i++] = 9;
+		}
 		
-		
+		// TODO 其它芯片
 	}
 
 	private boolean openDocumentOld(DocumentFile pOpenFile) {

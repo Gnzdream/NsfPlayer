@@ -27,11 +27,12 @@ public class Mixer {
 		synth2A03SS = new BlipSynth(12, -500);
 		synth2A03TND = new BlipSynth(12, -500);
 		synthVRC6 = new BlipSynth(12, -500);
+		synthMMC5 = new BlipSynth(12, -130);
 
 		m_fLevelAPU1 = 1.0f;
 		m_fLevelAPU2 = 1.0f;
 		m_fLevelVRC6 = 1.0f;
-//		m_fLevelMMC5 = 1.0f;
+		m_fLevelMMC5 = 1.0f;
 //		m_fLevelFDS = 1.0f;
 //		m_fLevelN163 = 1.0f;
 		
@@ -52,7 +53,8 @@ public class Mixer {
 	 * @param frameCycles
 	 */
 	public void addValue(int chanID, int chip, int value, int absValue, int frameCycles) {
-		// storeChannelLevel(chanID, absValue);
+		int delta = value - m_iChannels[chanID];
+		storeChannelLevel(chanID, absValue);
 		m_iChannels[chanID] = value;
 
 		switch (chip) {
@@ -76,7 +78,6 @@ public class Mixer {
 				mixFDS(value, frameCycles);
 				break;
 			case SNDCHIP_MMC5: {
-				int delta = value - m_iChannels[chanID];
 				mixMMC5(delta, frameCycles);
 			} break;
 			case SNDCHIP_VRC6:
@@ -96,7 +97,7 @@ public class Mixer {
 		synth2A03SS.treble_eq(eq);
 		synth2A03TND.treble_eq(eq);
 		synthVRC6.treble_eq(eq);
-//		SynthMMC5.treble_eq(eq);
+		synthMMC5.treble_eq(eq);
 //		SynthS5B.treble_eq(eq);
 
 		// N163 special filtering
@@ -124,7 +125,7 @@ public class Mixer {
 		synthVRC6.volume(volume * 3.98333f * m_fLevelVRC6);
 		
 //		SynthFDS.volume(Volume * 1.00f * m_fLevelFDS);
-//		SynthMMC5.volume(Volume * 1.18421f * m_fLevelMMC5);
+		synthMMC5.volume(volume * 1.18421f * m_fLevelMMC5);
 		
 		// Not checked
 //		SynthN163.volume(Volume * 1.1f * m_fLevelN163);
@@ -213,9 +214,9 @@ public class Mixer {
 		case CHIP_LEVEL_VRC6:
 			m_fLevelVRC6 = level;
 			break;
-//		case CHIP_LEVEL_MMC5:
-//			m_fLevelMMC5 = level;
-//			break;
+		case CHIP_LEVEL_MMC5:
+			m_fLevelMMC5 = level;
+			break;
 //		case CHIP_LEVEL_FDS:
 //			m_fLevelFDS = level;
 //			break;
@@ -287,7 +288,7 @@ public class Mixer {
 	}
 	
 	private void mixMMC5(int value, int time) {
-//		SynthMMC5.offset(Time, Value, &BlipBuffer);	
+		synthMMC5.offset(time, value, blipBuffer);	
 	}
 	
 	@SuppressWarnings("unused")
@@ -295,7 +296,7 @@ public class Mixer {
 //		SynthS5B.offset(Time, Value, &BlipBuffer);
 	}
 
-	/*private void storeChannelLevel(int channel, int value) {
+	private void storeChannelLevel(int channel, int value) {
 		int absVol = Math.abs(value);
 
 		// Adjust channel levels for some channels
@@ -327,19 +328,19 @@ public class Mixer {
 		}
 	}
 	
-	private void clearChannelLevels() {
+	/*private void clearChannelLevels() {
 		Arrays.fill(m_fChannelLevels, 0);
 		Arrays.fill(m_iChanLevelFallOff, 0);
 	}*/
 
 	/**
-	 * TODO 暂时不做 VCR6 以外的部分
+	 * TODO 暂时不做 VCR6, MMC5 以外的部分
 	 */
 	final float getAttenuation()  {
 		final float ATTENUATION_VRC6 = 0.80f;
 //		const float ATTENUATION_VRC7 = 0.64f;
 //		const float ATTENUATION_N163 = 0.70f;
-//		const float ATTENUATION_MMC5 = 0.83f;
+		final float ATTENUATION_MMC5 = 0.83f;
 //		const float ATTENUATION_FDS  = 0.90f;
 
 		float attenuation = 1.0f;
@@ -355,8 +356,8 @@ public class Mixer {
 		if ((m_iExternalChip & SNDCHIP_VRC6) != 0)
 			attenuation *= ATTENUATION_VRC6;
 
-//		if (m_iExternalChip & SNDCHIP_MMC5)
-//			Attenuation *= ATTENUATION_MMC5;
+		if ((m_iExternalChip & SNDCHIP_MMC5) != 0)
+			attenuation *= ATTENUATION_MMC5;
 //
 //		if (m_iExternalChip & SNDCHIP_FDS)
 //			Attenuation *= ATTENUATION_FDS;
@@ -368,7 +369,7 @@ public class Mixer {
 	BlipSynth synth2A03SS;
 	BlipSynth synth2A03TND;
 	BlipSynth synthVRC6;
-//	Blip_Synth<blip_good_quality, -130>		SynthMMC5;	
+	BlipSynth synthMMC5; //	Blip_Synth<blip_good_quality, -130> SynthMMC5;	
 //	Blip_Synth<blip_good_quality, -1600>	SynthN163;
 //	Blip_Synth<blip_good_quality, -3500>	SynthFDS;
 //	Blip_Synth<blip_good_quality, -2000>	SynthS5B;
@@ -404,7 +405,7 @@ public class Mixer {
 	private float m_fLevelAPU1;
 	private float m_fLevelAPU2;
 	private float m_fLevelVRC6;
-//	private float m_fLevelMMC5;
+	private float m_fLevelMMC5;
 //	private float m_fLevelFDS;
 //	private float m_fLevelN163;
 

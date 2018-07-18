@@ -91,7 +91,16 @@ public class Square extends Channel {
 			m_iTime		+= m_iCounter;
 			m_iCounter	 = m_iPeriod + 1;
 			int volume = m_iEnvelopeFix ? m_iFixedVolume : m_iEnvelopeVolume;
-			mix (valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0 ? volume : 0);
+			
+			// mix (valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0 ? volume : 0);
+			if (valid) {
+				if (DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0) {
+					mix(volume);
+				} else {
+					mix(0);
+				}
+			}
+			
 			m_iDutyCycle = (m_iDutyCycle + 1) & 0x0F;
 		}
 
