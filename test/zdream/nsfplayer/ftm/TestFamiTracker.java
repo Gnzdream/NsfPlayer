@@ -9,11 +9,11 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 public class TestFamiTracker {
 
 	public static void main(String[] args) throws Exception {
-		FtmAudio audio = testReadFtmText();
+		FtmAudio audio = testReadFtm();
 		
 		// 播放部分
 		FamiTrackerRenderer renderer = new FamiTrackerRenderer();
-		renderer.ready(audio);
+		renderer.ready(audio, 32);
 		
 		BytesPlayer player = new BytesPlayer();
 		byte[] bs = new byte[2400];
@@ -25,12 +25,12 @@ public class TestFamiTracker {
 	}
 	
 	public static FtmAudio testReadFtm() throws Exception {
-		FtmAudio audio = FamiTrackerApplication.app.open(
-//				"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\22_Of_Devious_Machinations_Clockwork_Tower.ftm"
-				"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
-//				"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\51_Unused_Song.ftm"
-		);
-		System.out.println("完成");
+		String path =
+				"src\\assets\\test\\mm10nsf.ftm"
+				;
+		
+		FtmAudio audio = FamiTrackerApplication.app.open(path);
+		System.out.println(path + " 完成");
 		System.out.println(audio);
 		return audio;
 	}

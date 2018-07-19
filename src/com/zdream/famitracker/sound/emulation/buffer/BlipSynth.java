@@ -10,6 +10,11 @@ import static com.zdream.famitracker.sound.emulation.buffer.BufferContext.*;
  */
 public class BlipSynth {
 	
+	/**
+	 * @param quality
+	 * @param range
+	 *   范围指定振幅的最大预期变化
+	 */
 	public BlipSynth(int quality, int range) {
 		this.quality = quality;
 		this.range = range;
@@ -22,14 +27,14 @@ public class BlipSynth {
 	 * <p>Set overall volume of waveform
 	 * @param v
 	 */
-	public void volume( double v ) { impl.volume_unit( v * (1.0 / (range < 0 ? -range : range)) ); }
+	public void volume( double v ) { impl.volumeUnit( v * (1.0 / (range < 0 ? -range : range)) ); }
 	
 	/**
 	 * <p>设置低通过滤器
 	 * <p>Configure low-pass filter
 	 */
-	public void treble_eq(final BlipEQ eq) {
-		impl.treble_eq(eq);
+	public void trebleEq(final BlipEQ eq) {
+		impl.trebleEq(eq);
 	}
 	
 	/**
@@ -62,7 +67,7 @@ public class BlipSynth {
 	public void update( int time, int amplitude ) {
 		int delta = amplitude - impl.last_amp;
 		impl.last_amp = amplitude;
-		offset_resampled( time * impl.buf.factor_ + impl.buf.offset_, delta, impl.buf );
+		offsetResampled( time * impl.buf.factor_ + impl.buf.offset_, delta, impl.buf );
 	}
 
 // Low-level interface
@@ -76,16 +81,22 @@ public class BlipSynth {
 	 * @param time
 	 *   时间点
 	 * @param delta
-	 *   可正可负
+	 *   该帧与上一帧的变化量, 可正可负
 	 * @param buf
 	 */
 	public final void offset( int time, int delta, BlipBuffer buf ) {
-		offset_resampled( time * buf.factor_ + buf.offset_, delta, buf );
+		offsetResampled( time * buf.factor_ + buf.offset_, delta, buf );
 	}
 	
-	public final void offset(int t, int delta) {
+	/*public final void offset(int t, int delta) {
 		offset(t, delta, impl.buf);
-	}
+	}*/
+	
+	/*
+	 * public final void offset_inline( int t, int delta, BlipBuffer buf )
+	 * public final void offset_inline( int t, int delta )
+	 * 仅仅为了用 inline 的写法来提高运行效率. 实际上并没有使用
+	 */
 	
 	/**
 	 * <p>直接使用分数输出样本。
@@ -95,7 +106,7 @@ public class BlipSynth {
 	 * @param delta
 	 * @param buf
 	 */
-	public final void offset_resampled( int time, int delta, BlipBuffer buf ) {
+	private final void offsetResampled( int time, int delta, BlipBuffer buf ) {
 		// Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
 		// need for a longer buffer as set by set_sample_rate().
 		assert( (long) (time >> 16) < buf.buffer_size_ );
@@ -172,19 +183,10 @@ public class BlipSynth {
 		buf.buffer_ [bufptr + rev + 1] = t1;
 	}
 	
-	// Same as offset(), except code is inlined for higher performance
-	public final void offset_inline( int t, int delta, BlipBuffer buf ) {
-		offset_resampled( t * buf.factor_ + buf.offset_, delta, buf );
-	}
-	public final void offset_inline( int t, int delta ) {
-		offset_resampled( t * impl.buf.factor_ + impl.buf.offset_, delta, impl.buf );
-	}
-	
 	public final int quality, range;
 		
 	// typedef short imp_t;
 	private short[] impulses;
 	private BlipSynth_ impl;
-	
 
 }

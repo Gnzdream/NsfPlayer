@@ -945,6 +945,11 @@ public class SoundGen implements IAudioCallback {
 				m_bUpdateRow = false;
 			}
 		}
+
+		// TODO 测试使用
+		if (m_iPlayRow == 7) {
+			m_iPlayRow += 0;
+		}
 		
 	}
 
@@ -1015,7 +1020,7 @@ public class SoundGen implements IAudioCallback {
 	 * Write to APU registers
 	 */
 	private void updateAPU() {
-		final int CHANNEL_DELAY = 250;
+		// final int CHANNEL_DELAY = 250;
 
 		m_iConsumedCycles = 0;
 
@@ -1029,8 +1034,8 @@ public class SoundGen implements IAudioCallback {
 				m_pChannels[i].refreshChannel();
 				m_pAPU.process();
 				// Add some delay between each channel update
-				if (m_iFrameRate == APU.FRAME_RATE_NTSC || m_iFrameRate == APU.FRAME_RATE_PAL)
-					addCycles(CHANNEL_DELAY);
+				/*if (m_iFrameRate == APU.FRAME_RATE_NTSC || m_iFrameRate == APU.FRAME_RATE_PAL)
+					addCycles(CHANNEL_DELAY);*/
 			}
 		}
 

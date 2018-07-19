@@ -35,7 +35,7 @@ public class BlipReader {
 	 * <p>Current raw sample in full internal resolution
 	 * @return
 	 */
-	public final long read_raw() {
+	public final long readRaw() {
 		return accum;
 	}
 	
