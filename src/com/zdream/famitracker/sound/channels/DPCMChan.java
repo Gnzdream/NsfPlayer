@@ -159,7 +159,7 @@ public final class DPCMChan extends ChannelHandler2A03 {
 				byte delta = pInstrument.getSampleDeltaValue(octave, note - 1);
 				
 				if (delta != 255 && m_cDAC == 255)
-					m_cDAC = delta;
+					m_cDAC = delta & 0xFF;
 
 				m_iRetriggerCntr = m_iRetrigger;
 			}
@@ -187,12 +187,18 @@ public final class DPCMChan extends ChannelHandler2A03 {
 	/**
 	 * 范围 0 - 255
 	 */
+	
+	/*
+	 * 6 个 unsigned
+	 */
+	
 	private int m_cDAC = 255;
 	private int m_iLoop;
 	private int m_iOffset;
 	private int m_iSampleLength;
 	private int m_iLoopOffset;
 	private int m_iLoopLength;
+	
 	private int m_iRetrigger;
 	private int m_iRetriggerCntr;
 	private int m_iCustomPitch;

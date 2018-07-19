@@ -20,7 +20,7 @@ public class BufferContext {
 	
 	static final int blip_res = 64;
 	
-	static void gen_sinc( float[] out, int offset, int count, double oversample, double treble, double cutoff ) {
+	static void genSinc( float[] out, int offset, int count, double oversample, double treble, double cutoff ) {
 		if ( cutoff >= 0.999 )
 			cutoff = 0.999;
 		

@@ -12,19 +12,27 @@ import java.util.Arrays;
 public class BlipBuffer {
 	
 	/**
+	 * @see #setSampleRate(int, int)
+	 */
+	public void setSampleRate(int new_rate) {
+		setSampleRate(new_rate, 250);
+	}
+	
+	/**
 	 * <p>将输出采样速率和缓冲区长度 (需要换算成毫秒数, 默认为 1/4 秒, 即 250 毫秒), 然后清除缓冲区.<br>
 	 * 如果成功返回 null, 如果内存不足, 抛出错误, 但不影响当前缓冲设置。
 	 * <p>Set output sample rate and buffer length in milliseconds (1/1000 sec, defaults
 	 * to 1/4 second), then clear buffer.<br>
 	 * If there isn't enough memory, throw error without affecting current buffer setup.
+	 * <p>原工程中同方法 sampleRate(1, 2)
 	 * @param new_rate
 	 *   输出的采样速率, 每秒多少个采样点
 	 * @param msec
 	 *   缓冲区长度, 以毫秒为单位, 调用的默认值是 1000 / 4 = 250
-	 * @throws RuntimeException
-	 *   内存不足时
+	 * @throws IllegalStateException
+	 *   要求的缓冲区长度已经超过最大限度, 可能是内存不足
 	 */
-	public void setSampleRate(int new_rate, int msec) throws RuntimeException {
+	public void setSampleRate(int new_rate, int msec) throws IllegalStateException {
 		// 原本是 (0xFFFFFFFFUL >> 16) - buffer_extra - 64;
 		int new_size = 65535 - buffer_extra - 64;
 		if ( msec != blip_max_length ) {
@@ -32,7 +40,7 @@ public class BlipBuffer {
 			if ( s < new_size )
 				new_size = s;
 			else
-				throw new RuntimeException("要求的缓冲区长度已经超过最大限度");
+				throw new IllegalStateException("要求的缓冲区长度已经超过最大限度");
 		}
 		
 		if ( buffer_size_ != new_size ) {
@@ -67,17 +75,22 @@ public class BlipBuffer {
 	
 	/**
 	 * <p>根据特定的持续时间, 结束当前时间帧,
-	 * 使采样数据能够在调用 {@link #read_samples()} 方法时能够获取到（连同任何还未读的采样）.
+	 * 使采样数据能够在调用 {@link #readSamples()} 方法时能够获取到（连同任何还未读的采样）.
 	 * 在当前帧的结尾处开始一个新的帧。
 	 * <p>End current time frame of specified duration and make its samples available
 	 * (along with any still-unread samples) for reading with read_samples(). Begins
 	 * a new time frame at the end of the current frame.
 	 * @param time
 	 *   所指定的持续时间, 单位 TODO
+	 * @throws IllegalStateException
+	 *   当采样数据的数量将超过缓冲区长度, 即计算的 {@link #offset_} 将超出 {@link #buffer_size_}
 	 */
 	public void endFrame(int time) {
 		offset_ += time * factor_;
-		assert(samplesAvail() <= buffer_size_); // time outside buffer length
+		 // time outside buffer length
+		if (samplesAvail() > buffer_size_) {
+			throw new IllegalStateException("采样数据的数量将超过缓冲区长度");
+		}
 	}
 	
 	/**
@@ -164,14 +177,10 @@ public class BlipBuffer {
 	public final int sampleRate() {
 		return sample_rate_;
 	}
-	
-	public void sampleRate(int r) {
-		setSampleRate(r, 250);
-	}
 
-	public void sampleRate(int r, int msec) {
+	/*public void sampleRate(int r, int msec) {
 		setSampleRate(r, msec);
-	}
+	}*/
 	
 	/**
 	 * <p>Buffer 的长度, 以毫秒为单位
@@ -212,7 +221,7 @@ public class BlipBuffer {
 	 * <p>Number of samples delay from synthesis to samples read out
 	 * @return
 	 */
-	public int output_latency() {
+	public int outputLatency() {
 		return blip_widest_impulse_ / 2;
 	}
 	
@@ -303,8 +312,11 @@ public class BlipBuffer {
 	}
 	
 	// not documented yet
-	public void removeSilence( int count ) {
-		assert( count <= samplesAvail() ); // tried to remove more samples than available
+	public void removeSilence( int count ) throws IllegalArgumentException {
+		if (count > samplesAvail()) {
+			// tried to remove more samples than available
+			throw new IllegalArgumentException("count > samplesAvail");
+		}
 		offset_ -= count << 16;
 	}
 	

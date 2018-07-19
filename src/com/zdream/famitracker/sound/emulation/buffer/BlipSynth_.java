@@ -8,11 +8,11 @@ public class BlipSynth_ {
 	final short[] impulses;
 	final int width;
 	long kernel_unit;
-	int impulses_size() { return blip_res / 2 * width + 1; }
+	int impulsesSize() { return blip_res / 2 * width + 1; }
 	
-	void adjust_impulse() {
+	void adjustImpulse() {
 		// sum pairs for each phase and add error correction to end of first half
-		final int size = impulses_size();
+		final int size = impulsesSize();
 		for (int p = blip_res; p-- >= blip_res / 2;) {
 			int p2 = blip_res - 2 - p;
 			long error = kernel_unit;
@@ -36,7 +36,7 @@ public class BlipSynth_ {
 		this.width = width;
 	}
 	
-	public void treble_eq(final BlipEQ eq) {
+	public void trebleEq(final BlipEQ eq) {
 		float[] fimpulse = new float[blip_res / 2 * (blip_widest_impulse_ - 1) + blip_res * 2];
 
 		final int half_size = blip_res / 2 * (width - 1);
@@ -66,27 +66,27 @@ public class BlipSynth_ {
 		// integrate, first difference, rescale, convert to int
 		double sum = 0.0;
 		double next = 0.0;
-		final int impulses_size = this.impulses_size();
+		final int impulses_size = this.impulsesSize();
 		for (i = 0; i < impulses_size; i++) {
 			impulses[i] = (short) Math.floor((next - sum) * rescale + 0.5);
 			sum += fimpulse[i];
 			next += fimpulse[i + blip_res];
 		}
-		adjust_impulse();
+		adjustImpulse();
 
 		// volume might require rescaling
 		double vol = volume_unit_;
 		if (vol != 0) {
 			volume_unit_ = 0.0;
-			volume_unit(vol);
+			volumeUnit(vol);
 		}
 	}
 	
-	public void volume_unit(double new_unit) {
+	public void volumeUnit(double new_unit) {
 		if (new_unit != volume_unit_) {
 			// use default eq if it hasn't been set yet
 			if (kernel_unit == 0)
-				treble_eq(new BlipEQ(-8.0));
+				trebleEq(new BlipEQ(-8.0));
 
 			volume_unit_ = new_unit;
 			double factor = new_unit * (1L << blip_sample_bits) / kernel_unit;
@@ -108,9 +108,9 @@ public class BlipSynth_ {
 					// right shift for negative values
 					long offset = 0x8000 + (1 << (shift - 1));
 					long offset2 = 0x8000 >> shift;
-					for (int i = impulses_size(); i-- > 0;)
+					for (int i = impulsesSize(); i-- > 0;)
 						impulses[i] = (short) (((impulses[i] + offset) >> shift) - offset2);
-					adjust_impulse();
+					adjustImpulse();
 				}
 			}
 			delta_factor = (int) Math.floor(factor + 0.5);

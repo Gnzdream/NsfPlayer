@@ -45,7 +45,7 @@ public class BlipEQ {
 			oversample = half_rate / cutoff_freq;
 		double cutoff = rolloff_freq * oversample / half_rate;
 
-		gen_sinc(out, offset, count, blip_res * oversample, treble, cutoff);
+		genSinc(out, offset, count, blip_res * oversample, treble, cutoff);
 
 		// apply (half of) hamming window
 		double to_fraction = Math.PI / (count - 1);

@@ -25,10 +25,15 @@ public class TestFamiTracker {
 	}
 	
 	public static FtmAudio testReadFtm() throws Exception {
+<<<<<<< HEAD
 		String path = 
 //				"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\22_Of_Devious_Machinations_Clockwork_Tower.ftm"
 				"D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman10\\mm10nsf.ftm"
 //				"D:\\Program\\Rockman\\FamiTracker\\Project\\Shovel Knight\\51_Unused_Song.ftm"
+=======
+		String path =
+				"src\\assets\\test\\mm10nsf.ftm"
+>>>>>>> origin/fami
 				;
 		
 		FtmAudio audio = FamiTrackerApplication.app.open(path);

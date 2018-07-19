@@ -94,10 +94,10 @@ public class Mixer {
 
 		BlipEQ eq = new BlipEQ(-highDamp, highCut, m_iSampleRate, 0);
 
-		synth2A03SS.treble_eq(eq);
-		synth2A03TND.treble_eq(eq);
-		synthVRC6.treble_eq(eq);
-		synthMMC5.treble_eq(eq);
+		synth2A03SS.trebleEq(eq);
+		synth2A03TND.trebleEq(eq);
+		synthVRC6.trebleEq(eq);
+		synthMMC5.trebleEq(eq);
 //		SynthS5B.treble_eq(eq);
 
 		// N163 special filtering
@@ -139,7 +139,7 @@ public class Mixer {
 
 	public void allocateBuffer(int size, int sampleRate, byte nrChannels) {
 		m_iSampleRate = sampleRate;
-		blipBuffer.sampleRate(sampleRate, (size * 1000 * 2) / sampleRate);
+		blipBuffer.setSampleRate(sampleRate, (size * 1000 * 2) / sampleRate);
 	}
 	
 	public void setClockRate(int rate) {
@@ -334,7 +334,8 @@ public class Mixer {
 	}*/
 
 	/**
-	 * TODO 暂时不做 VCR6, MMC5 以外的部分
+	 * <p>轨道变多之后, 总音量会降低, 但是各轨道音量比值不会发生变化.
+	 * <p>TODO 暂时不做 VCR6, MMC5 以外的部分
 	 */
 	final float getAttenuation()  {
 		final float ATTENUATION_VRC6 = 0.80f;
@@ -366,10 +367,10 @@ public class Mixer {
 	}
 
 	// Blip buffer synths
-	BlipSynth synth2A03SS;
-	BlipSynth synth2A03TND;
-	BlipSynth synthVRC6;
-	BlipSynth synthMMC5; //	Blip_Synth<blip_good_quality, -130> SynthMMC5;	
+	private BlipSynth synth2A03SS;
+	private BlipSynth synth2A03TND;
+	private BlipSynth synthVRC6;
+	private BlipSynth synthMMC5; //	Blip_Synth<blip_good_quality, -130> SynthMMC5;	
 //	Blip_Synth<blip_good_quality, -1600>	SynthN163;
 //	Blip_Synth<blip_good_quality, -3500>	SynthFDS;
 //	Blip_Synth<blip_good_quality, -2000>	SynthS5B;

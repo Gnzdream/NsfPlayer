@@ -90,8 +90,9 @@ public class DPCM extends Channel {
 			// Check if a new byte should be fetched
 			if (!m_bSampleFilled && (m_iDMA_BytesRemaining > 0)) {
 
-				m_iSampleBuffer = m_pSampleMem.read(m_iDMA_Address | 0x8000);
-				m_iDMA_Address = (m_iDMA_Address + 1) & 0x7FFF;
+				m_iSampleBuffer = m_pSampleMem.read(m_iDMA_Address | 0x8000)
+					& 0xFF; // 转成非负整数
+				m_iDMA_Address = (m_iDMA_Address + 1) & 0xFFFF; // 转成非负整数
 				--m_iDMA_BytesRemaining;
 				m_bSampleFilled = true;
 
@@ -173,6 +174,10 @@ public class DPCM extends Channel {
 	public boolean isPlaying() {
 		return (m_iDMA_BytesRemaining > 0);
 	};
+
+	/*
+	 * 下面的 9 类数据全是 unsigned
+	 */
 
 	private int m_iBitDivider;
 	private int m_iShiftReg;
