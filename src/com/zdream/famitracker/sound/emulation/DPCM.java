@@ -59,8 +59,8 @@ public class DPCM extends Channel {
 		}
 	}
 	
-	public void writeControl(int Value) {
-		if ((Value & 1) == 1) {
+	public void writeControl(int value) {
+		if ((value & 1) == 1) {
 			if (m_iDMA_BytesRemaining == 0)
 				reload();
 		} else {
@@ -70,11 +70,13 @@ public class DPCM extends Channel {
 		m_bTriggeredIRQ = false;
 	}
 	
-	public final int readControl() {
+	@SuppressWarnings("unused")
+	private final int readControl() {
 		return (m_iDMA_BytesRemaining > 0) ? 1 : 0;
 	}
 	
-	public final int didIRQ() {
+	@SuppressWarnings("unused")
+	private final int didIRQ() {
 		return m_bTriggeredIRQ ? 1 : 0;
 	}
 	
@@ -89,7 +91,6 @@ public class DPCM extends Channel {
 			if (!m_bSampleFilled && (m_iDMA_BytesRemaining > 0)) {
 
 				m_iSampleBuffer = m_pSampleMem.read(m_iDMA_Address | 0x8000);
-//				m_pEmulator->ConsumeCycles(4);
 				m_iDMA_Address = (m_iDMA_Address + 1) & 0x7FFF;
 				--m_iDMA_BytesRemaining;
 				m_bSampleFilled = true;
@@ -144,37 +145,49 @@ public class DPCM extends Channel {
 		m_iTime += time;
 	}
 	
-	public void reload() {
+	private void reload() {
 		m_iDMA_Address = (m_iDMA_LoadReg << 6) | 0x4000;
 	    m_iDMA_BytesRemaining = (m_iDMA_LengthReg << 4) + 1;
 	}
 
+	/**
+	 * 未调用
+	 * @return
+	 */
 	public final int getSamplePos() {
 		return (m_iDMA_Address - (m_iDMA_LoadReg << 6 | 0x4000)) >> 6;
 	};
 
+	/**
+	 * 未调用
+	 * @return
+	 */
 	public final int getDeltaCounter() {
 		return m_iDeltaCounter;
 	};
 
+	/**
+	 * 未调用
+	 * @return
+	 */
 	public boolean isPlaying() {
 		return (m_iDMA_BytesRemaining > 0);
 	};
 
-	int m_iBitDivider;
-	int m_iShiftReg;
-	int m_iPlayMode;
-	int m_iDeltaCounter;
-	int m_iSampleBuffer;
+	private int m_iBitDivider;
+	private int m_iShiftReg;
+	private int m_iPlayMode;
+	private int m_iDeltaCounter;
+	private int m_iSampleBuffer;
 
-	int m_iDMA_LoadReg;
-	int m_iDMA_LengthReg;
-	int m_iDMA_Address;
-	int m_iDMA_BytesRemaining;
+	private int m_iDMA_LoadReg;
+	private int m_iDMA_LengthReg;
+	private int m_iDMA_Address;
+	private int m_iDMA_BytesRemaining;
 
-	boolean m_bTriggeredIRQ, m_bSampleFilled, m_bSilenceFlag;
+	private boolean m_bTriggeredIRQ, m_bSampleFilled, m_bSilenceFlag;
 
 	// Needed by FamiTracker 
-	SampleMem m_pSampleMem;
+	private SampleMem m_pSampleMem;
 
 }

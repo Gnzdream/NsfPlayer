@@ -12,7 +12,7 @@ public class FamitrackerLogger {
 	public static FamitrackerLogger instance = new FamitrackerLogger();
 	
 	boolean muteToDo = true;
-	boolean muteNote = false;
+	boolean muteNote = true;
 	boolean muteWriteAddress = true;
 	
 	HashSet<String> muteAddressSet = new HashSet<>();
@@ -54,8 +54,8 @@ public class FamitrackerLogger {
 		if (muteNote)
 			return;
 		
-		if (channel != 3)
-			return;
+//		if (channel != 3)
+//			return;
 		
 		StringBuilder b = new StringBuilder();
 		b.append("note").append(':').append('[').append(channel).append(']').append(' ');
