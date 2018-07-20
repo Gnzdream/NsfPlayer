@@ -34,7 +34,7 @@ public class InstrumentEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).instrument = inst;
+		runtime.channels.get(channelCode).setInstrument(inst);
 	}
 	
 	@Override

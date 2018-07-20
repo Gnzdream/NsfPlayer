@@ -8,12 +8,12 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
  * @author Zdream
  * @since 0.2.1
  */
-public class VolumnEffect implements IFtmEffect {
+public class VolumeEffect implements IFtmEffect {
 	
-	public final int volumn;
+	public final int volume;
 
-	private VolumnEffect(int volumn) {
-		this.volumn = volumn;
+	private VolumeEffect(int volume) {
+		this.volume = volume;
 	}
 
 	@Override
@@ -23,28 +23,28 @@ public class VolumnEffect implements IFtmEffect {
 	
 	/**
 	 * 形成一个修改音量的效果
-	 * @param volumn
+	 * @param volume
 	 *   音量值. 音量值必须在 [0, 15] 范围内
 	 * @return
 	 *   效果实例
 	 * @throws IllegalArgumentException
 	 *   当音量值 <code>volumn</code> 不在指定范围内时
 	 */
-	public static VolumnEffect of(int volumn) throws IllegalArgumentException {
-		if (volumn > 15 || volumn < 0) {
+	public static VolumeEffect of(int volume) throws IllegalArgumentException {
+		if (volume > 15 || volume < 0) {
 			throw new IllegalArgumentException("音量必须是 0 - 15 之间的整数数值");
 		}
-		return new VolumnEffect(volumn);
+		return new VolumeEffect(volume);
 	}
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).masterVolume = volumn;
+		runtime.channels.get(channelCode).setMasterVolume(volume);
 	}
 	
 	@Override
 	public String toString() {
-		return "Vol:" + Integer.toHexString(volumn);
+		return "Vol:" + Integer.toHexString(volume);
 	}
 
 }

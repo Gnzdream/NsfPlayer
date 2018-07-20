@@ -40,7 +40,7 @@ public class DutyEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).masterDuty = duty;
+		runtime.channels.get(channelCode).setMasterDuty(duty);
 	}
 	
 	@Override

@@ -79,8 +79,11 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	
 	/**
 	 * 音键, 含音符和音高
+	 * <p>curNote: 当前音键
+	 * <p>masterNote: 主音键
+	 * </p>
 	 */
-	public int note;
+	public int curNote, masterNote;
 	
 	/**
 	 * <p>音量
@@ -125,18 +128,10 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 
 	/**
 	 * @return
-	 *   {@link #note}
+	 *   {@link #curNote}
 	 */
-	public int getNote() {
-		return note;
-	}
-
-	/**
-	 * @param note
-	 *   {@link #note}
-	 */
-	public void setNote(int note) {
-		this.note = note;
+	public int getCurrentNote() {
+		return curNote;
 	}
 
 	/**
@@ -163,6 +158,15 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 		return curDuty;
 	}
 
+	/**
+	 * 设置并重置现在的音键
+	 * @param note
+	 *   {@link #masterNote}
+	 */
+	public void setMasterNote(int note) {
+		this.masterNote = curNote = note;
+	}
+	
 	/**
 	 * 设置并重置现在的音量
 	 * @param masterVolume

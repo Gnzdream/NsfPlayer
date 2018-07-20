@@ -63,7 +63,7 @@ public class NoteEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).note = note;
+		runtime.channels.get(channelCode).setMasterNote(note);
 	}
 	
 	@Override

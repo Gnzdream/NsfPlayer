@@ -9,11 +9,11 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
  * @author Zdream
  * @since 0.2.1
  */
-public class VolumnSlideEffect implements IFtmEffect {
+public class VolumeSlideEffect implements IFtmEffect {
 	
 	public final int delta;
 
-	private VolumnSlideEffect(int slide) {
+	private VolumeSlideEffect(int slide) {
 		this.delta = slide;
 	}
 
@@ -34,11 +34,11 @@ public class VolumnSlideEffect implements IFtmEffect {
 	 * @throws IllegalArgumentException
 	 *   当变化量 <code>slide</code> 不在指定范围内时
 	 */
-	public static VolumnSlideEffect of(int delta) throws IllegalArgumentException {
+	public static VolumeSlideEffect of(int delta) throws IllegalArgumentException {
 		if (delta < -15 || delta > 15) {
 			throw new IllegalArgumentException("音量变化量必须在 -15 到 15 之间");
 		}
-		return new VolumnSlideEffect(delta);
+		return new VolumeSlideEffect(delta);
 	}
 	
 	/**

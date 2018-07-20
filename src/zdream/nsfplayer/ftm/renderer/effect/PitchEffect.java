@@ -37,7 +37,7 @@ public class PitchEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).masterPitch = pitch;
+		runtime.channels.get(channelCode).setMasterPitch(pitch);
 	}
 	
 	@Override

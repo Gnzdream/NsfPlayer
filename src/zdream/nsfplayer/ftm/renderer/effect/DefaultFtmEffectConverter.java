@@ -57,7 +57,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 		}
 		
 		if (note.vol != MAX_VOLUME) {
-			putEffect(channelCode, effects, VolumnEffect.of(note.vol));
+			putEffect(channelCode, effects, VolumeEffect.of(note.vol));
 		}
 		
 		if (note.instrument != MAX_INSTRUMENTS) {
@@ -181,9 +181,9 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 				if (channelCode != CHANNEL_2A03_DPCM && channelCode != CHANNEL_2A03_TRIANGLE) {
 					int param = note.effParam[i];
 					if (param <= 15) { // up 或 0
-						putEffect(channelCode, effects, VolumnSlideEffect.of(param));
+						putEffect(channelCode, effects, VolumeSlideEffect.of(param));
 					} else { // down
-						putEffect(channelCode, effects, VolumnSlideEffect.of((param >> 4) * -1));
+						putEffect(channelCode, effects, VolumeSlideEffect.of((param >> 4) * -1));
 					}
 				}
 				break;
