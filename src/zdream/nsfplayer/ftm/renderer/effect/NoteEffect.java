@@ -1,5 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 
 /**
@@ -63,7 +64,10 @@ public class NoteEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).setMasterNote(note);
+		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+		
+		ch.setMasterNote(note);
+		ch.turnOn();
 	}
 	
 	@Override

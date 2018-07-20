@@ -75,7 +75,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/**
 	 * 乐器
 	 */
-	public int instrument;
+	protected int instrument;
 	
 	/**
 	 * 音键, 含音符和音高
@@ -83,7 +83,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * <p>masterNote: 主音键
 	 * </p>
 	 */
-	public int curNote, masterNote;
+	protected int curNote, masterNote;
 	
 	/**
 	 * <p>音量
@@ -91,7 +91,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * <p>masterVolume: 主音量
 	 * </p>
 	 */
-	public int curVolume, masterVolume;
+	protected int curVolume, masterVolume;
 	
 	/**
 	 * <p>音高
@@ -100,7 +100,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * 由 Pxx 效果控制. 默认值 0
 	 * </p>
 	 */
-	public int curPitch, masterPitch;
+	protected int curPitch, masterPitch;
 	
 	/**
 	 * <p>音色
@@ -108,7 +108,12 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * <p>masterDuty: 主音色. 这个值由 Vxx 效果控制. 默认值 0
 	 * </p>
 	 */
-	public int curDuty, masterDuty;
+	protected int curDuty, masterDuty;
+	
+	/**
+	 * 是否在播放状态
+	 */
+	protected boolean playing;
 	
 	/**
 	 * @return
@@ -192,6 +197,26 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 */
 	public void setMasterDuty(int masterDuty) {
 		this.masterDuty = curDuty = masterDuty;
+	}
+	
+	/**
+	 * 打开, 让轨道播放.
+	 * 调用它的情况是, 当这个轨道接收一个新的 note 后, 它就要开始播放新的 note.
+	 */
+	public void turnOn() {
+		playing = true;
+	}
+
+	/**
+	 * <p>询问当前轨道是否在播放状态.
+	 * <p>注意, 音量为 0 不等于不在播放.
+	 * 只有 halt 效果、Sxx 效果等才能设置 <code>playing = false</code>.
+	 * </p>
+	 * @return
+	 *   当前轨道是否在播放状态
+	 */
+	public boolean isPlaying() {
+		return playing;
 	}
 	
 	/* **********
