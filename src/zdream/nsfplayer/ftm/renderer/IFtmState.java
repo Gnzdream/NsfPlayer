@@ -19,7 +19,7 @@ public interface IFtmState {
 	 * 每帧触发的方法体
 	 * @param channelCode
 	 *   当前轨道号码
-	 * @param rumtime
+	 * @param runtime
 	 */
 	public void trigger(byte channelCode, FamiTrackerRuntime runtime);
 	
@@ -28,7 +28,7 @@ public interface IFtmState {
 	 * 即被轨道或全局状态机装配时触发
 	 * @param channelCode
 	 *   当前轨道号码
-	 * @param rumtime
+	 * @param runtime
 	 */
 	default public void onAttach(byte channelCode, FamiTrackerRuntime runtime) {}
 	
@@ -37,7 +37,7 @@ public interface IFtmState {
 	 * 即被轨道或全局状态机拆除时触发
 	 * @param channelCode
 	 *   当前轨道号码
-	 * @param rumtime
+	 * @param runtime
 	 */
 	default public void onDetach(byte channelCode, FamiTrackerRuntime runtime) {}
 	

@@ -41,13 +41,6 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	int trackIdx;
 	
 	/**
-	 * <p>正播放的段号 (pattern)
-	 * <p>一般取该数据会有误差, 问题详情见 {@link #row}
-	 * </p>
-	 */
-	int sectionIdx;
-	
-	/**
 	 * 正在播放的节奏值, 计数单位为拍 / 分钟
 	 * @see FtmTrack#tempo
 	 */
@@ -60,7 +53,17 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	int speed;
 	
 	/**
-	 * <p>正播放的行号, 从 0 开始.
+	 * 记录正在播放的行号
+	 */
+	int curRow;
+	
+	/**
+	 * 正在播放的段号
+	 */
+	int curSection;
+	
+	/**
+	 * <p>下一个播放的行号, 从 0 开始.
 	 * <p>当播放器播放第 0 行的音键时, 其实 row = 1, 即已经指向播放行的下一行. 因为 Famitracker 就是这样设计的.
 	 * 这样做的话, 碰到跳行、跳段的效果时, 就不会出现连跳的 BUG 情况.
 	 * <p>试想一下这个情况: 第 0 段第 x 行有跳行的效果 (D00 到下一段首行),
@@ -68,7 +71,13 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * 这个在 Famitracker 中是不允许的.
 	 * </p>
 	 */
-	int row;
+	int nextRow;
+	
+	/**
+	 * <p>播放到下一行时, 段号 (pattern)
+	 * </p>
+	 */
+	int nextSection;
 	
 	/**
 	 * <p>重设速度值
@@ -88,6 +97,22 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	public void setTempo(int tempo) {
 		this.tempo = tempo;
 		setupSpeed();
+	}
+	
+	/**
+	 * @return
+	 *   获取正在播放的行号
+	 */
+	public int getCurrentRow() {
+		return curRow;
+	}
+	
+	/**
+	 * @return
+	 *   获取正在播放的段号
+	 */
+	public int getCurrentSection() {
+		return curSection;
 	}
 	
 	/* **********
@@ -192,7 +217,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 */
 	public void ready(int track, int section) {
 		this.trackIdx = track;
-		this.sectionIdx = section;
+		this.nextSection = section;
 		
 		resetSpeed();
 		for (Map<FtmEffectType, IFtmEffect> map : runtime.effects.values()) {
@@ -217,7 +242,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	/**
 	 * 重置 {@link #tempoDecrement} 和 {@link #tempoRemainder}
 	 */
-	void setupSpeed() {
+	private void setupSpeed() {
 		int i = tempo * 24;
 		tempoDecrement = i / speed;
 		tempoRemainder = i % speed;
@@ -232,6 +257,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		
 		// (SoundGen.runFrame)
 		if (tempoAccum <= 0) {
+			// 表示上一行已经播放完毕, 开始查找要播放的下一行的位置
 			// Enable this to skip rows on high tempos
 			updateRow = true;
 			handleJump();
@@ -267,16 +293,16 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	private void handleJump() {
 		if (skipRow >= 0) {
 			if (jumpSection >= 0) {
-				sectionIdx = jumpSection;
+				nextSection = jumpSection;
 				jumpSection = -1;
 			} else {
-				sectionIdx++;
+				nextSection++;
 			}
-			row = skipRow;
+			nextRow = skipRow;
 			skipRow = -1;
 		} else if (jumpSection >= 0) {
-			sectionIdx = jumpSection;
-			row = 0;
+			nextSection = jumpSection;
+			nextRow = 0;
 			jumpSection = -1;
 		}
 	}
@@ -289,7 +315,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		runtime.converter.beforeConvert();
 		
 		for (int i = 0; i < len; i++) {
-			runtime.converter.convert(querier.channelCode(i), querier.getNote(trackIdx, sectionIdx, i, row));
+			runtime.converter.convert(querier.channelCode(i), querier.getNote(trackIdx, nextSection, i, nextRow));
 		}
 	}
 	
@@ -300,17 +326,21 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * </p>
 	 */
 	private void nextRow() {
-		row++;
+		curRow = nextRow;
+		curSection = nextSection;
+		
+		nextRow++;
+		
 		// 是否到段尾
 		int len = querier.maxRow(trackIdx); // 段长
-		if (row >= len) {
+		if (nextRow >= len) {
 			// 跳到下一段的第 0 行
-			row = 0;
-			sectionIdx++;
+			nextRow = 0;
+			nextSection++;
 			
 			// Loop
-			if (sectionIdx >= querier.trackCount(trackIdx)) {
-				sectionIdx = 0;
+			if (nextSection >= querier.trackCount(trackIdx)) {
+				nextSection = 0;
 			}
 		}
 	}

@@ -93,15 +93,107 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/**
 	 * <p>音高
 	 * <p>curPitch: 当前音高, 需要计算其它比如颤音等
-	 * <p>masterPitch: 主音高
+	 * <p>masterPitch: 主音高. 这个值在原 C++ 程序中称为 finePitch,
+	 * 由 Pxx 效果控制. 默认值 0
 	 * </p>
 	 */
 	public int curPitch, masterPitch;
 	
+	/**
+	 * <p>音色
+	 * <p>curDuty: 当前音色
+	 * <p>masterDuty: 主音色. 这个值由 Vxx 效果控制. 默认值 0
+	 * </p>
+	 */
+	public int curDuty, masterDuty;
+	
+	/**
+	 * @return
+	 *   {@link #instrument}
+	 */
+	public int getInstrument() {
+		return instrument;
+	}
+
+	/**
+	 * @param instrument
+	 *   {@link #instrument}
+	 */
+	public void setInstrument(int instrument) {
+		this.instrument = instrument;
+	}
+
+	/**
+	 * @return
+	 *   {@link #note}
+	 */
+	public int getNote() {
+		return note;
+	}
+
+	/**
+	 * @param note
+	 *   {@link #note}
+	 */
+	public void setNote(int note) {
+		this.note = note;
+	}
+
+	/**
+	 * @return
+	 *   {@link #curVolume}
+	 */
+	public int getCurrentVolume() {
+		return curVolume;
+	}
+
+	/**
+	 * @return
+	 *   {@link #curPitch}
+	 */
+	public int getCurrentPitch() {
+		return curPitch;
+	}
+
+	/**
+	 * @return
+	 *   {@link #curDuty}
+	 */
+	public int getCurrentDuty() {
+		return curDuty;
+	}
+
+	/**
+	 * 设置并重置现在的音量
+	 * @param masterVolume
+	 *   {@link #masterVolume}
+	 */
+	public void setMasterVolume(int masterVolume) {
+		this.masterVolume = curVolume = masterVolume;
+	}
+
+	/**
+	 * 设置并重置现在的音高
+	 * @param masterPitch
+	 *   {@link #masterPitch}
+	 */
+	public void setMasterPitch(int masterPitch) {
+		this.masterPitch = curPitch = masterPitch;
+	}
+
+	/**
+	 * 设置并重置现在的音色
+	 * @param masterDuty
+	 *   {@link #masterDuty}
+	 */
+	public void setMasterDuty(int masterDuty) {
+		this.masterDuty = curDuty = masterDuty;
+	}
+	
 	/* **********
 	 * 强制执行 *
 	 ********** */
-	
+
 	/**
 	 * <p>状态集合.
 	 * <p>原本这里的延迟状态等, 都视为一个状态
@@ -160,6 +252,20 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	private void triggleState() {
 		((HashSet<IFtmState>) this.states.clone())
 			.forEach((state) -> state.trigger(channelCode, runtime));
+	}
+	
+	/**
+	 * 暂停声音播放. ftm 里面显示为 "---" 的 note 的效果
+	 */
+	public void doHalt() {
+		// TODO
+	}
+	
+	/**
+	 * 播放乐器的释放效果. ftm 里面显示为 "===" 的 note 的效果
+	 */
+	public void doRelease() {
+		// TODO
 	}
 
 }

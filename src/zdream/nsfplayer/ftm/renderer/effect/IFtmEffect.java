@@ -20,7 +20,7 @@ public interface IFtmEffect {
 	 * 执行效果
 	 * @param channelCode
 	 *   当前轨道号码
-	 * @param rumtime
+	 * @param runtime
 	 */
 	public void execute(byte channelCode, FamiTrackerRuntime runtime);
 

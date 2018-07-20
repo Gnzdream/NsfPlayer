@@ -48,22 +48,22 @@ public class NoteEffect implements IFtmEffect {
 	/**
 	 * 形成一个修改音符的效果
 	 * @param note
-	 *   含音阶的音符值. 必须在 [1, 84] 范围内. 0 是非法值
+	 *   含音阶的音符值. 必须在 [1, 96] 范围内. 0 是非法值
 	 * @return
 	 *   效果实例
 	 * @throws IllegalArgumentException
 	 *   当 <code>octave</code> 或 <code>note</code> 不在指定范围内时
 	 */
 	public static NoteEffect of(int note) throws IllegalArgumentException {
-		if (note > 84 || note < 1) {
-			throw new IllegalArgumentException("音符必须是 1 - 84 之间的整数数值");
+		if (note > 96 || note < 1) {
+			throw new IllegalArgumentException("音符必须是 1 - 96 之间的整数数值");
 		}
 		return new NoteEffect(note);
 	}
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		// TODO Auto-generated method stub
+		runtime.channels.get(channelCode).note = note;
 	}
 	
 	@Override

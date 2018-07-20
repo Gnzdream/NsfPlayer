@@ -116,6 +116,11 @@ public class DelayEffect implements IFtmEffect {
 				channel.removeState(this);
 			}
 		}
+		
+		@Override
+		public String toString() {
+			return name() + delayCounter;
+		}
 	}
 	
 	DelayState state;

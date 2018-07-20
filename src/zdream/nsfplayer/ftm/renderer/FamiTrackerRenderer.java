@@ -125,6 +125,24 @@ public class FamiTrackerRenderer {
 		return ret; // (现单位 byte)
 	}
 	
+	/**
+	 * 获取正在播放的行号
+	 * @return
+	 *   {@link FtmRowFetcher#getCurrentRow()}
+	 */
+	public int getCurrentRow() {
+		return fetcher.getCurrentRow();
+	}
+
+	/**
+	 * 获取正在播放的段号
+	 * @return
+	 *   {@link FtmRowFetcher#getCurrentSection()}
+	 */
+	public int getCurrentSection() {
+		return fetcher.getCurrentSection();
+	}
+
 	/* **********
 	 * 所含数据 *
 	 ********** */
@@ -222,7 +240,7 @@ public class FamiTrackerRenderer {
 	 * @return
 	 *  本函数已渲染的采样数 (按单声道计算)
 	 */
-	int renderFrame() {
+	private int renderFrame() {
 		int ret = countNextFrame();
 		
 //		fetcher.runFrame();
@@ -332,7 +350,7 @@ public class FamiTrackerRenderer {
 	 ********** */
 	private void log() {
 		StringBuilder b = new StringBuilder(128);
-		b.append(String.format("%02d:%03d", fetcher.sectionIdx, fetcher.row));
+		b.append(String.format("%02d:%03d", fetcher.curSection, fetcher.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
 			if (entry.getValue().isEmpty()) {
