@@ -59,8 +59,8 @@ public class DPCM extends Channel {
 		}
 	}
 	
-	public void writeControl(int Value) {
-		if ((Value & 1) == 1) {
+	public void writeControl(int value) {
+		if ((value & 1) == 1) {
 			if (m_iDMA_BytesRemaining == 0)
 				reload();
 		} else {
@@ -70,11 +70,13 @@ public class DPCM extends Channel {
 		m_bTriggeredIRQ = false;
 	}
 	
-	public final int readControl() {
+	@SuppressWarnings("unused")
+	private final int readControl() {
 		return (m_iDMA_BytesRemaining > 0) ? 1 : 0;
 	}
 	
-	public final int didIRQ() {
+	@SuppressWarnings("unused")
+	private final int didIRQ() {
 		return m_bTriggeredIRQ ? 1 : 0;
 	}
 	
@@ -90,8 +92,6 @@ public class DPCM extends Channel {
 
 				m_iSampleBuffer = m_pSampleMem.read(m_iDMA_Address | 0x8000)
 					& 0xFF; // 转成非负整数
-
-//				m_pEmulator->ConsumeCycles(4);
 				m_iDMA_Address = (m_iDMA_Address + 1) & 0xFFFF; // 转成非负整数
 				--m_iDMA_BytesRemaining;
 				m_bSampleFilled = true;
@@ -146,19 +146,31 @@ public class DPCM extends Channel {
 		m_iTime += time;
 	}
 	
-	public void reload() {
+	private void reload() {
 		m_iDMA_Address = (m_iDMA_LoadReg << 6) | 0x4000;
 	    m_iDMA_BytesRemaining = (m_iDMA_LengthReg << 4) + 1;
 	}
 
+	/**
+	 * 未调用
+	 * @return
+	 */
 	public final int getSamplePos() {
 		return (m_iDMA_Address - (m_iDMA_LoadReg << 6 | 0x4000)) >> 6;
 	};
 
+	/**
+	 * 未调用
+	 * @return
+	 */
 	public final int getDeltaCounter() {
 		return m_iDeltaCounter;
 	};
 
+	/**
+	 * 未调用
+	 * @return
+	 */
 	public boolean isPlaying() {
 		return (m_iDMA_BytesRemaining > 0);
 	};

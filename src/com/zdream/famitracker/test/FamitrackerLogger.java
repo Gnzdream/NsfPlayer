@@ -60,6 +60,9 @@ public class FamitrackerLogger {
 		if (muteNote)
 			return;
 		
+//		if (channel != 3)
+//			return;
+		
 		StringBuilder b = new StringBuilder();
 		b.append("note").append(':').append('[').append(channel).append(']').append(' ');
 		b.append(frame).append(':').append(row).append(' ');
