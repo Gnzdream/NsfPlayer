@@ -14,8 +14,14 @@ public class FamitrackerLogger {
 	boolean muteToDo = true;
 	boolean muteNote = true;
 	boolean muteWriteAddress = true;
+	boolean muteValue = false;
 	
 	HashSet<String> muteAddressSet = new HashSet<>();
+	
+	/**
+	 * 现在是第几帧
+	 */
+	int frame;
 	
 	File file;
 	FileWriter writer;
@@ -93,6 +99,27 @@ public class FamitrackerLogger {
 			return;
 		
 		String l = msg + " | " + Thread.currentThread().getStackTrace()[2];
+		System.out.println(l);
+		writeFile(l);
+	}
+	
+	public void notifyFrame(int f) {
+		this.frame = f;
+	}
+	
+	public void logValue(String s) {
+		if (muteValue) {
+			return;
+		}
+		
+		if (frame == 833) {
+			System.out.println(833);
+		}
+		
+		StringBuilder b = new StringBuilder(s.length() + 16);
+		b.append('[').append(frame).append(']').append(s);
+		
+		String l = b.toString();
 		System.out.println(l);
 		writeFile(l);
 	}

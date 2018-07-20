@@ -447,8 +447,7 @@ public class FamiTrackerDoc {
 	}
 
 	public final int getVibratoStyle() {
-		// TODO
-		return 0;
+		return VIBRATO_NEW;
 	}
 	
 	public final void setVibratoStyle(int style) {

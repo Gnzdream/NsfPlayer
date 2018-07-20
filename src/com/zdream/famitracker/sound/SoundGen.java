@@ -370,14 +370,13 @@ public class SoundGen implements IAudioCallback {
 		documentPropertiesChanged();
 	}
 	
-	void generateVibratoTable(int type) {
+	private void generateVibratoTable(int type) {
 		for (int i = 0; i < 16; ++i) {	// depth 
 			for (int j = 0; j < 16; ++j) {	// phase
 				int value = 0;
 				if (type == VIBRATO_NEW) {
 					double angle = (j / 16.0) * (Math.PI / 2.0);
-					// 加 0.5 是为了将向下取整变成四舍五入
-					value = (int) (Math.sin(angle) * NEW_VIBRATO_DEPTH[i] + 0.5);
+					value = (int) (Math.sin(angle) * NEW_VIBRATO_DEPTH[i]);
 				} else {
 					value = (int) (j * OLD_VIBRATO_DEPTH[i] / 16.0 + 1);
 				}
@@ -867,6 +866,7 @@ public class SoundGen implements IAudioCallback {
 	public void playFrame() {
 		
 		++m_iFrameCounter;
+		FamitrackerLogger.instance.notifyFrame(m_iFrameCounter);
 		
 		// Read module framerate
 		m_iFrameRate = m_pDocument.getFrameRate();
