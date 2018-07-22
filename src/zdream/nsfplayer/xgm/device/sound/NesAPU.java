@@ -1,6 +1,6 @@
 package zdream.nsfplayer.xgm.device.sound;
 
-import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.PulseSound0;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.IntHolder;
@@ -102,7 +102,7 @@ public class NesAPU implements ISoundChip, IFrameSequencer {
 	/**
 	 * 矩形波发声器
 	 */
-	PulseSound pulse1, pulse2;
+	PulseSound0 pulse1, pulse2;
 	
 	static final boolean[][] SQRT_BL = {
 			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },

@@ -1,16 +1,24 @@
 package com.zdream.famitracker.sound.emulation;
 
+import static com.zdream.famitracker.sound.emulation.Types.CHANID_DPCM;
+import static com.zdream.famitracker.sound.emulation.Types.CHANID_NOISE;
+import static com.zdream.famitracker.sound.emulation.Types.CHANID_SQUARE1;
+import static com.zdream.famitracker.sound.emulation.Types.CHANID_SQUARE2;
+import static com.zdream.famitracker.sound.emulation.Types.CHANID_TRIANGLE;
+import static com.zdream.famitracker.sound.emulation.Types.MACHINE_NTSC;
+import static com.zdream.famitracker.sound.emulation.Types.MACHINE_PAL;
+import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_MMC5;
+import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_NONE;
+import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_VRC6;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import com.zdream.famitracker.sound.IAudioCallback;
 import com.zdream.famitracker.sound.SampleMem;
 import com.zdream.famitracker.sound.emulation.expansion.External;
 import com.zdream.famitracker.sound.emulation.expansion.MMC5;
 import com.zdream.famitracker.sound.emulation.expansion.VRC6;
-import com.zdream.famitracker.test.FamitrackerLogger;
-
-import static com.zdream.famitracker.sound.emulation.Types.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 public class APU {
 	
@@ -314,11 +322,6 @@ public class APU {
 			time = m_iCyclesToRun;
 			time = Math.min(time, m_iSequencerClock);
 			time = Math.min(time, m_iFrameClock);
-			
-			if (time == 0) {
-				FamitrackerLogger.instance.logToDo("time == 0! 死循环");
-				break;
-			}
 			
 			// Run internal channels
 			runAPU1(time);

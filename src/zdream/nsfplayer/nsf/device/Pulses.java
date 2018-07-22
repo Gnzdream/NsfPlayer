@@ -2,7 +2,7 @@ package zdream.nsfplayer.nsf.device;
 
 import java.util.Arrays;
 
-import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.PulseSound0;
 import zdream.nsfplayer.xgm.device.IntHolder;
 
 public class Pulses implements IDevice {
@@ -10,7 +10,7 @@ public class Pulses implements IDevice {
 	/**
 	 * 矩形波发声器
 	 */
-	PulseSound pulse1, pulse2;
+	PulseSound0 pulse1, pulse2;
 	
 	/**
 	 * 两个发声器是否可用
@@ -38,8 +38,8 @@ public class Pulses implements IDevice {
 	
 	
 	public Pulses() {
-		pulse1 = new PulseSound();
-		pulse2 = new PulseSound();
+		pulse1 = new PulseSound0();
+		pulse2 = new PulseSound0();
 		
 		this.reset();
 	}
@@ -107,11 +107,11 @@ public class Pulses implements IDevice {
 			return false;
 	}
 	
-	public PulseSound getSound1() {
+	public PulseSound0 getSound1() {
 		return pulse1;
 	}
 	
-	public PulseSound getSound2() {
+	public PulseSound0 getSound2() {
 		return pulse2;
 	}
 
