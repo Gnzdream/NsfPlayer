@@ -14,6 +14,14 @@ public class FtmSequence {
 	public static final int SEQUENCE_COUNT = 5;
 	
 	/**
+	 * 设置项. {@link FtmSequenceType#ARPEGGIO} 序列的 setting 有以下三个可选值
+	 */
+	public static final byte
+			ARP_SETTING_ABSOLUTE = 0,
+			ARP_SETTING_FIXED = 1,
+			ARP_SETTING_RELATIVE = 2;
+	
+	/**
 	 * 类型
 	 */
 	public final FtmSequenceType type;
@@ -31,9 +39,10 @@ public class FtmSequence {
 	public int releasePoint;
 	
 	/**
-	 * 其它选项数据. 暂时不清楚是干什么的
+	 * 其它选项数据.
+	 * 只有 ARPEGGIO 会用到, 指示这个序列影响音高的方式.
 	 */
-	public int settings;
+	public byte settings;
 	
 	/**
 	 * 数据

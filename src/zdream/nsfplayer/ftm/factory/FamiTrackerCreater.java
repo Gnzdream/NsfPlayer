@@ -505,7 +505,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				 */
 				if (version == 4) {
 					seq.releasePoint = block.readAsCInt();
-					seq.settings = block.readAsCInt();
+					seq.settings = (byte) block.readAsCInt();
 				}
 
 				byte[] data = new byte[seqCount];
@@ -528,7 +528,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 						}
 						
 						seq.releasePoint = releasePoint;
-						seq.settings = settings;
+						seq.settings = (byte) settings;
 					}
 				}
 			} else if (version >= 6) {
@@ -544,7 +544,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 
 					FtmSequence seq = doc.getSequence2A03(FtmSequenceType.get(type), index);
 					seq.releasePoint = releasePoint;
-					seq.settings = settings;
+					seq.settings = (byte) settings;
 				}
 			}
 		} 

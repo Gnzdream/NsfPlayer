@@ -5,6 +5,8 @@ import java.util.HashSet;
 
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.IResetable;
 
 /**
  * 抽象的 Famitracker 轨道, 用于存储各个轨道的播放局部参数, 比如局部 pitch 等
@@ -16,7 +18,7 @@ import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
  * @data 2018-06-09
  * @since 0.2.1
  */
-public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntimeHolder {
+public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntimeHolder, IResetable {
 
 	/**
 	 * 轨道号
@@ -44,6 +46,13 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	public AbstractFtmChannel(byte channelCode) {
 		this.channelCode = channelCode;
 	}
+	
+	/**
+	 * 获取音频发声器
+	 * @return
+	 *   音频发声器实例
+	 */
+	public abstract AbstractNsfSound getSound();
 	
 	/* **********
 	 * 外部接口 *
@@ -87,20 +96,24 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	
 	/**
 	 * <p>音量
-	 * <p>curVolume: 当前音量, 需要计算乐器变量
-	 * <p>masterVolume: 主音量
+	 * <p>curVolume: 当前音量, 需要计算乐器变量.
+	 * 由于我这里为了提高精度, 为原来的音量的 16 倍,
+	 * 并且中途在修改的过程中允许产生负数等超过边界的情况,
+	 * 最后在写入发声器前将其范围限定在 [0, 240] 范围内.
+	 * <p>masterVolume: 主音量 [0, 15]
 	 * </p>
 	 */
 	protected int curVolume, masterVolume;
 	
 	/**
 	 * <p>音高
-	 * <p>curPitch: 当前音高, 需要计算其它比如颤音等
+	 * <p>curPeriod: 当前波长, 需要计算其它比如颤音等
 	 * <p>masterPitch: 主音高. 这个值在原 C++ 程序中称为 finePitch,
 	 * 由 Pxx 效果控制. 默认值 0
+	 * <p>波长和音高的关系是负相关, 单位相同. 波长越长, 音高越低
 	 * </p>
 	 */
-	protected int curPitch, masterPitch;
+	protected int curPeriod, masterPitch;
 	
 	/**
 	 * <p>音色
@@ -140,6 +153,23 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	}
 
 	/**
+	 * @param note
+	 *   {@link #curNote}
+	 */
+	public void setCurrentNote(int note) {
+		this.curNote = note;
+	}
+
+	/**
+	 * 为 {@link #curNote} 增加一个值
+	 * @param delta
+	 *   增量, 可以为正数、负数或 0
+	 */
+	public void addCurrentNote(int delta) {
+		this.curNote += delta;
+	}
+
+	/**
 	 * @return
 	 *   {@link #curVolume}
 	 */
@@ -148,11 +178,45 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	}
 
 	/**
-	 * @return
-	 *   {@link #curPitch}
+	 * @param volume
+	 *   {@link #curVolume}
 	 */
-	public int getCurrentPitch() {
-		return curPitch;
+	public void setCurrentVolume(int volume) {
+		this.curVolume = volume;
+	}
+
+	/**
+	 * 为 {@link #curVolume} 增加一个值
+	 * @param delta
+	 *   增量, 可以为正数、负数或 0
+	 */
+	public void addCurrentVolume(int delta) {
+		this.curVolume += delta;
+	}
+
+	/**
+	 * @return
+	 *   {@link #curPeriod}
+	 */
+	public int getCurrentPeriod() {
+		return curPeriod;
+	}
+
+	/**
+	 * @param period
+	 *   {@link #curPeriod}
+	 */
+	public void setCurrentPeriod(int period) {
+		this.curPeriod = period;
+	}
+
+	/**
+	 * 为 {@link #curPeriod} 增加一个值
+	 * @param delta
+	 *   增量, 可以为正数、负数或 0
+	 */
+	public void addCurrentPeriod(int delta) {
+		this.curPeriod += delta;
 	}
 
 	/**
@@ -178,7 +242,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   {@link #masterVolume}
 	 */
 	public void setMasterVolume(int masterVolume) {
-		this.masterVolume = curVolume = masterVolume;
+		this.masterVolume = masterVolume;
 	}
 
 	/**
@@ -187,7 +251,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   {@link #masterPitch}
 	 */
 	public void setMasterPitch(int masterPitch) {
-		this.masterPitch = curPitch = masterPitch;
+		this.masterPitch = masterPitch;
 	}
 
 	/**
@@ -196,7 +260,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   {@link #masterDuty}
 	 */
 	public void setMasterDuty(int masterDuty) {
-		this.masterDuty = curDuty = masterDuty;
+		this.masterDuty = masterDuty;
 	}
 	
 	/**

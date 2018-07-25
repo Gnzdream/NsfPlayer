@@ -104,6 +104,29 @@ public class PulseSound extends Sound2A03 {
 	 * 重置相关数据
 	 */
 	public void reset() {
+		// 原始记录参数
+		
+		dutyLength = 0;
+		fixedVolume = 0;
+		looping = false;
+		envelopeFix = false;
+		// envelopeSpeed = fixedVolume + 1;
+		
+		sweepEnabled = false;
+		sweepPeriod = 1;
+		sweepMode = false;		
+		sweepShift = 0;
+		// sweepWritten = true;
+		
+		period = 0;
+		
+		lengthCounter = LENGTH_TABLE[0] & 0xFF;
+//		dutyCycle = 0;
+//		envelopeVolume = 0x0F;
+//		if (m_iControlReg != 0)
+//			m_iEnabled = 1;
+		
+		
 		// TODO
 		
 		super.reset();

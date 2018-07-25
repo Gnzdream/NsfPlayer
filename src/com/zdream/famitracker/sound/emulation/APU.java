@@ -247,7 +247,7 @@ public class APU {
 	int m_iFrameClock;
 	
 	/**
-	 * <p>记录 APU 在调用 {@link #process()} 这个方法时, 要运行的时间数.<br>
+	 * <p>记录 APU 在调用 {@link #process()} 这个方法时, 要运行的时钟周期数.<br>
 	 * 现阶段由 {@link #addTime(int)} 修改
 	 * <p>Number of cycles to process
 	 */

@@ -264,9 +264,11 @@ public class SoundGen implements IAudioCallback {
 	// ****** 其它
 	
 	/**
-	 * Number of cycles/APU update
+	 * <p>（NTSC）一秒 60 帧, 每帧要运行的时钟周期数: 29829. 这个值产生后就不会变化
+	 * <p>Number of cycles/APU update
+	 * </p>
 	 */
-	int m_iUpdateCycles;
+	private int m_iUpdateCycles;
 	/**
 	 * Cycles consumed by the update registers functions
 	 */

@@ -18,9 +18,10 @@ public class ChannalFactory implements IFtmChannelCode {
 	 */
 	public static AbstractFtmChannel create(byte code) {
 		switch (code) {
-		case CHANNEL_2A03_PULSE1:
-			return new Square1Channel();
-			
+		case CHANNEL_2A03_PULSE1: {
+			Square1Channel s = new Square1Channel();
+			return s;
+		}
 		case CHANNEL_2A03_PULSE2:
 		case CHANNEL_2A03_TRIANGLE:
 		case CHANNEL_2A03_NOISE:
