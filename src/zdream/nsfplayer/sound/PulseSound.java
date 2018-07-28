@@ -27,74 +27,87 @@ public class PulseSound extends Sound2A03 {
 	 * <p>unsigned, 值域 [0, 3]. 指示音色的值, 指向 DUTY_TABLE 的一级索引
 	 * </p>
 	 */
-	int dutyLength;
+	public int dutyLength;
 
 	/**
 	 * <p>0 号位: 00x00000
 	 * <p>为 1 时为 true, 为 0 时为 false
 	 * </p>
 	 */
-	boolean looping;
+	public boolean looping;
 	
 	/**
 	 * <p>0 号位: 000x0000
 	 * <p>为 1 时为 true, 为 0 时为 false
 	 * </p>
 	 */
-	boolean envelopeFix;
+	public boolean envelopeFix;
 
 	/**
 	 * <p>0 号位: 0000xxxx
 	 * <p>unsigned, 值域 [0, 15]
 	 * </p>
 	 */
-	int fixedVolume;
+	public int fixedVolume;
 	
 	/**
 	 * <p>1 号位: x0000000
 	 * <p>为 1 时为 true, 为 0 时为 false
 	 * </p>
 	 */
-	boolean sweepEnabled;
+	public boolean sweepEnabled;
 
 	/**
 	 * <p>1 号位: 0xxx0000, 取得数值之后加 1
 	 * <p>unsigned, 值域 [1, 8]
 	 * </p>
 	 */
-	int sweepPeriod;
+	public int sweepPeriod;
 
 	/**
 	 * <p>1 号位: 0000x000
 	 * <p>为 1 时为 true, 为 0 时为 false
 	 * </p>
 	 */
-	boolean sweepMode;
+	public boolean sweepMode;
 
 	/**
 	 * <p>1 号位: 00000xxx, 偏移位
 	 * <p>unsigned, 值域 [0, 7]
 	 * </p>
 	 */
-	int sweepShift;
+	public int sweepShift;
 	
 	/**
 	 * <p>2 号位: xxxxxxxx (低八位), 3 号位: 00000xxx (高三位) 共 11 位
 	 * <p>为波长值; unsigned, 值域 [0, 2047]
 	 * </p>
 	 */
-	int period;
+	public int period;
 	
 	/**
 	 * <p>3 号位: xxxxx000
 	 * <p>查找索引
 	 * </p>
 	 */
-	int lengthCounter;
+	public int lengthCounter;
+	
+	/*
+	 * 控制参数
+	 */
+	/**
+	 * <p>0x4015 位: (Pulse 1) 0000000x, (Pulse 2) 000000x0
+	 * </p>
+	 */
+	public boolean enable;
 	
 	/*
 	 * 辅助参数
 	 */
+	/**
+	 * 记录 sweep 相关参数是否被修改
+	 */
+	public boolean sweepUpdated;
 	
 	/* **********
 	 * 公共方法 *

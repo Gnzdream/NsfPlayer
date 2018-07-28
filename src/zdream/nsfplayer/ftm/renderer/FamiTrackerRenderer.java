@@ -83,10 +83,7 @@ public class FamiTrackerRenderer {
 	 */
 	public boolean isFinished() {
 		// TODO
-		
-		boolean bb = b;
-		b = !b;
-		return bb;
+		return false;
 	}
 	
 	/**
@@ -246,17 +243,13 @@ public class FamiTrackerRenderer {
 //		fetcher.runFrame();
 //		updateChannels();
 		
-		for (int i = 0; i < 1600; i++) {
-			fetcher.runFrame();
-			updateChannels();
-			
-			fetcher.updateState();
-			
-			// 测试方法
-			log();
-		}
+		fetcher.runFrame();
+		updateChannels();
 		
+		fetcher.updateState();
 		
+		// 测试方法
+		log();
 		
 		return ret;
 	}

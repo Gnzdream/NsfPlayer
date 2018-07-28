@@ -11,7 +11,7 @@ import zdream.nsfplayer.sound.PulseSound;
  * @author Zdream
  * @since 0.2.1
  */
-public class Square1Channel extends Channel2A03 {
+public final class Square1Channel extends Channel2A03Tone {
 
 	public Square1Channel() {
 		super(CHANNEL_2A03_PULSE1);
@@ -25,6 +25,7 @@ public class Square1Channel extends Channel2A03 {
 		updateSequence();
 		
 		// 发声器
+		writeToSound();
 	}
 
 	@Override
@@ -48,6 +49,7 @@ public class Square1Channel extends Channel2A03 {
 		// 回写
 		calculateVolume();
 		calculatePeriod();
+		calculateDuty();
 		
 	}
 	
@@ -113,6 +115,17 @@ public class Square1Channel extends Channel2A03 {
 		curPeriod = period;
 	}
 	
+	/**
+	 * 计算音色
+	 */
+	private void calculateDuty() {
+		if (seq.duty >= 0) {
+			curDuty = seq.duty;
+		} else {
+			curDuty = masterDuty;
+		}
+	}
+	
 	/* **********
 	 *  发声器  *
 	 ********** */
@@ -131,7 +144,34 @@ public class Square1Channel extends Channel2A03 {
 	 * 将轨道中的数据写到发声器中
 	 */
 	public void writeToSound() {
+		sound.looping = true;
+		sound.envelopeFix = true;
 		
+		if (this.curVolume == 0) {
+			return;
+		}
+		
+		sound.dutyLength = curDuty;
+		sound.fixedVolume = curVolume;
+		
+		if (sweep > 0) {
+			if ((sweep & 0x80) != 0) {
+				// 0x4001
+				int s = sweep & 0x7F;
+				sound.sweepEnabled = true;
+				sound.sweepPeriod = ((s >> 4) & 0x07) + 1;
+				sound.sweepMode = (s & 0x08) != 0;		
+				sound.sweepShift = s & 0x07;
+				sound.sweepUpdated = true;
+				
+//				writeRegister(0x4017, (byte) 0x80);	// Clear sweep unit
+//				writeRegister(0x4017, (byte) 0x00);
+//				writeRegister(0x4002, hiFreq);
+//				writeRegister(0x4003, loFreq);
+//				m_iLastPeriod = 0xFFFF;
+			}
+		}
+		// sound.
 	}
 	
 }
