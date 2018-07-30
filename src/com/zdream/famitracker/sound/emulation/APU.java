@@ -19,6 +19,7 @@ import com.zdream.famitracker.sound.SampleMem;
 import com.zdream.famitracker.sound.emulation.expansion.External;
 import com.zdream.famitracker.sound.emulation.expansion.MMC5;
 import com.zdream.famitracker.sound.emulation.expansion.VRC6;
+import com.zdream.famitracker.test.FamitrackerLogger;
 
 public class APU {
 	
@@ -89,7 +90,7 @@ public class APU {
 	 * Sound Control ($4015)
 	 * @param value
 	 */
-	void write4015(byte value) {
+	private void write4015(byte value) {
 		process();
 
 		m_pSquare1.writeControl(value);
@@ -100,10 +101,12 @@ public class APU {
 	}
 	
 	/**
-	 * The $4017 Control port
+	 * <p>The $4017 Control port
+	 * <p>这里可以看出 4017 只有一个位的数据有意义. 0x000000
+	 * </p>
 	 * @param value
 	 */
-	void write4017(byte value) {
+	private void write4017(byte value) {
 		process();
 
 		// Reset counter
@@ -395,6 +398,9 @@ public class APU {
 				case 3: clock_240Hz(); break;
 				case 4: break;
 			}
+		}
+		if (m_iFrameSequence == 4) {
+			FamitrackerLogger.instance.logValue("clockSeq: 4!!!!");
 		}
 	}
 

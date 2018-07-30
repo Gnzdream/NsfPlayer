@@ -22,6 +22,8 @@ public class FamitrackerLogger {
 	 * 现在是第几帧
 	 */
 	int frame;
+	int pattern;
+	int row;
 	
 	File file;
 	FileWriter writer;
@@ -106,8 +108,10 @@ public class FamitrackerLogger {
 		writeFile(l);
 	}
 	
-	public void notifyFrame(int f) {
+	public void notifyFrame(int f, int pattern, int row) {
 		this.frame = f;
+		this.pattern = pattern;
+		this.row = row;
 	}
 	
 	public void logValue(String s) {
@@ -115,12 +119,13 @@ public class FamitrackerLogger {
 			return;
 		}
 		
-		if (frame == 833) {
+		/*if (frame == 833) {
 			System.out.println(833);
-		}
+		}*/
 		
 		StringBuilder b = new StringBuilder(s.length() + 16);
-		b.append('[').append(frame).append(']').append(s);
+		b.append('[').append(frame).append(',').append(Integer.toHexString(pattern))
+				.append(':').append(row).append(']').append(s);
 		
 		String l = b.toString();
 		System.out.println(l);

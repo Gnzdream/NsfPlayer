@@ -92,6 +92,12 @@ public class Square extends Channel {
 			m_iCounter	 = m_iPeriod + 1;
 			int volume = m_iEnvelopeFix ? m_iFixedVolume : m_iEnvelopeVolume;
 			
+			// test
+			if (!m_iEnvelopeFix) {
+				FamitrackerLogger.instance.logValue("启用 EnvelopeFix");
+			}
+			// test end
+			
 			// mix (valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0 ? volume : 0);
 			if (valid) {
 				if (DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0) {
@@ -160,12 +166,18 @@ public class Square extends Channel {
 	/**
 	 * <p>0 号位: 00x00000
 	 * <p>不为 0 时为 true, 为 0 时为 false
+	 * 
+	 * <p>根据系统判断, FamiTracker 运行过程中, 该值始终为 true
+	 * </p>
 	 */
 	boolean m_iLooping;
 
 	/**
 	 * <p>0 号位: 000x0000
 	 * <p>不为 0 时为 true, 为 0 时为 false
+	 * 
+	 * <p>根据系统判断, FamiTracker 运行过程中, 该值始终为 true
+	 * </p>
 	 */
 	boolean m_iEnvelopeFix;
 	int m_iEnvelopeSpeed;

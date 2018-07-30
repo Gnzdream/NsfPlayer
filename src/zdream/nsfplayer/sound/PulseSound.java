@@ -93,16 +93,9 @@ public class PulseSound extends Sound2A03 {
 	public int lengthCounter;
 	
 	/*
-	 * 控制参数
-	 */
-	/**
-	 * <p>0x4015 位: (Pulse 1) 0000000x, (Pulse 2) 000000x0
-	 * </p>
-	 */
-	public boolean enable;
-	
-	/*
 	 * 辅助参数
+	 * 
+	 * 注意, 0x4015 位: (Pulse 1) 0000000x, (Pulse 2) 000000x0 是 enable, 在超类中
 	 */
 	/**
 	 * 记录 sweep 相关参数是否被修改
@@ -147,8 +140,11 @@ public class PulseSound extends Sound2A03 {
 	
 	@Override
 	protected void onProcess(int time) {
-		// TODO Auto-generated method stub
+		if (period <= 0) {
+			return;
+		}
 		
+		// TODO
 	}
 
 }

@@ -868,7 +868,7 @@ public class SoundGen implements IAudioCallback {
 	public void playFrame() {
 		
 		++m_iFrameCounter;
-		FamitrackerLogger.instance.notifyFrame(m_iFrameCounter);
+		FamitrackerLogger.instance.notifyFrame(m_iFrameCounter, m_iPlayFrame, m_iPlayRow);
 		
 		// Read module framerate
 		m_iFrameRate = m_pDocument.getFrameRate();
