@@ -9,11 +9,12 @@ import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
-import zdream.nsfplayer.ftm.renderer.channel.ChannalFactory;
 import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.tools.ChannalDeviceSelector;
+import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -57,16 +58,17 @@ public class FamiTrackerRenderer {
 	 * @param audio
 	 * @param track
 	 *   曲目号, 从 0 开始
-	 * @param pattern
+	 * @param section
 	 *   段号, 从 0 开始
 	 */
 	public void ready(
 			FtmAudio audio,
 			int track,
-			int pattern)
+			int section)
 			throws FamiTrackerException {
-		fetcher.ready(audio, track, pattern);
+		fetcher.ready(audio, track, section);
 		
+		initMixer();
 		initChannels();
 		
 		// TODO 重置播放相关的数据
@@ -74,8 +76,50 @@ public class FamiTrackerRenderer {
 		// TODO SoundGen.loadMachineSettings()
 	}
 	
-	// TODO 测试使用
-	boolean b = false;
+	/**
+	 * <p>在不更改 Ftm 音频的同时, 重置当前曲目, 让播放的位置重置到曲目开头
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * </p>
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 */
+	public void ready() throws FamiTrackerException {
+		ready(fetcher.trackIdx, fetcher.curSection);
+	}
+	
+	/**
+	 * <p>在不更改 Ftm 文件的同时, 切换到指定曲目的开头.
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * </p>
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 */
+	public void ready(int track) throws FamiTrackerException {
+		ready(track, 0);
+	}
+	
+	/**
+	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 */
+	public void ready(int track, int section) throws FamiTrackerException {
+		if (fetcher.querier == null) {
+			throw new NullPointerException("FtmAudio = null");
+		}
+		
+		fetcher.ready(track, section);
+	}
 	
 	/**
 	 * 询问是否已经播放完毕
@@ -123,12 +167,12 @@ public class FamiTrackerRenderer {
 	}
 	
 	/**
-	 * 获取正在播放的行号
+	 * 获取正在播放的曲目号
 	 * @return
-	 *   {@link FtmRowFetcher#getCurrentRow()}
+	 *   {@link FtmRowFetcher#trackIdx}
 	 */
-	public int getCurrentRow() {
-		return fetcher.getCurrentRow();
+	public int getCurrentTrack() {
+		return fetcher.trackIdx;
 	}
 
 	/**
@@ -138,6 +182,15 @@ public class FamiTrackerRenderer {
 	 */
 	public int getCurrentSection() {
 		return fetcher.getCurrentSection();
+	}
+	
+	/**
+	 * 获取正在播放的行号
+	 * @return
+	 *   {@link FtmRowFetcher#getCurrentRow()}
+	 */
+	public int getCurrentRow() {
+		return fetcher.getCurrentRow();
 	}
 
 	/* **********
@@ -289,6 +342,16 @@ public class FamiTrackerRenderer {
 	 ********** */
 	
 	/**
+	 * 初始化 / 重置音频合成器
+	 */
+	private void initMixer() {
+		runtime.mixer.detachAll();
+		runtime.mixer.reset();
+		
+		// TODO
+	}
+	
+	/**
 	 * 利用 runtime 已经完成填充的数据, 建立 AbstractFtmChannel, 还有各个轨道的 EffectBatch
 	 * 
 	 * 包含原工程 SoundGen.createChannels()
@@ -303,10 +366,18 @@ public class FamiTrackerRenderer {
 		for (int i = 0; i < len; i++) {
 			byte code = querier.channelCode(i);
 			
-			AbstractFtmChannel ch = ChannalFactory.create(code);
+			AbstractFtmChannel ch = ChannalDeviceSelector.selectFtmChannel(code);
 			ch.setRuntime(runtime);
 			runtime.channels.put(code, ch);
 			runtime.effects.put(code, new HashMap<>());
+			
+			AbstractNsfSound sound = ChannalDeviceSelector.selectSound(code);
+			if (sound != null) {
+				// TODO
+				runtime.sounds.put(code, sound);
+			}
+			
+			// TODO
 		}
 	}
 	

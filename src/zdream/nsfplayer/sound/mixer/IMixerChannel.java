@@ -2,6 +2,6 @@ package zdream.nsfplayer.sound.mixer;
 
 public interface IMixerChannel {
 
-	void addValue(int value, int time);
+	void mix(int value, int time);
 
 }

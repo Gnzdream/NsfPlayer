@@ -59,7 +59,7 @@ public abstract class AbstractNsfSound0 implements INsfSound, IResetable {
 
 	protected void mix(int value) {
 		if (lastValue != value) {
-			out.addValue(value, mclock);
+			out.mix(value, mclock);
 			lastValue = value;
 		}
 	}

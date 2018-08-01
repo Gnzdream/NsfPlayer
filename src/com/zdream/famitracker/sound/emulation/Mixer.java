@@ -199,6 +199,9 @@ public class Mixer {
 		return blipBuffer.readSamples(buffer, 0, size, false);
 	}
 
+	/**
+	 * 注：现在没有方法使用该方法
+	 */
 	public final int getChanOutput(byte chan) {
 		return (int) m_fChannelLevels[chan];
 	}

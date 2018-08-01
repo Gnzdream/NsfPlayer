@@ -7,7 +7,6 @@ package zdream.nsfplayer.sound;
  */
 public class PulseSound extends Sound2A03 {
 	
-	@SuppressWarnings("unused")
 	private static final boolean[][] DUTY_TABLE = {
 			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },
 			{ false, false,  true,  true,  true,  true, false, false, false, false, false, false, false, false, false, false },
@@ -80,7 +79,8 @@ public class PulseSound extends Sound2A03 {
 	
 	/**
 	 * <p>2 号位: xxxxxxxx (低八位), 3 号位: 00000xxx (高三位) 共 11 位
-	 * <p>为波长值; unsigned, 值域 [0, 2047]
+	 * <p>为波长值的 16 分之一, 即 16 个该值为波长值, 单位为 CPU 时钟周期;
+	 * <p>unsigned, 值域 [0, 2047]
 	 * </p>
 	 */
 	public int period;
@@ -101,6 +101,29 @@ public class PulseSound extends Sound2A03 {
 	 * 记录 sweep 相关参数是否被修改
 	 */
 	public boolean sweepUpdated;
+	
+	/**
+	 * Sweep 部分计算的波长修正值
+	 */
+	private int sweepResult;
+	
+	/**
+	 * envelope 部分计算的音量修正值
+	 */
+	private int envelopeVolume;
+	
+	/**
+	 * 记录当前周期（时钟周期数为 period, 16 分之一的真实波长数）
+	 * 没放完的时钟周期数.
+	 */
+	private int counter;
+	
+	/**
+	 * 真实波长分成 16 个部分,
+	 * 该参数记录当前正在播放的周期是这 16 个中的第几个.
+	 * 值域 [0, 15]
+	 */
+	private int dutyCycle;
 	
 	/* **********
 	 * 公共方法 *
@@ -132,6 +155,13 @@ public class PulseSound extends Sound2A03 {
 //		if (m_iControlReg != 0)
 //			m_iEnabled = 1;
 		
+		// 辅助参数
+		sweepUpdated = false;
+		sweepResult = 0;
+		envelopeVolume = 0;
+		counter = 0;
+		dutyCycle = 0;
+		
 		
 		// TODO
 		
@@ -144,7 +174,28 @@ public class PulseSound extends Sound2A03 {
 			return;
 		}
 		
-		// TODO
+		boolean valid = (period > 7) && isEnable() && (lengthCounter > 0) && (sweepResult < 0x800);
+		
+		while (time >= counter) {
+			time -= counter;
+			this.time += counter;
+			counter	 = period + 1;
+			int volume = envelopeFix ? fixedVolume : envelopeVolume;
+			
+			// mix (valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0 ? volume : 0);
+			if (valid) {
+				if (DUTY_TABLE[dutyLength][dutyCycle]) {
+					out.mix(volume, this.time);
+				} else {
+					out.mix(0, this.time);
+				}
+			}
+			
+			dutyCycle = (dutyCycle + 1) & 0x0F;
+		}
+
+		counter -= time;
+		this.time += time;
 	}
 
 }

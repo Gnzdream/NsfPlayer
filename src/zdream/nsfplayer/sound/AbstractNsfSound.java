@@ -15,7 +15,7 @@ public abstract class AbstractNsfSound implements IResetable {
 	protected IMixerChannel out;
 	
 	/**
-	 * 记录已经渲染的时间.
+	 * 记录已经渲染的时钟数.
 	 * 每帧结束时, 调用 {@link #endFrame()} 重置为 0
 	 */
 	protected int time;

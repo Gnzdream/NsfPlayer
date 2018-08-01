@@ -7,6 +7,8 @@ import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
+import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
  * Famitracker 运行时状态
@@ -22,7 +24,20 @@ public class FamiTrackerRuntime {
 	public FtmRowFetcher fetcher;
 	public IFtmEffectConverter converter;
 	
+	/**
+	 * FTM 轨道
+	 */
 	public final HashMap<Byte, AbstractFtmChannel> channels = new HashMap<>();
+	
+	/**
+	 * 发声器
+	 */
+	public final HashMap<Byte, AbstractNsfSound> sounds = new HashMap<>();
+	
+	/**
+	 * 音频合成器
+	 */
+	public final SoundMixer mixer = new SoundMixer();
 	
 	/* **********
 	 *   工具   *

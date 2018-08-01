@@ -22,7 +22,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	FamiTrackerRuntime runtime;
 	
 	/**
-	 * 查询器
+	 * 查询器, 封装了当前播放的曲目 {@link FtmAudio}
 	 */
 	FamiTrackerQuerier querier;
 
