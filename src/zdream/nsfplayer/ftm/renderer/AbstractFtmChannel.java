@@ -61,7 +61,8 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/**
 	 * <p>播放 note
 	 * <p>由于 FtmNote 改成 IFtmEffect, 因此这里较原程序有了大幅度修改.
-	 * 该方法要做的, 就是处理效果和状态的触发
+	 * 该方法要做的, 就是处理效果和状态的触发.
+	 * <p>子类在这个基础上, 完成将数据写到发声器中, 指导发声器工作, 将数据写到音频管道中
 	 * <p>原程序: ChannelHandler.playNote
 	 * </p>
 	 * 

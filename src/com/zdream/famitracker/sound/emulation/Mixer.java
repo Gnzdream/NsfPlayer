@@ -86,8 +86,19 @@ public class Mixer {
 		}
 	}
 	
+	/**
+	 * @param lowCut
+	 *   pSettings.sound.iBassFilter
+	 * @param highCut
+	 *   pSettings.sound.iTrebleFilter
+	 * @param highDamp
+	 *   pSettings.sound.iTrebleDamping
+	 * @param overallVol
+	 *   pSettings.sound.iMixVolume
+	 */
 	public void updateSettings(int lowCut,	int highCut, int highDamp, float overallVol) {
-		float volume = overallVol * getAttenuation();
+		float volume = overallVol/* * getAttenuation()*/;
+		System.out.println("推荐音量: " + getAttenuation());
 
 		// Blip-buffer filtering
 		blipBuffer.bassFreq(lowCut);
@@ -142,6 +153,10 @@ public class Mixer {
 		blipBuffer.setSampleRate(sampleRate, (size * 1000 * 2) / sampleRate);
 	}
 	
+	/**
+	 * APU 调用
+	 * @param rate
+	 */
 	public void setClockRate(int rate) {
 		blipBuffer.clockRate(rate);
 	}
@@ -229,10 +244,16 @@ public class Mixer {
 		}
 	}
 	
+	/**
+	 * 注：现在没有方法使用该方法
+	 */
 	public final int resampleDuration(int time) {
 		return blipBuffer.resampledDuration(time);
 	}
 	
+	/**
+	 * 注：现在没有方法使用该方法
+	 */
 	public void setNamcoVolume(float fVol) {
 		// TODO N163 暂时不做
 		// float fVolume = fVol * m_fOverallVol * getAttenuation();
@@ -340,7 +361,7 @@ public class Mixer {
 	 * <p>轨道变多之后, 总音量会降低, 但是各轨道音量比值不会发生变化.
 	 * <p>TODO 暂时不做 VCR6, MMC5 以外的部分
 	 */
-	final float getAttenuation()  {
+	private final float getAttenuation()  {
 		final float ATTENUATION_VRC6 = 0.80f;
 //		const float ATTENUATION_VRC7 = 0.64f;
 //		const float ATTENUATION_N163 = 0.70f;

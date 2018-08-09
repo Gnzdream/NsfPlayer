@@ -4,6 +4,7 @@ import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
+import zdream.nsfplayer.ftm.renderer.mixer.BlipMixerChannel;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.PulseSound;
 
@@ -61,6 +62,25 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * 配置音频轨道
+	 * @param code
+	 */
+	public static void configMixChannel(byte code, BlipMixerChannel mixer) {
+		switch (code) {
+		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
+		case CHANNEL_2A03_TRIANGLE: case CHANNEL_2A03_NOISE: case CHANNEL_2A03_DPCM:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156)) : 0);
+		} break;
+
+		default:
+			break;
+		}
+		
 	}
 
 }

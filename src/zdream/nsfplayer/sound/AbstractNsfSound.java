@@ -21,9 +21,16 @@ public abstract class AbstractNsfSound implements IResetable {
 	protected int time;
 	
 	/**
-	 * 是否启用的标志位
+	 * 是否启用的标志位, 4015 控制位
 	 */
-	private boolean enable;
+	private boolean enable = true;
+	
+	/**
+	 * 控制是否将音频数据发送到合成器管道的标志.
+	 * 如果设置成 true, 将不会把数据送往合成器管道 {@link #out}.
+	 * 不会被 {@link #reset()} 重置.
+	 */
+	private boolean mask = false;
 	
 	/**
 	 * 每帧结束时调用
@@ -56,8 +63,25 @@ public abstract class AbstractNsfSound implements IResetable {
 		this.enable = enable;
 	}
 	
+	/**
+	 * @return
+	 *   {@link #mask}
+	 */
+	public boolean isMask() {
+		return mask;
+	}
+
+	/**
+	 * @param mask
+	 *   {@link #mask}
+	 */
+	public void setMask(boolean mask) {
+		this.mask = mask;
+	}
+
 	@Override
 	public void reset() {
+		enable = true;
 		this.endFrame();
 	}
 	
@@ -80,5 +104,10 @@ public abstract class AbstractNsfSound implements IResetable {
 	 * @param time
 	 */
 	protected abstract void onProcess(int time);
+	
+	protected void mix(int value) {
+		if (!mask)
+			out.mix(value, time);
+	}
 
 }

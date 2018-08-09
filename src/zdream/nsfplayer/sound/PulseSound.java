@@ -185,9 +185,9 @@ public class PulseSound extends Sound2A03 {
 			// mix (valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0 ? volume : 0);
 			if (valid) {
 				if (DUTY_TABLE[dutyLength][dutyCycle]) {
-					out.mix(volume, this.time);
+					mix(volume);
 				} else {
-					out.mix(0, this.time);
+					mix(0);
 				}
 			}
 			

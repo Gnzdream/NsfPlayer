@@ -14,8 +14,8 @@ public class NoteLookupTable {
 		ntscTable = new short[96];
 		sawTable = new short[96];
 		
-		double clock_ntsc = FamiTrackerStatic.BASE_FREQ_NTSC / 16.0;
-		double clock_pal = FamiTrackerStatic.BASE_FREQ_PAL / 16.0;
+		double clock_ntsc = FamiTrackerParameter.BASE_FREQ_NTSC / 16.0;
+		double clock_pal = FamiTrackerParameter.BASE_FREQ_PAL / 16.0;
 		
 		for (int i = 0; i < 96; ++i) {
 			// Frequency (in Hz)

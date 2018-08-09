@@ -8,7 +8,7 @@ import zdream.nsfplayer.sound.IResetable;
  * @author Zdream
  * @since 0.2.1
  */
-public class SoundMixer implements IResetable {
+public abstract class SoundMixer implements IResetable {
 
 	public SoundMixer() {
 		
@@ -28,8 +28,6 @@ public class SoundMixer implements IResetable {
 	 * <p>调用该方法后, 所有与发声器 {@link AbstractNsfSound} 相连的音频管道全部拆开, 不再使用.
 	 * </p>
 	 */
-	public void detachAll() {
-		// TODO
-	}
+	public abstract void detachAll();
 
 }

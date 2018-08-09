@@ -26,6 +26,7 @@ public final class Square1Channel extends Channel2A03Tone {
 		
 		// 发声器
 		writeToSound();
+		processSound();
 	}
 
 	@Override
@@ -172,6 +173,15 @@ public final class Square1Channel extends Channel2A03Tone {
 			}
 		}
 		// sound.
+	}
+	
+	/**
+	 * 指导发声器工作一帧
+	 */
+	public void processSound() {
+		// TODO 拿到一帧对应的时钟周期数
+		
+		// TODO
 	}
 	
 }

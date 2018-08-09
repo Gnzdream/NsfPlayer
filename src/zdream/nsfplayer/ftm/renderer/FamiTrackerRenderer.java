@@ -13,6 +13,7 @@ import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.mixer.BlipMixerChannel;
 import zdream.nsfplayer.ftm.renderer.tools.ChannalDeviceSelector;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -24,6 +25,18 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
  * @since v0.2.1
  */
 public class FamiTrackerRenderer {
+	
+	/**
+	 * 利用默认配置产生一个音频渲染器
+	 */
+	public FamiTrackerRenderer() {
+		this(new FamiTrackerSetting());
+	}
+	
+	public FamiTrackerRenderer(FamiTrackerSetting setting) {
+		this.runtime.setting = setting;
+		this.runtime.init();
+	}
 	
 	/* **********
 	 * 公共接口 *
@@ -197,11 +210,6 @@ public class FamiTrackerRenderer {
 	 * 所含数据 *
 	 ********** */
 	
-	/**
-	 * 配置
-	 */
-	final FamiTrackerSetting setting = new FamiTrackerSetting();
-	
 	final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
 	
 	final FtmRowFetcher fetcher = new FtmRowFetcher(runtime);
@@ -304,6 +312,9 @@ public class FamiTrackerRenderer {
 		// 测试方法
 		log();
 		
+		// 从 mixer 中读取数据
+		// TODO
+		
 		return ret;
 	}
 	
@@ -313,7 +324,7 @@ public class FamiTrackerRenderer {
 	 */
 	private int countNextFrame() {
 		int maxFrameCount = fetcher.getFrameRate();
-		int maxSampleCount = setting.sampleRate;
+		int maxSampleCount = runtime.setting.sampleRate;
 		
 		if (frameCount == maxFrameCount) {
 			frameCount = 0;
@@ -375,9 +386,11 @@ public class FamiTrackerRenderer {
 			if (sound != null) {
 				// TODO
 				runtime.sounds.put(code, sound);
+				BlipMixerChannel mix = runtime.mixer.allocateChannel(code);
+				sound.setOut(mix);
 			}
 			
-			// TODO
+			// TODO 后面的配置
 		}
 	}
 	

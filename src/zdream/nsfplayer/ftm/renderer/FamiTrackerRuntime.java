@@ -3,12 +3,14 @@ package zdream.nsfplayer.ftm.renderer;
 import java.util.HashMap;
 import java.util.Map;
 
+import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.mixer.FtmSoundMixer;
+import zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
  * Famitracker 运行时状态
@@ -23,6 +25,8 @@ public class FamiTrackerRuntime {
 	 ********** */
 	public FtmRowFetcher fetcher;
 	public IFtmEffectConverter converter;
+	public FamiTrackerSetting setting;
+	public FamiTrackerParameter param = new FamiTrackerParameter(this);
 	
 	/**
 	 * FTM 轨道
@@ -37,7 +41,12 @@ public class FamiTrackerRuntime {
 	/**
 	 * 音频合成器
 	 */
-	public final SoundMixer mixer = new SoundMixer();
+	public final FtmSoundMixer mixer = new FtmSoundMixer(this);
+	
+	void init() {
+		mixer.init();
+		param.init();
+	}
 	
 	/* **********
 	 *   工具   *

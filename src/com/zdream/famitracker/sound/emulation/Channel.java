@@ -55,7 +55,7 @@ public abstract class Channel {
 
 	// Variables used by channels
 	/**
-	 * unsigned
+	 * unsigned 4015 的值
 	 */
 	protected byte m_iControlReg;
 	/**

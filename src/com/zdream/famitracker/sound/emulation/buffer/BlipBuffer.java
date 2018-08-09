@@ -133,7 +133,14 @@ public class BlipBuffer {
 					accum -= accum >> bass_shift;
 					accum += buffer_[ptr++];
 					
-					short out = (short) s;
+					short out;
+					if (s > Short.MAX_VALUE) {
+						out = Short.MAX_VALUE;
+					} else if (s < Short.MIN_VALUE) {
+						out = Short.MIN_VALUE;
+					} else {
+						out = (short) s;
+					}
 
 					// clamp sample
 					if ( out != s )
@@ -148,7 +155,14 @@ public class BlipBuffer {
 					accum -= accum >> bass_shift;
 					accum += buffer_[ptr++];
 					
-					short out = (short) s;
+					short out;
+					if (s > Short.MAX_VALUE) {
+						out = Short.MAX_VALUE;
+					} else if (s < Short.MIN_VALUE) {
+						out = Short.MIN_VALUE;
+					} else {
+						out = (short) s;
+					}
 
 					// clamp sample
 					if ( out != s )

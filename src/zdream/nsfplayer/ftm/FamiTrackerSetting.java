@@ -28,15 +28,28 @@ public class FamiTrackerSetting {
 	 */
 	public int sampleSize = 16;
 	
+	/**
+	 * 帧率
+	 */
+	public int frameRate = 60;
+	
+	/**
+	 * BlipBuffer 参数
+	 */
+	public int bassFilter = 30,
+			trebleFilter = 12000,
+			trebleDamping = 24,
+			mixVolume = 100;
+	
 	public class Sound {
 		public int iDevice = 0;
 		//public int iSampleRate = 48000;
 		//public int iSampleSize = 16;
 		public int iBufferLength = 40;
-		public int iBassFilter = 30;
-		public int iTrebleFilter = 12000;
-		public int iTrebleDamping = 24;
-		public int iMixVolume = 100;
+		//public int iBassFilter = 30;
+		//public int iTrebleFilter = 12000;
+		//public int iTrebleDamping = 24;
+		//public int iMixVolume = 100;
 	}
 	
 	/**

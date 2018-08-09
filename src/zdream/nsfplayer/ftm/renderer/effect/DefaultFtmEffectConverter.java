@@ -1,9 +1,22 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
-import java.util.Map;
-
-import static zdream.nsfplayer.ftm.format.FtmNote.*;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DELAY;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
+import static zdream.nsfplayer.ftm.format.FtmNote.MAX_EFFECT_COLUMNS;
+import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
+import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
+import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_NONE;
+import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_RELEASE;
+
+import java.util.Map;
 
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.format.FtmNote;
