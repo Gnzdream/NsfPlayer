@@ -38,16 +38,12 @@ public class BlipMixerChannel implements IMixerChannel {
 		synth = new BlipSynth(quality, range);
 	}
 	
-	/**
-	 * 修正总体音量值
-	 */
+	@Override
 	public void setLevel(float level) {
 		this.level = level;
 	}
 	
-	/**
-	 * 获得总体音量值
-	 */
+	@Override
 	public float getLevel() {
 		return level;
 	}

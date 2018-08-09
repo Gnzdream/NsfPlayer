@@ -17,7 +17,7 @@ public class BytesPlayer {
 	private SourceDataLine dateline;
 
 	public BytesPlayer() {
-		AudioFormat af = new AudioFormat(48000, 16, 1, true, false);
+		AudioFormat af = new AudioFormat(48000, 16, 1, true, false); // 单声道
 		try {
 			dateline = AudioSystem.getSourceDataLine(af);
 			dateline.open(af, 48000);

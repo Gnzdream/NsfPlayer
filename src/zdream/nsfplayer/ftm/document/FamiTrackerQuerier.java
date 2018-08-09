@@ -143,6 +143,10 @@ public class FamiTrackerQuerier implements IFtmChannelCode {
 	}
 	
 	/* **********
+	 *   乐器   *
+	 ********** */
+	
+	/* **********
 	 *  段  键  *
 	 ********** */
 	/*

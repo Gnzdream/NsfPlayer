@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
+import static zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter.LENGTH_TABLE;
+
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
@@ -45,6 +47,11 @@ public final class Square1Channel extends Channel2A03Tone {
 	 * 更新序列, 并将序列的数据回写到轨道上
 	 */
 	private void updateSequence() {
+		if (instrumentUpdated) {
+			// 替换序列
+			getRuntime().querier.audio.getInstrument(instrument); // 这样不太好
+		}
+		
 		seq.update();
 		
 		// 回写
@@ -58,13 +65,14 @@ public final class Square1Channel extends Channel2A03Tone {
 	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 15] 范围内
 	 */
 	private void calculateVolume() {
-		int volume = curVolume;
+		int volume = masterVolume * 16 + curVolume; // 精度 240
 
-		if (curVolume <= 0) {
+		if (volume <= 0) {
 			curVolume = 0;
 			return;
 		}
 
+		System.out.println(curVolume + ":" + seq.volume);
 		volume = (seq.volume * volume) / 15;
 		if (volume > 240) {
 			curVolume = 240;
@@ -142,7 +150,9 @@ public final class Square1Channel extends Channel2A03Tone {
 	}
 	
 	/**
-	 * 将轨道中的数据写到发声器中
+	 * <p>将轨道中的数据写到发声器中.
+	 * <p>参照原工程 Square1Chan.refreshChannel()
+	 * </p>
 	 */
 	public void writeToSound() {
 		sound.looping = true;
@@ -153,7 +163,7 @@ public final class Square1Channel extends Channel2A03Tone {
 		}
 		
 		sound.dutyLength = curDuty;
-		sound.fixedVolume = curVolume;
+		sound.fixedVolume = curVolume / 16;
 		
 		if (sweep > 0) {
 			if ((sweep & 0x80) != 0) {
@@ -165,12 +175,29 @@ public final class Square1Channel extends Channel2A03Tone {
 				sound.sweepShift = s & 0x07;
 				sound.sweepUpdated = true;
 				
+				// TODO Clear sweep unit 不清楚如何清除 Sweep 部分
 //				writeRegister(0x4017, (byte) 0x80);	// Clear sweep unit
 //				writeRegister(0x4017, (byte) 0x00);
-//				writeRegister(0x4002, hiFreq);
-//				writeRegister(0x4003, loFreq);
-//				m_iLastPeriod = 0xFFFF;
+				
+				// 0x4002 and 0x4003
+				sound.period = curPeriod;
+				sound.lengthCounter = LENGTH_TABLE[0];
 			}
+		} else {
+			// 0x4001
+			sound.sweepEnabled = false;
+			sound.sweepPeriod = 1;
+			sound.sweepMode = true;
+			sound.sweepShift = 0;
+			sound.sweepUpdated = true;
+			
+			// TODO 不清楚如何操作
+//			writeRegister(0x4017, (byte) 0x80);	// Manually execute one APU frame sequence to kill the sweep unit
+//			writeRegister(0x4017, (byte) 0x00);
+
+			// 0x4002 and 0x4003
+			sound.period = curPeriod;
+			sound.lengthCounter = LENGTH_TABLE[0];
 		}
 		// sound.
 	}
@@ -179,9 +206,14 @@ public final class Square1Channel extends Channel2A03Tone {
 	 * 指导发声器工作一帧
 	 */
 	public void processSound() {
-		// TODO 拿到一帧对应的时钟周期数
+		// 拿到一帧对应的时钟周期数
+		int freq = getRuntime().param.freqPerFrame;
 		
-		// TODO
+		// TODO 暂时没有考虑 sweep 和 envelope 部分, 还有 4017 参数
+		sound.process(freq);
+		
+		// 结束
+		sound.endFrame();
 	}
 	
 }

@@ -71,6 +71,9 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   <br>如果 note = null, 则说明保持原来的 note 不变
 	 */
 	public void playNote() {
+		// 初始化
+		startFrame();
+		
 		// 效果
 		forceEffect(runtime.effects.get(this.channelCode).values());
 		
@@ -81,11 +84,25 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/* **********
 	 *   参数   *
 	 ********** */
+	/*
+	 * 这里说明一下. 下面的参数, 比如 volume 等, 有两个值, curVolume 和 masterVolume.
+	 * 最终使用的值是 curVolume, 但存在这样一个规定: 在 effect 和 state 进行修改时,
+	 * masterVolume 表示主音量, 而 curVolume 表示偏移量, 即 curVolume 在 0 的周围浮动;
+	 * 最终计算总的 curVolume 时, 会将主音量和偏移量共同进入计算, 得出的 curVolume
+	 * 重写 curVolume 的值. 到这时, curVolume 的意义会从偏移量编程当前音量.
+	 * 
+	 * 音高 period, 音键 note 也遵循这个规则.
+	 */
 	
 	/**
 	 * 乐器
 	 */
 	protected int instrument;
+	
+	/**
+	 * 当前帧中, 乐器是否更新过
+	 */
+	protected boolean instrumentUpdated;
 	
 	/**
 	 * 音键, 含音符和音高
@@ -142,6 +159,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   {@link #instrument}
 	 */
 	public void setInstrument(int instrument) {
+		instrumentUpdated = true;
 		this.instrument = instrument;
 	}
 
@@ -234,7 +252,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   {@link #masterNote}
 	 */
 	public void setMasterNote(int note) {
-		this.masterNote = curNote = note;
+		this.masterNote = note;
 	}
 	
 	/**
@@ -282,6 +300,17 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 */
 	public boolean isPlaying() {
 		return playing;
+	}
+	
+	/**
+	 * 每帧开始时调用
+	 */
+	protected void startFrame() {
+		curNote = 0;
+		curDuty = 0;
+		curPeriod = 0;
+		curVolume = 0;
+		instrumentUpdated = false;
 	}
 	
 	/* **********

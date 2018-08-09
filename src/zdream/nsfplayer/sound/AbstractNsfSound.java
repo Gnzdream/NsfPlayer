@@ -86,7 +86,7 @@ public abstract class AbstractNsfSound implements IResetable {
 	}
 	
 	/**
-	 * <p>开始运作 time 的时间数.
+	 * <p>开始运作 time 的时钟周期数.
 	 * <p>如果该发声器启用 ({@link #enable} == true) 则会向 {@link #out} 传递音频相关数据
 	 * 否则将直接跳过这段时间.
 	 * </p>

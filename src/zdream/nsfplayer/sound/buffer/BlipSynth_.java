@@ -36,7 +36,7 @@ public class BlipSynth_ {
 		this.width = width;
 	}
 	
-	public void treble_eq(final BlipEQ eq) {
+	public void trebleEq(final BlipEQ eq) {
 		float[] fimpulse = new float[blip_res / 2 * (blip_widest_impulse_ - 1) + blip_res * 2];
 
 		final int half_size = blip_res / 2 * (width - 1);
@@ -86,7 +86,7 @@ public class BlipSynth_ {
 		if (new_unit != volume_unit_) {
 			// use default eq if it hasn't been set yet
 			if (kernel_unit == 0)
-				treble_eq(new BlipEQ(-8.0));
+				trebleEq(new BlipEQ(-8.0));
 
 			volume_unit_ = new_unit;
 			double factor = new_unit * (1L << blip_sample_bits) / kernel_unit;

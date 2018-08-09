@@ -95,17 +95,15 @@ public class BlipBuffer {
 	 * @param offset
 	 *   默认为 0, 表示 dest 这个数组从哪里开始写入数据.<br>
 	 *   单声道 (stereo = false) 时, 一般为 0<br>
-	 *   立体声 (stereo = true) 时, 一号声道一般为 0, 二号声道为 2
+	 *   立体声 (stereo = true) 时, 一号声道一般为 0, 二号声道为 1
 	 * @param max_samples
-	 *   这是 16 位的采样, 那应该小于等于 dest.length / 2
+	 *   这是 16 位的采样, 那应该小于等于 dest.length
 	 * @param stereo
 	 *   默认 false. 如果为 true, 说明为立体声
 	 * @return
 	 */
-	public int readSamples(byte[] dest, int offset, int max_samples, boolean stereo) {
-		int count = samplesAvail();
-		if (count > max_samples)
-			count = max_samples;
+	public int readSamples(short[] dest, int offset, int max_samples, boolean stereo) {
+		int count = Math.min(samplesAvail(), max_samples);
 		
 		if (count != 0) {
 			final int sample_shift = blip_sample_bits - 16;
@@ -125,8 +123,10 @@ public class BlipBuffer {
 					if ( out != s )
 						out = (short) (0x7FFF - (s >> 24));
 					
-					dest[outptr++] = (byte) out; // 低位
-					dest[outptr++] = (byte) ((out & 0xFF00) >> 8); // 高位
+					dest[outptr++] = out;
+					if (out != 0) {
+						out += 0;
+					}
 				}
 			} else {
 				for ( int n = count; (--n) >= 0;) {
@@ -140,10 +140,9 @@ public class BlipBuffer {
 					if ( out != s )
 						out = (short) (0x7FFF - (s >> 24));
 					
-					dest[outptr++] = (byte) out; // 低位
-					dest[outptr++] = (byte) ((out & 0xFF00) >> 8); // 高位
+					dest[outptr++] = out;
 					
-					outptr += 2;
+					outptr += 1;
 				}
 			}
 			

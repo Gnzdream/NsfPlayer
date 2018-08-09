@@ -179,6 +179,10 @@ public class DefaultSequenceHandler implements IResetable {
 		}
 	}
 	
+	/**
+	 * @param index
+	 *   第几个序列
+	 */
 	private void update(int index) {
 		FtmSequence seq = this.sequence[index];
 		

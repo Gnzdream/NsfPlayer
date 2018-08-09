@@ -10,7 +10,6 @@ import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.mixer.FtmSoundMixer;
 import zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter;
-import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
  * Famitracker 运行时状态
@@ -29,14 +28,11 @@ public class FamiTrackerRuntime {
 	public FamiTrackerParameter param = new FamiTrackerParameter(this);
 	
 	/**
-	 * FTM 轨道
+	 * <p>FTM 轨道.
+	 * <p>发声器在轨道中, 可以使用 {@link AbstractFtmChannel#getSound()} 方法获得
+	 * </p>
 	 */
 	public final HashMap<Byte, AbstractFtmChannel> channels = new HashMap<>();
-	
-	/**
-	 * 发声器
-	 */
-	public final HashMap<Byte, AbstractNsfSound> sounds = new HashMap<>();
 	
 	/**
 	 * 音频合成器
@@ -44,8 +40,8 @@ public class FamiTrackerRuntime {
 	public final FtmSoundMixer mixer = new FtmSoundMixer(this);
 	
 	void init() {
-		mixer.init();
 		param.init();
+		mixer.init();
 	}
 	
 	/* **********

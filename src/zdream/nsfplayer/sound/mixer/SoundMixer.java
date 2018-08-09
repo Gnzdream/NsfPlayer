@@ -29,5 +29,7 @@ public abstract class SoundMixer implements IResetable {
 	 * </p>
 	 */
 	public abstract void detachAll();
+	
+	public abstract int readBuffer(short[] buf, int offset, int length);
 
 }

@@ -6,6 +6,7 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.IFtmRuntimeHolder;
 import zdream.nsfplayer.ftm.renderer.tools.ChannalDeviceSelector;
 import zdream.nsfplayer.sound.buffer.BlipBuffer;
+import zdream.nsfplayer.sound.buffer.BlipEQ;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
@@ -32,6 +33,13 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 		
 		buffer.setSampleRate(sampleRate, (size * 1000 * 2) / sampleRate);
 		buffer.bassFreq(runtime.setting.bassFilter);
+	}
+	
+	@Override
+	public void reset() {
+		super.reset();
+
+		buffer.clockRate(runtime.param.freqPerSec);
 	}
 	
 	/* **********
@@ -61,6 +69,12 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 		ChannalDeviceSelector.configMixChannel(code, c);
 		c.synth.output(buffer);
 		
+		// EQ
+		BlipEQ eq = new BlipEQ(-runtime.setting.trebleDamping, runtime.setting.trebleFilter,
+				runtime.setting.sampleRate, 0);
+		c.synth.trebleEq(eq);
+		c.synth.volume(1.0);
+		
 		return c;
 	}
 	
@@ -76,5 +90,21 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 	 * 音频缓存
 	 */
 	BlipBuffer buffer = new BlipBuffer();
+
+	/**
+	 * @return
+	 *   返回有多少音频采样数
+	 */
+	public int finishBuffer() {
+		int freq = runtime.param.freqPerFrame;
+		buffer.endFrame(freq);
+		
+		return buffer.samplesAvail();
+	}
+	
+	@Override
+	public int readBuffer(short[] buf, int offset, int length) {
+		return buffer.readSamples(buf, offset, length, false);
+	}
 
 }

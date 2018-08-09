@@ -28,8 +28,8 @@ public class BlipSynth {
 	 * <p>设置低通过滤器
 	 * <p>Configure low-pass filter
 	 */
-	public void treble_eq(final BlipEQ eq) {
-		impl.treble_eq(eq);
+	public void trebleEq(final BlipEQ eq) {
+		impl.trebleEq(eq);
 	}
 	
 	/**

@@ -81,6 +81,7 @@ public class FamiTrackerRenderer {
 			throws FamiTrackerException {
 		fetcher.ready(audio, track, section);
 		
+		runtime.param.calcFreq();
 		initMixer();
 		initChannels();
 		
@@ -309,11 +310,11 @@ public class FamiTrackerRenderer {
 		
 		fetcher.updateState();
 		
+		// 从 mixer 中读取数据
+		readMixer();
+		
 		// 测试方法
 		log();
-		
-		// 从 mixer 中读取数据
-		// TODO
 		
 		return ret;
 	}
@@ -382,10 +383,9 @@ public class FamiTrackerRenderer {
 			runtime.channels.put(code, ch);
 			runtime.effects.put(code, new HashMap<>());
 			
-			AbstractNsfSound sound = ChannalDeviceSelector.selectSound(code);
+			AbstractNsfSound sound = ch.getSound();
 			if (sound != null) {
 				// TODO
-				runtime.sounds.put(code, sound);
 				BlipMixerChannel mix = runtime.mixer.allocateChannel(code);
 				sound.setOut(mix);
 			}
@@ -420,6 +420,25 @@ public class FamiTrackerRenderer {
 		for (IFtmEffect eff : runtime.geffect.values()) {
 			eff.execute((byte) 0, runtime);
 		}
+	}
+	
+	/**
+	 * 从 Mixer 中读取音频数据
+	 */
+	private void readMixer() {
+		// TODO
+		
+		runtime.mixer.finishBuffer();
+		runtime.mixer.readBuffer(data, 0, data.length);
+		
+		// 现在音频数据在 data 中
+		
+//		int SamplesAvail = m_pMixer.finishBuffer(m_iFrameCycles);
+//		int ReadSamples	= m_pMixer.readBuffer(SamplesAvail, m_pSoundBuffer, m_bStereoEnabled);
+//		m_pParent.flushBuffer(m_pSoundBuffer, 0, ReadSamples);
+//		
+//		m_iFrameClock= m_iFrameCycleCount;
+//		m_iFrameCycles = 0;
 	}
 	
 	/* **********

@@ -198,6 +198,15 @@ public class FtmAudio {
 	 */
 	ArrayList<FtmDPCMSample> samples = new ArrayList<>();
 	
+	/**
+	 * 获得乐器
+	 * @param index
+	 * @return
+	 */
+	public AbstractFtmInstrument getInstrument(int index) {
+		return insts.get(index);
+	}
+	
 	public FtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
 		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
 		if (list == null) {
