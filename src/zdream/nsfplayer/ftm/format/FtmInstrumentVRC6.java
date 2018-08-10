@@ -12,11 +12,11 @@ public class FtmInstrumentVRC6 extends AbstractFtmInstrument {
 		return FtmChipType.VRC6;
 	}
 	
-	public int vol;
-	public int arp;
-	public int pit;
-	public int hip;
-	public int dut;
+	public int vol = -1;
+	public int arp = -1;
+	public int pit = -1;
+	public int hip = -1;
+	public int dut = -1;
 	
 	@Override
 	public String toString() {

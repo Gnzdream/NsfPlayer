@@ -13,11 +13,11 @@ public final class FtmInstrument2A03 extends AbstractFtmInstrument {
 		return FtmChipType._2A03;
 	}
 	
-	public int vol;
-	public int arp;
-	public int pit;
-	public int hip;
-	public int dut;
+	public int vol = -1;
+	public int arp = -1;
+	public int pit = -1;
+	public int hip = -1;
+	public int dut = -1;
 	
 	// 采样相关的数据
 	public final FtmDPCMSample[][] samples = new FtmDPCMSample[FamiTrackerSetting.OCTAVE_RANGE][12];

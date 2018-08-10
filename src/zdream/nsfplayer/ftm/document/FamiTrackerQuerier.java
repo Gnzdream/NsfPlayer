@@ -1,7 +1,14 @@
 package zdream.nsfplayer.ftm.document;
 
+import static zdream.nsfplayer.ftm.format.FtmChipType.*;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
+
+import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
+import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
+import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
@@ -145,6 +152,39 @@ public class FamiTrackerQuerier implements IFtmChannelCode {
 	/* **********
 	 *   乐器   *
 	 ********** */
+	
+	public FtmSequence[] getSequences(int instrument) {
+		AbstractFtmInstrument inst = audio.getInstrument(instrument);
+		
+		switch (inst.instType()) {
+		case _2A03: {
+			FtmInstrument2A03 i2 = (FtmInstrument2A03) inst;
+			return new FtmSequence[] {
+					i2.vol == -1 ? null : audio.getSequence(_2A03, VOLUME, i2.vol),
+					i2.arp == -1 ? null : audio.getSequence(_2A03, ARPEGGIO, i2.arp),
+					i2.pit == -1 ? null : audio.getSequence(_2A03, PITCH, i2.pit),
+					i2.hip == -1 ? null : audio.getSequence(_2A03, HI_PITCH, i2.hip),
+					i2.dut == -1 ? null : audio.getSequence(_2A03, DUTY, i2.dut),
+			};
+		}
+		
+		case VRC6: {
+			FtmInstrumentVRC6 i2 = (FtmInstrumentVRC6) inst;
+			return new FtmSequence[] {
+					i2.vol == -1 ? null : audio.getSequence(VRC6, VOLUME, i2.vol),
+					i2.arp == -1 ? null : audio.getSequence(VRC6, ARPEGGIO, i2.arp),
+					i2.pit == -1 ? null : audio.getSequence(VRC6, PITCH, i2.pit),
+					i2.hip == -1 ? null : audio.getSequence(VRC6, HI_PITCH, i2.hip),
+					i2.dut == -1 ? null : audio.getSequence(VRC6, DUTY, i2.dut),
+			};
+		}
+
+		default:
+			break;
+		}
+		
+		return new FtmSequence[5];
+	}
 	
 	/* **********
 	 *  段  键  *

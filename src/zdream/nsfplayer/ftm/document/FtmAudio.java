@@ -185,18 +185,18 @@ public class FtmAudio {
 	/**
 	 * 乐器部分 Instruments
 	 */
-	ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
+	final ArrayList<AbstractFtmInstrument> insts = new ArrayList<>();
 	
 	/**
 	 * 序列
 	 * int (chip * seqtype.length + seqtype) - seq
 	 */
-	HashMap<Integer, ArrayList<FtmSequence>> seqs = new HashMap<>();
+	final HashMap<Integer, ArrayList<FtmSequence>> seqs = new HashMap<>();
 	
 	/**
 	 * 采样列表
 	 */
-	ArrayList<FtmDPCMSample> samples = new ArrayList<>();
+	final ArrayList<FtmDPCMSample> samples = new ArrayList<>();
 	
 	/**
 	 * 获得乐器
@@ -205,6 +205,14 @@ public class FtmAudio {
 	 */
 	public AbstractFtmInstrument getInstrument(int index) {
 		return insts.get(index);
+	}
+	
+	/**
+	 * @return
+	 *   乐器总数
+	 */
+	public int instrumentCount() {
+		return insts.size();
 	}
 	
 	public FtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {

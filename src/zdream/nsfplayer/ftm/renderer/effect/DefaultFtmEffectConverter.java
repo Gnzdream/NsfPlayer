@@ -89,6 +89,9 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 	 * @param effect
 	 */
 	private void putEffect(byte channelCode, Map<FtmEffectType, IFtmEffect> effects, IFtmEffect effect) {
+		if (effect == null) {
+			return;
+		}
 		effects.put(effect.type(), effect);
 	}
 	

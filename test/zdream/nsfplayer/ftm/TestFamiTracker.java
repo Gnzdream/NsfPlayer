@@ -18,7 +18,7 @@ public class TestFamiTracker {
 		BytesPlayer player = new BytesPlayer();
 		byte[] bs = new byte[2400];
 		
-		for (int i = 0; i < 1600; i++) {
+		for (int i = 0; i < 3600; i++) {
 			int size = renderer.render(bs, 0, 2400);
 			player.writeSamples(bs, 0, size);
 			if (renderer.isFinished()) {

@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 import static zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter.LENGTH_TABLE;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
+import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 import zdream.nsfplayer.sound.PulseSound;
@@ -49,7 +50,15 @@ public final class Square1Channel extends Channel2A03Tone {
 	private void updateSequence() {
 		if (instrumentUpdated) {
 			// 替换序列
-			getRuntime().querier.audio.getInstrument(instrument); // 这样不太好
+			FtmSequence[] seqs = getRuntime().querier.getSequences(instrument);
+			for (int i = 0; i < seqs.length; i++) {
+				FtmSequence s = seqs[i];
+				if (s != null) {
+					seq.setupSequence(seqs[i]);
+				} else {
+					seq.clearSequence(FtmSequenceType.get(i));
+				}
+			}
 		}
 		
 		seq.update();
@@ -72,7 +81,6 @@ public final class Square1Channel extends Channel2A03Tone {
 			return;
 		}
 
-		System.out.println(curVolume + ":" + seq.volume);
 		volume = (seq.volume * volume) / 15;
 		if (volume > 240) {
 			curVolume = 240;
@@ -81,6 +89,7 @@ public final class Square1Channel extends Channel2A03Tone {
 		} else {
 			curVolume = volume;
 		}
+		System.out.println(curVolume);
 	}
 	
 	/**

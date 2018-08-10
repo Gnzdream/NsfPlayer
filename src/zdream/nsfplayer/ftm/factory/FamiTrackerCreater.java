@@ -18,6 +18,7 @@ import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
+import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
@@ -182,6 +183,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				break;
 			}
 		}
+		
+		// 当 doc 建立完成之后, 开始进入检查部分
+		revise(doc);
 	}
 
 	/**
@@ -872,7 +876,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		case VRC6:
 			return createVRC6Instrument(doc, block);
 
-		// TODO
+		// TODO 除了 2A03 和 VRC6 的其它的乐器
 			
 		default:
 			break;
@@ -988,6 +992,68 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		}
 		return inst;
 	}
+	
+	/* **********
+	 *   检查   *
+	 ********** */
+	
+	/**
+	 * 检查和尝试修复
+	 */
+	void revise(FamiTrackerHandler doc) {
+		reviseNotes(doc);
+		// TODO 其它检查项
+	}
+	
+	/**
+	 * 检查乐器, 还有每个音键使用的乐器是否在正确的范围内.
+	 * 修复: 将不在正确的范围内的乐器号码修改成统一值 -1
+	 * @param doc
+	 */
+	private void reviseNotes(FamiTrackerHandler doc) {
+		FtmAudio audio = doc.audio;
+		int instMax = audio.instrumentCount();
+		
+		int trackLen = audio.getTrackCount();
+		for (int i = 0; i < trackLen; i++) {
+			FtmTrack track = audio.getTrack(i);
+			FtmPattern[][] ps = track.patterns;
+			
+			for (int x = 0; x < ps.length; x++) {
+				FtmPattern[] ys = ps[x];
+				if (ys == null) {
+					continue;
+				}
+				
+				for (int y = 0; y < ys.length; y++) {
+					FtmPattern p = ys[y];
+					if (p == null) {
+						continue;
+					}
+					
+					FtmNote[] notes = p.notes;
+					for (int j = 0; j < notes.length; j++) {
+						reviseNote(notes[j], instMax);
+					}
+				}
+			}
+			
+		}
+	}
+	
+	private void reviseNote(FtmNote note, int instMax) {
+		if (note == null) {
+			return;
+		}
+		
+		if (note.instrument < 0 || note.instrument >= instMax) {
+			note.instrument = -1;
+		}
+	}
+	
+	/* **********
+	 *   其它   *
+	 ********** */
 
 	/**
 	 * 检查头部 ID

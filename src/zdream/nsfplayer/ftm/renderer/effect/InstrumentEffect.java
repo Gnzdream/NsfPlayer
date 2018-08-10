@@ -22,13 +22,17 @@ public class InstrumentEffect implements IFtmEffect {
 	}
 	
 	/**
-	 * 形成一个修改乐器的效果
+	 * 形成一个修改乐器的效果.
+	 * 如果传入的 inst 为 -1 等不合法的数值时, 返回 null
 	 * @param inst
 	 *   乐器号码
 	 * @return
 	 *   效果实例
 	 */
 	public static InstrumentEffect of(int inst) {
+		if (inst == -1) {
+			return null;
+		}
 		return new InstrumentEffect(inst);
 	}
 	
