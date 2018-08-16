@@ -8,16 +8,10 @@ import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 import zdream.nsfplayer.sound.PulseSound;
 
-/**
- * 2A03 矩形轨道 1
- * 
- * @author Zdream
- * @since 0.2.1
- */
-public final class Square1Channel extends Channel2A03Tone {
+public class Square2Channel extends Channel2A03Tone {
 
-	public Square1Channel() {
-		super(CHANNEL_2A03_PULSE1);
+	public Square2Channel() {
+		super(CHANNEL_2A03_PULSE2);
 	}
 
 	@Override
@@ -223,5 +217,5 @@ public final class Square1Channel extends Channel2A03Tone {
 		// 结束
 		sound.endFrame();
 	}
-	
+
 }

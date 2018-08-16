@@ -76,7 +76,8 @@ public class BlipBuffer {
 	 */
 	public void endFrame(int time) {
 		offset_ += time * factor_;
-		assert(samplesAvail() <= buffer_size_); // time outside buffer length
+		int avail = samplesAvail();
+		assert(avail <= buffer_size_); // time outside buffer length
 	}
 	
 	/**

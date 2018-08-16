@@ -338,8 +338,22 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * @param state
 	 */
 	public void removeState(IFtmState state) {
-		states.remove(state);
 		state.onDetach(channelCode, runtime);
+		states.remove(state);
+	}
+	
+	/**
+	 * 删除名称匹配的所有状态
+	 * @param state
+	 */
+	public void removeStates(String name) {
+		states.removeIf((s) -> {
+			boolean b = s.name().equals(name);
+			if (b) {
+				s.onDetach(channelCode, runtime);
+			}
+			return b;
+		});
 	}
 	
 	/**

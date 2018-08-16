@@ -1,9 +1,15 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import java.util.HashSet;
+
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
- * 修改音量的效果
+ * <p>修改音量的效果
+ * <p>该效果在产生时还会重置随时间变化修改音量效果 (Axx), 但只清除累积数据
+ * </p>
  * 
  * @author Zdream
  * @since 0.2.1
@@ -39,7 +45,19 @@ public class VolumeEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.channels.get(channelCode).setMasterVolume(volume);
+		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+		
+		ch.setMasterVolume(volume);
+		
+		// 如果存在 Volume Slide 效果时, 将其重置 filterStates
+		HashSet<IFtmState> set = ch.filterStates(VolumeSlideState.NAME);
+		if (!set.isEmpty()) {
+			set.forEach((state) -> {
+				if (state instanceof VolumeSlideState) {
+					((VolumeSlideState) state).resetAccumulation();
+				}
+			});
+		}
 	}
 	
 	@Override

@@ -1,10 +1,16 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import java.util.HashSet;
+
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
  * <p>随时间变化修改音量的效果, Axx
  * </p>
+ * 
+ * @see VolumeSlideState
  * 
  * @author Zdream
  * @since 0.2.1
@@ -67,7 +73,25 @@ public class VolumeSlideEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		// TODO Auto-generated method stub
+		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+		
+		/*
+		 * 这里要保证一个轨道最多只有一个随时间变化修改音量的状态
+		 */
+		if (delta == 0) {
+			ch.removeStates(VolumeSlideState.NAME);
+		} else {
+			HashSet<IFtmState> set = ch.filterStates(VolumeSlideState.NAME);
+			VolumeSlideState s = null;
+			
+			if (!set.isEmpty()) {
+				s = (VolumeSlideState) set.iterator().next();
+				s.delta = delta; // 但不重置累积量
+			} else {
+				s = new VolumeSlideState(delta);
+				ch.addState(s);
+			}
+		}
 	}
 	
 	@Override

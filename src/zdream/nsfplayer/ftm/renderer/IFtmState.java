@@ -25,7 +25,7 @@ public interface IFtmState {
 	
 	/**
 	 * 当该 state 被装配时,
-	 * 即被轨道或全局状态机装配时触发
+	 * 即被轨道或全局状态机装配时触发 (在添加后)
 	 * @param channelCode
 	 *   当前轨道号码
 	 * @param runtime
@@ -34,7 +34,7 @@ public interface IFtmState {
 	
 	/**
 	 * 当该 state 被拆除时,
-	 * 即被轨道或全局状态机拆除时触发
+	 * 即被轨道或全局状态机拆除时触发 (在拆除前)
 	 * @param channelCode
 	 *   当前轨道号码
 	 * @param runtime
