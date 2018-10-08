@@ -416,7 +416,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 		case "C-": note.note = FtmNote.NOTE_C; break;
 		case "C#": note.note = FtmNote.NOTE_CS; break;
 		case "D-": note.note = FtmNote.NOTE_D; break;
-		case "D#": note.note = FtmNote.NOTE_CS; break;
+		case "D#": note.note = FtmNote.NOTE_DS; break;
 		case "E-": note.note = FtmNote.NOTE_E; break;
 		case "F-": note.note = FtmNote.NOTE_F; break;
 		case "F#": note.note = FtmNote.NOTE_FS; break;
