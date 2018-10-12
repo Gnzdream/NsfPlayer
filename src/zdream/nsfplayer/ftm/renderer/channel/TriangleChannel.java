@@ -1,23 +1,22 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
-import static zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter.LENGTH_TABLE;
-
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
-import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.TriangleSound;
 
 /**
- * 2A03 矩形轨道 1
+ * 2A03 三角轨道
  * 
  * @author Zdream
- * @since v0.2.1
+ * @since v0.2.2
  */
-public final class Square1Channel extends Channel2A03Tone {
+public class TriangleChannel extends Channel2A03Tone {
 
-	public Square1Channel() {
-		super(CHANNEL_2A03_PULSE1);
+	public TriangleChannel() {
+		super(CHANNEL_2A03_TRIANGLE);
 	}
 
 	@Override
@@ -63,31 +62,19 @@ public final class Square1Channel extends Channel2A03Tone {
 		
 		seq.update();
 		
-		// 回写
+		// 回写 (三角波的轨道没有音色值)
 		calculateVolume();
 		calculatePeriod();
-		calculateDuty();
-		
 	}
 	
 	/**
-	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 15] 范围内
+	 * 计算音量, 由于三角波轨道的特殊性, 这里最后确定的是三角波是否要发声音, 最后将音量限定在 [0, 1] 范围内
 	 */
 	private void calculateVolume() {
-		int volume = masterVolume * 16 + curVolume; // 精度 240
-
-		if (volume <= 0) {
+		if (seq.volume == 0) {
 			curVolume = 0;
-			return;
-		}
-
-		volume = (seq.volume * volume) / 15;
-		if (volume > 240) {
-			curVolume = 240;
-		} else if (volume < 1) {
-			curVolume = (seq.volume == 0) ? 0 : 1;
 		} else {
-			curVolume = volume;
+			curVolume = 1;
 		}
 	}
 	
@@ -132,82 +119,35 @@ public final class Square1Channel extends Channel2A03Tone {
 		curPeriod = period;
 	}
 	
-	/**
-	 * 计算音色
-	 */
-	private void calculateDuty() {
-		if (seq.duty >= 0) {
-			curDuty = seq.duty;
-		} else {
-			curDuty = masterDuty;
-		}
-	}
-	
 	/* **********
 	 *  发声器  *
 	 ********** */
 	
 	/**
-	 * 2A03 Pulse 1 音频发声器
+	 * 2A03 Triangle 音频发声器
 	 */
-	public final PulseSound sound = new PulseSound();
+	TriangleSound sound = new TriangleSound();
 
 	@Override
-	public PulseSound getSound() {
+	public AbstractNsfSound getSound() {
 		return sound;
 	}
 	
 	/**
 	 * <p>将轨道中的数据写到发声器中.
-	 * <p>参照原工程 Square1Chan.refreshChannel()
+	 * <p>参照原工程 TriangleChan.refreshChannel()
 	 * </p>
 	 */
 	public void writeToSound() {
-		sound.looping = true;
-		sound.envelopeFix = true;
-		
-		if (this.curVolume == 0) {
-			return;
-		}
-		
-		sound.dutyLength = curDuty;
-		sound.fixedVolume = curVolume / 16;
-		
-		if (sweep > 0) {
-			if ((sweep & 0x80) != 0) {
-				// 0x4001
-				int s = sweep & 0x7F;
-				sound.sweepEnabled = true;
-				sound.sweepPeriod = ((s >> 4) & 0x07) + 1;
-				sound.sweepMode = (s & 0x08) != 0;		
-				sound.sweepShift = s & 0x07;
-				sound.sweepUpdated = true;
-				
-				// TODO Clear sweep unit 不清楚如何清除 Sweep 部分
-//				writeRegister(0x4017, (byte) 0x80);	// Clear sweep unit
-//				writeRegister(0x4017, (byte) 0x00);
-				
-				// 0x4002 and 0x4003
-				sound.period = curPeriod;
-				sound.lengthCounter = LENGTH_TABLE[0];
-			}
+		if (this.curVolume > 0) {
+			sound.looping = true;
+			sound.linearLoad = 1;
+			sound.period = this.curPeriod;
+			sound.lengthCounter = 0;
 		} else {
-			// 0x4001
-			sound.sweepEnabled = false;
-			sound.sweepPeriod = 1;
-			sound.sweepMode = true;
-			sound.sweepShift = 0;
-			sound.sweepUpdated = true;
-			
-			// TODO 不清楚如何操作
-//			writeRegister(0x4017, (byte) 0x80);	// Manually execute one APU frame sequence to kill the sweep unit
-//			writeRegister(0x4017, (byte) 0x00);
-
-			// 0x4002 and 0x4003
-			sound.period = curPeriod;
-			sound.lengthCounter = LENGTH_TABLE[0];
+			sound.looping = false;
+			sound.linearLoad = 0;
 		}
-		// sound.
 	}
 	
 	/**
@@ -223,5 +163,5 @@ public final class Square1Channel extends Channel2A03Tone {
 		// 结束
 		sound.endFrame();
 	}
-	
+
 }

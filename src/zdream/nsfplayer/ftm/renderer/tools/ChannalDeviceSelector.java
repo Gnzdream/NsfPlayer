@@ -5,6 +5,7 @@ import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
 import zdream.nsfplayer.ftm.renderer.channel.Square2Channel;
+import zdream.nsfplayer.ftm.renderer.channel.TriangleChannel;
 import zdream.nsfplayer.ftm.renderer.mixer.BlipMixerChannel;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.PulseSound;
@@ -37,7 +38,10 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 			Square2Channel s = new Square2Channel();
 			return s;
 		}
-		case CHANNEL_2A03_TRIANGLE:
+		case CHANNEL_2A03_TRIANGLE: {
+			TriangleChannel s = new TriangleChannel();
+			return s;
+		}
 		case CHANNEL_2A03_NOISE:
 		case CHANNEL_2A03_DPCM:
 			// TODO
@@ -56,6 +60,7 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 	 *   轨道号
 	 * @return
 	 */
+	@Deprecated
 	public static AbstractNsfSound selectSound(byte code) {
 		switch (code) {
 		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2: {

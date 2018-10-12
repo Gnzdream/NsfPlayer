@@ -3,7 +3,7 @@ package zdream.nsfplayer.sound;
 /**
  * 矩形波发声器
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class PulseSound extends Sound2A03 {
 	
@@ -123,7 +123,7 @@ public class PulseSound extends Sound2A03 {
 	 * 该参数记录当前正在播放的周期是这 16 个中的第几个.
 	 * 值域 [0, 15]
 	 */
-	private int dutyCycle;
+	private int dutyCycle; // m_iStepGen
 	
 	/* **********
 	 * 公共方法 *

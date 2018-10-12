@@ -106,7 +106,7 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 	public int readBuffer(short[] buf, int offset, int length) {
 		int ret = buffer.readSamples(buf, offset, length, false);
 		
-		// TODO 这里为了避免 mixer 缓冲区的移出, 用了一些方法
+		// TODO 这里为了避免 mixer 缓冲区的溢出, 用了一些方法
 		buffer.removeSamples(buffer.samplesAvail());
 		
 		return ret;

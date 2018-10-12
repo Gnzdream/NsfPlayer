@@ -82,6 +82,8 @@ public class DefaultSequenceHandler implements IResetable {
 		seqState[index] = STATE_RUNNING;
 		seqPtr[index] = 0;
 		sequence[index] = seq;
+
+		resetValue();
 	}
 	
 	/**
@@ -94,6 +96,8 @@ public class DefaultSequenceHandler implements IResetable {
 		seqState[index] = STATE_DISABLED;
 		seqPtr[index] = 0;
 		sequence[index] = null;
+		
+		resetValue();
 	}
 	
 	/**
@@ -106,6 +110,16 @@ public class DefaultSequenceHandler implements IResetable {
 			seqPtr[i] = 0;
 			sequence[i] = null;
 		}
+		volume = 15;
+		period = deltaNote = arp = 0;
+		arpSetting = 0;
+		duty = -1;
+	}
+	
+	/**
+	 * 仅重置数值, 不重置序列
+	 */
+	public void resetValue() {
 		volume = 15;
 		period = deltaNote = arp = 0;
 		arpSetting = 0;
@@ -164,13 +178,14 @@ public class DefaultSequenceHandler implements IResetable {
 	
 	/**
 	 * <p>运行序列
-	 * <p>每帧运行该方法一次, 它将重置序列影响的数据, 包括 {@link #volume}, {@link #period} 和 {@link #deltaNote}.
+	 * <p>每帧运行该方法一次, 它将重置序列影响的数据, 包括 {@link #volume} 和 {@link #deltaNote},
+	 * 但是不包含 {@link #period}, 该值能够在每个循环中累加.
 	 * 它会重写这些数据, 然后让序列的指针向前移动一格
 	 * </p>
 	 */
 	public void update() {
 		volume = 15;
-		period = deltaNote = arp = 0;
+		/*period = */deltaNote = arp = 0;
 		arpSetting = 0;
 		duty = -1;
 		

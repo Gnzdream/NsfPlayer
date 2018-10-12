@@ -114,11 +114,17 @@ public class Square extends Channel {
 		m_iTime += time;
 	}
 
+	/**
+	 * APU.clock_120Hz() 调用
+	 */
 	public void lengthCounterUpdate() {
 		if (!m_iLooping && (m_iLengthCounter > 0)) 
 			--m_iLengthCounter;
 	}
 	
+	/**
+	 * APU.clock_120Hz() 调用
+	 */
 	public void sweepUpdate(int diff) {
 		m_iSweepResult = (m_iPeriod >> m_iSweepShift);
 
@@ -139,6 +145,9 @@ public class Square extends Channel {
 		}
 	}
 	
+	/**
+	 * APU.clock_240Hz() 调用
+	 */
 	public void envelopeUpdate() {
 		if (--m_iEnvelopeCounter == 0) {
 			m_iEnvelopeCounter = m_iEnvelopeSpeed;

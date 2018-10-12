@@ -50,6 +50,9 @@ public class Triangle extends Channel {
 		}
 	}
 	
+	/**
+	 * APU.write4015() 调用
+	 */
 	public void writeControl(int value) {
 		m_iControlReg = (byte) (value & 1);
 		
@@ -57,6 +60,9 @@ public class Triangle extends Channel {
 			m_iEnabled = 0;
 	}
 	
+	/**
+	 * 没有使用
+	 */
 	public int readControl() {
 		return ((m_iLengthCounter > 0) && (m_iEnabled == 1)) ? 1 : 0;
 	}
@@ -73,7 +79,7 @@ public class Triangle extends Channel {
 		} else if (m_iPeriod <= 1) {
 			// Frequency is too high to be audible
 			m_iTime += time;
-			m_iStepGen = 7;
+			// m_iStepGen = 7; 原程序有, 我把它注释了
 			mix(TRIANGLE_WAVE[m_iStepGen]);
 			return;
 		}
@@ -85,11 +91,15 @@ public class Triangle extends Channel {
 			mix(TRIANGLE_WAVE[m_iStepGen]);
 			m_iStepGen = (m_iStepGen + 1) & 0x1F;
 		}
+		// System.out.println(TRIANGLE_WAVE[m_iStepGen]);
 		
 		m_iCounter -= time;
 		m_iTime += time;
 	}
 
+	/**
+	 * APU.clock_120Hz() 调用
+	 */
 	public void lengthCounterUpdate() {
 		if ((m_iLoop == 0) && (m_iLengthCounter > 0)) 
 			m_iLengthCounter--;
@@ -99,6 +109,8 @@ public class Triangle extends Channel {
 	 * 1.  If the halt flag is set, the linear counter is reloaded with the counter reload value, 
 	 *     otherwise if the linear counter is non-zero, it is decremented.
 	 * 2.  If the control flag is clear, the halt flag is cleared. 
+	 * 
+	 * APU.clock_240Hz() 调用
 	 */
 	public void linearCounterUpdate() {
 		if (m_iHalt == 1)
@@ -111,8 +123,8 @@ public class Triangle extends Channel {
 			m_iHalt = 0;
 	}
 
-	int m_iLoop, m_iLinearLoad, m_iHalt;
-	int m_iLinearCounter;
-	int m_iStepGen;
+	private int m_iLoop, m_iLinearLoad, m_iHalt;
+	private int m_iLinearCounter;
+	private int m_iStepGen;
 
 }
