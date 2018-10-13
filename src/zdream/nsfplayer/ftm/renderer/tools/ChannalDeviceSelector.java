@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.renderer.tools;
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
+import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
 import zdream.nsfplayer.ftm.renderer.channel.Square2Channel;
 import zdream.nsfplayer.ftm.renderer.channel.TriangleChannel;
@@ -42,7 +43,10 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 			TriangleChannel s = new TriangleChannel();
 			return s;
 		}
-		case CHANNEL_2A03_NOISE:
+		case CHANNEL_2A03_NOISE: {
+			NoiseChannel s = new NoiseChannel();
+			return s;
+		}
 		case CHANNEL_2A03_DPCM:
 			// TODO
 			return new TestFtmChannel(code);
@@ -80,11 +84,22 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 	public static void configMixChannel(byte code, BlipMixerChannel mixer) {
 		switch (code) {
 		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
-		case CHANNEL_2A03_TRIANGLE: case CHANNEL_2A03_NOISE: case CHANNEL_2A03_DPCM:
 		{
 			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156)) : 0);
+			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);
 		} break;
+		
+		case CHANNEL_2A03_TRIANGLE:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 8227.0) + 30.0)) : 0);
+		} break;
+		
+		case CHANNEL_2A03_NOISE: case CHANNEL_2A03_DPCM:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (3834.96 / (1 / (x / 12241.0) + 30.0)) : 0);
+		}
 
 		default:
 			break;

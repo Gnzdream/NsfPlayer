@@ -11,7 +11,10 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 public interface IFtmEffect {
 	
 	/**
-	 * 效果种类
+	 * <p>效果种类.
+	 * <p>允许不同效果类有相同的种类, 比如 {@link NoteEffect} 和 {@link NoiseEffect}.
+	 * 它们在不同的轨道使用.
+	 * </p>
 	 * @return
 	 */
 	public FtmEffectType type();

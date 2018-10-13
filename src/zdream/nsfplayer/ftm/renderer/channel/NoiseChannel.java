@@ -2,18 +2,18 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
-import zdream.nsfplayer.sound.TriangleSound;
+import zdream.nsfplayer.sound.NoiseSound;
 
 /**
- * 2A03 三角轨道
+ * 2A03 噪音轨道
  * 
  * @author Zdream
  * @since v0.2.2
  */
-public class TriangleChannel extends Channel2A03Tone {
+public class NoiseChannel extends Channel2A03Tone {
 
-	public TriangleChannel() {
-		super(CHANNEL_2A03_TRIANGLE);
+	public NoiseChannel() {
+		super(CHANNEL_2A03_NOISE);
 	}
 
 	@Override
@@ -31,7 +31,10 @@ public class TriangleChannel extends Channel2A03Tone {
 	@Override
 	public void reset() {
 		seq.reset();
+		
 		sound.reset();
+		sound.looping = true;
+		sound.envelopeFix = true;
 	}
 	
 	/* **********
@@ -57,33 +60,51 @@ public class TriangleChannel extends Channel2A03Tone {
 		
 		seq.update();
 		
-		// 回写 (三角波的轨道没有音色值)
+		// 回写
 		calculateVolume();
-		calculatePeriod();
+		calculateNoise();
+		calculateDuty();
 	}
 	
-	/**
-	 * 计算音量, 由于三角波轨道的特殊性, 这里最后确定的是三角波是否要发声音, 最后将音量限定在 [0, 1] 范围内
-	 */
-	protected void calculateVolume() {
-		if (seq.volume == 0) {
-			curVolume = 0;
-		} else {
-			curVolume = 1;
+	private void calculateNoise() {
+		int note = masterNote + curNote + seq.deltaNote;
+		note += (-masterPitch + curPeriod + seq.period);
+		
+		if (seq.arp != 0) {
+			// TODO 存在问题
+			// 请注意 SequenceHandler.updateSequenceRunning 方法
+			switch (seq.arpSetting) {
+			case FtmSequence.ARP_SETTING_ABSOLUTE:
+				note += seq.arp;
+				break;
+			case FtmSequence.ARP_SETTING_FIXED: // 重置
+				note = seq.arp;
+				break;
+			case FtmSequence.ARP_SETTING_RELATIVE:
+				this.masterNote += seq.arp;
+				note += seq.arp;
+			default:
+				break;
+			}
 		}
+		
+		if (note <= 1) {
+			note = 1;
+		} else if (note > 16) {
+			note = 16;
+		}
+		
+		curNote = note;
 	}
-	
+
 	/* **********
 	 *  发声器  *
 	 ********** */
 	
-	/**
-	 * 2A03 Triangle 音频发声器
-	 */
-	TriangleSound sound = new TriangleSound();
+	NoiseSound sound = new NoiseSound();
 
 	@Override
-	public TriangleSound getSound() {
+	public NoiseSound getSound() {
 		return sound;
 	}
 	
@@ -93,15 +114,19 @@ public class TriangleChannel extends Channel2A03Tone {
 	 * </p>
 	 */
 	public void writeToSound() {
-		if (this.curVolume > 0) {
-			sound.looping = true;
-			sound.linearLoad = 1;
-			sound.period = this.curPeriod;
-			sound.lengthCounter = 0;
-		} else {
-			sound.looping = false;
-			sound.linearLoad = 0;
+		sound.looping = true;
+		sound.envelopeFix = true;
+		
+		sound.fixedVolume = curVolume;
+		if (curVolume == 0) {
+			return;
 		}
+		
+		int period = (curNote - 1) ^ 0x0F;
+		
+		sound.dutyType = (curDuty & 1) == 1;
+		sound.periodIndex = period;
+		sound.lengthCounter = 0;
 	}
 	
 	/**

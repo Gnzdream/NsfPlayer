@@ -66,7 +66,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * <p>原程序: ChannelHandler.playNote
 	 * </p>
 	 * 
-	 * @param note
+	 * @param noise
 	 *   键, 音符.
 	 *   <br>如果 note = null, 则说明保持原来的 note 不变
 	 */

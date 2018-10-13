@@ -58,7 +58,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 	}
 	
 	@Override
-	public void convert(byte channelCode, FtmNote note) {
+	public void convert(final byte channelCode, FtmNote note) {
 		if (note == null) {
 			return;
 		}
@@ -66,10 +66,15 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 		Map<FtmEffectType, IFtmEffect> effects = runtime.effects.get(channelCode);
 		
 		if (note.note != NOTE_NONE) {
-			handleNote(channelCode, note, effects);
+			if (channelCode == CHANNEL_2A03_NOISE) {
+				handleNoise(note, effects);
+			} else {
+				handleNote(channelCode, note, effects);
+			}
 		}
 		
-		if (note.vol != MAX_VOLUME) {
+		if (note.vol != MAX_VOLUME && channelCode != CHANNEL_2A03_TRIANGLE) {
+			// 三角波轨道忽略音量这一栏
 			putEffect(channelCode, effects, VolumeEffect.of(note.vol));
 		}
 		
@@ -92,6 +97,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 		if (effect == null) {
 			return;
 		}
+		
 		effects.put(effect.type(), effect);
 	}
 	
@@ -104,7 +110,26 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 	}
 	
 	/**
-	 * 处理音符部分
+	 * 处理音符部分 (噪音轨道)
+	 * @param note
+	 * @param effects
+	 */
+	private void handleNoise(FtmNote note, Map<FtmEffectType, IFtmEffect> effects) {
+		if (note.note == NOTE_RELEASE) {
+			putEffect(CHANNEL_2A03_NOISE, effects, NoteReleaseEffect.of());
+		} else if (note.note == NOTE_HALT) {
+			putEffect(CHANNEL_2A03_NOISE, effects, NoteHaltEffect.of());
+		} else {
+			int noise = (note.octave * 12 + note.note) & 0xF;
+			if (noise == 0) {
+				noise = 16;
+			}
+			putEffect(CHANNEL_2A03_NOISE, effects, NoiseEffect.of(noise));
+		}
+	}
+	
+	/**
+	 * 处理音符部分 (非噪音轨道)
 	 * @param channelCode
 	 * @param note
 	 * @param effects
