@@ -229,7 +229,7 @@ public class DefaultSequenceHandler implements IResetable {
 		int length = seq.length(); // length 保证大于 0
 		ptr ++;
 
-		if (ptr == release || ptr + 1 >= length) {
+		if (ptr == release || ptr >= length) {
 			// End point reached
 			if (loop != -1 && !(isReleasing() && release != -1)) {
 				// 循环中, 没释放

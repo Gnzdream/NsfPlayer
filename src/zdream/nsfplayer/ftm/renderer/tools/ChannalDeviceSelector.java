@@ -55,7 +55,7 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 			break;
 		}
 		
-		return null;
+		return new TestFtmChannel(code);
 	}
 	
 	/**

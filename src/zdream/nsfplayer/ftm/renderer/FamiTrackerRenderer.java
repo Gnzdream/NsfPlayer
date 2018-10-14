@@ -461,6 +461,7 @@ public class FamiTrackerRenderer {
 			b.append(' ').append("G").append('=').append(runtime.geffect.values());
 		}
 		System.out.println(b);
+		
 	}
 	
 }
