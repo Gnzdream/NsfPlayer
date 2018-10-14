@@ -30,6 +30,8 @@ public class NoiseChannel extends Channel2A03Tone {
 
 	@Override
 	public void reset() {
+		super.reset();
+		
 		seq.reset();
 		
 		sound.reset();
@@ -118,7 +120,8 @@ public class NoiseChannel extends Channel2A03Tone {
 		sound.envelopeFix = true;
 		
 		sound.fixedVolume = curVolume;
-		if (curVolume == 0) {
+		if (curVolume == 0 || !playing) {
+			sound.fixedVolume = 0;
 			return;
 		}
 		

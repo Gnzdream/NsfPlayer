@@ -30,6 +30,7 @@ public class TriangleChannel extends Channel2A03Tone {
 
 	@Override
 	public void reset() {
+		super.reset();
 		seq.reset();
 		sound.reset();
 	}
@@ -93,7 +94,7 @@ public class TriangleChannel extends Channel2A03Tone {
 	 * </p>
 	 */
 	public void writeToSound() {
-		if (this.curVolume > 0) {
+		if (this.curVolume > 0 && playing) {
 			sound.looping = true;
 			sound.linearLoad = 1;
 			sound.period = this.curPeriod;

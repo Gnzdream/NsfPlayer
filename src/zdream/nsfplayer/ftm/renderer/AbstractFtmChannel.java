@@ -144,7 +144,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/**
 	 * 是否在播放状态
 	 */
-	protected boolean playing;
+	protected boolean playing = true;
 	
 	/**
 	 * @return
@@ -302,6 +302,11 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 		return playing;
 	}
 	
+	@Override
+	public void reset() {
+		playing = true;
+	}
+	
 	/**
 	 * 每帧开始时调用
 	 */
@@ -395,7 +400,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * 暂停声音播放. ftm 里面显示为 "---" 的 note 的效果
 	 */
 	public void doHalt() {
-		// TODO
+		playing = false;
 	}
 	
 	/**
