@@ -25,5 +25,11 @@ public class TestFtmChannel extends AbstractFtmChannel {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public int periodTable(int note) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
 }

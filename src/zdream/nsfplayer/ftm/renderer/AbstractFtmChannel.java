@@ -257,12 +257,28 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	}
 	
 	/**
+	 * @return
+	 *   {@link #masterNote}
+	 */
+	public int getMasterNote() {
+		return masterNote;
+	}
+	
+	/**
 	 * 设置并重置现在的音量
 	 * @param masterVolume
 	 *   {@link #masterVolume}
 	 */
 	public void setMasterVolume(int masterVolume) {
 		this.masterVolume = masterVolume;
+	}
+	
+	/**
+	 * @return
+	 *   {@link #masterVolume}
+	 */
+	public int getMasterVolume() {
+		return masterVolume;
 	}
 
 	/**
@@ -273,6 +289,14 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	public void setMasterPitch(int masterPitch) {
 		this.masterPitch = masterPitch;
 	}
+	
+	/**
+	 * @return
+	 *   {@link #masterPitch}
+	 */
+	public int getMasterPitch() {
+		return masterPitch;
+	}
 
 	/**
 	 * 设置并重置现在的音色
@@ -281,6 +305,14 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 */
 	public void setMasterDuty(int masterDuty) {
 		this.masterDuty = masterDuty;
+	}
+	
+	/**
+	 * @return
+	 *   {@link #masterDuty}
+	 */
+	public int getMasterDuty() {
+		return masterDuty;
 	}
 	
 	/**
@@ -306,6 +338,9 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	@Override
 	public void reset() {
 		playing = true;
+		
+		schedules.clear();
+		states.clear();
 	}
 	
 	/**
@@ -317,6 +352,11 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 		curPeriod = 0;
 		curVolume = 0;
 		instrumentUpdated = false;
+		
+		for (IFtmSchedule s : schedules) {
+			s.trigger(channelCode, runtime);
+		}
+		schedules.clear();
 	}
 	
 	/* **********
@@ -325,10 +365,17 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 
 	/**
 	 * <p>状态集合.
-	 * <p>原本这里的延迟状态等, 都视为一个状态
+	 * <p>原本这里的延迟状态等, 都视为一个状态.
+	 * 状态的触发在效果发生之后. 如果想要在状态发生之前, 需要将状态放在 schedules 中.
 	 * </p>
 	 */
 	HashSet<IFtmState> states = new HashSet<>();
+	
+	/**
+	 * 准备阶段触发的状态集合. 比如 delay 状态触发比效果触发的时间还要早, 就放在这里.
+	 * 准备阶段的状态只调用一次, 调用完自动删除
+	 */
+	HashSet<IFtmSchedule> schedules = new HashSet<>();
 	
 	/**
 	 * 添加状态
@@ -337,6 +384,14 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	public void addState(IFtmState state) {
 		states.add(state);
 		state.onAttach(channelCode, runtime);
+	}
+	
+	/**
+	 * 添加准备阶段触发的状态
+	 * @param state
+	 */
+	public void addSchedule(IFtmSchedule schedule) {
+		schedules.add(schedule);
 	}
 	
 	/**
@@ -392,7 +447,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	}
 
 	/**
-	 * 所有状态的触发
+	 * 强制按照状态的优先度, 触发现有的状态
 	 */
 	private void triggleState() {
 		ArrayList<IFtmState> list = new ArrayList<>(this.states);
@@ -413,6 +468,18 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 */
 	public void doRelease() {
 		// TODO
+	}
+	
+	
+	/**
+	 * <p>根据音键查询波长值.
+	 * <p>工具方法, 需要子类按照需要来重写
+	 * </p>
+	 * @param note
+	 * @return
+	 */
+	public int periodTable(int note) {
+		throw new IllegalStateException("该轨道不支持查询音键波长的功能");
 	}
 
 }

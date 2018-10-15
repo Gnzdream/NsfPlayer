@@ -49,7 +49,7 @@ public class VolumeEffect implements IFtmEffect {
 		
 		ch.setMasterVolume(volume);
 		
-		// 如果存在 Volume Slide 效果时, 将其重置 filterStates
+		// 如果存在 Volume Slide 效果时, 将其重置
 		HashSet<IFtmState> set = ch.filterStates(VolumeSlideState.NAME);
 		if (!set.isEmpty()) {
 			set.forEach((state) -> {

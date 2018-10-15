@@ -84,7 +84,7 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 			note = 96;
 		}
 		
-		period += NoteLookupTable.ntsc(note);
+		period += periodTable(note);
 		if (period < 1) {
 			period = 1;
 		}
@@ -102,6 +102,14 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 		} else {
 			curDuty = masterDuty;
 		}
+	}
+	
+	/**
+	 * 根据音键查询波长值.
+	 * 工具方法
+	 */
+	public int periodTable(int note) {
+		return NoteLookupTable.ntsc(note);
 	}
 
 }

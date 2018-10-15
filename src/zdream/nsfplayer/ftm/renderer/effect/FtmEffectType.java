@@ -172,7 +172,7 @@ public enum FtmEffectType {
 	 * <p>Rxx Slide down, 向下滑到指定的音键
 	 * <p>DPCM 无效
 	 * </p>
-	 * TODO
+	 * @see NoteSlideEffect
 	 */
 	SLIDE,
 	

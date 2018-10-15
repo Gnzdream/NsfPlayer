@@ -6,6 +6,7 @@ import java.util.Map;
 
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.renderer.IFtmSchedule;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
@@ -25,6 +26,7 @@ public class DelayEffect implements IFtmEffect {
 		this.duration = duration;
 		
 		state = new DelayState(duration);
+		schedule = new DelaySchedule();
 	}
 
 	@Override
@@ -66,6 +68,7 @@ public class DelayEffect implements IFtmEffect {
 		HashSet<IFtmState> set = channel.filterStates(state.name());
 		if (!set.isEmpty()) {
 			for (IFtmState s : set) {
+				// TODO 立即触发
 				channel.removeState(s);
 			}
 		}
@@ -102,17 +105,13 @@ public class DelayEffect implements IFtmEffect {
 
 		@Override
 		public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
-			if (delayCounter > 0) {
+			if (delayCounter > 1) {
 				delayCounter --;
 			} else {
-				// 触发
-				Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
-				for (IFtmEffect eff : effects) {
-					map.put(eff.type(), eff);
-				}
-				
+				// delayCounter = 1
 				AbstractFtmChannel channel = runtime.channels.get(channelCode);
-				channel.forceEffect(effects);
+				channel.addSchedule(schedule);
+				// 删除该状态
 				channel.removeState(this);
 			}
 		}
@@ -123,14 +122,29 @@ public class DelayEffect implements IFtmEffect {
 		}
 		
 		/**
-		 * 最高优先级
+		 * 最低优先级
 		 */
 		public final int priority() {
-			return 99;
+			return -99;
 		}
 	}
 	
+	class DelaySchedule implements IFtmSchedule {
+
+		@Override
+		public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+			// 触发
+			Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
+			for (IFtmEffect eff : effects) {
+				map.put(eff.type(), eff);
+			}
+			
+		}
+		
+	}
+	
 	DelayState state;
+	DelaySchedule schedule;
 	
 	/**
 	 * 最高优先级

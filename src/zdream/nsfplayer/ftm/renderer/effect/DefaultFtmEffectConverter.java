@@ -10,6 +10,8 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_EFFECT_COLUMNS;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
@@ -228,6 +230,31 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 					}
 				}
 				break;
+				
+			case EF_SLIDE_UP: case EF_SLIDE_DOWN: // Qxy Rxy
+			{
+				if (channelCode == CHANNEL_2A03_DPCM) {
+					break;
+				}
+				
+				short param = note.effParam[i];
+				int delta = param & 0xF;
+				
+				param >>= 4;
+				boolean up = note.effNumber[i] == EF_SLIDE_UP;
+				int speed;
+				if (channelCode == CHANNEL_2A03_NOISE) {
+					speed = (param == 0) ? 1 : param;
+				} else {
+					speed = (param << 1) + 1;
+				}
+				
+				if (!up) {
+					delta *= -1;
+				}
+				
+				putEffect(channelCode, effects, NoteSlideEffect.of(delta, speed));
+			} break;
 			
 			// TODO 其它效果
 
