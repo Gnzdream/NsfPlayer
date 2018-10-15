@@ -4,15 +4,24 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
- * <p>随时间变化修改音量效果的状态, Axx
+ * <p>音量累计状态
+ * <p>当某个轨道有该状态时, 音量会随着时间变化. 变轻或变响由 delta 为负或者为正来决定.
+ * 如果 delta = 0 意味着音量不再变化,
+ * 但是如果积累量不为 0, 则说明整个轨道实际产生的音量与原来产生的音量仍会有不同,
+ * 它们的差值就由 accum 数值来决定.
+ * <p>每当轨道中触发了音量重置的效果 {@link VolumeEffect}, 累积量清零.
  * </p>
+ * 
+ * @version 0.2.2
+ *   原先该状态的定位只是随时间变化修改音量效果的状态, 仅仅完成 Axx 的效果.
+ *   从该版本开始
  * 
  * @see VolumeSlideEffect
  * 
  * @author Zdream
  * @since 0.2.1
  */
-public class VolumeSlideState implements IFtmState {
+public class VolumeAccumulateState implements IFtmState {
 	
 	public static final String NAME = "Volume Slide";
 	
@@ -27,7 +36,7 @@ public class VolumeSlideState implements IFtmState {
 	 */
 	private int accum = 0;
 
-	public VolumeSlideState(int slide) {
+	public VolumeAccumulateState(int slide) {
 		delta = slide;
 	}
 
@@ -38,6 +47,11 @@ public class VolumeSlideState implements IFtmState {
 
 	@Override
 	public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+		if (delta == 0 && accum == 0) {
+			runtime.channels.get(channelCode).removeState(this);
+			return;
+		}
+		
 		runtime.channels.get(channelCode).addCurrentVolume(accum);
 		
 		accum += delta;

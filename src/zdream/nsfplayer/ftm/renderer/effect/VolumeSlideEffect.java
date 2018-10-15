@@ -78,19 +78,15 @@ public class VolumeSlideEffect implements IFtmEffect {
 		/*
 		 * 这里要保证一个轨道最多只有一个随时间变化修改音量的状态
 		 */
-		if (delta == 0) {
-			ch.removeStates(VolumeSlideState.NAME);
-		} else {
-			HashSet<IFtmState> set = ch.filterStates(VolumeSlideState.NAME);
-			VolumeSlideState s = null;
-			
-			if (!set.isEmpty()) {
-				s = (VolumeSlideState) set.iterator().next();
-				s.delta = delta; // 但不重置累积量
-			} else {
-				s = new VolumeSlideState(delta);
-				ch.addState(s);
-			}
+		HashSet<IFtmState> set = ch.filterStates(VolumeAccumulateState.NAME);
+		VolumeAccumulateState s = null;
+		
+		if (!set.isEmpty()) {
+			s = (VolumeAccumulateState) set.iterator().next();
+			s.delta = delta; // 但不重置累积量
+		} else if (delta != 0) {
+			s = new VolumeAccumulateState(delta);
+			ch.addState(s);
 		}
 	}
 	
