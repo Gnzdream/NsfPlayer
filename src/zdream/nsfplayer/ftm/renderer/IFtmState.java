@@ -4,10 +4,13 @@ package zdream.nsfplayer.ftm.renderer;
  * <p>状态. 每个轨道和全局在播放时, 每帧都进行触发的.
  * </p>
  * 
+ * @version 0.2.2
+ * 从该版本开始, 状态可以根据优先度进行排序
+ * 
  * @author Zdream
  * @since 0.2.1
  */
-public interface IFtmState {
+public interface IFtmState extends Comparable<IFtmState> {
 	
 	/**
 	 * 标识名称
@@ -40,5 +43,22 @@ public interface IFtmState {
 	 * @param runtime
 	 */
 	default public void onDetach(byte channelCode, FamiTrackerRuntime runtime) {}
+	
+	/**
+	 * 优先度. 优先度越大的越先执行.
+	 * @return
+	 * @since 0.2.2
+	 */
+	default int priority() {
+		return 0;
+	}
+	
+	/**
+	 * 默认是按照从高到低的顺序进行排序
+	 * @since 0.2.2
+	 */
+	default int compareTo(IFtmState o) {
+		return o.priority() - priority();
+	}
 	
 }

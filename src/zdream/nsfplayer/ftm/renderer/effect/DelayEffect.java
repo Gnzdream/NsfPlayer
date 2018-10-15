@@ -121,8 +121,22 @@ public class DelayEffect implements IFtmEffect {
 		public String toString() {
 			return name() + delayCounter;
 		}
+		
+		/**
+		 * 最高优先级
+		 */
+		public final int priority() {
+			return 99;
+		}
 	}
 	
 	DelayState state;
+	
+	/**
+	 * 最高优先级
+	 */
+	public final int priority() {
+		return 99;
+	}
 
 }

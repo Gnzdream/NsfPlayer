@@ -43,6 +43,9 @@ public class VolumeSlideState implements IFtmState {
 		accum += delta;
 	}
 	
+	/**
+	 * 当外部的音量重新设置时, 调用该方法使累积量重置
+	 */
 	public void resetAccumulation() {
 		accum = 0;
 	}

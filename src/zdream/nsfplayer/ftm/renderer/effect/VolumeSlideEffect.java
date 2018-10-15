@@ -98,5 +98,12 @@ public class VolumeSlideEffect implements IFtmEffect {
 	public String toString() {
 		return "VolumnSlide:" + delta;
 	}
+	
+	/**
+	 * 优先度低于修改音量的效果 {@link VolumeEffect}
+	 */
+	public final int priority() {
+		return -1;
+	}
 
 }

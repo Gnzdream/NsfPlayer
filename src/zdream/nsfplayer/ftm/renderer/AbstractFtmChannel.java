@@ -1,5 +1,6 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -382,7 +383,10 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 *   效果集合（非全局效果有效）
 	 */
 	public void forceEffect(Collection<IFtmEffect> effs) {
-		for (IFtmEffect eff : effs) {
+		ArrayList<IFtmEffect> list = new ArrayList<>(effs);
+		list.sort(null); // 效果类有自然的优先度排序
+		
+		for (IFtmEffect eff : list) {
 			eff.execute(channelCode, runtime);
 		}
 	}
@@ -390,10 +394,11 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/**
 	 * 所有状态的触发
 	 */
-	@SuppressWarnings("unchecked")
 	private void triggleState() {
-		((HashSet<IFtmState>) this.states.clone())
-			.forEach((state) -> state.trigger(channelCode, runtime));
+		ArrayList<IFtmState> list = new ArrayList<>(this.states);
+		list.sort(null); // 状态类有自然的优先度排序
+		
+		list.forEach((state) -> state.trigger(channelCode, runtime));
 	}
 	
 	/**

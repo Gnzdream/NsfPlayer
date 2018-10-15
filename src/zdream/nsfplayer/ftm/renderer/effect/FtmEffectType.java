@@ -129,8 +129,9 @@ public enum FtmEffectType {
 	PITCH,
 	
 	/**
-	 * Gxx
-	 * TODO
+	 * <p>Gxx 延迟效果
+	 * </p>
+	 * @see DelayEffect
 	 */
 	DELAY,
 	
@@ -141,13 +142,13 @@ public enum FtmEffectType {
 	DAC,
 	
 	/**
-	 * 1xx
+	 * 1xx Portamento up
 	 * TODO
 	 */
 	PORTA_UP,
 	
 	/**
-	 * 2xx
+	 * 2xx Portamento down
 	 * TODO
 	 */
 	PORTA_DOWN,
@@ -167,16 +168,13 @@ public enum FtmEffectType {
 	SAMPLE_OFFSET,
 	
 	/**
-	 * Qxx
+	 * <p>Qxx Slide up, 向上滑到指定的音键
+	 * <p>Rxx Slide down, 向下滑到指定的音键
+	 * <p>DPCM 无效
+	 * </p>
 	 * TODO
 	 */
-	SLIDE_UP,
-	
-	/**
-	 * Rxx
-	 * TODO
-	 */
-	SLIDE_DOWN,
+	SLIDE,
 	
 	/**
 	 * <p>Axx 音量随时间线性变化
