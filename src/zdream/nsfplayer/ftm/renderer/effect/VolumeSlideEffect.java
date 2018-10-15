@@ -31,7 +31,7 @@ public class VolumeSlideEffect implements IFtmEffect {
 	/**
 	 * 形成一个随时间变化修改音量的效果
 	 * @param delta
-	 *   变化量. 每帧变化的音量数 (一般是 1/60 s), 范围 [-15, 15]
+	 *   变化量. 每帧变化的音量数 (一般是 1/60 s), 范围 [-30, 30]
 	 *   <br>正数, 则随时间变化音量不断增大;
 	 *   <br>负数, 则随时间变化音量不断减小;
 	 *   <br>0, 则音量不随时间变化而变化, 也可以禁掉原来作用在轨道上的随时间变化修改音量的效果;
@@ -41,8 +41,8 @@ public class VolumeSlideEffect implements IFtmEffect {
 	 *   当变化量 <code>slide</code> 不在指定范围内时
 	 */
 	public static VolumeSlideEffect of(int delta) throws IllegalArgumentException {
-		if (delta < -15 || delta > 15) {
-			throw new IllegalArgumentException("音量变化量必须在 -15 到 15 之间");
+		if (delta < -30 || delta > 30) {
+			throw new IllegalArgumentException("音量变化量必须在 -30 到 30 之间");
 		}
 		return new VolumeSlideEffect(delta);
 	}

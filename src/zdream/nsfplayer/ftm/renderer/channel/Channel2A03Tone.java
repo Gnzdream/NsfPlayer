@@ -35,14 +35,19 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 15] 范围内
 	 */
 	protected void calculateVolume() {
-		int volume = (seq.volume * masterVolume * 240) / 225; // 精度 240
-		volume += curVolume;
-		
-		if (volume > 240) {
-			curVolume = 240;
-		} else if (volume < 0) {
+		int volume = masterVolume * 16 + curVolume; // 精度 240
+ 		if (volume <= 0) {
 			curVolume = 0;
-		} else {
+			return;
+		}
+ 		
+ 		volume = (seq.volume * volume) / 15;
+ 		
+ 		if (volume > 240) {
+			curVolume = 240;
+ 		} else if (volume < 1) {
+			curVolume = (seq.volume == 0) ? 0 : 1;
+ 		} else {
 			curVolume = volume;
 		}
 	}

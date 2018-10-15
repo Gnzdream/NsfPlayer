@@ -119,7 +119,7 @@ public class NoiseChannel extends Channel2A03Tone {
 		sound.looping = true;
 		sound.envelopeFix = true;
 		
-		sound.fixedVolume = curVolume;
+		sound.fixedVolume = curVolume / 16;
 		if (curVolume == 0 || !playing) {
 			sound.fixedVolume = 0;
 			return;

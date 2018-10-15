@@ -13,7 +13,7 @@ public class TestFamiTracker {
 		
 		// 播放部分
 		FamiTrackerRenderer renderer = new FamiTrackerRenderer();
-		renderer.ready(audio, 32);
+		renderer.ready(audio, 44);
 		
 		BytesPlayer player = new BytesPlayer();
 		byte[] bs = new byte[2400];

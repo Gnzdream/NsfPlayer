@@ -98,7 +98,7 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 		case CHANNEL_2A03_NOISE: case CHANNEL_2A03_DPCM:
 		{
 			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (3834.96 / (1 / (x / 12241.0) + 30.0)) : 0);
+			mixer.setExpression((x) -> (x > 0) ? (int) (57524.6 / (1 / (x / 12241.0) + 30.0)) : 0);
 		}
 
 		default:
