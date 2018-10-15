@@ -296,7 +296,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 				nextSection = jumpSection;
 				jumpSection = -1;
 			} else {
-				nextSection++;
+				toNextRowBegin();
 			}
 			nextRow = skipRow;
 			skipRow = -1;
@@ -304,6 +304,11 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 			nextSection = jumpSection;
 			nextRow = 0;
 			jumpSection = -1;
+		}
+		
+		// 再多一次 section 段号的检查
+		if (nextSection >= querier.trackCount(trackIdx)) {
+			nextSection = 0;
 		}
 	}
 	
@@ -335,13 +340,20 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		int len = querier.maxRow(trackIdx); // 段长
 		if (nextRow >= len) {
 			// 跳到下一段的第 0 行
-			nextRow = 0;
-			nextSection++;
-			
-			// Loop
-			if (nextSection >= querier.trackCount(trackIdx)) {
-				nextSection = 0;
-			}
+			toNextRowBegin();
+		}
+	}
+	
+	/**
+	 * 转到下一段的第一行
+	 */
+	private void toNextRowBegin() {
+		nextRow = 0;
+		nextSection++;
+		
+		// Loop
+		if (nextSection >= querier.trackCount(trackIdx)) {
+			nextSection = 0;
 		}
 	}
 

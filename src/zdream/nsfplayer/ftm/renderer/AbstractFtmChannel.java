@@ -467,7 +467,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * 播放乐器的释放效果. ftm 里面显示为 "===" 的 note 的效果
 	 */
 	public void doRelease() {
-		// TODO
+		// 需要子类完成
 	}
 	
 	

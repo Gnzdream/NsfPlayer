@@ -302,9 +302,6 @@ public class FamiTrackerRenderer {
 	private int renderFrame() {
 		int ret = countNextFrame();
 		
-//		fetcher.runFrame();
-//		updateChannels();
-		
 		fetcher.runFrame();
 		updateChannels();
 		

@@ -84,6 +84,7 @@ public class DefaultSequenceHandler implements IResetable {
 		sequence[index] = seq;
 
 		resetValue();
+		setRelease(false);
 	}
 	
 	/**
@@ -98,6 +99,7 @@ public class DefaultSequenceHandler implements IResetable {
 		sequence[index] = null;
 		
 		resetValue();
+		setRelease(false);
 	}
 	
 	/**

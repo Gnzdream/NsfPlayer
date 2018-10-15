@@ -59,8 +59,6 @@ public class NoteSlideState implements IFtmState {
 			}
 		}
 		
-		if (channelCode == 1)
-			System.out.print("+slide");
 		AbstractFtmChannel ch = runtime.channels.get(channelCode);
 		
 		if (delta == 0) {
