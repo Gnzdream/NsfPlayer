@@ -104,8 +104,10 @@ public enum FtmEffectType {
 	SWEEPDOWN,
 	
 	/**
-	 * 0xx
-	 * TODO
+	 * <p>0xx 琶音
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see ArpeggioEffect
 	 */
 	ARPEGGIO,
 	

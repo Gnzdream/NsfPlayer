@@ -72,5 +72,15 @@ public class CutEffect implements IFtmEffect {
 			}
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return "Cut:" + frames;
+	}
+	
+	@Override
+	public int priority() {
+		return -4;
+	}
 
 }

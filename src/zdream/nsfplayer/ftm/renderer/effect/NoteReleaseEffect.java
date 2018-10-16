@@ -34,5 +34,13 @@ public class NoteReleaseEffect implements IFtmEffect {
 	public String toString() {
 		return "Note:===";
 	}
+	
+	/**
+	 * 优先度必须大于 {@link NoteEffect} 和 {@link NoiseEffect},
+	 * 以便释放之后, 允许放声音的效果重写
+	 */
+	public int priority() {
+		return 1;
+	}
 
 }

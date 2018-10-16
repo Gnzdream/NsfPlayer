@@ -34,5 +34,13 @@ public class NoteHaltEffect implements IFtmEffect {
 	public String toString() {
 		return "Note:---";
 	}
+	
+	/**
+	 * 优先度必须大于 {@link NoteEffect} 和 {@link NoiseEffect},
+	 * 以便静音之后, 允许放声音的效果重写
+	 */
+	public int priority() {
+		return 1;
+	}
 
 }

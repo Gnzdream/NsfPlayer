@@ -6,6 +6,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_ARPEGGIO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_UP;
@@ -290,6 +291,13 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 			case EF_NOTE_CUT: // Sxx
 				if (channelCode != CHANNEL_2A03_DPCM) {
 					putEffect(channelCode, effects, CutEffect.of(note.effParam[i]));
+				}
+				break;
+				
+			case EF_ARPEGGIO: // 0xy
+				if (channelCode != CHANNEL_2A03_DPCM) {
+					int param = note.effParam[i];
+					putEffect(channelCode, effects, ArpeggioEffect.of(param >> 4, param & 0xF));
 				}
 				break;
 			
