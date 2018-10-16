@@ -38,7 +38,7 @@ public class VolumeSlideEffect implements IFtmEffect {
 	 * @return
 	 *   效果实例
 	 * @throws IllegalArgumentException
-	 *   当变化量 <code>slide</code> 不在指定范围内时
+	 *   当变化量 <code>delta</code> 不在指定范围内时
 	 */
 	public static VolumeSlideEffect of(int delta) throws IllegalArgumentException {
 		if (delta < -30 || delta > 30) {

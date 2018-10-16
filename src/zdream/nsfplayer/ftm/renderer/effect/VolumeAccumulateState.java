@@ -23,7 +23,7 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  */
 public class VolumeAccumulateState implements IFtmState {
 	
-	public static final String NAME = "Volume Slide";
+	public static final String NAME = "Volume Accumulated";
 	
 	/**
 	 * 每帧的变化量

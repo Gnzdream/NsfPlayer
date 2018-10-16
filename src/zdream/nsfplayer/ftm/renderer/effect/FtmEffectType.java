@@ -60,6 +60,7 @@ public enum FtmEffectType {
 	 * <p>直接修改音高或音键
 	 * </p>
 	 * @see NoteEffect
+	 * @see NoiseEffect
 	 */
 	NOTE,
 	
@@ -117,8 +118,10 @@ public enum FtmEffectType {
 	VIBRATO,
 	
 	/**
-	 * 7xx
-	 * TODO
+	 * <p>7xy 音量颤音
+	 * <p>DPCM, Triangle 无效
+	 * </p>
+	 * @see TremoloEffect
 	 */
 	TREMOLO,
 	
@@ -144,16 +147,13 @@ public enum FtmEffectType {
 	DAC,
 	
 	/**
-	 * 1xx Portamento up
-	 * TODO
+	 * <p>1xx 向上滑音 Portamento up,
+	 * 2xx 向下滑音 Portamento down,
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see PortamentoEffect
 	 */
-	PORTA_UP,
-	
-	/**
-	 * 2xx Portamento down
-	 * TODO
-	 */
-	PORTA_DOWN,
+	PORTA,
 	
 	/**
 	 * <p>Vxx 修改音色

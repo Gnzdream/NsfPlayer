@@ -8,6 +8,8 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_UP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_DOWN;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
@@ -269,6 +271,18 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 				if (channelCode != CHANNEL_2A03_DPCM && channelCode != CHANNEL_2A03_TRIANGLE) {
 					int param = note.effParam[i];
 					putEffect(channelCode, effects, TremoloEffect.of(param >> 4, param & 0xF));
+				}
+				break;
+				
+			case EF_PORTA_UP: // 1xx
+				if (channelCode != CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, PortamentoEffect.of(-note.effParam[i]));
+				}
+				break;
+				
+			case EF_PORTA_DOWN: // 2xx
+				if (channelCode != CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, PortamentoEffect.of(note.effParam[i]));
 				}
 				break;
 			

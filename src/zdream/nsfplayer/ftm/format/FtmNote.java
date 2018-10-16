@@ -88,8 +88,8 @@ public class FtmNote implements Cloneable {
 		EF_PITCH = 13, // Pxx
 		EF_DELAY = 14,
 		EF_DAC = 15,
-		EF_PORTA_UP = 16,
-		EF_PORTA_DOWN = 17,
+		EF_PORTA_UP = 16, // 1xx
+		EF_PORTA_DOWN = 17, // 2xx
 		EF_DUTY_CYCLE = 18,
 		EF_SAMPLE_OFFSET = 19,
 		EF_SLIDE_UP = 20,
