@@ -7,6 +7,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
@@ -257,10 +258,17 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 				putEffect(channelCode, effects, NoteSlideEffect.of(delta, speed));
 			} break;
 			
-			case EF_VIBRATO:
+			case EF_VIBRATO: // 4xy
 				if (channelCode != CHANNEL_2A03_DPCM) {
 					int param = note.effParam[i];
 					putEffect(channelCode, effects, VibratoEffect.of(param >> 4, param & 0xF));
+				}
+				break;
+				
+			case EF_TREMOLO: // 7xy
+				if (channelCode != CHANNEL_2A03_DPCM && channelCode != CHANNEL_2A03_TRIANGLE) {
+					int param = note.effParam[i];
+					putEffect(channelCode, effects, TremoloEffect.of(param >> 4, param & 0xF));
 				}
 				break;
 			

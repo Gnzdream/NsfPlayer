@@ -7,16 +7,16 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
- * <p>颤音效果, 4xy
+ * <p>音量颤音效果, 7xy
  * </p>
  * 
- * @see VibratoState
+ * @see TremoloState
  * 
  * @author Zdream
  * @since 0.2.2
  */
-public class VibratoEffect implements IFtmEffect {
-	
+public class TremoloEffect implements IFtmEffect {
+
 	/**
 	 * 颤音正弦波的速度
 	 */
@@ -27,18 +27,18 @@ public class VibratoEffect implements IFtmEffect {
 	 */
 	public final int depth;
 
-	private VibratoEffect(int speed, int depth) {
+	private TremoloEffect(int speed, int depth) {
 		this.speed = speed;
 		this.depth = depth;
 	}
 
 	@Override
 	public FtmEffectType type() {
-		return FtmEffectType.VIBRATO;
+		return FtmEffectType.TREMOLO;
 	}
 	
 	/**
-	 * 形成一个颤音效果
+	 * 形成一个音量颤音效果
 	 * @param speed
 	 *   颤音速度. 范围 [0, 15]
 	 * @param depth
@@ -48,14 +48,14 @@ public class VibratoEffect implements IFtmEffect {
 	 * @throws IllegalArgumentException
 	 *   当变化量 <code>speed</code> 与 <code>depth</code> 不在指定范围内时
 	 */
-	public static VibratoEffect of(int speed, int depth) throws IllegalArgumentException {
+	public static TremoloEffect of(int speed, int depth) throws IllegalArgumentException {
 		if (speed < -15 || speed > 15) {
 			throw new IllegalArgumentException("颤音速度必须在 0 到 15 之间");
 		}
 		if (depth < -15 || depth > 15) {
 			throw new IllegalArgumentException("振幅必须在 0 到 15 之间");
 		}
-		return new VibratoEffect(speed, depth);
+		return new TremoloEffect(speed, depth);
 	}
 	
 	/**
@@ -71,29 +71,29 @@ public class VibratoEffect implements IFtmEffect {
 		AbstractFtmChannel ch = runtime.channels.get(channelCode);
 		
 		if (isClose()) {
-			ch.removeStates(VibratoState.NAME);
+			ch.removeStates(TremoloState.NAME);
 			return;
 		}
 		
 		/*
-		 * 这里要保证一个轨道最多只有一个颤音状态
+		 * 这里要保证一个轨道最多只有一个音量颤音状态
 		 */
-		HashSet<IFtmState> set = ch.filterStates(VibratoState.NAME);
-		VibratoState s = null;
+		HashSet<IFtmState> set = ch.filterStates(TremoloState.NAME);
+		TremoloState s = null;
 		
 		if (!set.isEmpty()) {
-			s = (VibratoState) set.iterator().next();
+			s = (TremoloState) set.iterator().next();
 			s.speed = speed;
 			s.depth = depth;
 		} else {
-			s = new VibratoState(speed, depth);
+			s = new TremoloState(speed, depth);
 			ch.addState(s);
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return "Vibrato:" + depth + "#" + speed;
+		return "Tremolo:" + depth + "#" + speed;
 	}
 	
 	public final int priority() {
