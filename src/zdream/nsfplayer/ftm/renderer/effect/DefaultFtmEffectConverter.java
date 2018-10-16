@@ -6,6 +6,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
@@ -255,6 +256,13 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 				
 				putEffect(channelCode, effects, NoteSlideEffect.of(delta, speed));
 			} break;
+			
+			case EF_VIBRATO:
+				if (channelCode != CHANNEL_2A03_DPCM) {
+					int param = note.effParam[i];
+					putEffect(channelCode, effects, VibratoEffect.of(param >> 4, param & 0xF));
+				}
+				break;
 			
 			// TODO 其它效果
 

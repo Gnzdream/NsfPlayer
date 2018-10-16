@@ -13,8 +13,8 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * </p>
  * 
  * @version 0.2.2
- *   原先该状态的定位只是随时间变化修改音量效果的状态, 仅仅完成 Axx 的效果.
- *   从该版本开始
+ *   <br>原先该状态的定位只是随时间变化修改音量效果的状态, 仅仅完成 Axx 的效果.
+ *   从该版本开始, 所有的音量累积效果、累积值储存均由它来完成.
  * 
  * @see VolumeSlideEffect
  * 

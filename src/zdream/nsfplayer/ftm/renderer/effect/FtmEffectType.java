@@ -109,8 +109,10 @@ public enum FtmEffectType {
 	ARPEGGIO,
 	
 	/**
-	 * 4xx
-	 * TODO
+	 * <p>4xy 颤音
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see VibratoEffect
 	 */
 	VIBRATO,
 	
@@ -168,8 +170,8 @@ public enum FtmEffectType {
 	SAMPLE_OFFSET,
 	
 	/**
-	 * <p>Qxx Slide up, 向上滑到指定的音键
-	 * <p>Rxx Slide down, 向下滑到指定的音键
+	 * <p>Qxy Slide up, 向上滑到指定的音键
+	 * <p>Rxy Slide down, 向下滑到指定的音键
 	 * <p>DPCM 无效
 	 * </p>
 	 * @see NoteSlideEffect

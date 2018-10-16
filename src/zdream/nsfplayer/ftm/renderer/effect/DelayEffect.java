@@ -136,7 +136,8 @@ public class DelayEffect implements IFtmEffect {
 			// 触发
 			Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
 			for (IFtmEffect eff : effects) {
-				map.put(eff.type(), eff);
+				if (!map.containsKey(eff.type()))
+					map.put(eff.type(), eff);
 			}
 			
 		}

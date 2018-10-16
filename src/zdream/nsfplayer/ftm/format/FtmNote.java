@@ -83,8 +83,8 @@ public class FtmNote implements Cloneable {
 		EF_SWEEPUP = 8,
 		EF_SWEEPDOWN = 9,
 		EF_ARPEGGIO = 10,
-		EF_VIBRATO = 11, // 4xx
-		EF_TREMOLO = 12,
+		EF_VIBRATO = 11, // 4xy
+		EF_TREMOLO = 12, // 7xy
 		EF_PITCH = 13, // Pxx
 		EF_DELAY = 14,
 		EF_DAC = 15,

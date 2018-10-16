@@ -10,7 +10,7 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * <p>随时间变化修改音量的效果, Axx
  * </p>
  * 
- * @see VolumeSlideState
+ * @see VolumeAccumulateState
  * 
  * @author Zdream
  * @since 0.2.1
