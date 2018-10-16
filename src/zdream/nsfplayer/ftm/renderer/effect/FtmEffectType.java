@@ -187,8 +187,10 @@ public enum FtmEffectType {
 	VOLUME_SLIDE,
 	
 	/**
-	 * Sxx
-	 * TODO
+	 * <p>Sxx 切断效果
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see CutEffect
 	 */
 	NOTE_CUT,
 	

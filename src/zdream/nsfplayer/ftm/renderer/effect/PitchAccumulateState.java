@@ -16,6 +16,11 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * (Noise 轨道是 {@link NoiseEffect}), 累积量清零.
  * </p>
  * 
+ * <br>
+ * <p><b>补充规则</b>
+ * <p>如果 Qxy 和 Rxy 在该帧产生效果, delta 重置为 0
+ * </p>
+ * 
  * @see PortamentoEffect
  * 
  * @author Zdream

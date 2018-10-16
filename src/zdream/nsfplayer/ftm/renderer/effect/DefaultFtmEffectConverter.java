@@ -16,6 +16,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_NOTE_CUT;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_EFFECT_COLUMNS;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
@@ -283,6 +284,12 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 			case EF_PORTA_DOWN: // 2xx
 				if (channelCode != CHANNEL_2A03_DPCM) {
 					putEffect(channelCode, effects, PortamentoEffect.of(note.effParam[i]));
+				}
+				break;
+				
+			case EF_NOTE_CUT: // Sxx
+				if (channelCode != CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, CutEffect.of(note.effParam[i]));
 				}
 				break;
 			
