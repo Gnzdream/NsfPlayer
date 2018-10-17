@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import java.util.Map;
+
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
@@ -7,6 +9,12 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
 /**
  * <p>延迟静音状态
  * <p>如果某帧产生了静音效果 {@link NoteHaltEffect}, 该状态删除
+ * </p>
+ * 
+ * <br>
+ * <p><b>补充规则</b>
+ * <p>如果该帧有 {@link NoteEffect} 或者 {@link NoiseEffect} 效果触发,
+ * 而且现在不是该状态建立的第一帧, 删除该状态
  * </p>
  * 
  * @see CutEffect
@@ -22,6 +30,11 @@ public class DelayCutState implements IFtmState {
 	 * 在几帧之后触发静音效果
 	 */
 	public int frames;
+	
+	/**
+	 * 记录现在是否是该状态建立的第一帧.
+	 */
+	private boolean startFrame = true;
 
 	public DelayCutState(int frames) {
 		this.frames = frames;
@@ -37,7 +50,12 @@ public class DelayCutState implements IFtmState {
 		AbstractFtmChannel ch = runtime.channels.get(channelCode);
 
 		// 每当轨道中触发了静音效果 NoteHaltEffect, 该效果删除
-		if (runtime.effects.get(channelCode).get(FtmEffectType.HALT) != null) {
+		Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
+		if (map.get(FtmEffectType.HALT) != null) {
+			ch.removeState(this);
+			return;
+		}
+		if (!startFrame && map.get(FtmEffectType.NOTE) != null) {
 			ch.removeState(this);
 			return;
 		}
@@ -49,6 +67,7 @@ public class DelayCutState implements IFtmState {
 		}
 		
 		frames--;
+		startFrame = false;
 	}
 	
 	@Override

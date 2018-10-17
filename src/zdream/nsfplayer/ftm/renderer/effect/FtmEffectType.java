@@ -86,8 +86,10 @@ public enum FtmEffectType {
 	INSTRUMENT,
 	
 	/**
-	 * 3xx
-	 * TODO
+	 * <p>3xx 持续滑音
+	 * <p>DPCM 无效
+	 * </p>
+	 * @see PortamentoOnEffect
 	 */
 	PORTAMENTO,
 	
@@ -190,7 +192,6 @@ public enum FtmEffectType {
 	
 	/**
 	 * <p>Sxx 切断效果
-	 * <p>DPCM 无效
 	 * </p>
 	 * @see CutEffect
 	 */

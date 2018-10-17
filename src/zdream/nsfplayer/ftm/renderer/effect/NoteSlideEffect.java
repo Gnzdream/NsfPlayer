@@ -10,7 +10,8 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**
  * <p>随时间向上或者向下滑到指定音符的效果, Qxy, Rxy
- * <p>一个轨道在同一时间, Qxy Rxy 3xx 的效果只允许存在一个, 其中 3xx 优先.
+ * <p>一个轨道在同一时间, Qxy Rxy 3xx 的效果只允许存在一个, 后出现的优先.
+ * 如果三个效果同帧出现, 3xx 先触发, 然后让 Qxy Rxy 效果进行改写.
  * </p>
  * 
  * @see NoteSlideState

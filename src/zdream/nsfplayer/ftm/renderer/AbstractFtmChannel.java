@@ -122,7 +122,7 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	 * <p>masterVolume: 主音量 [0, 15]
 	 * </p>
 	 */
-	protected int curVolume, masterVolume;
+	protected int curVolume, masterVolume = 15;
 	
 	/**
 	 * <p>音高

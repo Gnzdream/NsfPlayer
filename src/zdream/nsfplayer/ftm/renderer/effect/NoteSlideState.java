@@ -8,6 +8,12 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * <p>随时间向上或者向下滑到指定音符效果的状态, Qxy, Rxy
  * </p>
  * 
+ * <br>
+ * <p><b>补充规则</b>
+ * <p>如果该帧有 {@link NoteEffect} 或者 {@link NoiseEffect} 效果触发,
+ * 而且现在不是该状态建立的第一帧, 删除该状态
+ * </p>
+ * 
  * @see NoteSlideEffect
  * 
  * @author Zdream
@@ -33,6 +39,11 @@ public class NoteSlideState implements IFtmState {
 	 * 如果 delta < 0, 说明后面音符向下滑动;
 	 */
 	public int delta;
+	
+	/**
+	 * 记录现在是否是该状态建立的第一帧.
+	 */
+	private boolean startFrame = true;
 
 	public NoteSlideState(int speed, int delta) {
 		super();
@@ -47,6 +58,14 @@ public class NoteSlideState implements IFtmState {
 
 	@Override
 	public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+		
+		if (!startFrame && runtime.effects.get(channelCode).get(FtmEffectType.NOTE) != null) {
+			// 删除该状态
+			ch.removeState(this);
+			return;
+		}
+		
 		if (delta > 0) {
 			delta -= speed;
 			if (delta < 0) {
@@ -59,8 +78,6 @@ public class NoteSlideState implements IFtmState {
 			}
 		}
 		
-		AbstractFtmChannel ch = runtime.channels.get(channelCode);
-		
 		if (delta == 0) {
 			// 删除该状态
 			ch.removeState(this);
@@ -68,6 +85,12 @@ public class NoteSlideState implements IFtmState {
 		}
 		
 		ch.addCurrentPeriod(delta);
+		startFrame = false;
+	}
+	
+	@Override
+	public String toString() {
+		return NAME + ":" + speed;
 	}
 
 }

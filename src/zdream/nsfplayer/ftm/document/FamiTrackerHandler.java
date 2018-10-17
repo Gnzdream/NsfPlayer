@@ -178,7 +178,18 @@ public class FamiTrackerHandler implements IFtmChannelCode {
 	 */
 	public FtmPattern getOrCreatePattern(final FtmTrack track, final int patternIdx, final int channelIdx) {
 		if (track.patterns == null) {
-			track.patterns = new FtmPattern[track.orders.length][channelCount()];
+			int newLen = Math.max(track.orders.length, patternIdx + 1);
+			track.patterns = new FtmPattern[newLen][channelCount()];
+		} else if (patternIdx >= track.patterns.length) {
+			// 扩大容量
+			int newLen = patternIdx + 1;
+			FtmPattern[][] oldps = track.patterns;
+			track.patterns = new FtmPattern[newLen][];
+			
+			System.arraycopy(oldps, 0, track.patterns, 0, oldps.length);
+			for (int i = oldps.length; i < newLen; i++) {
+				track.patterns[i] = new FtmPattern[channelCount()];
+			}
 		}
 		
 		FtmPattern pattern = track.patterns[patternIdx][channelIdx];
