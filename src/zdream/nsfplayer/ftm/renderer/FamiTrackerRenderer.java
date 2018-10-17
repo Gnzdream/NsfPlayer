@@ -443,7 +443,6 @@ public class FamiTrackerRenderer {
 	 ********** */
 	private void log() {
 		StringBuilder b = new StringBuilder(128);
-		
 		b.append(String.format("%02d:%03d", fetcher.curSection, fetcher.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();

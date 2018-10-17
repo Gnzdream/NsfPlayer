@@ -229,24 +229,37 @@ public class DefaultSequenceHandler implements IResetable {
 		int release = seq.releasePoint;
 		int loop = seq.loopPoint;
 		int length = seq.length(); // length 保证大于 0
+		
+		// 下面求的是下一帧的值
 		ptr ++;
-
-		if (ptr == release || ptr >= length) {
-			// End point reached
-			if (loop != -1 && !(isReleasing() && release != -1)) {
-				// 循环中, 没释放
-				seqPtr[index] = loop;
+		if (isReleasing() && release != -1) {
+			// 进入释放部分
+			
+			if (ptr < release) {
+				ptr = release + 1;
+			}
+			if (ptr >= length) {
+				// 到了序列的末尾
+				seqState[index] = STATE_END;
+			}
+		} else {
+			if (loop != -1) {
+				if (release != -1 && ptr > release) {
+					ptr = loop;
+				} else if (ptr >= length) {
+					ptr = loop;
+				}
 			} else {
-				if (ptr + 1 >= length) {
+				if (release != -1 && ptr > release) {
+					ptr = release;
+				} else if (ptr >= length) {
 					// 到了序列的末尾
 					seqState[index] = STATE_END;
-				} else if (!isReleasing()) {
-					// 等待释放
-					--seqPtr[index];
 				}
 			}
 		}
 		
+		this.seqPtr[index] = ptr;
 	}
 
 	private void updateEnd(int index, FtmSequence seq) {

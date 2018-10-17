@@ -460,9 +460,17 @@ public class FamiTrackerHandler implements IFtmChannelCode {
 	 * @return 
 	 */
 	public FtmDPCMSample getOrCreateDPCMSample(int index) {
-		FtmDPCMSample sample = new FtmDPCMSample();
 		ArrayList<FtmDPCMSample> list = audio.samples;
-		registerT(list, sample, index);
+		FtmDPCMSample sample = null;
+		
+		if (list.size() > index) {
+			sample = list.get(index);
+		}
+		
+		if (sample == null) {
+			sample = new FtmDPCMSample();
+			registerT(list, sample, index);
+		}
 		
 		return sample;
 	}
