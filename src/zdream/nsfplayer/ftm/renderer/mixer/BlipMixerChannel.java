@@ -13,7 +13,7 @@ public class BlipMixerChannel implements IMixerChannel {
 	BlipSynth synth;
 	FtmSoundMixer mixer;
 	/**
-	 * 音量大小的修正. 默认 1.0
+	 * 音量大小的修正. 范围 [0, 1.0], 默认 1.0
 	 */
 	float level = 1;
 	

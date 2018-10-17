@@ -2,13 +2,16 @@ package zdream.nsfplayer.ftm.renderer;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
@@ -24,7 +27,7 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
  * @author Zdream
  * @since v0.2.1
  */
-public class FamiTrackerRenderer {
+public class FamiTrackerRenderer implements IFtmChannelCode {
 	
 	/**
 	 * 利用默认配置产生一个音频渲染器
@@ -206,6 +209,16 @@ public class FamiTrackerRenderer {
 	public int getCurrentRow() {
 		return fetcher.getCurrentRow();
 	}
+	
+	/**
+	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link IFtmChannelCode} 里面写出
+	 * @return
+	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
+	 * @since 0.2.2
+	 */
+	public Set<Byte> allChannelSet() {
+		return new HashSet<>(runtime.effects.keySet());
+	}
 
 	/* **********
 	 * 所含数据 *
@@ -216,6 +229,43 @@ public class FamiTrackerRenderer {
 	final FtmRowFetcher fetcher = new FtmRowFetcher(runtime);
 	
 	final IFtmEffectConverter converter = new DefaultFtmEffectConverter(runtime);
+
+	/* **********
+	 * 仪表盘区 *
+	 ********** */
+	/*
+	 * 用于控制实际播放数据的部分.
+	 * 其中有: 控制音量、控制是否播放
+	 */
+	
+	/**
+	 * 设置某个轨道的音量
+	 * @param channelCode
+	 *   轨道号
+	 * @param level
+	 *   音量. 范围 [0, 1]
+	 * @since 0.2.2
+	 */
+	public void setLevel(byte channelCode, float level) {
+		if (level < 0) {
+			level = 0;
+		} else if (level > 1) {
+			level = 1;
+		}
+		runtime.mixer.setLevel(channelCode, level);
+	}
+	
+	/**
+	 * 设置轨道是否发出声音
+	 * @param channelCode
+	 *   轨道号
+	 * @param enable
+	 *   true, 使该轨道发声; false, 则静音
+	 * @since 0.2.2
+	 */
+	public void setChannelEnable(byte channelCode, boolean enable) {
+		runtime.channels.get(channelCode).getSound().setEnable(enable);
+	}
 	
 	/* **********
 	 * 播放部分 *

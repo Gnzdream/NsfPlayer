@@ -82,6 +82,17 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 		return mixers.get(code);
 	}
 	
+	/**
+	 * 设置某个轨道的音量
+	 * @param code
+	 *   轨道号
+	 * @param level
+	 *   音量. 范围 [0, 1.0f]
+	 */
+	public void setLevel(byte code, float level) {
+		getMixerChannel(code).setLevel(level);
+	}
+	
 	/* **********
 	 * 音频合成 *
 	 ********** */
