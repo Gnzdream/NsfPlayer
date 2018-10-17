@@ -144,12 +144,12 @@ public final class DPCMChan extends ChannelHandler2A03 {
 			m_iLoopOffset = pInstrument.getSampleLoopOffset(octave, note - 1);
 
 			final DSample pDSample = pDocument.getSample1(sampleIndex - 1);
-			int sampleSize = pDSample.getSize();
+			int sampleSize = pDSample.getSize(); // byte 总数
 
 			if (sampleSize > 0) {
 				m_pSampleMem.setMem(pDSample.getData());
 				m_iPeriod = pitch & 0x0F;
-				m_iSampleLength = (sampleSize >> 4) - (m_iOffset << 2);
+				m_iSampleLength = (sampleSize >> 4) - (m_iOffset << 2); // sampleSize / 16 - m_iOffset * 4
 				m_iLoopLength = sampleSize - m_iLoopOffset;
 				m_bEnabled = true;
 				m_bTrigger = true;

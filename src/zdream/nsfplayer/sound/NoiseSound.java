@@ -1,5 +1,11 @@
 package zdream.nsfplayer.sound;
 
+/**
+ * 噪音发声器
+ * 
+ * @author Zdream
+ * @since v0.2.2
+ */
 public class NoiseSound extends Sound2A03 {
 	
 	public static final short[] NOISE_PERIODS_NTSC = {

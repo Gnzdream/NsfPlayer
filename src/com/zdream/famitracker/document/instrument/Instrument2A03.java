@@ -233,6 +233,7 @@ public class Instrument2A03 extends Instrument {
 	
 	/**
 	 * Delta setting
+	 * 推荐音量
 	 */
 	private byte[][] m_cSampleDelta = new byte[OCTAVE_RANGE][12];
 

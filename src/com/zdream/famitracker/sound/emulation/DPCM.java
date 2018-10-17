@@ -183,18 +183,52 @@ public class DPCM extends Channel {
 	 * 下面的 9 类数据全是 unsigned
 	 */
 
+	/**
+	 * 当前读取的 byte 中, 剩余还未读取的位数. [0, 8]
+	 */
 	private int m_iBitDivider;
 	private int m_iShiftReg;
+	
+	/**
+	 * 指示是循环播放还是只播放一次
+	 */
 	private int m_iPlayMode;
+	
+	/**
+	 * 很可能与音量有关.
+	 * 看起来是音像的位置
+	 */
 	private int m_iDeltaCounter;
+	/**
+	 * 当前取的 byte 的数值.
+	 * 因为在解析时, 需要一位一位地解析, 因此用它来缓存.
+	 */
 	private int m_iSampleBuffer;
 
+	/**
+	 * 起始读取位 offset, 单位 64 bytes
+	 */
 	private int m_iDMA_LoadReg;
+	
+	/**
+	 * 采样长度, 单位 16 bytes
+	 */
 	private int m_iDMA_LengthReg;
+	/**
+	 * 虚拟的读取位置. 用于储存现在读取的位置在 m_pSampleMem 的哪个地址号码上
+	 */
 	private int m_iDMA_Address;
+	/**
+	 * 剩余的 byte 个数
+	 */
 	private int m_iDMA_BytesRemaining;
 
-	private boolean m_bTriggeredIRQ, m_bSampleFilled, m_bSilenceFlag;
+	/**
+	 * 没有实际作用
+	 */
+	private boolean m_bTriggeredIRQ;
+	private boolean m_bSampleFilled;
+	private boolean m_bSilenceFlag;
 
 	// Needed by FamiTracker 
 	private SampleMem m_pSampleMem;
