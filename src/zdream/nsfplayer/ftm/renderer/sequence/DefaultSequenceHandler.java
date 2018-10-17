@@ -164,6 +164,21 @@ public class DefaultSequenceHandler implements IResetable {
 	 */
 	public void setRelease(boolean release) {
 		this.release = release;
+		
+		// 所有序列播放的位置都重置到释放点
+		if (release) {
+			for (int i = 0; i < sequence.length; i++) {
+				if (sequence[i] == null) {
+					continue;
+				}
+				
+				if (sequence[i].releasePoint == -1) {
+					continue;
+				}
+				
+				this.seqPtr[i] = sequence[i].releasePoint - 1;
+			}
+		}
 	}
 	
 	/**
@@ -231,7 +246,7 @@ public class DefaultSequenceHandler implements IResetable {
 		int length = seq.length(); // length 保证大于 0
 		ptr ++;
 
-		if (ptr == release || ptr >= length) {
+		if (ptr == release + 1 || ptr >= length) {
 			// End point reached
 			if (loop != -1 && !(isReleasing() && release != -1)) {
 				// 循环中, 没释放

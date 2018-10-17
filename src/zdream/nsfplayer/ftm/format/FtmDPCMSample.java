@@ -11,4 +11,12 @@ public class FtmDPCMSample {
 	
 	public byte[] data;
 	
+	@Override
+	public String toString() {
+		if (name != null) {
+			return "DPCMSample:" + name;
+		}
+		return "Empty DPCMSample";
+	}
+	
 }

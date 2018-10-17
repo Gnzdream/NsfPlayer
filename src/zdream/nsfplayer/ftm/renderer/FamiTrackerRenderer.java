@@ -9,6 +9,7 @@ import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
@@ -443,6 +444,12 @@ public class FamiTrackerRenderer {
 	 ********** */
 	private void log() {
 		StringBuilder b = new StringBuilder(128);
+		
+		try {
+			b.append(String.format("[%d] ", 
+					((zdream.nsfplayer.ftm.renderer.channel.Channel2A03Tone) runtime.channels.get((byte)1)).seq.getSequencePointer(FtmSequenceType.VOLUME)));
+		} catch (Exception e) {}
+		
 		b.append(String.format("%02d:%03d", fetcher.curSection, fetcher.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();

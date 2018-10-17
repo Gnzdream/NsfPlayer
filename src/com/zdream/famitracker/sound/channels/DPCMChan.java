@@ -84,16 +84,16 @@ public final class DPCMChan extends ChannelHandler2A03 {
 	
 	protected void handleCustomEffects(int effNum, int effParam) {
 		switch (effNum) {
-		case EF_DAC:
+		case EF_DAC: // Zxx
 			m_cDAC = effParam & 0x7F;
 			break;
-		case EF_SAMPLE_OFFSET:
+		case EF_SAMPLE_OFFSET: // Yxx
 			m_iOffset = effParam;
 			break;
-		case EF_DPCM_PITCH:
+		case EF_DPCM_PITCH: // Wxx
 			m_iCustomPitch = effParam;
 			break;
-		case EF_RETRIGGER:
+		case EF_RETRIGGER: // Xxx
 //				if (NoteData->EffParam[i] > 0) {
 				m_iRetrigger = effParam + 1;
 				if (m_iRetriggerCntr == 0)
@@ -101,7 +101,7 @@ public final class DPCMChan extends ChannelHandler2A03 {
 //				}
 //				m_iEnableRetrigger = 1;
 			break;
-		case EF_NOTE_CUT:
+		case EF_NOTE_CUT: // Sxx
 			m_iNoteCut = (byte) (effParam + 1);
 			break;
 		}
@@ -138,7 +138,7 @@ public final class DPCMChan extends ChannelHandler2A03 {
 			int pitch = pInstrument.getSamplePitch(octave, note - 1);
 			m_iLoop = (pitch & 0x80) >> 1;
 
-			if (m_iCustomPitch != -1)
+			if (m_iCustomPitch != -1) // 如果有 Wxx 效果, 以该效果为准
 				pitch = m_iCustomPitch;
 		
 			m_iLoopOffset = pInstrument.getSampleLoopOffset(octave, note - 1);
@@ -192,6 +192,11 @@ public final class DPCMChan extends ChannelHandler2A03 {
 	 * 6 个 unsigned
 	 */
 	
+	/**
+	 * 类似于音量
+	 * 255 表示不发出声音
+	 * 其他, 数值越低, 声音越大. 0 最大
+	 */
 	private int m_cDAC = 255;
 	private int m_iLoop;
 	private int m_iOffset;

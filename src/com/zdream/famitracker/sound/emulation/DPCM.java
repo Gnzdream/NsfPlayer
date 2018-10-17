@@ -59,6 +59,10 @@ public class DPCM extends Channel {
 		}
 	}
 	
+	/**
+	 * APU.write4015 调用
+	 * @param value
+	 */
 	public void writeControl(int value) {
 		if ((value & 1) == 1) {
 			if (m_iDMA_BytesRemaining == 0)

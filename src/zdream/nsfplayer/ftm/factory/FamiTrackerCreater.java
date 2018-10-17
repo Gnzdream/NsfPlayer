@@ -937,7 +937,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 					continue;
 				}
 				
-				FtmDPCMSample sample = doc.getOrCreateDPCMSample(index);
+				FtmDPCMSample sample = doc.getOrCreateDPCMSample(index - 1);
 				byte pitch = block.readByte();
 				byte delta;
 				if (version > 5) {
