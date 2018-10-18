@@ -1,5 +1,6 @@
 package zdream.nsfplayer.sound;
 
+import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
 /**

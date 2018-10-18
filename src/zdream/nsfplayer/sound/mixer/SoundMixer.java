@@ -1,12 +1,12 @@
 package zdream.nsfplayer.sound.mixer;
 
+import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.IResetable;
 
 /**
  * 音频合成器
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public abstract class SoundMixer implements IResetable {
 

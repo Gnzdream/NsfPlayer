@@ -1,6 +1,6 @@
 package zdream.nsfplayer.nsf.device;
 
-import zdream.nsfplayer.sound.IResetable;
+import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.xgm.device.IntHolder;
 
 /**

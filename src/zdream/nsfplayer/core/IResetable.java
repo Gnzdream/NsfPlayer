@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound;
+package zdream.nsfplayer.core;
 
 public interface IResetable {
 	

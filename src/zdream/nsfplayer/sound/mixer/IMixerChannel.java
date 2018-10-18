@@ -1,6 +1,6 @@
 package zdream.nsfplayer.sound.mixer;
 
-import zdream.nsfplayer.sound.IResetable;
+import zdream.nsfplayer.core.IResetable;
 
 public interface IMixerChannel extends IResetable {
 

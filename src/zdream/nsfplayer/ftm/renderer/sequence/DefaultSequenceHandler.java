@@ -2,9 +2,9 @@ package zdream.nsfplayer.ftm.renderer.sequence;
 
 import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 
+import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
-import zdream.nsfplayer.sound.IResetable;
 
 /**
  * <p>默认的序列处理器
