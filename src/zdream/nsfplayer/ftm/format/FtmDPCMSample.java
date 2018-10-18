@@ -25,6 +25,17 @@ public class FtmDPCMSample {
 		return data[address];
 	}
 	
+	/**
+	 * byte 数据总数
+	 * @return
+	 * @since v0.2.2
+	 */
+	public int size() {
+		if (data == null)
+			return 0;
+		return data.length;
+	}
+	
 	@Override
 	public String toString() {
 		if (name != null) {

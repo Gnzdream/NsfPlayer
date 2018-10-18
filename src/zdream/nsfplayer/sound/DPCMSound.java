@@ -152,7 +152,6 @@ public class DPCMSound extends Sound2A03 {
 	protected void onProcess(int time) {
 		if (sample == null) {
 			counter = 0;
-			this.time += time;
 			return;
 		}
 		
@@ -171,8 +170,12 @@ public class DPCMSound extends Sound2A03 {
 				remaining--;
 				sampleFilled = true;
 				
-				if (remaining == 0 && loop) {
-					reload();
+				if (remaining == 0) {
+					if (loop) {
+						reload();
+					} else {
+						this.sample = null;
+					}
 				}
 			}
 			
@@ -206,7 +209,6 @@ public class DPCMSound extends Sound2A03 {
 		}
 		
 		time -= counter;
-		this.time += counter;
 	}
 	
 	/**

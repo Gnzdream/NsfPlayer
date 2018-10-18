@@ -6,6 +6,12 @@ import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.sound.PulseSound;
 
+/**
+ * 2A03 矩形轨道 2
+ * 
+ * @author Zdream
+ * @since v0.2.1
+ */
 public class Square2Channel extends Channel2A03Tone {
 
 	public Square2Channel() {

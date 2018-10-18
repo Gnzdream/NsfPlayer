@@ -40,9 +40,46 @@ public final class FtmInstrument2A03 extends AbstractFtmInstrument {
 		setSample(octave, pitchOfOctave, null, (byte) 0, (byte) -1);
 	}
 	
+	/**
+	 * 获取 DMA 采样实例
+	 * @param octave
+	 * @param pitchOfOctave
+	 * @return
+	 */
+	public FtmDPCMSample getSample(int octave, int pitchOfOctave) {
+		return samples[octave][pitchOfOctave];
+	}
+	
+	/**
+	 * 获取 DMA 采样实例
+	 * @param pitch
+	 *   范围 [1, 96]
+	 * @return
+	 */
+	public FtmDPCMSample getSample(int pitch) {
+		int i = pitch - 1;
+		int octave = i / 12;
+		int pitchOfOctave = i % 12;
+		return getSample(octave, pitchOfOctave);
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("2A03 Instrument #%d %s", seq, name);
+	}
+
+	public int getSamplePitch(int pitch) {
+		int i = pitch - 1;
+		int octave = i / 12;
+		int pitchOfOctave = i % 12;
+		return samplePitches[octave][pitchOfOctave];
+	}
+
+	public int getSampleDelta(int pitch) {
+		int i = pitch - 1;
+		int octave = i / 12;
+		int pitchOfOctave = i % 12;
+		return sampleDeltas[octave][pitchOfOctave];
 	}
 
 }

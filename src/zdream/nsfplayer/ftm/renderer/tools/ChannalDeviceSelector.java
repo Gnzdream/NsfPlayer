@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.renderer.tools;
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
+import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
 import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
 import zdream.nsfplayer.ftm.renderer.channel.Square2Channel;
@@ -48,8 +49,8 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 			return s;
 		}
 		case CHANNEL_2A03_DPCM:
-			// TODO
-			return new TestFtmChannel(code);
+			DPCMChannel s = new DPCMChannel();
+			return s;
 
 		default:
 			break;
@@ -95,11 +96,17 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 8227.0) + 30.0)) : 0);
 		} break;
 		
-		case CHANNEL_2A03_NOISE: case CHANNEL_2A03_DPCM:
+		case CHANNEL_2A03_NOISE:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (57524.6 / (1 / (x / 12241.0) + 30.0)) : 0);
-		}
+		} break;
+		
+		case CHANNEL_2A03_DPCM:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (17524.6 / (1 / (x / 12241.0) + 30.0)) : 0);
+		} break;
 
 		default:
 			break;

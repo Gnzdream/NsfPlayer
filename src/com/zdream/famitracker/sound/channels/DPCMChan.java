@@ -192,11 +192,6 @@ public final class DPCMChan extends ChannelHandler2A03 {
 	 * 6 个 unsigned
 	 */
 	
-	/**
-	 * 类似于音量
-	 * 255 表示不发出声音
-	 * 其他, 数值越低, 声音越大. 0 最大
-	 */
 	private int m_cDAC = 255;
 	private int m_iLoop;
 	private int m_iOffset;

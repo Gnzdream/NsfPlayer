@@ -112,7 +112,7 @@ public class NoiseChannel extends Channel2A03Tone {
 	
 	/**
 	 * <p>将轨道中的数据写到发声器中.
-	 * <p>参照原工程 TriangleChan.refreshChannel()
+	 * <p>参照原工程 NoiseChan.refreshChannel()
 	 * </p>
 	 */
 	public void writeToSound() {

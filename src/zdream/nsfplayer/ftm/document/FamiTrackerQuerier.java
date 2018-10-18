@@ -153,8 +153,41 @@ public class FamiTrackerQuerier implements IFtmChannelCode {
 	 *   乐器   *
 	 ********** */
 	
+	/**
+	 * 返回乐器. 如果指定位置的乐器为空, 返回 null
+	 * @param instrument
+	 * @return
+	 * @since v0.2.2
+	 */
+	public AbstractFtmInstrument getInstrument(int instrument) {
+		if (instrument >= audio.instrumentCount()) {
+			return null;
+		}
+		return audio.getInstrument(instrument);
+	}
+	
+	/**
+	 * 返回 2A03 乐器. 如果指定位置的乐器为空, 或者不是 2A03 类型的, 返回 null
+	 * @param instrument
+	 * @return
+	 * @since v0.2.2
+	 */
+	public FtmInstrument2A03 get2A03Instrument(int instrument) {
+		AbstractFtmInstrument inst = getInstrument(instrument);
+		if (inst == null) {
+			return null;
+		}
+		if (inst.instType() != _2A03) {
+			return null;
+		}
+		return (FtmInstrument2A03) inst;
+	}
+	
 	public FtmSequence[] getSequences(int instrument) {
-		AbstractFtmInstrument inst = audio.getInstrument(instrument);
+		AbstractFtmInstrument inst = getInstrument(instrument);
+		if (inst == null) {
+			return new FtmSequence[5];
+		}
 		
 		switch (inst.instType()) {
 		case _2A03: {
