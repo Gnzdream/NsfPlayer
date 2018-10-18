@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.document;
 import static zdream.nsfplayer.ftm.format.FtmChipType.*;
 import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
 
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
@@ -17,7 +18,7 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
  * @date 2018-06-09
  * @since 0.2.1
  */
-public class FamiTrackerQuerier implements IFtmChannelCode {
+public class FamiTrackerQuerier implements INsfChannelCode {
 	
 	/**
 	 * 原 Ftm 音频数据

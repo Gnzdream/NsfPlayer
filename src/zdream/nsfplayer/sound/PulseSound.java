@@ -171,6 +171,7 @@ public class PulseSound extends Sound2A03 {
 	@Override
 	protected void onProcess(int time) {
 		if (period <= 0) {
+			this.time += time;
 			return;
 		}
 		

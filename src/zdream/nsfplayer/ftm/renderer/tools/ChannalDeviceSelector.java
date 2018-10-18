@@ -1,9 +1,10 @@
 package zdream.nsfplayer.ftm.renderer.tools;
 
-import zdream.nsfplayer.ftm.document.IFtmChannelCode;
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
+import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
 import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
@@ -23,7 +24,7 @@ import zdream.nsfplayer.sound.PulseSound;
  * @author Zdream
  * @since 0.2.1
  */
-public class ChannalDeviceSelector implements IFtmChannelCode {
+public class ChannalDeviceSelector implements INsfChannelCode {
 
 	/**
 	 * 建立各个轨道
@@ -53,6 +54,18 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 		case CHANNEL_2A03_DPCM:
 			DPCMChannel s = new DPCMChannel();
 			return s;
+			
+		// VRC6
+		case CHANNEL_VRC6_PULSE1: {
+			return new ChannelVRC6Pulse(true);
+		}
+		case CHANNEL_VRC6_PULSE2: {
+			return new ChannelVRC6Pulse(false);
+		}
+		case CHANNEL_VRC6_SAWTOOTH: {
+			// TODO
+		} break;
+			
 			
 		// MMC5
 		case CHANNEL_MMC5_PULSE1: {
@@ -96,6 +109,7 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 		switch (code) {
 		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
 		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
+		case CHANNEL_VRC6_PULSE1: case CHANNEL_VRC6_PULSE2:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);

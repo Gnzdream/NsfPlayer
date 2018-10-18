@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
-import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -371,7 +371,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 			note.octave = 0;
 			empty = false;
 		} else {
-			if (doc.channelCode(column) == IFtmChannelCode.CHANNEL_2A03_NOISE) {
+			if (doc.channelCode(column) == INsfChannelCode.CHANNEL_2A03_NOISE) {
 				parseNoiseNote(t, note);
 			} else {
 				parseAudioNote(t, note);

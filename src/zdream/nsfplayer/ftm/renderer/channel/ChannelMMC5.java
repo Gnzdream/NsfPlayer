@@ -24,22 +24,22 @@ public abstract class ChannelMMC5 extends AbstractFtmChannel {
 	public final DefaultSequenceHandler seq = new DefaultSequenceHandler();
 	
 	/**
-	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 15] 范围内
+	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 240] 范围内
 	 */
 	protected void calculateVolume() {
 		int volume = masterVolume * 16 + curVolume; // 精度 240
- 		if (volume <= 0) {
+		if (volume <= 0) {
 			curVolume = 0;
 			return;
 		}
- 		
- 		volume = (seq.volume * volume) / 15;
- 		
- 		if (volume > 240) {
+		
+		volume = (seq.volume * volume) / 15;
+		
+		if (volume > 240) {
 			curVolume = 240;
- 		} else if (volume < 1) {
+		} else if (volume < 1) {
 			curVolume = (seq.volume == 0) ? 0 : 1;
- 		} else {
+		} else {
 			curVolume = volume;
 		}
 	}
@@ -100,6 +100,10 @@ public abstract class ChannelMMC5 extends AbstractFtmChannel {
 			curDuty = seq.duty;
 		} else {
 			curDuty = masterDuty;
+		}
+		
+		if (curDuty < 0 || curDuty > 3) {
+			curDuty = curDuty & 0x3;
 		}
 	}
 	

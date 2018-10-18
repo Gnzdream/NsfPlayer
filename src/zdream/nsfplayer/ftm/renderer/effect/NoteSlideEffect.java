@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
-import static zdream.nsfplayer.ftm.document.IFtmChannelCode.CHANNEL_2A03_NOISE;
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_NOISE;
 
 import java.util.HashSet;
 

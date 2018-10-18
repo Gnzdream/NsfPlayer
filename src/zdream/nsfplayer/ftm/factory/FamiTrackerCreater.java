@@ -48,6 +48,8 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	public static final String FILE_BLOCK_DSAMPLES = "DPCM SAMPLES";
 	public static final String FILE_BLOCK_HEADER	 = "HEADER";
 	public static final String FILE_BLOCK_COMMENTS = "COMMENTS";
+	
+	public static final String FILE_BLOCK_SEQUENCES_VRC6 = "SEQUENCES_VRC6";
 	/**
 	 * FTM 整个文件的结束标识
 	 */
@@ -160,10 +162,10 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				// 直接忽略
 			} break;
 			
-			/*case FILE_BLOCK_SEQUENCES_VRC6: {
-				errorFlag = readBlock_SequencesVRC6(documentFile);
+			case FILE_BLOCK_SEQUENCES_VRC6: {
+				readBlockSequencesVRC6(doc, block);
 			} break;
-			
+			/*
 			// FILE_BLOCK_SEQUENCES_N106 是出于向后兼容的目的
 			case FILE_BLOCK_SEQUENCES_N163: case FILE_BLOCK_SEQUENCES_N106: {
 				errorFlag = readBlock_SequencesN163(documentFile);
@@ -554,6 +556,91 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		} 
 		else {
 			throw new FtmParseException("Sequences 部分暂时不支持老版本");
+		}
+	}
+	
+	private void readBlockSequencesVRC6(FamiTrackerHandler doc, Block block) {
+		// TODO
+
+		int version = block.version;
+		int count = block.readAsCInt();
+
+		if (version < 4) {
+			for (int i = 0; i < count; ++i) {
+				int index = block.readAsCInt();
+				int type = block.readAsCInt();
+				int seqCount = block.readUnsignedByte();
+				int loopPoint = block.readAsCInt();
+				
+				FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+				seq.clear();
+				
+				seq.loopPoint = loopPoint;
+				
+				byte[] bs = new byte[seqCount];
+				block.read(bs);
+				seq.data = bs;
+			}
+		} else {
+			int[] indices = new int[MAX_SEQUENCES];
+			int[] types = new int[MAX_SEQUENCES];
+			int releasePoint = -1, settings = 0;
+
+			for (int i = 0; i < count; ++i) {
+				int index = block.readAsCInt();
+				int type = block.readAsCInt();
+				int seqCount = block.readUnsignedByte();
+				int loopPoint = block.readAsCInt();
+
+				indices[i] = index;
+				types[i] = type;
+				
+				assert(index < MAX_SEQUENCES);
+
+				FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+				seq.clear();
+
+				seq.loopPoint = loopPoint;
+				
+				if (version == 4) {
+					seq.releasePoint = block.readAsCInt();
+					seq.settings = (byte) block.readAsCInt();
+				}
+				
+				byte[] data = new byte[seqCount];
+				block.read(data);
+				seq.data = data;
+			}
+
+			if (version == 5) {
+				// 根据源代码, 版本 5 中的 release 点位在保存时出现问题, 这个问题在版本 6 时修复.
+				for (int i = 0; i < MAX_SEQUENCES; ++i) {
+					for (int j = 0; j < SEQUENCE_COUNT; ++j) {
+						releasePoint = block.readAsCInt();
+						settings = block.readAsCInt();
+						
+						FtmSequence seq = doc.getSequenceVRC6(FtmSequenceType.get(j), i);
+						if (seq == null) {
+							continue;
+						}
+						
+						seq.releasePoint = releasePoint;
+						seq.settings = (byte) settings;
+					}
+				}
+			} else if (version >= 6) {
+				for (int i = 0; i < count; ++i) {
+					releasePoint = block.readAsCInt();
+					settings = block.readAsCInt();
+					int index = indices[i];
+					int type = types[i];
+					
+					FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+					
+					seq.releasePoint = releasePoint;
+					seq.settings = (byte) settings;
+				}
+			}
 		}
 	}
 

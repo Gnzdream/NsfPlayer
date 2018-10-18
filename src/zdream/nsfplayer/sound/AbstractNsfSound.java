@@ -96,8 +96,9 @@ public abstract class AbstractNsfSound implements IResetable {
 	public final void process(int time) {
 		if (enable) {
 			onProcess(time);
+		} else {
+			this.time += time;
 		}
-		this.time += time;
 	}
 	
 	/**

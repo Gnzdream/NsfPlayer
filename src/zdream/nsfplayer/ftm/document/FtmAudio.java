@@ -216,7 +216,7 @@ public class FtmAudio {
 	}
 	
 	public FtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
-		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
+		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
 		if (list == null) {
 			return null;
 		}
@@ -227,7 +227,7 @@ public class FtmAudio {
 	 * 获得序列的个数
 	 */
 	public int sequenceCount(FtmChipType chip, FtmSequenceType type) {
-		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() + FtmSequenceType.values().length + type.ordinal());
+		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
 		if (list == null) {
 			return 0;
 		}

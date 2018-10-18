@@ -120,6 +120,12 @@ while (true) {
 		</th>
 	</tr>
 	<tr>
+		<th width=10%>FDS</th>
+		<th width=40% align="left">
+			未完成 Unfinished
+		</th>
+	</tr>
+	<tr>
 		<th width=10%>N163</th>
 		<th width=40% align="left">
 			未完成 Unfinished

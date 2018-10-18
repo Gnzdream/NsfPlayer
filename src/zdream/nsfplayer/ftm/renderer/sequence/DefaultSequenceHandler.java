@@ -8,10 +8,11 @@ import zdream.nsfplayer.ftm.format.FtmSequenceType;
 
 /**
  * <p>默认的序列处理器
- * <p>适用于 2A03 的 Pulse, Triangle, Noise 轨道
+ * <p>适用于 2A03 的 Pulse, Triangle, Noise 轨道,
+ * 以及 VRC6 的 Pulse, Sawtooth 轨道
  * </p>
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class DefaultSequenceHandler implements IResetable {
 	

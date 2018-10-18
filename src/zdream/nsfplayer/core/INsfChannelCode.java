@@ -1,11 +1,17 @@
-package zdream.nsfplayer.ftm.document;
+package zdream.nsfplayer.core;
 
 /**
- * 储存轨道号的静态变量
+ * <p>储存轨道号的静态变量
+ * </p>
+ * 
+ * @version v0.2.3
+ *   修改接口名 IFtmChannelCode -> INsfChannelCode
+ *   并移动接口至 nsfplayer.core 包下
+ * 
  * @author Zdream
  * @since v0.2.1
  */
-public interface IFtmChannelCode {
+public interface INsfChannelCode {
 
 	/**
 	 * 各个轨道的标识号

@@ -151,6 +151,7 @@ public class DPCMSound extends Sound2A03 {
 	@Override
 	protected void onProcess(int time) {
 		if (sample == null) {
+			this.time += time;
 			counter = 0;
 			return;
 		}

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -19,7 +19,7 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
  * @data 2018-06-09
  * @since 0.2.1
  */
-public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntimeHolder, IResetable {
+public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntimeHolder, IResetable {
 
 	/**
 	 * 轨道号

@@ -7,11 +7,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
-import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
@@ -27,7 +27,7 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
  * @author Zdream
  * @since v0.2.1
  */
-public class FamiTrackerRenderer implements IFtmChannelCode {
+public class FamiTrackerRenderer implements INsfChannelCode {
 	
 	/**
 	 * 利用默认配置产生一个音频渲染器
@@ -257,7 +257,7 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 	}
 	
 	/**
-	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link IFtmChannelCode} 里面写出
+	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出
 	 * @return
 	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
 	 * @since v0.2.2

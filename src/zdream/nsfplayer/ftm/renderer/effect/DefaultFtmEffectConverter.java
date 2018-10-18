@@ -27,7 +27,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_RELEASE;
 
 import java.util.Map;
 
-import zdream.nsfplayer.ftm.document.IFtmChannelCode;
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
@@ -40,7 +40,7 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
  * @author Zdream
  * @since v0.2.1
  */
-public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChannelCode {
+public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChannelCode {
 	
 	FamiTrackerRuntime runtime;
 

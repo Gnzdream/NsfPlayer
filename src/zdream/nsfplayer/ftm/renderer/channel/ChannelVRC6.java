@@ -1,29 +1,21 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 
 /**
- * 2A03 中的声音轨道, 包含 Pulse, Triangle 和 Noise 轨道
+ * VRC6 芯片的轨道, 一共有三种
+ * 
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.3
  */
-public abstract class Channel2A03Tone extends Channel2A03 {
+public abstract class ChannelVRC6 extends AbstractFtmChannel {
 
-	public Channel2A03Tone(byte channelCode) {
+	public ChannelVRC6(byte channelCode) {
 		super(channelCode);
 	}
-	
-	/* **********
-	 *  sweep   *
-	 ********** */
-	
-	/**
-	 * <p>范围 [0, 0xFF]
-	 * <p>暂时没有使用
-	 */
-	protected int sweep;
 	
 	/* **********
 	 *   序列   *
@@ -36,18 +28,18 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 	 */
 	protected void calculateVolume() {
 		int volume = masterVolume * 16 + curVolume; // 精度 240
- 		if (volume <= 0) {
+		if (volume <= 0) {
 			curVolume = 0;
 			return;
 		}
- 		
- 		volume = (seq.volume * volume) / 15;
- 		
- 		if (volume > 240) {
+		
+		volume = (seq.volume * volume) / 15;
+		
+		if (volume > 240) {
 			curVolume = 240;
- 		} else if (volume < 1) {
+		} else if (volume < 1) {
 			curVolume = (seq.volume == 0) ? 0 : 1;
- 		} else {
+		} else {
 			curVolume = volume;
 		}
 	}
@@ -108,6 +100,10 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 			curDuty = seq.duty;
 		} else {
 			curDuty = masterDuty;
+		}
+		
+		if (curDuty < 0 || curDuty > 7) {
+			curDuty = curDuty & 0x7;
 		}
 	}
 	

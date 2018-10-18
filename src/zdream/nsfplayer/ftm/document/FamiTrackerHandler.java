@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.document;
 
 import java.util.ArrayList;
 
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.factory.FtmParseException;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmChipType;
@@ -18,7 +19,7 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
  * @author Zdream
  * @date 2018-04-25
  */
-public class FamiTrackerHandler implements IFtmChannelCode {
+public class FamiTrackerHandler implements INsfChannelCode {
 	
 	public final FtmAudio audio;
 	
@@ -390,10 +391,10 @@ public class FamiTrackerHandler implements IFtmChannelCode {
 	 ********** */
 	
 	/**
-	 * 获得序列数据
+	 * 获得 2A03 序列数据
 	 */
 	public FtmSequence getSequence2A03(FtmSequenceType type, int index) {
-		int key = FtmChipType._2A03.ordinal() + FtmSequenceType.values().length + type.ordinal();
+		int key = FtmChipType._2A03.ordinal() * FtmSequenceType.values().length + type.ordinal();
 		ArrayList<FtmSequence> list = audio.seqs.get(key);
 		if (list == null) {
 			return null;
@@ -406,10 +407,49 @@ public class FamiTrackerHandler implements IFtmChannelCode {
 	}
 	
 	/**
-	 * 获得序列数据. 如果没有, 就创建一个
+	 * 获得 VRC6 序列数据
+	 */
+	public FtmSequence getSequenceVRC6(FtmSequenceType type, int index) {
+		int key = FtmChipType.VRC6.ordinal() * FtmSequenceType.values().length + type.ordinal();
+		ArrayList<FtmSequence> list = audio.seqs.get(key);
+		if (list == null) {
+			return null;
+		}
+		
+		if (index >= list.size()) {
+			return null;
+		}
+		return list.get(index);
+	}
+	
+	/**
+	 * 获得 2A03 序列数据. 如果没有, 就创建一个
 	 */
 	public FtmSequence getOrCreateSequence2A03(FtmSequenceType type, int index) {
-		int key = FtmChipType._2A03.ordinal() + FtmSequenceType.values().length + type.ordinal();
+		int key = FtmChipType._2A03.ordinal() * FtmSequenceType.values().length + type.ordinal();
+		ArrayList<FtmSequence> list = audio.seqs.get(key);
+		if (list == null) {
+			list = new ArrayList<>();
+			audio.seqs.put(key, list);
+		}
+		
+		FtmSequence seq = null;
+		if (index < list.size()) {
+			seq = list.get(index);
+		}
+		
+		if (seq == null) {
+			seq = new FtmSequence(type);
+			registerT(list, seq, index);
+		}
+		return seq;
+	}
+	
+	/**
+	 * 获得 VRC6 序列数据. 如果没有, 就创建一个
+	 */
+	public FtmSequence getOrCreateSequenceVRC6(FtmSequenceType type, int index) {
+		int key = FtmChipType.VRC6.ordinal() * FtmSequenceType.values().length + type.ordinal();
 		ArrayList<FtmSequence> list = audio.seqs.get(key);
 		if (list == null) {
 			list = new ArrayList<>();
@@ -443,7 +483,7 @@ public class FamiTrackerHandler implements IFtmChannelCode {
 	public FtmSequence getOrCreateSequence(FtmChipType chip, FtmSequenceType type, int index) {
 		FtmSequence seq = new FtmSequence(type);
 		
-		int key = chip.ordinal() + FtmSequenceType.values().length + seq.type.ordinal();
+		int key = chip.ordinal() * FtmSequenceType.values().length + seq.type.ordinal();
 		ArrayList<FtmSequence> list = audio.seqs.get(key);
 		if (list == null) {
 			list = new ArrayList<>();
