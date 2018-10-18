@@ -30,8 +30,8 @@ public interface IFtmChannelCode {
 			
 			CHANNEL_FDS = 0x31,
 			
-			CHANNEL_MMC1_PULSE1 = 0x41,
-			CHANNEL_MMC1_PULSE2 = 0x42,
+			CHANNEL_MMC5_PULSE1 = 0x41,
+			CHANNEL_MMC5_PULSE2 = 0x42,
 			
 			CHANNEL_N163_1 = 0x51,
 			CHANNEL_N163_2 = 0x52,

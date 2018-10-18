@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.renderer.tools;
 import zdream.nsfplayer.ftm.document.IFtmChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
+import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
 import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
@@ -32,6 +33,7 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 	 */
 	public static AbstractFtmChannel selectFtmChannel(byte code) {
 		switch (code) {
+		// 2A03
 		case CHANNEL_2A03_PULSE1: {
 			Square1Channel s = new Square1Channel();
 			return s;
@@ -51,6 +53,14 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 		case CHANNEL_2A03_DPCM:
 			DPCMChannel s = new DPCMChannel();
 			return s;
+			
+		// MMC5
+		case CHANNEL_MMC5_PULSE1: {
+			return new ChannelMMC5Pulse(true);
+		}
+		case CHANNEL_MMC5_PULSE2: {
+			return new ChannelMMC5Pulse(false);
+		}
 
 		default:
 			break;
@@ -85,6 +95,7 @@ public class ChannalDeviceSelector implements IFtmChannelCode {
 	public static void configMixChannel(byte code, BlipMixerChannel mixer) {
 		switch (code) {
 		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
+		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);

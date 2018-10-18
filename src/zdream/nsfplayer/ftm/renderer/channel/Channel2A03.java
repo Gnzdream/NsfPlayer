@@ -6,7 +6,7 @@ import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
  * 2A03 轨道
  * 
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public abstract class Channel2A03 extends AbstractFtmChannel {
 

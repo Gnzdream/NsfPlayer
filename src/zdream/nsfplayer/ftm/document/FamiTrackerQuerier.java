@@ -114,8 +114,8 @@ public class FamiTrackerQuerier implements IFtmChannelCode {
 			channelCode[codePtr++] = CHANNEL_FDS;
 		}
 		if (audio.useMmc5) {
-			channelCode[codePtr++] = CHANNEL_MMC1_PULSE1;
-			channelCode[codePtr++] = CHANNEL_MMC1_PULSE2;
+			channelCode[codePtr++] = CHANNEL_MMC5_PULSE1;
+			channelCode[codePtr++] = CHANNEL_MMC5_PULSE2;
 		}
 		if (audio.useN163) {
 			byte[] cs = new byte[] {
