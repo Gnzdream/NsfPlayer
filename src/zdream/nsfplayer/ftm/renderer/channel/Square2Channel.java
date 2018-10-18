@@ -90,7 +90,7 @@ public class Square2Channel extends Channel2A03Tone {
 		sound.looping = true;
 		sound.envelopeFix = true;
 		
-		if (this.curVolume == 0 || !playing) {
+		if (this.curVolume == 0 || !playing || masterNote == 0) {
 			sound.fixedVolume = 0;
 			return;
 		}

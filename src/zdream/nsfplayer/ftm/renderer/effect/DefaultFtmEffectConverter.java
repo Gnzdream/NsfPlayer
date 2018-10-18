@@ -38,7 +38,7 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
  * </p>
  * 
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChannelCode {
 	
@@ -208,7 +208,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, IFtmChann
 			} break;
 			
 			case EF_HALT:
-				// TODO
+				putGlobalEffect(StopEffect.of());
 				break;
 			
 				// 轨道

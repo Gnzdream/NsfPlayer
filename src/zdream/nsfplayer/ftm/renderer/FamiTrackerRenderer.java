@@ -139,12 +139,15 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 	}
 	
 	/**
-	 * 询问是否已经播放完毕
+	 * <p>询问是否已经播放完毕
+	 * <p>如果已经播放完毕的 Ftm 音频尝试再调用 {@link #render(byte[], int, int)}
+	 * 或者 {@link #renderOneFrame(byte[], int, int)}, 则会忽略停止符号,
+	 * 强制再向下播放.
+	 * </p>
 	 * @return
 	 */
 	public boolean isFinished() {
-		// TODO
-		return false;
+		return fetcher.isFinished();
 	}
 	
 	/**
@@ -178,6 +181,39 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 			ret += v;
 			bOffset += v;
 			bLength -= v;
+			
+			if (isFinished()) {
+				break;
+			}
+		}
+		
+		return ret; // (现单位 byte)
+	}
+	
+	/**
+	 * <p>仅渲染一帧. 如果之前有没有渲染完的、上一帧采样数据,
+	 * 只将上一帧剩余的采样数据写进数组.
+	 * <br>线程不安全的方法
+	 * </p>
+	 * @param bs
+	 * @param offset
+	 *   bs 存放数据的起始位置
+	 * @param length
+	 *   bs 存放的数据总量, 以 byte 为单位.
+	 *   <br>这里是单声道、16 位深度, 该数据需要是 2 的倍数.
+	 * @return
+	 *   真正填充的数组元素个数
+	 * @since v0.2.2
+	 */
+	public int renderOneFrame(byte[] bs, int offset, int length) {
+		int bLength = length / 2 * 2; // 化成 2 的倍数
+		
+		// 前面渲染剩余的采样、还没有被返回的
+		int ret = fillSample(bs, offset, bLength) * 2;
+		if (ret == 0) {
+			renderFrame();
+			// data 数据已经就绪
+			ret = fillSample(bs, offset, bLength) * 2;
 		}
 		
 		return ret; // (现单位 byte)
@@ -211,10 +247,20 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 	}
 	
 	/**
+	 * 询问当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
+	 * @return
+	 *   true, 如果当前行已经播放完毕
+	 * @since v0.2.2
+	 */
+	public boolean currentRowRunOut() {
+		return fetcher.needRowUpdate();
+	}
+	
+	/**
 	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link IFtmChannelCode} 里面写出
 	 * @return
 	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
-	 * @since 0.2.2
+	 * @since v0.2.2
 	 */
 	public Set<Byte> allChannelSet() {
 		return new HashSet<>(runtime.effects.keySet());
@@ -244,7 +290,7 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 	 *   轨道号
 	 * @param level
 	 *   音量. 范围 [0, 1]
-	 * @since 0.2.2
+	 * @since v0.2.2
 	 */
 	public void setLevel(byte channelCode, float level) {
 		if (level < 0) {
@@ -261,7 +307,7 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 	 *   轨道号
 	 * @param enable
 	 *   true, 使该轨道发声; false, 则静音
-	 * @since 0.2.2
+	 * @since v0.2.2
 	 */
 	public void setChannelEnable(byte channelCode, boolean enable) {
 		runtime.channels.get(channelCode).getSound().setEnable(enable);
@@ -360,7 +406,6 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 		// 从 mixer 中读取数据
 		readMixer();
 		
-		// 测试方法
 		log();
 		
 		return ret;
@@ -491,7 +536,14 @@ public class FamiTrackerRenderer implements IFtmChannelCode {
 	/* **********
 	 * 测试方法 *
 	 ********** */
+	
+	public boolean enableLog = false;
+	
 	private void log() {
+		if (!enableLog) {
+			return;
+		}
+		
 		StringBuilder b = new StringBuilder(128);
 		b.append(String.format("%02d:%03d", fetcher.curSection, fetcher.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {

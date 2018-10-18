@@ -108,7 +108,8 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	/**
 	 * 音键, 含音符和音高
 	 * <p>curNote: 当前音键
-	 * <p>masterNote: 主音键
+	 * <p>masterNote: 主音键.
+	 * 主音键有效值为 [1, 96] (Noise 轨道是 [1, 16]), 0 为无效值, 表示不发声
 	 * </p>
 	 */
 	protected int curNote, masterNote;
@@ -338,6 +339,11 @@ public abstract class AbstractFtmChannel implements IFtmChannelCode, IFtmRuntime
 	@Override
 	public void reset() {
 		playing = true;
+		masterNote = 0;
+		masterVolume = 15;
+		masterDuty = 0;
+		masterPitch = 0;
+		instrument = 0;
 		
 		schedules.clear();
 		states.clear();

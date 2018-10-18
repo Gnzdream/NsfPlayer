@@ -57,6 +57,13 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 	 * 最后综合出波长值
 	 */
 	protected void calculatePeriod() {
+		if (masterNote == 0) {
+			// 不播放
+			curNote = 0;
+			curPeriod = 0;
+			return;
+		}
+		
 		int note = masterNote + curNote + seq.deltaNote;
 		int period = -masterPitch + curPeriod + seq.period;
 		

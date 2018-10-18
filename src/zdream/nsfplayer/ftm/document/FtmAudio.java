@@ -171,7 +171,7 @@ public class FtmAudio {
 	public String toString() {
 		StringBuilder builder = new StringBuilder(100);
 		
-		builder.append("FTM 文本").append('\n');
+		builder.append("FTM 音频").append('\n');
 		builder.append("标题").append(':').append(' ').append(title).append('\n');
 		builder.append("作家").append(':').append(' ').append(author).append('\n');
 		builder.append("版权").append(':').append(' ').append(copyright).append('\n');

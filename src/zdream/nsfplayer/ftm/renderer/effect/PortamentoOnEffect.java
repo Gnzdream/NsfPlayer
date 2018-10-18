@@ -10,10 +10,10 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * <p>持续滑音效果, 3xx
  * </p>
  * 
- * @see PitchAccumulateState TODO
+ * @see PortamentoOnState
  * 
  * @author Zdream
- * @since 0.2.2
+ * @since v0.2.2
  */
 public class PortamentoOnEffect implements IFtmEffect {
 	
@@ -62,8 +62,13 @@ public class PortamentoOnEffect implements IFtmEffect {
 			s = (NoteSlideState) set.iterator().next();
 			
 			if (s instanceof PortamentoOnState) {
-				// 直接修改 speed 即可, 无论 speed 是否等于 0
-				s.speed = this.speed;
+				// 如果当前帧, Note 直接修改了, 
+				if (runtime.effects.get(channelCode).containsKey(FtmEffectType.NOTE) && speed == 0) {
+					ch.removeState(s);
+				} else {
+					// 直接修改 speed 即可, 无论 speed 是否等于 0
+					s.speed = this.speed;
+				}
 			} else {
 				int delta = s.delta;
 				ch.removeState(s);
@@ -77,6 +82,11 @@ public class PortamentoOnEffect implements IFtmEffect {
 				ch.addState(s);
 			}
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "PortamenOn:" + speed;
 	}
 	
 	/**

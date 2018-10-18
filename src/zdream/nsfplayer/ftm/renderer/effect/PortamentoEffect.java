@@ -13,7 +13,7 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * @see PitchAccumulateState
  * 
  * @author Zdream
- * @since 0.2.2
+ * @since v0.2.2
  */
 public class PortamentoEffect implements IFtmEffect {
 	

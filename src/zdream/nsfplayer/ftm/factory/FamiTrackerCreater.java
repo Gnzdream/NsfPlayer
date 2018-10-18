@@ -118,7 +118,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				break;
 			}
 			
-			System.out.println(block.id);
+			// System.out.println(block.id);
 			switch (block.id) {
 			
 			case FILE_END_ID: // 已经读取结束

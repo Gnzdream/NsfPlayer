@@ -69,6 +69,11 @@ public class NoiseChannel extends Channel2A03Tone {
 	}
 	
 	private void calculateNoise() {
+		if (masterNote == 0) {
+			curNote = 0;
+			return;
+		}
+		
 		int note = masterNote + curNote + seq.deltaNote;
 		note += (-masterPitch + curPeriod + seq.period);
 		
@@ -120,7 +125,7 @@ public class NoiseChannel extends Channel2A03Tone {
 		sound.envelopeFix = true;
 		
 		sound.fixedVolume = curVolume / 16;
-		if (curVolume == 0 || !playing) {
+		if (curVolume == 0 || !playing || masterNote == 0) {
 			sound.fixedVolume = 0;
 			return;
 		}

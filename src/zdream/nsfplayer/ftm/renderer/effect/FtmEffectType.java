@@ -41,9 +41,10 @@ public enum FtmEffectType {
 	SKIP,
 	
 	/**
-	 * Cxx (对应于效果的 EF_HALT)
-	 * 直接停止播放
-	 * TODO
+	 * <p>Cxx (对应于效果的 EF_HALT)
+	 * <p>直接停止播放
+	 * </p>
+	 * @see StopEffect
 	 */
 	STOP,
 	

@@ -8,7 +8,7 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
  * </p>
  * 
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class SpeedEffect implements IFtmEffect {
 	

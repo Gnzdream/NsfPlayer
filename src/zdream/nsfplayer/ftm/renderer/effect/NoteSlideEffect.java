@@ -12,12 +12,13 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * <p>随时间向上或者向下滑到指定音符的效果, Qxy, Rxy
  * <p>一个轨道在同一时间, Qxy Rxy 3xx 的效果只允许存在一个, 后出现的优先.
  * 如果三个效果同帧出现, 3xx 先触发, 然后让 Qxy Rxy 效果进行改写.
+ * <br>Qxy Rxy 效果一旦出现, 如果有 3xx 状态, 直接替换掉 3xx 状态.
  * </p>
  * 
  * @see NoteSlideState
  * 
  * @author Zdream
- * @since 0.2.2
+ * @since v0.2.2
  */
 public class NoteSlideEffect implements IFtmEffect {
 	
@@ -99,7 +100,6 @@ public class NoteSlideEffect implements IFtmEffect {
 			}
 		}
 		
-		// TODO 暂时不考虑 Qxy Rxy 3xx 的共同效果
 		int pitchDelta;
 		
 		if (snode == dnode) {
@@ -117,8 +117,14 @@ public class NoteSlideEffect implements IFtmEffect {
 		
 		if (!set.isEmpty()) {
 			s = (NoteSlideState) set.iterator().next();
-			s.delta += pitchDelta;
-			s.speed = speed;
+			if (s instanceof PortamentoOnState) {
+				ch.removeState(s);
+				s = new NoteSlideState(speed, pitchDelta);
+				ch.addState(s);
+			} else {
+				s.delta += pitchDelta;
+				s.speed = speed;
+			}
 		} else {
 			s = new NoteSlideState(speed, pitchDelta);
 			ch.addState(s);

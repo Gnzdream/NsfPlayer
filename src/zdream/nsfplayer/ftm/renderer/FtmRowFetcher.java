@@ -80,6 +80,11 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	int nextSection;
 	
 	/**
+	 * 是否结束的标志
+	 */
+	boolean finished;
+	
+	/**
 	 * <p>重设速度值
 	 * <p>原方法在 SoundGen.evaluateGlobalEffects() 中, 处理 EF_SPEED 部分的地方.
 	 * </p>
@@ -113,6 +118,22 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 */
 	public int getCurrentSection() {
 		return curSection;
+	}
+	
+	/**
+	 * 是否结束
+	 * @return
+	 */
+	public boolean isFinished() {
+		return finished;
+	}
+	
+	/**
+	 * 设置是否结束标志
+	 * @param finished
+	 */
+	public void setFinished(boolean finished) {
+		this.finished = finished;
 	}
 	
 	/* **********
@@ -249,14 +270,25 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	}
 	
 	/**
+	 * 询问当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
+	 * @return
+	 *   true, 如果当前行已经播放完毕
+	 * @since v0.2.2
+	 */
+	public final boolean needRowUpdate() {
+		return tempoAccum <= 0;
+	}
+	
+	/**
 	 * 音乐向前跑一帧. 看看现在跑到 Ftm 的哪一行上
 	 */
 	public void runFrame() {
 		// 重置
+		finished = false;
 		updateRow = false;
 		
 		// (SoundGen.runFrame)
-		if (tempoAccum <= 0) {
+		if (needRowUpdate()) {
 			// 表示上一行已经播放完毕, 开始查找要播放的下一行的位置
 			// Enable this to skip rows on high tempos
 			updateRow = true;
