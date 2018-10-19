@@ -100,41 +100,41 @@ while (true) {
 
 <table>
 	<tr>
-		<th width=10%>2A03 + 2A07</th>
-		<th width=40% align="left">
+		<td width=10%>2A03 + 2A07</td>
+		<td width=40% align="left">
 			大部分效果已经支持, 除了以下几个方面:
 			<br>DPCM 轨道效果 (DPCM Channel Effect): 未完成 Unfinished
 			<br>Hxx, Ixx 的 sweep 效果 (Hardware Sweep Effect): 不支持 Unsupported
-		</th>
+		</td>
 	</tr>
 	<tr>
-		<th width=10%>VRC6</th>
-		<th width=40% align="left">
-			未完成 Unfinished
-		</th>
-	</tr>
-	<tr>
-		<th width=10%>MMC5</th>
-		<th width=40% align="left">
+		<td width=10%>VRC6</td>
+		<td width=40% align="left">
 			支持 Supported
-		</th>
+		</td>
 	</tr>
 	<tr>
-		<th width=10%>FDS</th>
-		<th width=40% align="left">
-			未完成 Unfinished
-		</th>
+		<td width=10%>MMC5</td>
+		<td width=40% align="left">
+			支持 Supported
+		</td>
 	</tr>
 	<tr>
-		<th width=10%>N163</th>
-		<th width=40% align="left">
+		<td width=10%>FDS</td>
+		<td width=40% align="left">
 			未完成 Unfinished
-		</th>
+		</td>
 	</tr>
 	<tr>
-		<th width=10%>VRC7</th>
-		<th width=40% align="left">
+		<td width=10%>N163</td>
+		<td width=40% align="left">
 			未完成 Unfinished
-		</th>
+		</td>
+	</tr>
+	<tr>
+		<td width=10%>VRC7</td>
+		<td width=40% align="left">
+			未完成 Unfinished
+		</td>
 	</tr>
 </table>

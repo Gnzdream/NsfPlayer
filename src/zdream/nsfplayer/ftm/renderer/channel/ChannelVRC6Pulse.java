@@ -70,6 +70,12 @@ public class ChannelVRC6Pulse extends ChannelVRC6 {
 		
 	}
 	
+	@Override
+	protected void calculateDuty() {
+		super.calculateDuty();
+		curDuty &= 0x7;
+	}
+	
 	/* **********
 	 *  发声器  *
 	 ********** */

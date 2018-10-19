@@ -72,6 +72,12 @@ public class ChannelMMC5Pulse extends ChannelMMC5 {
 		
 	}
 	
+	@Override
+	protected void calculateDuty() {
+		super.calculateDuty();
+		curDuty &= 0x3;
+	}
+	
 	/* **********
 	 *  发声器  *
 	 ********** */

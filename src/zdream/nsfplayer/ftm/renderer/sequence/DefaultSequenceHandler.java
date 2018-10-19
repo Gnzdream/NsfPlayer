@@ -282,10 +282,12 @@ public class DefaultSequenceHandler implements IResetable {
 			}
 			break;
 		case PITCH:
-			this.period += value;
+			if (!isEnd)
+				this.period += value;
 			break;
 		case HI_PITCH:
-			this.period += (value << 4);
+			if (!isEnd)
+				this.period += (value << 4);
 			break;
 		case DUTY:
 			this.duty = value;

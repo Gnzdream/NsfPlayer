@@ -67,6 +67,12 @@ public final class Square1Channel extends Channel2A03Tone {
 		
 	}
 	
+	@Override
+	protected void calculateDuty() {
+		super.calculateDuty();
+		curDuty &= 0x3;
+	}
+	
 	/* **********
 	 *  发声器  *
 	 ********** */

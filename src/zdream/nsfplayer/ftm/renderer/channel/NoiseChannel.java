@@ -41,6 +41,12 @@ public class NoiseChannel extends Channel2A03Tone {
 	}
 	
 	@Override
+	protected void calculateDuty() {
+		super.calculateDuty();
+		curDuty &= 0x1;
+	}
+	
+	@Override
 	public int periodTable(int note) {
 		return NoteLookupTable.pal(note);
 	}

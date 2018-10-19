@@ -210,6 +210,7 @@ public class DPCMSound extends Sound2A03 {
 		}
 		
 		time -= counter;
+		this.time += counter;
 	}
 	
 	/**
@@ -226,7 +227,7 @@ public class DPCMSound extends Sound2A03 {
 	 * 询问采样是否播放完毕
 	 */
 	public boolean isFinish() {
-		return remaining > 0;
+		return sample == null;
 	}
 
 }
