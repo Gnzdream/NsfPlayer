@@ -52,7 +52,7 @@ public class NoteLookupTable {
 	}
 	
 	/**
-	 * PAL 格式下, 某个音键的波长. 2A07(Triangle, Noise) 采用该值
+	 * PAL 格式下, 某个音键的波长. 2A07(Noise) 采用该值
 	 * @param note
 	 *   音键, [1, 96]
 	 * @return
@@ -63,7 +63,7 @@ public class NoteLookupTable {
 	}
 	
 	/**
-	 * NTSC 格式下, 某个音键的波长. 2A03(Pulse 1 和 2), MMC5, VRC6 (Pulse 1 和 2)采用该值
+	 * NTSC 格式下, 某个音键的波长. 2A03(Pulse 1 和 2, Triangle), MMC5, VRC6 (Pulse 1 和 2)采用该值
 	 * @param note
 	 *   音键, [1, 96]
 	 * @return

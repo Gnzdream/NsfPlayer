@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 import zdream.nsfplayer.sound.NoiseSound;
 
 /**
@@ -37,6 +38,11 @@ public class NoiseChannel extends Channel2A03Tone {
 		sound.reset();
 		sound.looping = true;
 		sound.envelopeFix = true;
+	}
+	
+	@Override
+	public int periodTable(int note) {
+		return NoteLookupTable.pal(note);
 	}
 	
 	/* **********

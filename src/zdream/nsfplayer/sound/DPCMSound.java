@@ -221,5 +221,12 @@ public class DPCMSound extends Sound2A03 {
 		remaining = length + 1;
 		mix(deltaCounter);
 	}
+	
+	/**
+	 * 询问采样是否播放完毕
+	 */
+	public boolean isFinish() {
+		return remaining > 0;
+	}
 
 }

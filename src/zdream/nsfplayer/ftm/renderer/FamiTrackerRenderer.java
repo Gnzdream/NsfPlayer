@@ -312,7 +312,10 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	 * @since v0.2.2
 	 */
 	public void setChannelEnable(byte channelCode, boolean enable) {
-		runtime.channels.get(channelCode).getSound().setEnable(enable);
+		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+		if (ch != null) {
+			ch.getSound().setEnable(enable);
+		}
 	}
 	
 	/* **********
@@ -575,7 +578,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	}
 	
 	private void logVolume() {
-		final StringBuilder b = new StringBuilder(128);
+		final StringBuilder b = new StringBuilder(64);
 		b.append(String.format("%02d:%03d ", fetcher.curSection, fetcher.curRow));
 		
 		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());

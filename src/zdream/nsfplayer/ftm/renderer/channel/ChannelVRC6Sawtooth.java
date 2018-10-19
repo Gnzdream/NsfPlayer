@@ -2,23 +2,19 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
-import zdream.nsfplayer.sound.SoundVRC6Pulse;
+import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
+import zdream.nsfplayer.sound.SoundVRC6Sawtooth;
 
 /**
- * VRC6 一号 / 二号矩形轨道
+ * VRC6 锯齿形轨道. 该轨道没有控制音色的项
  * 
  * @author Zdream
  * @since v0.2.3
  */
-public class ChannelVRC6Pulse extends ChannelVRC6 {
+public class ChannelVRC6Sawtooth extends ChannelVRC6 {
 
-	/**
-	 * @param isPulse1
-	 *   如果是 VRC6 一号矩形轨道, 为 true
-	 *   如果是 VRC6 二号矩形轨道, 为 false
-	 */
-	public ChannelVRC6Pulse(boolean isPulse1) {
-		super(isPulse1 ? CHANNEL_VRC6_PULSE1 : CHANNEL_VRC6_PULSE2);
+	public ChannelVRC6Sawtooth() {
+		super(CHANNEL_VRC6_SAWTOOTH);
 	}
 
 	@Override
@@ -64,10 +60,38 @@ public class ChannelVRC6Pulse extends ChannelVRC6 {
 		seq.update();
 		
 		// 回写
+		calculateDuty(); // volume 的计算需要用到 duty
 		calculateVolume();
 		calculatePeriod();
-		calculateDuty();
+	}
+	
+	@Override
+	protected void calculateVolume() {
+		int volume = masterVolume * 16 + curVolume; // 精度 240
+		if (volume <= 0) {
+			curVolume = 0;
+			return;
+		} else if ((this.curDuty & 1) == 1) {
+			// VRC6 锯齿形轨道中的音色项如果为奇数 (例如 V01),
+			// 那么音量将会提升一个档次.
+			volume += 240;
+		}
+		// volume 精度 480
 		
+		volume = (seq.volume * volume) / 15;
+		
+		if (volume > 480) {
+			curVolume = 480;
+		} else if (volume < 1) {
+			curVolume = (seq.volume == 0) ? 0 : 1;
+		} else {
+			curVolume = volume;
+		}
+	}
+	
+	@Override
+	public int periodTable(int note) {
+		return NoteLookupTable.saw(note);
 	}
 	
 	/* **********
@@ -77,10 +101,10 @@ public class ChannelVRC6Pulse extends ChannelVRC6 {
 	/**
 	 * VRC6 Pulse 音频发声器
 	 */
-	public final SoundVRC6Pulse sound = new SoundVRC6Pulse();
+	public final SoundVRC6Sawtooth sound = new SoundVRC6Sawtooth();
 
 	@Override
-	public SoundVRC6Pulse getSound() {
+	public SoundVRC6Sawtooth getSound() {
 		return sound;
 	}
 	
@@ -89,14 +113,12 @@ public class ChannelVRC6Pulse extends ChannelVRC6 {
 	 * </p>
 	 */
 	public void writeToSound() {
-		sound.period = this.curPeriod;
-		sound.volume = this.curVolume / 16;
-		sound.duty = this.curDuty;
-		
 		if (!playing || masterNote == 0) {
-			sound.gate = false;
+			sound.period = 0;
+			sound.volume = 0;
 		} else {
-			sound.gate = true;
+			sound.period = this.curPeriod;
+			sound.volume = this.curVolume * 64 / 480;
 		}
 	}
 	

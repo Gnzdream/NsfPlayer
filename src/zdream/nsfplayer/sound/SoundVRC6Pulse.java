@@ -100,7 +100,7 @@ public class SoundVRC6Pulse extends SoundVRC6 {
 			counter = period + 1;
 		
 			dutyCycleCounter = (dutyCycleCounter + 1) & 0x0F;
-			mix((gate || dutyCycleCounter >= duty) ? volume : 0);
+			mix((gate && dutyCycleCounter > duty) ? volume : 0);
 		}
 
 		counter -= time;

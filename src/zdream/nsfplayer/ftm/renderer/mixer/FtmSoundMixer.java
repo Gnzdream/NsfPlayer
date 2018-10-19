@@ -90,7 +90,10 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 	 *   音量. 范围 [0, 1.0f]
 	 */
 	public void setLevel(byte code, float level) {
-		getMixerChannel(code).setLevel(level);
+		BlipMixerChannel ch = getMixerChannel(code);
+		if (ch != null) {
+			ch.setLevel(level);
+		}
 	}
 	
 	/* **********

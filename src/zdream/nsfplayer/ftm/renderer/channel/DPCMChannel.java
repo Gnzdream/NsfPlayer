@@ -215,6 +215,16 @@ public class DPCMChannel extends Channel2A03 {
 	 * 指导发声器工作一帧
 	 */
 	public void processSound() {
+		
+		/*
+		 * 向外部宣布, 这个发声器是否在工作. 没有实际作用.
+		 * 因为外部想知道是否在发声, 只能通过 isplaying 和音量两个方式来感知
+		 * 这里修改 curVolume 只是为了让外界了解情况, 便于 debug.
+		 */
+		if (!sound.isFinish()) {
+			curVolume = 1;
+		}
+		
 		// 拿到一帧对应的时钟周期数
 		int freq = getRuntime().param.freqPerFrame;
 		

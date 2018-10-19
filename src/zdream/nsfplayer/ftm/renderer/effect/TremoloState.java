@@ -47,7 +47,7 @@ public class TremoloState implements IFtmState {
 		phase = (phase + speed) & 63;
 		int x = phase >> 1; // [0, 31]
 		
-		int delta = VibratoTable.vibratoValue(depth, x) >> 1;
+		int delta = VibratoTable.vibratoValue(depth, x) << 3;
 		runtime.channels.get(channelCode).addCurrentVolume(-delta); // 影响是, 音量一定不大于原值
 	}
 	

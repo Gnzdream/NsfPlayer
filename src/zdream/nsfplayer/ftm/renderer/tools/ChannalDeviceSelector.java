@@ -5,14 +5,13 @@ import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Pulse;
+import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Sawtooth;
 import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
 import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
 import zdream.nsfplayer.ftm.renderer.channel.Square2Channel;
 import zdream.nsfplayer.ftm.renderer.channel.TriangleChannel;
 import zdream.nsfplayer.ftm.renderer.mixer.BlipMixerChannel;
-import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.PulseSound;
 
 /**
  * <p>轨道设备的选择工具
@@ -63,9 +62,8 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 			return new ChannelVRC6Pulse(false);
 		}
 		case CHANNEL_VRC6_SAWTOOTH: {
-			// TODO
-		} break;
-			
+			return new ChannelVRC6Sawtooth();
+		}
 			
 		// MMC5
 		case CHANNEL_MMC5_PULSE1: {
@@ -80,25 +78,6 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 		}
 		
 		return new TestFtmChannel(code);
-	}
-	
-	/**
-	 * 建立各个发声器
-	 * @param code
-	 *   轨道号
-	 * @return
-	 */
-	@Deprecated
-	public static AbstractNsfSound selectSound(byte code) {
-		switch (code) {
-		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2: {
-			return new PulseSound();
-		}
-		default:
-			break;
-		}
-		
-		return null;
 	}
 	
 	/**
@@ -133,6 +112,7 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 		
 		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
 		case CHANNEL_VRC6_PULSE1: case CHANNEL_VRC6_PULSE2:
+		case CHANNEL_VRC6_SAWTOOTH:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (96 * 360 / ((8000.0 / x) + 180)) : 0);
