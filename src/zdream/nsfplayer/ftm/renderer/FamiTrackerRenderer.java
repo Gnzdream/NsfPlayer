@@ -1,9 +1,11 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -537,13 +539,23 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	 * 测试方法 *
 	 ********** */
 	
-	public boolean enableLog = false;
+	public int enableLog = 0;
 	
 	private void log() {
-		if (!enableLog) {
-			return;
+		switch (enableLog) {
+		case 1:
+			logEffect();
+			break;
+		case 2:
+			logVolume();
+			break;
+
+		default:
+			break;
 		}
-		
+	}
+	
+	private void logEffect() {
 		StringBuilder b = new StringBuilder(128);
 		b.append(String.format("%02d:%03d", fetcher.curSection, fetcher.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
@@ -559,6 +571,24 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 		if (!runtime.geffect.isEmpty()) {
 			b.append(' ').append("G").append('=').append(runtime.geffect.values());
 		}
+		System.out.println(b);
+	}
+	
+	private void logVolume() {
+		final StringBuilder b = new StringBuilder(128);
+		b.append(String.format("%02d:%03d ", fetcher.curSection, fetcher.curRow));
+		
+		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());
+		bs.sort(null);
+		bs.forEach((channelCode) -> {
+			AbstractFtmChannel ch = runtime.channels.get(channelCode);
+			int v = ch.getCurrentVolume();
+			if (!ch.isPlaying()) {
+				v = 0;
+			}
+			b.append(String.format("%3d|", v));
+		});
+		
 		System.out.println(b);
 	}
 	

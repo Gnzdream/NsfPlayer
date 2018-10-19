@@ -108,8 +108,6 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 	public static void configMixChannel(byte code, BlipMixerChannel mixer) {
 		switch (code) {
 		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
-		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
-		case CHANNEL_VRC6_PULSE1: case CHANNEL_VRC6_PULSE2:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);
@@ -124,15 +122,22 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 		case CHANNEL_2A03_NOISE:
 		{
 			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (57524.6 / (1 / (x / 12241.0) + 30.0)) : 0);
+			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 12241.0) + 30.0)) : 0);
 		} break;
 		
 		case CHANNEL_2A03_DPCM:
 		{
 			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (17524.6 / (1 / (x / 12241.0) + 30.0)) : 0);
+			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 22638.0) + 30.0)) : 0);
 		} break;
-
+		
+		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
+		case CHANNEL_VRC6_PULSE1: case CHANNEL_VRC6_PULSE2:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (96 * 360 / ((8000.0 / x) + 180)) : 0);
+		} break;
+		
 		default:
 			break;
 		}

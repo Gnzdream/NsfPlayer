@@ -111,7 +111,7 @@ public class DPCMChannel extends Channel2A03 {
 	
 	public void reload() {
 		FtmInstrument2A03 inst = getRuntime().querier.get2A03Instrument(instrument);
-		if (inst == null) {
+		if (inst == null || masterNote == 0) {
 			return;
 		}
 		

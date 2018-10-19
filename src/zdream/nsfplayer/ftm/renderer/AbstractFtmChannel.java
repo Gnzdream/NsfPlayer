@@ -146,7 +146,7 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	/**
 	 * 是否在播放状态
 	 */
-	protected boolean playing = true;
+	protected boolean playing = false;
 	
 	/**
 	 * @return
@@ -254,6 +254,7 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 *   {@link #masterNote}
 	 */
 	public void setMasterNote(int note) {
+		instrumentUpdated = true;
 		this.masterNote = note;
 	}
 	
