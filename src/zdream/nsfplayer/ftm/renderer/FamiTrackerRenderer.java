@@ -305,6 +305,20 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	}
 	
 	/**
+	 * 获得某个轨道的音量
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   音量. 范围 [0, 1]
+	 * @throws NullPointerException
+	 *   当不存在 <code>channelCode</code> 对应的轨道时
+	 * @since v0.2.3
+	 */
+	public float getLevel(byte channelCode) throws NullPointerException {
+		return runtime.mixer.getLevel(channelCode);
+	}
+	
+	/**
 	 * 设置轨道是否发出声音
 	 * @param channelCode
 	 *   轨道号
@@ -317,6 +331,20 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 		if (ch != null) {
 			ch.getSound().setEnable(enable);
 		}
+	}
+	
+	/**
+	 * 查看轨道是否能发出声音
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   true, 说明该轨道没有被屏蔽; false, 则已经被屏蔽
+	 * @throws NullPointerException
+	 *   当不存在 <code>channelCode</code> 对应的轨道时
+	 * @since v0.2.3
+	 */
+	public boolean isChannelEnable(byte channelCode) throws NullPointerException {
+		return runtime.channels.get(channelCode).getSound().isEnable();
 	}
 	
 	/* **********

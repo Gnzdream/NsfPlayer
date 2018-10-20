@@ -70,6 +70,20 @@ public abstract class SoundMixer implements IResetable, INsfChannelCode {
 	}
 	
 	/**
+	 * 获得某个轨道的音量
+	 * @param code
+	 *   轨道号
+	 * @return
+	 *   音量. 范围 [0, 1.0f]
+	 * @throws NullPointerException
+	 *   当不存在 <code>code</code> 对应的轨道时
+	 * @since v0.2.3
+	 */
+	public float getLevel(byte code) throws NullPointerException {
+		return getMixerChannel(code).getLevel();
+	}
+	
+	/**
 	 * 结束该帧.
 	 * @return
 	 *   返回有多少音频采样数
