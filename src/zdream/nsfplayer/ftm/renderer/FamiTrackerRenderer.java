@@ -86,6 +86,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 			throws FamiTrackerException {
 		fetcher.ready(audio, track, section);
 		
+		runtime.param.sampleRate = this.runtime.setting.sampleRate;
 		runtime.param.calcFreq(runtime.querier.getFrameRate());
 		initMixer();
 		initChannels();
@@ -431,6 +432,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	 */
 	private int renderFrame() {
 		int ret = countNextFrame();
+		runtime.param.sampleInCurFrame = ret;
 		
 		fetcher.runFrame();
 		updateChannels();

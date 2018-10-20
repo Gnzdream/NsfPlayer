@@ -49,6 +49,16 @@ public class FamiTrackerParameter {
 	public int freqPerSec;
 	
 	/**
+	 * 当前帧的采样数
+	 */
+	public int sampleInCurFrame;
+	
+	/**
+	 * 采样率, 每秒的采样数
+	 */
+	public int sampleRate;
+	
+	/**
 	 * 计算时钟周期数等相关数据
 	 * TODO 现在全部使用 NTSC 制式
 	 */

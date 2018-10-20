@@ -15,6 +15,9 @@ public abstract class SoundMixer implements IResetable, INsfChannelCode {
 		
 	}
 	
+	/**
+	 * 一般在 parameter 等重要数据设置完毕之后调用
+	 */
 	public void init() {
 		// do nothing
 	}
@@ -84,7 +87,7 @@ public abstract class SoundMixer implements IResetable, INsfChannelCode {
 	}
 	
 	/**
-	 * 结束该帧.
+	 * 结束该帧. 在 {@link #readBuffer(short[], int, int)} 之前调用
 	 * @return
 	 *   返回有多少音频采样数
 	 */

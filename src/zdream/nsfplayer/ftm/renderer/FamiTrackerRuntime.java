@@ -47,6 +47,8 @@ public class FamiTrackerRuntime {
 	}
 	
 	private void initMixer() {
+		
+		// 可以采用 Blip 音频混合器 (FamiTracker 使用的)
 		BlipSoundMixer mixer = new BlipSoundMixer();
 		mixer.sampleRate = setting.sampleRate;
 		mixer.frameRate = setting.frameRate;
@@ -55,9 +57,12 @@ public class FamiTrackerRuntime {
 		mixer.trebleFilter = setting.trebleFilter;
 		
 		mixer.param = param;
-		
 		this.mixer = mixer;
-		
+
+		// 也可以采用 Xgm 音频混合器 (NsfPlayer 使用的)
+//		XgmSoundMixer mixer = new XgmSoundMixer();
+//		mixer.param = param;
+//		this.mixer = mixer;
 	}
 	
 	/* **********

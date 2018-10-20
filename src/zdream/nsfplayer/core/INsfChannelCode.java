@@ -45,5 +45,17 @@ public interface INsfChannelCode {
 			CHANNEL_N163_4 = 0x54,
 			CHANNEL_N163_5 = 0x55,
 			CHANNEL_N163_6 = 0x56;
+	
+	/**
+	 * 各个芯片的标识号
+	 * @since v0.2.3
+	 */
+	public static final byte
+			CHIP_2A03 = 0,
+			CHIP_VRC6 = 0x10,
+			CHIP_VRC7 = 0x20,
+			CHIP_FDS = 0x30,
+			CHIP_MMC5 = 0x40,
+			CHIP_N163 = 0x50;
 
 }
