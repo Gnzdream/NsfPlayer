@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.buffer;
+package zdream.nsfplayer.sound.blip;
 
 public class BufferContext {
 

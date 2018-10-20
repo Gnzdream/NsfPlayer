@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.tools;
 
+import zdream.nsfplayer.core.FamiTrackerParameter;
+
 /**
  * 用于音键向波长转化.
  * @author Zdream

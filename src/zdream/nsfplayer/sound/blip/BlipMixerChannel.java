@@ -1,6 +1,6 @@
-package zdream.nsfplayer.ftm.renderer.mixer;
+package zdream.nsfplayer.sound.blip;
 
-import zdream.nsfplayer.sound.buffer.BlipSynth;
+import zdream.nsfplayer.ftm.renderer.tools.IExpression;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
 /**
@@ -11,7 +11,7 @@ import zdream.nsfplayer.sound.mixer.IMixerChannel;
 public class BlipMixerChannel implements IMixerChannel {
 	
 	BlipSynth synth;
-	FtmSoundMixer mixer;
+	BlipSoundMixer mixer;
 	/**
 	 * 音量大小的修正. 范围 [0, 1.0], 默认 1.0
 	 */
@@ -30,7 +30,7 @@ public class BlipMixerChannel implements IMixerChannel {
 	 */
 	int lastInValue, lastMixValue;
 
-	public BlipMixerChannel(FtmSoundMixer mixer) {
+	public BlipMixerChannel(BlipSoundMixer mixer) {
 		this.mixer = mixer;
 	}
 	

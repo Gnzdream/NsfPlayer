@@ -1,6 +1,6 @@
-package zdream.nsfplayer.sound.buffer;
+package zdream.nsfplayer.sound.blip;
 
-import static zdream.nsfplayer.sound.buffer.BufferContext.*;
+import static zdream.nsfplayer.sound.blip.BufferContext.*;
 
 /**
  * <p>对自定义格式的方式读取采样数据进行优化.

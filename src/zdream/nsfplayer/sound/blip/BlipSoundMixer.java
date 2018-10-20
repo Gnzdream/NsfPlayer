@@ -1,45 +1,36 @@
-package zdream.nsfplayer.ftm.renderer.mixer;
+package zdream.nsfplayer.sound.blip;
 
 import java.util.HashMap;
 
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
-import zdream.nsfplayer.ftm.renderer.IFtmRuntimeHolder;
-import zdream.nsfplayer.sound.buffer.BlipBuffer;
-import zdream.nsfplayer.sound.buffer.BlipEQ;
+import zdream.nsfplayer.core.FamiTrackerParameter;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
- * Ftm 的音频合成器
+ * Blip 的音频合成器, FamiTracker 专用
  * @author Zdream
  * @since 0.2.1
  */
-public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
+public class BlipSoundMixer extends SoundMixer {
 	
-	FamiTrackerRuntime runtime;
-
-	public FtmSoundMixer(FamiTrackerRuntime runtime) {
-		this.runtime = runtime;
-	}
-
-	@Override
-	public FamiTrackerRuntime getRuntime() {
-		return runtime;
-	}
+	public int sampleRate;
+	public int frameRate;
+	public int bassFilter, trebleDamping, trebleFilter;
+	
+	public FamiTrackerParameter param;
 
 	@Override
 	public void init() {
-		final int sampleRate = runtime.setting.sampleRate;
-		int size = sampleRate / runtime.setting.frameRate;
+		int size = sampleRate / frameRate;
 		
 		buffer.setSampleRate(sampleRate, (size * 1000 * 2) / sampleRate);
-		buffer.bassFreq(runtime.setting.bassFilter);
+		buffer.bassFreq(bassFilter);
 	}
 	
 	@Override
 	public void reset() {
 		super.reset();
 
-		buffer.clockRate(runtime.param.freqPerSec);
+		buffer.clockRate(param.freqPerSec);
 	}
 	
 	/* **********
@@ -65,8 +56,7 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 		c.synth.output(buffer);
 		
 		// EQ
-		BlipEQ eq = new BlipEQ(-runtime.setting.trebleDamping, runtime.setting.trebleFilter,
-				runtime.setting.sampleRate, 0);
+		BlipEQ eq = new BlipEQ(-trebleDamping, trebleFilter, sampleRate, 0);
 		c.synth.trebleEq(eq);
 		c.synth.volume(1.0);
 		
@@ -133,7 +123,7 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 
 	@Override
 	public int finishBuffer() {
-		int freq = runtime.param.freqPerFrame;
+		int freq = param.freqPerFrame;
 		buffer.endFrame(freq);
 		
 		return buffer.samplesAvail();

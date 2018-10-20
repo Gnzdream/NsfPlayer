@@ -3,13 +3,13 @@ package zdream.nsfplayer.ftm.renderer;
 import java.util.HashMap;
 import java.util.Map;
 
+import zdream.nsfplayer.core.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
-import zdream.nsfplayer.ftm.renderer.mixer.FtmSoundMixer;
-import zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter;
+import zdream.nsfplayer.sound.blip.BlipSoundMixer;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
@@ -26,7 +26,7 @@ public class FamiTrackerRuntime {
 	public FtmRowFetcher fetcher;
 	public IFtmEffectConverter converter;
 	public FamiTrackerSetting setting;
-	public FamiTrackerParameter param = new FamiTrackerParameter(this);
+	public FamiTrackerParameter param = new FamiTrackerParameter();
 	
 	/**
 	 * <p>FTM 轨道.
@@ -41,10 +41,23 @@ public class FamiTrackerRuntime {
 	public SoundMixer mixer;
 	
 	void init() {
-		mixer = new FtmSoundMixer(this);
+		initMixer();
 		
-		param.init();
 		mixer.init();
+	}
+	
+	private void initMixer() {
+		BlipSoundMixer mixer = new BlipSoundMixer();
+		mixer.sampleRate = setting.sampleRate;
+		mixer.frameRate = setting.frameRate;
+		mixer.bassFilter = setting.bassFilter;
+		mixer.trebleDamping = setting.trebleDamping;
+		mixer.trebleFilter = setting.trebleFilter;
+		
+		mixer.param = param;
+		
+		this.mixer = mixer;
+		
 	}
 	
 	/* **********

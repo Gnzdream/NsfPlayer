@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
-import static zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter.LENGTH_TABLE;
+import static zdream.nsfplayer.core.FamiTrackerParameter.LENGTH_TABLE;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;

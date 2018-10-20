@@ -1,6 +1,6 @@
-package zdream.nsfplayer.sound.buffer;
+package zdream.nsfplayer.sound.blip;
 
-import static zdream.nsfplayer.sound.buffer.BufferContext.*;
+import static zdream.nsfplayer.sound.blip.BufferContext.*;
 
 import java.util.Arrays;
 

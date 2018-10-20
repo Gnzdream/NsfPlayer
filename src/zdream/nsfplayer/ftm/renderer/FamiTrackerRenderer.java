@@ -86,7 +86,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 			throws FamiTrackerException {
 		fetcher.ready(audio, track, section);
 		
-		runtime.param.calcFreq();
+		runtime.param.calcFreq(runtime.querier.getFrameRate());
 		initMixer();
 		initChannels();
 		
