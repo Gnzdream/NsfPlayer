@@ -10,6 +10,7 @@ import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.mixer.FtmSoundMixer;
 import zdream.nsfplayer.ftm.renderer.tools.FamiTrackerParameter;
+import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
  * Famitracker 运行时状态
@@ -37,9 +38,11 @@ public class FamiTrackerRuntime {
 	/**
 	 * 音频合成器
 	 */
-	public final FtmSoundMixer mixer = new FtmSoundMixer(this);
+	public SoundMixer mixer;
 	
 	void init() {
+		mixer = new FtmSoundMixer(this);
+		
 		param.init();
 		mixer.init();
 	}
@@ -68,5 +71,9 @@ public class FamiTrackerRuntime {
 	 * 全局范围的效果集
 	 */
 	public final Map<FtmEffectType, IFtmEffect> geffect = new HashMap<>();
+	
+	public void resetAllChannels() {
+		channels.forEach((channelCode, ch) -> ch.reset());
+	}
 	
 }

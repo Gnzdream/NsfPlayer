@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.IFtmRuntimeHolder;
-import zdream.nsfplayer.ftm.renderer.tools.ChannalDeviceSelector;
 import zdream.nsfplayer.sound.buffer.BlipBuffer;
 import zdream.nsfplayer.sound.buffer.BlipEQ;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
@@ -26,7 +25,8 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 	public FamiTrackerRuntime getRuntime() {
 		return runtime;
 	}
-	
+
+	@Override
 	public void init() {
 		final int sampleRate = runtime.setting.sampleRate;
 		int size = sampleRate / runtime.setting.frameRate;
@@ -56,17 +56,12 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 		mixers.clear();
 	}
 	
-	/**
-	 * 分配一个新的音频管道
-	 * @param code
-	 *   轨道号
-	 * @return
-	 */
+	@Override
 	public BlipMixerChannel allocateChannel(byte code) {
 		BlipMixerChannel c = new BlipMixerChannel(this);
 		mixers.put(code, c);
 		
-		ChannalDeviceSelector.configMixChannel(code, c);
+		configMixChannel(code, c);
 		c.synth.output(buffer);
 		
 		// EQ
@@ -77,23 +72,54 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 		
 		return c;
 	}
-	
+
+	@Override
 	public BlipMixerChannel getMixerChannel(byte code) {
 		return mixers.get(code);
 	}
 	
 	/**
-	 * 设置某个轨道的音量
+	 * 配置音频轨道
 	 * @param code
-	 *   轨道号
-	 * @param level
-	 *   音量. 范围 [0, 1.0f]
 	 */
-	public void setLevel(byte code, float level) {
-		BlipMixerChannel ch = getMixerChannel(code);
-		if (ch != null) {
-			ch.setLevel(level);
+	private static void configMixChannel(byte code, BlipMixerChannel mixer) {
+		switch (code) {
+		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);
+		} break;
+		
+		case CHANNEL_2A03_TRIANGLE:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 8227.0) + 30.0)) : 0);
+		} break;
+		
+		case CHANNEL_2A03_NOISE:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (41543.36 / (1 / (x / 12241.0) + 30.0)) : 0);
+		} break;
+		
+		case CHANNEL_2A03_DPCM:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (41543.36 / (1 / (x / 22638.0) + 30.0)) : 0);
+		} break;
+		
+		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
+		case CHANNEL_VRC6_PULSE1: case CHANNEL_VRC6_PULSE2:
+		case CHANNEL_VRC6_SAWTOOTH:
+		{
+			mixer.updateSetting(12, -500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (96 * 360 / ((8000.0 / x) + 180)) : 0);
+		} break;
+		
+		default:
+			break;
 		}
+		
 	}
 	
 	/* **********
@@ -105,10 +131,7 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 	 */
 	BlipBuffer buffer = new BlipBuffer();
 
-	/**
-	 * @return
-	 *   返回有多少音频采样数
-	 */
+	@Override
 	public int finishBuffer() {
 		int freq = runtime.param.freqPerFrame;
 		buffer.endFrame(freq);
@@ -120,7 +143,7 @@ public class FtmSoundMixer extends SoundMixer implements IFtmRuntimeHolder {
 	public int readBuffer(short[] buf, int offset, int length) {
 		int ret = buffer.readSamples(buf, offset, length, false);
 		
-		// TODO 这里为了避免 mixer 缓冲区的溢出, 用了一些方法
+		// 这里为了避免 mixer 缓冲区的溢出, 用了一些方法
 		buffer.removeSamples(buffer.samplesAvail());
 		
 		return ret;

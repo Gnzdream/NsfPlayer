@@ -1,9 +1,11 @@
 package zdream.nsfplayer.ftm;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
+import zdream.nsfplayer.ftm.factory.FtmParseException;
 
 /**
  * 应用的实体. 用于打开 FamiTracker 的文件等操作
@@ -33,7 +35,7 @@ public class FamiTrackerApplication {
 	 * 这是我所定义的方法, 用来加载 FamiTracker (.ftm) 的文件.
 	 * @param filename
 	 */
-	public FtmAudio open(String filename) throws Exception {
+	public FtmAudio open(String filename) throws IOException, FtmParseException {
 		return factory.create(filename);
 	}
 	

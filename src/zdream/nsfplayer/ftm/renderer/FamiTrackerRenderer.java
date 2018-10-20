@@ -18,9 +18,9 @@ import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
-import zdream.nsfplayer.ftm.renderer.mixer.BlipMixerChannel;
 import zdream.nsfplayer.ftm.renderer.tools.ChannalDeviceSelector;
 import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -138,6 +138,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 		}
 		
 		fetcher.ready(track, section);
+		runtime.resetAllChannels();
 	}
 	
 	/**
@@ -483,7 +484,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 			AbstractNsfSound sound = ch.getSound();
 			if (sound != null) {
 				// TODO
-				BlipMixerChannel mix = runtime.mixer.allocateChannel(code);
+				IMixerChannel mix = runtime.mixer.allocateChannel(code);
 				sound.setOut(mix);
 			}
 			

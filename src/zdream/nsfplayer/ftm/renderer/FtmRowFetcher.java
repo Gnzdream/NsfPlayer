@@ -239,6 +239,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	public void ready(int track, int section) {
 		this.trackIdx = track;
 		this.nextSection = section;
+		this.nextRow = 0;
 		
 		resetSpeed();
 		for (Map<FtmEffectType, IFtmEffect> map : runtime.effects.values()) {
