@@ -1,16 +1,17 @@
 package zdream.nsfplayer.sound.xgm;
 
 /**
- * 2A03 矩形轨道 1 和 2 的合并轨道
+ * VRC6 三个轨道的合并轨道
  * 
  * @author Zdream
  * @since v0.2.3
  */
-public class Xgm2A03Mixer extends AbstractXgmMultiMixer {
+public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
+	
+	XgmAudioChannel pulse1, pulse2, sawtooth;
+	private final int MASTER = (int) (256.0 * 1223.0 / 1920.0);
 
-	XgmAudioChannel pulse1, pulse2;
-
-	public Xgm2A03Mixer() {
+	public XgmVRC6Mixer() {
 		
 	}
 	
@@ -22,16 +23,22 @@ public class Xgm2A03Mixer extends AbstractXgmMultiMixer {
 		if (pulse2 != null) {
 			pulse1.reset();
 		}
+		if (sawtooth != null) {
+			sawtooth.reset();
+		}
 	}
-	
+
 	@Override
 	public void setAudioChannel(byte channelCode, XgmAudioChannel ch) {
 		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1:
+		case CHANNEL_VRC6_PULSE1:
 			pulse1 = ch;
 			break;
-		case CHANNEL_2A03_PULSE2:
+		case CHANNEL_VRC6_PULSE2:
 			pulse2 = ch;
+			break;
+		case CHANNEL_VRC6_SAWTOOTH:
+			sawtooth = ch;
 			break;
 		}
 	}
@@ -39,10 +46,12 @@ public class Xgm2A03Mixer extends AbstractXgmMultiMixer {
 	@Override
 	public XgmAudioChannel getAudioChannel(byte channelCode) {
 		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1:
+		case CHANNEL_VRC6_PULSE1:
 			return pulse1;
-		case CHANNEL_2A03_PULSE2:
+		case CHANNEL_VRC6_PULSE2:
 			return pulse2;
+		case CHANNEL_VRC6_SAWTOOTH:
+			return sawtooth;
 		}
 		return null;
 	}
@@ -51,17 +60,20 @@ public class Xgm2A03Mixer extends AbstractXgmMultiMixer {
 	public void beforeRender() {
 		pulse1.beforeSubmit();
 		pulse2.beforeSubmit();
+		sawtooth.beforeSubmit();
 	}
-	
+
 	@Override
 	public int render(int index, int fromIdx, int toIdx) {
 		int time = toIdx - fromIdx;
 		int idx = (fromIdx + toIdx) / 2;
 		
 		int sum = (int) (pulse1.buffer[idx] * pulse1.getLevel()
-				+ pulse2.buffer[idx] * pulse2.getLevel());
-		int value = (int) ((8192.0 * 95.88) / (8128.0 / sum + 100));
-		return (intercept(value, time));
+				+ pulse2.buffer[idx] * pulse2.getLevel()
+				+ sawtooth.buffer[idx] * sawtooth.getLevel());
+		int value = (int) (sum * MASTER) >> 8;
+		value = intercept(value, time);
+		return value;
 	}
-	
+
 }

@@ -24,6 +24,10 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 		for (Iterator<ISoundInterceptor> it = interceptors.iterator(); it.hasNext();) {
 			ISoundInterceptor interceptor = it.next();
 			i = interceptor.execute(i, time);
+			
+			if (i == Short.MAX_VALUE) {
+				value += 0;
+			}
 		}
 		return i;
 	}

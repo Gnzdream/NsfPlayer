@@ -8,11 +8,10 @@ package zdream.nsfplayer.sound.xgm;
  */
 public class Amplifier implements ISoundInterceptor {
 
-	protected int
+	private int
 			volume = 128,
 			threshold = 32767,
 			weight = -1;
-	protected double th;
 	
 	public Amplifier() {
 		setCompress(100, -1);
@@ -41,12 +40,11 @@ public class Amplifier implements ISoundInterceptor {
 	}
 	
 	public void setCompress(int t, int w) {
-		threshold = 32768 * t / 100;
+		threshold = 32767 * t / 100;
 		if (threshold < 32768)
 			weight = 0;
 		else
 			weight = -1;
-		th = 20 * Math.log10((double) threshold);
 	}
 	
 	@Override

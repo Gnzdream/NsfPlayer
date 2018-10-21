@@ -9,8 +9,8 @@ import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
-import zdream.nsfplayer.sound.blip.BlipSoundMixer;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
+import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
 
 /**
  * Famitracker 运行时状态
@@ -49,20 +49,20 @@ public class FamiTrackerRuntime {
 	private void initMixer() {
 		
 		// 可以采用 Blip 音频混合器 (FamiTracker 使用的)
-		BlipSoundMixer mixer = new BlipSoundMixer();
-		mixer.sampleRate = setting.sampleRate;
-		mixer.frameRate = setting.frameRate;
-		mixer.bassFilter = setting.bassFilter;
-		mixer.trebleDamping = setting.trebleDamping;
-		mixer.trebleFilter = setting.trebleFilter;
-		
-		mixer.param = param;
-		this.mixer = mixer;
-
-		// 也可以采用 Xgm 音频混合器 (NsfPlayer 使用的)
-//		XgmSoundMixer mixer = new XgmSoundMixer();
+//		BlipSoundMixer mixer = new BlipSoundMixer();
+//		mixer.sampleRate = setting.sampleRate;
+//		mixer.frameRate = setting.frameRate;
+//		mixer.bassFilter = setting.bassFilter;
+//		mixer.trebleDamping = setting.trebleDamping;
+//		mixer.trebleFilter = setting.trebleFilter;
+//		
 //		mixer.param = param;
 //		this.mixer = mixer;
+
+		// 也可以采用 Xgm 音频混合器 (NsfPlayer 使用的)
+		XgmSoundMixer mixer = new XgmSoundMixer();
+		mixer.param = param;
+		this.mixer = mixer;
 	}
 	
 	/* **********

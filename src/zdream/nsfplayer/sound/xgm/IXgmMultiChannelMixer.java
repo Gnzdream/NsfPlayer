@@ -1,6 +1,7 @@
 package zdream.nsfplayer.sound.xgm;
 
 import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.core.IResetable;
 
 /**
  * 合并轨道
@@ -8,7 +9,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
  * @author Zdream
  * @since v0.2.3
  */
-public interface IXgmMultiChannelMixer extends INsfChannelCode {
+public interface IXgmMultiChannelMixer extends INsfChannelCode, IResetable {
 	
 	/**
 	 * 设置音频轨道
@@ -27,13 +28,20 @@ public interface IXgmMultiChannelMixer extends INsfChannelCode {
 	public XgmAudioChannel getAudioChannel(byte channelCode);
 	
 	/**
-	 * 采样数据提交
-	 * @param buf
-	 * @param length
-	 *   等于采样数
-	 * @param clockPerFrame
-	 *   一帧的时钟数
+	 * 渲染前调用的方法
 	 */
-	public void render(short[] buf, int length, int clockPerFrame);
+	public void beforeRender();
+	
+	/**
+	 * 采样数据提交
+	 * @param index
+	 * @param fromIdx
+	 *   在时钟数 - 音频值的数组对应中, 这一帧对应的时钟周期开始的索引（包含）
+	 * @param toIdx
+	 *   在时钟数 - 音频值的数组对应中, 这一帧对应的时钟周期结束的索引（不包含）
+	 * @return
+	 *   该采样的值
+	 */
+	public int render(int index, int fromIdx, int toIdx);
 
 }

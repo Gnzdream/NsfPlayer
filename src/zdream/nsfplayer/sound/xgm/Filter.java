@@ -35,6 +35,10 @@ public class Filter implements ISoundInterceptor {
 		}
 		return value;
 	}
+	
+	/* **********
+	 * 参数设置 *
+	 ********** */
 
 	public void setParam(int r, int c) {
 		// C = 1.0E-10 * c;
@@ -46,7 +50,11 @@ public class Filter implements ISoundInterceptor {
 
 		updateFactor();
 	}
-	
+
+	/**
+	 * @param r
+	 *   采样率
+	 */
 	public final void setRate(double r) {
 		rate = r;
 		updateFactor();

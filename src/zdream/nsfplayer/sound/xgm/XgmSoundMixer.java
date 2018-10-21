@@ -1,5 +1,6 @@
 package zdream.nsfplayer.sound.xgm;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -87,14 +88,22 @@ public class XgmSoundMixer extends SoundMixer {
 		case 0xF:
 			multi = new Xgm2A07Mixer();
 			break;
+		case CHIP_VRC6:
+			multi = new XgmVRC6Mixer();
+			break;
+		case CHIP_MMC5:
+			multi = new XgmMMC5Mixer();
+			break;
 		}
 		
 		if (multi != null) {
 			Filter f = new Filter();
 			f.setRate(param.sampleRate);
+			f.setParam(4700, 0);
 			multi.attachIntercept(f);
-			
+
 			Amplifier amp = new Amplifier();
+			amp.setCompress(100, -1);
 			multi.attachIntercept(amp);
 		}
 		
@@ -121,25 +130,85 @@ public class XgmSoundMixer extends SoundMixer {
 		return null;
 	}
 	
+	@Override
+	public void reset() {
+		multis.forEach((b, multi) -> multi.reset());
+	}
+	
 	/* **********
 	 * 音频合成 *
 	 ********** */
 	
 	short[] samples;
 
+	/**
+	 * 拦截器组
+	 */
+	ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
+	
+	/**
+	 * @param value
+	 * @param time
+	 *   过去的时钟周期数
+	 * @return
+	 */
+	int intercept(int value, int time) {
+		int i = value;
+		for (Iterator<ISoundInterceptor> it = interceptors.iterator(); it.hasNext();) {
+			ISoundInterceptor interceptor = it.next();
+			i = interceptor.execute(i, time);
+		}
+		return i;
+	}
+	
+	/**
+	 * 添加音频数据的拦截器
+	 * @param interceptor
+	 */
+	public void attachIntercept(ISoundInterceptor interceptor) {
+		if (interceptor != null) {
+			interceptors.add(interceptor);
+		}
+	}
+
 	@Override
 	public int finishBuffer() {
 		allocateSampleArray();
+		beforeRender();
 		
-		// 每个轨道的数据汇总到 samples 中
-		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
-			HashMap.Entry<Byte, AbstractXgmMultiMixer> entry = it.next();
-			AbstractXgmMultiMixer multi = entry.getValue();
-			
-			multi.render(samples, param.sampleInCurFrame, param.freqPerFrame);
+		final int length = param.sampleInCurFrame;
+		for (int i = 0; i < length; i++) {
+			samples[i] = (short) renderOneSample(i);
 		}
 		
-		return param.sampleInCurFrame;
+		return length;
+	}
+	
+	private void beforeRender() {
+		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
+			AbstractXgmMultiMixer multi = it.next().getValue();
+			multi.beforeRender();
+		}
+	}
+	
+	private int renderOneSample(int i) {
+		final int length = param.sampleInCurFrame;
+		final int clockPerFrame = param.freqPerFrame;
+		
+		/*
+		 * fromIdx 和 toIdx 是时钟数
+		 */
+		int fromIdx = (clockPerFrame * (i) / length);
+		int toIdx = (clockPerFrame * (i + 1) / length);
+		int value = 0;
+		
+		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
+			AbstractXgmMultiMixer multi = it.next().getValue();
+			value += multi.render(i, fromIdx, toIdx);
+		}
+		
+		int time = toIdx - fromIdx;
+		return intercept(value, time) >> 1;
 	}
 
 	@Override
@@ -155,12 +224,37 @@ public class XgmSoundMixer extends SoundMixer {
 	
 	/**
 	 * 为 sample 数组分配空间, 创建数组.
+	 * 在创建数组的同时, 构造输出相关的拦截器.
 	 * 创建数组需要知道 param.sampleInCurFrame 的值
 	 */
 	private void allocateSampleArray() {
-		if (this.samples == null || this.samples.length < param.sampleInCurFrame) {
-			this.samples = new short[param.sampleInCurFrame + 16];
+		if (this.samples != null) {
+			if (this.samples.length < param.sampleInCurFrame) {
+				this.samples = new short[param.sampleInCurFrame + 16];
+			}
+			return;
 		}
+		
+		this.samples = new short[param.sampleInCurFrame + 16];
+
+		// 构造拦截器组
+		EchoUnit echo = new EchoUnit();
+		echo.setRate(param.sampleRate);
+		attachIntercept(echo); // 注意, 回音是这里产生的. 如果想去掉回音, 修改这里
+
+		DCFilter dcf = new DCFilter();
+		dcf.setRate(param.sampleRate);
+		dcf.setParam(270, 164);
+		attachIntercept(dcf);
+
+		Filter f = new Filter();
+		f.setRate(param.sampleRate);
+		f.setParam(4700, 112);
+		attachIntercept(f);
+
+		Compressor cmp = new Compressor();
+		cmp.setParam(1, 1, 1);
+		attachIntercept(cmp);
 	}
 
 }
