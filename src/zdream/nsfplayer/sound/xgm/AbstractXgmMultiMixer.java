@@ -3,6 +3,8 @@ package zdream.nsfplayer.sound.xgm;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import zdream.nsfplayer.sound.interceptor.ISoundInterceptor;
+
 /**
  * 合并轨道父类
  * 
@@ -23,10 +25,8 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 		int i = value;
 		for (Iterator<ISoundInterceptor> it = interceptors.iterator(); it.hasNext();) {
 			ISoundInterceptor interceptor = it.next();
-			i = interceptor.execute(i, time);
-			
-			if (i == Short.MAX_VALUE) {
-				value += 0;
+			if (interceptor.isEnable()) {
+				i = interceptor.execute(i, time);
 			}
 		}
 		return i;

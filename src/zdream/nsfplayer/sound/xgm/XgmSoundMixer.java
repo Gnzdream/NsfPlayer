@@ -7,6 +7,12 @@ import java.util.Iterator;
 
 import zdream.nsfplayer.core.FamiTrackerParameter;
 import zdream.nsfplayer.core.NsfChannelCode;
+import zdream.nsfplayer.sound.interceptor.Amplifier;
+import zdream.nsfplayer.sound.interceptor.Compressor;
+import zdream.nsfplayer.sound.interceptor.DCFilter;
+import zdream.nsfplayer.sound.interceptor.EchoUnit;
+import zdream.nsfplayer.sound.interceptor.Filter;
+import zdream.nsfplayer.sound.interceptor.ISoundInterceptor;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
@@ -156,7 +162,9 @@ public class XgmSoundMixer extends SoundMixer {
 		int i = value;
 		for (Iterator<ISoundInterceptor> it = interceptors.iterator(); it.hasNext();) {
 			ISoundInterceptor interceptor = it.next();
-			i = interceptor.execute(i, time);
+			if (interceptor.isEnable()) {
+				i = interceptor.execute(i, time);
+			}
 		}
 		return i;
 	}

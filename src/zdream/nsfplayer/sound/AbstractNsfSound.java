@@ -1,5 +1,6 @@
 package zdream.nsfplayer.sound;
 
+import zdream.nsfplayer.core.IEnable;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
@@ -8,7 +9,7 @@ import zdream.nsfplayer.sound.mixer.IMixerChannel;
  * @author Zdream
  * @since 0.2.1
  */
-public abstract class AbstractNsfSound implements IResetable {
+public abstract class AbstractNsfSound implements IResetable, IEnable {
 
 	/**
 	 * 通向合成器 Buffer 的管道

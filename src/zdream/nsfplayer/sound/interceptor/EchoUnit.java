@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.xgm;
+package zdream.nsfplayer.sound.interceptor;
 
 import java.util.Arrays;
 
@@ -68,6 +68,22 @@ public class EchoUnit implements ISoundInterceptor {
 		edelay = ((int) rate) / 16;
 		lpf.setRate(rate);
 		hpf.setRate(rate);
+	}
+	
+	/* **********
+	 * 开启状态 *
+	 ********** */
+	
+	boolean enable = true;
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 
 }

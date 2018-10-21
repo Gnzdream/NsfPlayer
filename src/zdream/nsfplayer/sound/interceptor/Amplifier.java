@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.xgm;
+package zdream.nsfplayer.sound.interceptor;
 
 /**
  * 音频扩音器. 补充功能有, 音量会限定在一个范围内
@@ -55,6 +55,22 @@ public class Amplifier implements ISoundInterceptor {
 	@Override
 	public int execute(int value, int time) {
 		return compress ((value * volume) / 16);
+	}
+	
+	/* **********
+	 * 开启状态 *
+	 ********** */
+	
+	boolean enable = true;
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 
 }

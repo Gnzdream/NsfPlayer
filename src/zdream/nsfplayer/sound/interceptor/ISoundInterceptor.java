@@ -1,5 +1,6 @@
-package zdream.nsfplayer.sound.xgm;
+package zdream.nsfplayer.sound.interceptor;
 
+import zdream.nsfplayer.core.IEnable;
 import zdream.nsfplayer.core.IResetable;
 
 /**
@@ -8,7 +9,7 @@ import zdream.nsfplayer.core.IResetable;
  * @author Zdream
  * @since v0.2.3
  */
-public interface ISoundInterceptor extends IResetable {
+public interface ISoundInterceptor extends IResetable, IEnable {
 	
 	public int execute(int value, int time);
 

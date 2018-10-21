@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.xgm;
+package zdream.nsfplayer.sound.interceptor;
 
 /**
  * 限制音量在一定的范围内的拦截器
@@ -46,6 +46,22 @@ public class Compressor implements ISoundInterceptor {
 		limit = (lim < 1.0) ? ((int) (lim * 32767)) : 0;
 		threshold = (int) (thr * limit);
 		strength = (int) (str * (1 << 12));
+	}
+	
+	/* **********
+	 * 开启状态 *
+	 ********** */
+	
+	boolean enable = true;
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 
 }

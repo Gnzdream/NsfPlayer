@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.xgm;
+package zdream.nsfplayer.sound.interceptor;
 
 import zdream.nsfplayer.xgm.device.audio.FilterTools;
 
@@ -75,6 +75,22 @@ public class Filter implements ISoundInterceptor {
 	public void reset() {
 		updateFactor();
 		out = 0;
+	}
+	
+	/* **********
+	 * 开启状态 *
+	 ********** */
+	
+	boolean enable = true;
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 
 }

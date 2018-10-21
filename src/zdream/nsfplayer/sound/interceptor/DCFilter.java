@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.xgm;
+package zdream.nsfplayer.sound.interceptor;
 
 /**
  * DC 过滤器. 需要得到采样率 （采样 / 秒*轨道）
@@ -75,6 +75,22 @@ public class DCFilter implements ISoundInterceptor {
 		} else {
 			a = (r * c) / ((r * c) + (1.0 / rate));
 		}
+	}
+	
+	/* **********
+	 * 开启状态 *
+	 ********** */
+	
+	boolean enable = true;
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 
 }
