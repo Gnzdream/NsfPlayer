@@ -146,12 +146,6 @@ public enum FtmEffectType {
 	DELAY,
 	
 	/**
-	 * Zxx, DPCM 特有
-	 * TODO
-	 */
-	DAC,
-	
-	/**
 	 * <p>1xx 向上滑音 Portamento up,
 	 * 2xx 向下滑音 Portamento down,
 	 * <p>DPCM 无效
@@ -167,12 +161,6 @@ public enum FtmEffectType {
 	 * @see DutyEffect
 	 */
 	DUTY_CYCLE,
-	
-	/**
-	 * Yxx, DPCM 特有
-	 * TODO
-	 */
-	SAMPLE_OFFSET,
 	
 	/**
 	 * <p>Qxy Slide up, 向上滑到指定的音键
@@ -199,10 +187,36 @@ public enum FtmEffectType {
 	NOTE_CUT,
 	
 	/**
-	 * Xxx, DPCM 特有
-	 * TODO
+	 * <p>Zxx, 设置 DAC 值
+	 * <p>DPCM 特有
+	 * </p>
+	 * @see DPCM_DACSettingEffect
+	 */
+	DAC,
+	
+	/**
+	 * <p>Yxx, 设置起始读取位 offset.
+	 * <p>DPCM 特有
+	 * </p>
+	 * @see DPCMSampleOffsetEffect
+	 */
+	SAMPLE_OFFSET,
+	
+	/**
+	 * <p>Xxx, 重新触发采样, 即循环一次.
+	 * <p>DPCM 特有
+	 * </p>
+	 * @see DPCMRetriggerEffect
 	 */
 	RETRIGGER,
+	
+	/**
+	 * Wxx, 设置 DPCM 采样的音高
+	 * <p>DPCM 特有
+	 * </p>
+	 * @see DPCMPitchEffect
+	 */
+	DPCM_PITCH,
 	
 	/**
 	 * Hxx, FDS 限定
@@ -221,12 +235,6 @@ public enum FtmEffectType {
 	 * TODO
 	 */
 	FDS_MOD_SPEED_LO,
-	
-	/**
-	 * Wxx, DPCM 特有
-	 * TODO
-	 */
-	DPCM_PITCH,
 	
 	/**
 	 * Hxx

@@ -92,7 +92,7 @@ public class VolumeSlideEffect implements IFtmEffect {
 	
 	@Override
 	public String toString() {
-		return "VolumnSlide:" + delta;
+		return "VolumeSlide:" + delta;
 	}
 	
 	/**

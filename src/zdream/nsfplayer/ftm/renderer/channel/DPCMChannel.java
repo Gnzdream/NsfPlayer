@@ -8,8 +8,8 @@ import zdream.nsfplayer.sound.DPCMSound;
  * <p>DPCM 轨道
  * 
  * <p>该轨道的 instrument, instrumentUpdated,
- * masterNote, masterPitch, curPeriod 四项参数仍然可以使用.
- * <li>masterPitch 默认值 -1, 每帧开始时重置. 允许范围 [0, 15]
+ * masterNote, masterPitch, curPeriod 五项参数仍然可以使用.
+ * <li>masterPitch 默认值 -1, Wxx 效果, 每帧开始时重置. 允许范围 [0, 15]
  * </li>
  * </p>
  * 
@@ -72,14 +72,39 @@ public class DPCMChannel extends Channel2A03 {
 	
 //	private int customPitch; // 转 masterPitch
 	
+	/**
+	 * 设置原始的 DAC 值. Zxx 效果触发
+	 * @param deltaCounter
+	 */
 	public void setDeltaCounter(int deltaCounter) {
 		this.deltaCounter = deltaCounter & 0x7F;
+	}
+	
+	/**
+	 * 设置采样的起始读取位. Yxx 效果触发.
+	 * 如果没有重置, 或者重设, 该值不会清零.
+	 * @param offset
+	 */
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+	
+	/**
+	 * 设置循环的时长. 调用该方法一次后循环只触发一次, Xxx 效果触发.
+	 * @param retrigger
+	 *   retrigger + 1 表示真实记录的时长, 单位: 帧
+	 */
+	public void setRetrigger(int retrigger) {
+		this.retrigger = retrigger + 1;
+		if (retriggerCtrl == 0)
+			retriggerCtrl = this.retrigger;
 	}
 	
 	@Override
 	public void reset() {
 		deltaCounter = -1;
 		loop = false;
+		offset = 0;
 		
 		super.reset();
 	}
