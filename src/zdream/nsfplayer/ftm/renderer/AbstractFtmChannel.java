@@ -257,6 +257,18 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 		instrumentUpdated = true;
 		this.masterNote = note;
 	}
+
+	/**
+	 * <p>设置并重置现在的音键, 但是不将 instrumentUpdated 设置为 true.
+	 * <p>效果 Rxy 和 Qxy 设置音键时, 不会触发 instrumentUpdated.
+	 * </p>
+	 * @param note
+	 *   {@link #masterNote}
+	 * @since v0.2.3
+	 */
+	public void setMasterNoteWithoutUpdate(int note) {
+		this.masterNote = note;
+	}
 	
 	/**
 	 * @return

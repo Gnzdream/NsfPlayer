@@ -106,7 +106,7 @@ public class NoteSlideEffect implements IFtmEffect {
 			// 没有变化
 			pitchDelta = 0;
 		} else {
-			ch.setMasterNote(dnode);
+			ch.setMasterNoteWithoutUpdate(dnode);
 			pitchDelta = (channelCode == CHANNEL_2A03_NOISE) ?
 					snode - dnode : ch.periodTable(snode) - ch.periodTable(dnode);
 		}

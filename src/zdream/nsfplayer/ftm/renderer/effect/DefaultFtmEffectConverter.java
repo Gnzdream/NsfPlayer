@@ -230,8 +230,8 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 			case EF_VOLUME_SLIDE: // Axx
 				if (channelCode != CHANNEL_2A03_DPCM && channelCode != CHANNEL_2A03_TRIANGLE) {
 					int param = note.effParam[i];
-					if (param <= 15) { // down 或 0
-						putEffect(channelCode, effects, VolumeSlideEffect.of(param * -2));
+					if ((param & 0xF) != 0) { // down 或 0
+						putEffect(channelCode, effects, VolumeSlideEffect.of((param & 0xF) * -2));
 					} else { // up
 						putEffect(channelCode, effects, VolumeSlideEffect.of((param >> 4) * 2));
 					}
