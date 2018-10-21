@@ -72,7 +72,7 @@ public class BlipBuffer {
 	 * (along with any still-unread samples) for reading with read_samples(). Begins
 	 * a new time frame at the end of the current frame.
 	 * @param time
-	 *   所指定的持续时间, 单位 TODO
+	 *   所指定的持续时间, 单位时钟周期数
 	 */
 	public void endFrame(int time) {
 		offset_ += time * factor_;

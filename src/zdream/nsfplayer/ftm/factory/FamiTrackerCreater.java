@@ -808,11 +808,16 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				else
 					row = block.readAsCInt();
 				
+				FtmNote note;
 				if (row >= MAX_PATTERN_LENGTH) {
 					throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的第 %d 个数据的行数 %d 不合法",
 							trackIdx, i, row));
+				} else if (row >= doc.audio.getTrack(trackIdx).length) {
+					// 这个 note 不会加到 doc 中去
+					note = new FtmNote();
+				} else {
+					note = doc.getOrCreateNote(trackIdx, patternIdx, channelIdx, row);
 				}
-				FtmNote note = doc.getOrCreateNote(trackIdx, patternIdx, channelIdx, row);
 
 				note.note = block.readByte();
 				note.octave = block.readByte();
