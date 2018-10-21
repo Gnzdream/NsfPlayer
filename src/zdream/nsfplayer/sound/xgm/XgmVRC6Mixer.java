@@ -71,7 +71,7 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 		int sum = (int) (pulse1.buffer[idx] * pulse1.getLevel()
 				+ pulse2.buffer[idx] * pulse2.getLevel()
 				+ sawtooth.buffer[idx] * sawtooth.getLevel());
-		int value = (int) (sum * MASTER) >> 8;
+		int value = (int) (sum * MASTER) >> 1;
 		value = intercept(value, time);
 		return value;
 	}
