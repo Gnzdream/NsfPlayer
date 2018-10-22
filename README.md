@@ -54,7 +54,7 @@ renderer.ready(audio, 0);
 
 ##### 第三步：渲染.
 
-Step 3: Render it use a loop block.
+Step 3: Render it using a loop block.
 
 ``` Java
 BytesPlayer player = new BytesPlayer();
@@ -96,7 +96,7 @@ while (true) {
 
 ### 工作进度 (Progress)
 
-*	支持程度 (support)
+*	支持程度 (Support)
 
 <table>
 	<tr>
@@ -138,3 +138,15 @@ while (true) {
 		</td>
 	</tr>
 </table>
+
+*	版本(Version)
+
+当前版本为 v0.2.3，剩余的工作有
+*	（FTM）测试 2A03 VRC6 MMC5 芯片是否能正常工作
+*	（NSF）无
+*	（Mixer）测试 XgmSoundMixer 是否能正常工作
+
+下一个版本 v0.2.4 +
+*	（FTM）补充 FDS 芯片的实现（文件读取、乐器、效果、音频输出）
+*	（NSF）重构
+*	（Mixer）支持 FDS 芯片部分

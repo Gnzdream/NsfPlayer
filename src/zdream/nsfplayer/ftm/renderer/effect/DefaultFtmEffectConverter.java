@@ -19,6 +19,10 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_NOTE_CUT;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DAC;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SAMPLE_OFFSET;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_RETRIGGER;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DPCM_PITCH;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_EFFECT_COLUMNS;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
@@ -303,6 +307,32 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 			case EF_PORTAMENTO: // 3xx
 				if (channelCode != CHANNEL_2A03_DPCM) {
 					putEffect(channelCode, effects, PortamentoOnEffect.of(note.effParam[i]));
+				}
+				break;
+				
+				// DPCM 轨道
+				
+			case EF_DAC: // Zxx
+				if (channelCode == CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, DPCM_DACSettingEffect.of(note.effParam[i]));
+				}
+				break;
+				
+			case EF_SAMPLE_OFFSET: // Yxx
+				if (channelCode == CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, DPCMSampleOffsetEffect.of(note.effParam[i] * 64));
+				}
+				break;
+				
+			case EF_RETRIGGER: // Xxx
+				if (channelCode == CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, DPCMRetriggerEffect.of(note.effParam[i]));
+				}
+				break;
+				
+			case EF_DPCM_PITCH:
+				if (channelCode == CHANNEL_2A03_DPCM) {
+					putEffect(channelCode, effects, DPCMPitchEffect.of(note.effParam[i] & 0xF));
 				}
 				break;
 			
