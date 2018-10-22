@@ -1,11 +1,22 @@
 package com.zdream.famitracker.sound.channels;
 
-import static com.zdream.famitracker.FamitrackerTypes.*;
-import static com.zdream.famitracker.sound.emulation.Types.*;
+import static com.zdream.famitracker.FamitrackerTypes.EF_DUTY_CYCLE;
+import static com.zdream.famitracker.FamitrackerTypes.EF_NONE;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SLIDE_DOWN;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SLIDE_UP;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SWEEPDOWN;
+import static com.zdream.famitracker.FamitrackerTypes.EF_SWEEPUP;
+import static com.zdream.famitracker.FamitrackerTypes.EF_VOLUME;
+import static com.zdream.famitracker.FamitrackerTypes.NOTE_HALT;
+import static com.zdream.famitracker.FamitrackerTypes.NOTE_NONE;
+import static com.zdream.famitracker.FamitrackerTypes.NOTE_RELEASE;
+import static com.zdream.famitracker.sound.emulation.Types.CHANID_DPCM;
+import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_NONE;
 
 import com.zdream.famitracker.FamiTrackerDoc;
 import com.zdream.famitracker.document.Sequence;
 import com.zdream.famitracker.document.StChanNote;
+import com.zdream.famitracker.document.instrument.Instrument;
 import com.zdream.famitracker.document.instrument.Instrument2A03;
 
 public abstract class ChannelHandler2A03 extends ChannelHandler {
@@ -84,7 +95,12 @@ public abstract class ChannelHandler2A03 extends ChannelHandler {
 	@Override
 	protected boolean handleInstrument(int instrument, boolean trigger, boolean newInstrument) {
 		FamiTrackerDoc pDocument = m_pSoundGen.getDocument();
-		Instrument2A03 pInstrument = (Instrument2A03) pDocument.getInstrument(instrument);
+		
+		Instrument pinst = pDocument.getInstrument(instrument);
+		Instrument2A03 pInstrument = null;
+		if (pinst != null && pinst instanceof Instrument2A03) {
+			pInstrument = (Instrument2A03) pinst;
+		}
 
 		if (pInstrument == null)
 			return false;

@@ -17,6 +17,7 @@ import com.zdream.famitracker.document.instrument.InstrumentVRC6;
 import com.zdream.famitracker.document.instrument.InstrumentVRC7;
 import com.zdream.famitracker.holder.IntHolder;
 import com.zdream.famitracker.older.StSequence;
+import com.zdream.famitracker.sound.SoundGen;
 import com.zdream.famitracker.sound.emulation.APU;
 
 import static com.zdream.famitracker.FamitrackerTypes.*;
@@ -409,8 +410,7 @@ public class FamiTrackerDoc {
 	}
 	
 	public final boolean expansionEnabled(byte chip) {
-		// TODO
-		return false;
+		return (getExpansionChip() & chip) == chip;
 	}
 
 	public final int getNamcoChannels() {
@@ -1085,34 +1085,40 @@ public class FamiTrackerDoc {
 //		m_bFileLoaded = true;
 //		m_bFileLoadFailed = false;
 		
-		handleFinish();
 		
 		return true;
 	}
 	
 	/**
-	 * 在 {@link FamiTrackerDoc} 生成结束之后要做的最后的事情 TODO
 	 * <p>原来的 C++ 工程没有这个方法
+	 * 
+	 * 轨道号码序列见 {@link SoundGen#createChannels()}
 	 */
 	private void handleFinish() {
 		// m_iChannelTypes
 		Arrays.fill(m_iChannelTypes, (byte) 0);
 		
-		m_iChannelTypes[0] = 0;
-		m_iChannelTypes[1] = 1;
-		m_iChannelTypes[2] = 2;
-		m_iChannelTypes[3] = 3;
-		m_iChannelTypes[4] = 4;
+		m_iChannelTypes[0] = CHANID_SQUARE1;
+		m_iChannelTypes[1] = CHANID_SQUARE2;
+		m_iChannelTypes[2] = CHANID_TRIANGLE;
+		m_iChannelTypes[3] = CHANID_NOISE;
+		m_iChannelTypes[4] = CHANID_DPCM;
 		
 		int i = 5;
 		if ((m_iExpansionChip & SNDCHIP_VRC6) != 0) {
-			m_iChannelTypes[i++] = 5;
-			m_iChannelTypes[i++] = 6;
-			m_iChannelTypes[i++] = 7;
+			m_iChannelTypes[i++] = CHANID_VRC6_PULSE1;
+			m_iChannelTypes[i++] = CHANID_VRC6_PULSE2;
+			m_iChannelTypes[i++] = CHANID_VRC6_SAWTOOTH;
 		}
 		if ((m_iExpansionChip & SNDCHIP_MMC5) != 0) {
-			m_iChannelTypes[i++] = 8;
-			m_iChannelTypes[i++] = 9;
+			m_iChannelTypes[i++] = CHANID_MMC5_SQUARE1;
+			m_iChannelTypes[i++] = CHANID_MMC5_SQUARE2;
+		}
+		
+		// TODO VRC7, 6 个轨道
+		
+		if ((m_iExpansionChip & SNDCHIP_FDS) != 0) {
+			m_iChannelTypes[i++] = CHANID_FDS; // FDS 轨道号是哪个数我已经不清楚了
 		}
 		
 		// TODO 其它芯片
@@ -1276,6 +1282,8 @@ public class FamiTrackerDoc {
 		} else {
 			m_iExpansionChip = pDocFile.getBlockChar();
 		}
+		
+		handleFinish();
 
 		m_iChannelsCount = pDocFile.getBlockInt();
 		m_iMachine = (byte) pDocFile.getBlockInt();
@@ -1753,7 +1761,7 @@ public class FamiTrackerDoc {
 						}
 					}
 					// TODO FDS pitch effect fix
-					/*else if (expansionEnabled(SNDCHIP_FDS) && getChannelType(channel) == CHANID_FDS) {
+					else if (expansionEnabled(SNDCHIP_FDS) && getChannelType(channel) == CHANID_FDS) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
 							switch (note.effNumber[n]) {
 								case EF_PITCH:
@@ -1762,15 +1770,15 @@ public class FamiTrackerDoc {
 									break;
 							}
 						}
-					}*/
+					}
 				}
 
 				if (version < 5) {
 					// TODO FDS octave
-					/*if (expansionEnabled(SNDCHIP_FDS) && getChannelType(channel) == CHANID_FDS && note.octave < 6) {
+					if (expansionEnabled(SNDCHIP_FDS) && getChannelType(channel) == CHANID_FDS && note.octave < 6) {
 						note.octave += 2;
 						m_bAdjustFDSArpeggio = true;
-					}*/
+					}
 				}
 				/* TRANSPOSE_FDS */
 				

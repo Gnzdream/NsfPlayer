@@ -385,14 +385,14 @@ public abstract class ChannelHandler extends SequenceHandler {
 		return period;
 	}
 	/**
-	 * 限定音量的范围, 让波长最终落到 [0, 15] 之间的数值中
+	 * 限定音量的范围, 让波长最终落到 [0, {@link #m_iMaxVolume}] 之间的数值中
 	 * @param period
 	 *   原始音量（粗值）
 	 * @return
 	 *   修改后的音量（粗值）. 在范围内的音量不做变动, 而在范围外的音量调整到 0 或 15
 	 */
 	protected final int limitVolume(int volume) {
-		volume = Math.min(volume, 15);
+		volume = Math.min(volume, m_iMaxVolume);
 		volume = Math.max(volume, 0);
 		return volume;
 	}
