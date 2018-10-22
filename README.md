@@ -141,11 +141,9 @@ while (true) {
 
 *	版本(Version)
 
-当前版本为 v0.2.3，新添加的特性有:
-*	（FTM）支持 VRC6 和 MMC5 芯片音轨
-*	（Mixer）补充 XgmSoundMixer 混音器，以及相关的拦截器（效果器）
-
-下一个版本 v0.2.4 +
+当前版本为 v0.2.4，剩余工作有:
 *	（FTM）补充 FDS 芯片的实现（文件读取、乐器、效果、音频输出）
 *	（NSF）重构
 *	（Mixer）支持 FDS 芯片部分
+
+[版本更新历史](doc/version.md)
