@@ -2,11 +2,11 @@ package com.zdream.famitracker.sound.emulation.expansion;
 
 import com.zdream.famitracker.sound.emulation.Mixer;
 
-public abstract class External {
+public interface External {
 
-	protected External(Mixer pMixer) {
-		this.m_pMixer = pMixer;
-	}
+//	protected External(Mixer pMixer) {
+//		this.m_pMixer = pMixer;
+//	}
 	
 	public abstract void reset();
 	public abstract void process(int time);
@@ -16,6 +16,6 @@ public abstract class External {
 	public abstract int read(int address);
 	public abstract boolean isMapped(int address);
 
-	protected Mixer m_pMixer;
+	Mixer getMixer();
 
 }

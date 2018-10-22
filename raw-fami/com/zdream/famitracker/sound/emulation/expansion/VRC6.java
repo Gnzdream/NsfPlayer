@@ -5,17 +5,24 @@ import com.zdream.famitracker.test.FamitrackerLogger;
 
 import static com.zdream.famitracker.sound.emulation.Types.*;
 
-public class VRC6 extends External {
+public class VRC6 implements External {
+	
+	private Mixer pMixer;
 	
 	VRC6Pulse m_pPulse1, m_pPulse2;
 	VRC6Sawtooth m_pSawtooth;
 
 	public VRC6(Mixer pMixer) {
-		super(pMixer);
+		this.pMixer = pMixer;
 		
 		m_pPulse1 = new VRC6Pulse(pMixer, CHANID_VRC6_PULSE1);
 		m_pPulse2 = new VRC6Pulse(pMixer, CHANID_VRC6_PULSE2);
 		m_pSawtooth = new VRC6Sawtooth(pMixer, CHANID_VRC6_SAWTOOTH);
+	}
+	
+	@Override
+	public Mixer getMixer() {
+		return this.pMixer;
 	}
 
 	@Override

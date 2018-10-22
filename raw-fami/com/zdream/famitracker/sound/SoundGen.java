@@ -6,6 +6,7 @@ import com.zdream.famitracker.document.DSample;
 import com.zdream.famitracker.document.Sequence;
 import com.zdream.famitracker.document.StChanNote;
 import com.zdream.famitracker.sound.channels.ChannelHandler;
+import com.zdream.famitracker.sound.channels.ChannelHandlerFDS;
 import com.zdream.famitracker.sound.channels.DPCMChan;
 import com.zdream.famitracker.sound.channels.MMC5Square1Chan;
 import com.zdream.famitracker.sound.channels.MMC5Square2Chan;
@@ -285,7 +286,7 @@ public class SoundGen implements IAudioCallback {
 	int[] m_iNoteLookupTableNTSC = new int[96]; // For 2A03
 	int[] m_iNoteLookupTablePAL = new int[96]; // For 2A07
 	int[] m_iNoteLookupTableSaw = new int[96]; // For VRC6 sawtooth
-//	int[] m_iNoteLookupTableFDS[96];			// For FDS
+	int[] m_iNoteLookupTableFDS = new int[96];	// For FDS
 //	int[] m_iNoteLookupTableN163[96];			// For N163
 //	int[] m_iNoteLookupTableS5B[96];			// For sunsoft
 //	int[] m_iVibratoTable[VIBRATO_LENGTH];
@@ -331,6 +332,36 @@ public class SoundGen implements IAudioCallback {
 		// Nintendo MMC5
 		assignChannel(new TrackerChannel("Pulse 1", SNDCHIP_MMC5, CHANID_MMC5_SQUARE1), new MMC5Square1Chan());
 		assignChannel(new TrackerChannel("Pulse 2", SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new MMC5Square2Chan());
+		
+//		// Konami VRC7
+//		AssignChannel(new CTrackerChannel(_T("FM Channel 1"), SNDCHIP_VRC7, CHANID_VRC7_CH1), new CVRC7Channel());
+//		AssignChannel(new CTrackerChannel(_T("FM Channel 2"), SNDCHIP_VRC7, CHANID_VRC7_CH2), new CVRC7Channel());
+//		AssignChannel(new CTrackerChannel(_T("FM Channel 3"), SNDCHIP_VRC7, CHANID_VRC7_CH3), new CVRC7Channel());
+//		AssignChannel(new CTrackerChannel(_T("FM Channel 4"), SNDCHIP_VRC7, CHANID_VRC7_CH4), new CVRC7Channel());
+//		AssignChannel(new CTrackerChannel(_T("FM Channel 5"), SNDCHIP_VRC7, CHANID_VRC7_CH5), new CVRC7Channel());
+//		AssignChannel(new CTrackerChannel(_T("FM Channel 6"), SNDCHIP_VRC7, CHANID_VRC7_CH6), new CVRC7Channel());
+
+		// Nintendo FDS
+		assignChannel(new TrackerChannel("FDS", SNDCHIP_FDS, CHANID_FDS), new ChannelHandlerFDS());
+
+//		// Nintendo MMC5
+//		AssignChannel(new CTrackerChannel(_T("Pulse 1"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE1), new CMMC5Square1Chan());
+//		AssignChannel(new CTrackerChannel(_T("Pulse 2"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new CMMC5Square2Chan());
+//
+//		// Namco N163
+//		AssignChannel(new CTrackerChannel(_T("Namco 1"), SNDCHIP_N163, CHANID_N163_CHAN1), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 2"), SNDCHIP_N163, CHANID_N163_CHAN2), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 3"), SNDCHIP_N163, CHANID_N163_CHAN3), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 4"), SNDCHIP_N163, CHANID_N163_CHAN4), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 5"), SNDCHIP_N163, CHANID_N163_CHAN5), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 6"), SNDCHIP_N163, CHANID_N163_CHAN6), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 7"), SNDCHIP_N163, CHANID_N163_CHAN7), new CChannelHandlerN163());
+//		AssignChannel(new CTrackerChannel(_T("Namco 8"), SNDCHIP_N163, CHANID_N163_CHAN8), new CChannelHandlerN163());
+		
+		// Sunsoft 5B
+//		AssignChannel(new CTrackerChannel(_T("Square 1"), SNDCHIP_S5B, CHANID_S5B_CH1), new CS5BChannel1());
+//		AssignChannel(new CTrackerChannel(_T("Square 2"), SNDCHIP_S5B, CHANID_S5B_CH2), new CS5BChannel2());
+//		AssignChannel(new CTrackerChannel(_T("Square 3"), SNDCHIP_S5B, CHANID_S5B_CH3), new CS5BChannel3());
 		
 		// TODO 其它芯片的暂时不管
 		
@@ -1234,8 +1265,8 @@ public class SoundGen implements IAudioCallback {
 			m_iNoteLookupTableSaw[i] = (int) pitch;
 
 			// FDS
-//			m_iNoteLookupTableFDS[i] = (int) pitch;
-//			pitch = (freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
+			pitch = (freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
+			m_iNoteLookupTableFDS[i] = (int) pitch;
 
 			// N163
 //			pitch = (Freq * double(NamcoChannels) * 983040.0) / clock_ntsc;
@@ -1270,6 +1301,10 @@ public class SoundGen implements IAudioCallback {
 		// MMC5
 		m_pChannels[CHANID_MMC5_SQUARE1].setNoteTable(m_iNoteLookupTableNTSC);
 		m_pChannels[CHANID_MMC5_SQUARE2].setNoteTable(m_iNoteLookupTableNTSC);
+
+		// FDS
+		m_pChannels[CHANID_FDS].setNoteTable(m_iNoteLookupTableFDS);
+		
 		
 //		省略 FDS N163
 		
