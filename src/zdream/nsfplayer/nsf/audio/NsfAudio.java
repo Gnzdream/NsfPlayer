@@ -13,17 +13,17 @@ public class NsfAudio {
 	 * 当前 NSF 文件的版本号<br>
 	 * 地址 0x000005, 单字节
 	 */
-	public short version;
+	public int version;
 	/**
 	 * NSF 中乐曲数<br>
 	 * 地址 0x000006, 单字节
 	 */
-	public short total_songs;
+	public int total_songs;
 	/**
 	 * 起始乐曲播放的号码<br>
 	 * 地址 0x000007, 单字节
 	 */
-	public short start;
+	public int start;
 	
 	/**
 	 * 数据载入的内存地址, 范围 ($8000-$FFFF)<br>

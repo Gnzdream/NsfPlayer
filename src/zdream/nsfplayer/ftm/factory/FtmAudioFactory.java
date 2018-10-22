@@ -2,7 +2,7 @@ package zdream.nsfplayer.ftm.factory;
 
 import java.io.IOException;
 
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.utils.common.BytesReader;
 import zdream.utils.common.FileUtils;
 import zdream.utils.common.TextReader;

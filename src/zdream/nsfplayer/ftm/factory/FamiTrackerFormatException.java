@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.factory;
 
-import zdream.nsfplayer.ftm.document.FamiTrackerException;
+import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 
 public class FamiTrackerFormatException extends FamiTrackerException {
 

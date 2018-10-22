@@ -3,8 +3,8 @@ package zdream.nsfplayer.ftm.renderer;
 import java.util.HashMap;
 import java.util.Map;
 
-import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import zdream.nsfplayer.core.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
-import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
+import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
