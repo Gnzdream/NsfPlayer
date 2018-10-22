@@ -14,7 +14,7 @@ import zdream.nsfplayer.ftm.renderer.IFtmState;
  * </p>
  * 
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class DelayEffect implements IFtmEffect {
 	
@@ -27,6 +27,7 @@ public class DelayEffect implements IFtmEffect {
 		
 		state = new DelayState(duration);
 		schedule = new DelaySchedule();
+		tracer = new DelayTraceSchedule();
 	}
 
 	@Override
@@ -82,10 +83,19 @@ public class DelayEffect implements IFtmEffect {
 	}
 	
 	/**
-	 * 内部类, 延迟计数器
+	 * <p>内部类, 延迟计数器
+	 * </p>
+	 * 
+	 * <p><b>补充效果</b>
+	 * <li>(v0.2.3) 当状态发现某一帧有效果开始触发了, 则准备执行该延迟帧的内容; 执行的规则如下:
+	 * <br>
+	 * <br>1. 如果在状态创建的该帧, 不会执行该补充效果;
+	 * <br>2. 需要抢在该帧的效果触发之前, 触发所有延迟的效果.
+	 * </li>
+	 * </p>
 	 * 
 	 * @author Zdream
-	 * @since 0.2.1
+	 * @since v0.2.1
 	 */
 	class DelayState implements IFtmState {
 		
@@ -105,11 +115,13 @@ public class DelayEffect implements IFtmEffect {
 
 		@Override
 		public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+			AbstractFtmChannel channel = runtime.channels.get(channelCode);
+			
 			if (delayCounter > 1) {
 				delayCounter --;
+				channel.addSchedule(tracer);
 			} else {
 				// delayCounter = 1
-				AbstractFtmChannel channel = runtime.channels.get(channelCode);
 				channel.addSchedule(schedule);
 				// 删除该状态
 				channel.removeState(this);
@@ -144,8 +156,33 @@ public class DelayEffect implements IFtmEffect {
 		
 	}
 	
+	/**
+	 * 有延迟状态时, 如果看到该帧需要触发别的效果, 则提前将该延迟效果触发掉.
+	 * 
+	 * @author Zdream
+	 * @since v0.2.3
+	 */
+	class DelayTraceSchedule implements IFtmSchedule {
+
+		@Override
+		public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
+			Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
+			if (!map.isEmpty()) {
+				AbstractFtmChannel channel = runtime.channels.get(channelCode);
+				
+				// 准备触发
+				channel.forceEffect(effects);
+				
+				// 删除该状态
+				channel.removeState(state);
+			}
+		}
+		
+	}
+	
 	DelayState state;
 	DelaySchedule schedule;
+	DelayTraceSchedule tracer;
 	
 	/**
 	 * 最高优先级

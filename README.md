@@ -1,7 +1,7 @@
 # NsfPlayer
 
 NsfPlayer (NSF 解析/播放器)，是一个基于 Java 的播放 NSF 文件的开源工程。
-主要支持将 .nsf (NSF 文件)、 .ftm (FamiTracker 编辑文件) 这类 8-bit 音频文件转成音频采样流 (byte 数组)
+主要支持将 .nsf (NSF 文件)、 .ftm (FamiTracker 编辑文件) 这类 8-bit 音频文件转成音频采样流 (PCM byte 数组)
 以便后面使用其它的软件、工具进行加工。
 	
 *	该分支 (branch: fami) 主要完成对 FTM 文件的支持。
@@ -18,7 +18,7 @@ NsfPlayer (NSF 解析/播放器)，是一个基于 Java 的播放 NSF 文件的�
 	
 #### 使用 How To Use
 
-首先需要声明的是，这个工程的目标是输出 byte 数组 / 音频流，而不是播放声音，尽管它内置了默认的播放音频的组件。
+首先需要声明的是，这个工程的目标是输出 PCM 格式的 byte 数组 / 音频流，而不是播放声音，尽管它内置了默认的播放音频的组件。
 
 ---
 
