@@ -5,16 +5,23 @@ import static com.zdream.famitracker.sound.emulation.Types.*;
 import com.zdream.famitracker.sound.emulation.Mixer;
 import com.zdream.famitracker.sound.emulation.Square;
 
-public class MMC5 extends External {
+public class MMC5 implements External {
+	
+	private Mixer pMixer;
 
 	public MMC5(Mixer pMixer) {
-		super(pMixer);
+		this.pMixer = pMixer;
 		
 		this.m_pEXRAM = new byte[0x400];
 		m_pSquare1 = new Square(pMixer, CHANID_MMC5_SQUARE1, SNDCHIP_MMC5);
 		m_pSquare2 = new Square(pMixer, CHANID_MMC5_SQUARE2, SNDCHIP_MMC5);
 		m_iMulLow = 0;
 		m_iMulHigh = 0;
+	}
+	
+	@Override
+	public Mixer getMixer() {
+		return pMixer;
 	}
 
 	@Override

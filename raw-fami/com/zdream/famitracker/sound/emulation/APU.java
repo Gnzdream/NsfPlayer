@@ -1,15 +1,6 @@
 package com.zdream.famitracker.sound.emulation;
 
-import static com.zdream.famitracker.sound.emulation.Types.CHANID_DPCM;
-import static com.zdream.famitracker.sound.emulation.Types.CHANID_NOISE;
-import static com.zdream.famitracker.sound.emulation.Types.CHANID_SQUARE1;
-import static com.zdream.famitracker.sound.emulation.Types.CHANID_SQUARE2;
-import static com.zdream.famitracker.sound.emulation.Types.CHANID_TRIANGLE;
-import static com.zdream.famitracker.sound.emulation.Types.MACHINE_NTSC;
-import static com.zdream.famitracker.sound.emulation.Types.MACHINE_PAL;
-import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_MMC5;
-import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_NONE;
-import static com.zdream.famitracker.sound.emulation.Types.SNDCHIP_VRC6;
+import static com.zdream.famitracker.sound.emulation.Types.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,6 +8,7 @@ import java.util.Iterator;
 import com.zdream.famitracker.sound.IAudioCallback;
 import com.zdream.famitracker.sound.SampleMem;
 import com.zdream.famitracker.sound.emulation.expansion.External;
+import com.zdream.famitracker.sound.emulation.expansion.FDS;
 import com.zdream.famitracker.sound.emulation.expansion.MMC5;
 import com.zdream.famitracker.sound.emulation.expansion.VRC6;
 import com.zdream.famitracker.test.FamitrackerLogger;
@@ -54,6 +46,8 @@ public class APU {
 		
 		m_pVRC6 = new VRC6(m_pMixer);
 		m_pMMC5 = new MMC5(m_pMixer);
+		
+		m_pFDS = new FDS(m_pMixer);
 		
 		// TODO 其它的芯片, 自己后面加, 什么 VCR7 啊, FDS 啊...
 	}
@@ -208,7 +202,7 @@ public class APU {
 	MMC5 m_pMMC5;
 	
 //	CMMC5		*m_pMMC5;
-//	CFDS		*m_pFDS;
+	FDS m_pFDS;
 //	CN163		*m_pN163;
 //	CVRC7		*m_pVRC7;
 //	CS5B		*m_pS5B;
@@ -517,8 +511,8 @@ public class APU {
 		// TODO 忽略除 VRC6 以外的其它音源芯片
 //		if ((chip & SNDCHIP_VRC7) != 0)
 //			exChips.add(m_pVRC7);
-//		if ((chip & SNDCHIP_FDS) != 0)
-//			exChips.add(m_pFDS);
+		if ((chip & SNDCHIP_FDS) != 0)
+			exChips.add(m_pFDS);
 		if ((chip & SNDCHIP_MMC5) != 0)
 			exChips.add(m_pMMC5);
 //		if ((chip & SNDCHIP_N163) != 0)

@@ -13,7 +13,7 @@ public class InstrumentFDS extends Instrument {
 		54, 58, 54, 51, 48, 50, 47, 47, 42, 39, 39, 36, 32, 22, 12, 01
 	};
 	
-	public static final int FIXED_FDS_INST_SIZE = 1 + 16 + 4 + 1;
+//	private static final int FIXED_FDS_INST_SIZE = 1 + 16 + 4 + 1;
 
 	public InstrumentFDS() {
 		super(INST_FDS);
@@ -77,8 +77,8 @@ public class InstrumentFDS extends Instrument {
 		else {
 		*/
 		
-		int a = pDocFile.getBlockInt();
-		int b = pDocFile.getBlockInt();
+		int a = pDocFile.getBlockInt() & 0x7FFFFFFF; // unsigned
+		int b = pDocFile.getBlockInt() & 0x7FFFFFFF; // unsigned
 		pDocFile.rollbackPointer(8);
 
 		if (a < 256 && (b & 0xFF) != 0x00) {
@@ -121,10 +121,6 @@ public class InstrumentFDS extends Instrument {
 		return false;
 	}
 
-	public Sequence getArpSeq() {
-		return m_pArpeggio;
-	}
-	
 	public final byte getSample(int Index) {
 		assert(Index < WAVE_SIZE);
 		return m_iSamples[Index];
@@ -144,7 +140,7 @@ public class InstrumentFDS extends Instrument {
 		InstrumentChanged();
 	}
 	public final int getModulation(int index) {
-		return m_iModulation[index];
+		return m_iModulation[index] & 0xFF;
 	}
 	public void setModulation(int index, byte value) {
 		m_iModulation[index] = value;
@@ -164,24 +160,53 @@ public class InstrumentFDS extends Instrument {
 		m_iModulationDelay = delay;
 		InstrumentChanged();
 	}
+	
+	/**
+	 * 没有实例调用
+	 */
 	public final boolean getModulationEnable() {
 		return m_bModulationEnable;
 	}
+	
+	/**
+	 * 没有实例调用
+	 */
 	public void setModulationEnable(boolean enable) {
 		m_bModulationEnable = enable;
 		InstrumentChanged();
 	}
-//		CSequence* GetVolumeSeq() const;
-//		CSequence* GetArpSeq() const;
-//		CSequence* GetPitchSeq() const;
+	
+	/**
+	 * const 方法
+	 */
+	public Sequence getVolumeSeq() {
+		return m_pVolume;
+	}
+	
+	/**
+	 * const 方法
+	 */
+	public Sequence getArpSeq() {
+		return m_pArpeggio;
+	}
+	
+	/**
+	 * const 方法
+	 */
+	public Sequence getPitchSeq() {
+		return m_pPitch;
+	}
 //
 //	private void storeSequence(DocumentFile pDocFile, Sequence pSeq);
 	
 	private boolean loadSequence(DocumentFile pDocFile, Sequence pSeq) {
+		// 原工程里面下面四个值均为 unsigned
+		// 但是我认为 loopPoint 和 releasePoint 非法值是 -1
+		// 所以这里这两个值不强制转为 unsigned
 		int seqCount;
 		int loopPoint;
 		int releasePoint;
-		int settings;
+		int settings; // 仅 Arpeggio 序列使用
 
 		seqCount = pDocFile.getBlockChar() & 0xFF;
 		loopPoint = pDocFile.getBlockInt();

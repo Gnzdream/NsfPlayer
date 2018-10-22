@@ -9,7 +9,9 @@ package zdream.nsfplayer.ftm.format;
 public class FtmSequence {
 	
 	/**
-	 * 2A03 和 VRC6 一共有 5 类 FtmSequence
+	 * <p>2A03 和 VRC6 一共有 5 类 FtmSequence
+	 * <p>FDS 只有音量 (VOLUME)、琶音 (ARPEGGIO)、音高 (PITCH) 3 类
+	 * </p>
 	 */
 	public static final int SEQUENCE_COUNT = 5;
 	

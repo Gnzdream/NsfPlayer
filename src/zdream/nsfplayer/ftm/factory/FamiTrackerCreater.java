@@ -9,6 +9,11 @@ import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
 import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
 import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 
+import static zdream.nsfplayer.ftm.format.FtmStatic.*;
+
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
+
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
@@ -16,6 +21,7 @@ import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmChipType;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -75,9 +81,15 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	 */
 	public static final int DEFAULT_SPEED = 6;
 	
+	/**
+	 * 这个数值由于 FamiTracker 的版本兼容问题而导致
+	 */
+	private boolean adjustFDSArpeggio;
+	
 	private void reset() {
 		trackCount = 0;
 		effColumnCounts = null;
+		adjustFDSArpeggio = false;
 	}
 	
 	/**
@@ -185,6 +197,8 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				break;
 			}
 		}
+		
+		afterCreate(doc);
 		
 		// 当 doc 建立完成之后, 开始进入检查部分
 		revise(doc);
@@ -899,8 +913,27 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 							}
 						}
 					}*/
-					// TODO FDS pitch effect fix
 					
+					// 如果该轨道是 FDS 轨道
+					/* else */ if (doc.audio.isUseFds()
+							&& doc.channelCode(channelIdx) == INsfChannelCode.CHANNEL_FDS) {
+						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
+							if (note.effNumber[n] == EF_PITCH) {
+								if (note.effParam[n] != 0x80)
+									note.effParam[n] = (short) ((0x100 - note.effParam[n]) & 0xFF);
+							}
+						}
+					}
+					
+				}
+				
+				if (version < 5) {
+					// FDS 的音阶在以前的版本是低两个值的
+					if (doc.audio.isUseFds() && doc.channelCode(channelIdx) == INsfChannelCode.CHANNEL_FDS
+							&& note.octave < 6) {
+						note.octave += 2;
+						adjustFDSArpeggio = true;
+					}
 				}
 			}
 		}
@@ -967,8 +1000,11 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 			
 		case VRC6:
 			return createVRC6Instrument(doc, block);
+			
+		case FDS:
+			return createFDSInstrument(doc, block);
 
-		// TODO 除了 2A03 和 VRC6 的其它的乐器
+		// TODO 其它芯片 N163 VRC7 S5B
 			
 		default:
 			break;
@@ -1083,6 +1119,111 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 			}
 		}
 		return inst;
+	}
+	
+	private FtmInstrumentFDS createFDSInstrument(FamiTrackerHandler doc, Block block) {
+		FtmInstrumentFDS inst = new FtmInstrumentFDS();
+		
+		for (int i = 0; i < FtmInstrumentFDS.SAMPLE_LENGTH; ++i) {
+			inst.samples[i] = block.readByte();
+		}
+
+		for (int i = 0; i < FtmInstrumentFDS.MODULATION_LENGTH; ++i) {
+			inst.modulation[i] = block.readByte();
+		}
+		
+		inst.modulationSpeed = block.readAsCInt();
+		inst.modulationDepth = block.readAsCInt();
+		inst.modulationDelay = block.readAsCInt();
+
+		/*
+		 * 这里用后面的数据推断下面是哪个部分
+		 */
+		int a = block.readAsCInt() & 0x7FFFFFFF; // unsigned
+		int b = block.readAsCInt() & 0x7FFFFFFF; // unsigned
+		block.rollback(8);
+
+		if (a < 256 && (b & 0xFF) != 0x00) {
+			// 什么都不做
+		} else {
+			inst.seqVolume = createFDSSequence(doc, block, FtmSequenceType.VOLUME);
+			inst.seqArpeggio = createFDSSequence(doc, block, FtmSequenceType.ARPEGGIO);
+			//
+			// 下面的文本来自原 FamiTracker 工程.
+			// Note: Remove this line when files are unable to load 
+			// (if a file contains FDS instruments but FDS is disabled)
+			// this was a problem in an earlier version.
+			//
+			if (block.version > 2) {
+				inst.seqPitch = createFDSSequence(doc, block, FtmSequenceType.PITCH);
+			} else {
+				inst.seqPitch = createEmptySequence(FtmSequenceType.PITCH);
+			}
+		}
+
+		// 原始版本音量范围是 [0, 15], 现在是 [0, 31]
+		// Older files was 0-15, new is 0-31
+		if (block.version <= 3) {
+			for (int i = 0; i < inst.seqVolume.length(); ++i) {
+				inst.seqVolume.data[i] *= 2; 
+			}
+		}
+		
+		return inst;
+	}
+	
+	private FtmSequence createFDSSequence(FamiTrackerHandler doc, Block block, FtmSequenceType type) {
+		// 原工程里面下面四个值均为 unsigned
+		// 但是我认为 loopPoint 和 releasePoint 非法值是 -1
+		// 所以这里这两个值不强制转为 unsigned
+		final int seqCount = block.readUnsignedByte();
+		int loopPoint = block.readAsCInt();
+		int releasePoint = block.readAsCInt();
+		int settings = block.readAsCInt(); // 仅 Arpeggio 序列使用
+
+		// assert(seqCount <= FamitrackerTypes.MAX_SEQUENCE_ITEMS);
+		FtmSequence seq = new FtmSequence(type);
+
+		// seq.  setItemCount(seqCount);
+		seq.loopPoint = loopPoint;
+		seq.releasePoint = releasePoint;
+		seq.settings = (byte) settings;
+
+		seq.data = new byte[seqCount];
+		for (int i = 0; i < seqCount; ++i) {
+			int value = block.readUnsignedByte();
+			seq.data[i] = (byte) value;
+		}
+
+		return seq;
+	}
+	
+	private FtmSequence createEmptySequence(FtmSequenceType type) {
+		FtmSequence seq = new FtmSequence(type);
+		seq.clear();
+		return seq;
+	}
+
+	private void afterCreate(FamiTrackerHandler doc) {
+		// FDS 乐器兼容问题
+		if (adjustFDSArpeggio) {
+			for (int i = 0; i < doc.audio.instrumentCount(); ++i) {
+				AbstractFtmInstrument inst = doc.audio.getInstrument(i);
+				if (inst == null || inst.instType() != FtmChipType.FDS) {
+					continue;
+				}
+				
+				FtmInstrumentFDS instfds = (FtmInstrumentFDS) inst;
+				FtmSequence seq = instfds.seqArpeggio;
+				
+				if (seq.length() > 0 && seq.settings == FtmSequence.ARP_SETTING_FIXED) {
+					final int length = seq.length();
+					for (int j = 0; j < length; ++j) {
+						seq.data[j] += 24;
+					}
+				}
+			}
+		}
 	}
 	
 	/* **********
