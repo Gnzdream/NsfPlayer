@@ -13,7 +13,7 @@ public class InstrumentFDS extends Instrument {
 		54, 58, 54, 51, 48, 50, 47, 47, 42, 39, 39, 36, 32, 22, 12, 01
 	};
 	
-	public static final int FIXED_FDS_INST_SIZE = 1 + 16 + 4 + 1;
+//	private static final int FIXED_FDS_INST_SIZE = 1 + 16 + 4 + 1;
 
 	public InstrumentFDS() {
 		super(INST_FDS);
@@ -160,9 +160,17 @@ public class InstrumentFDS extends Instrument {
 		m_iModulationDelay = delay;
 		InstrumentChanged();
 	}
+	
+	/**
+	 * 没有实例调用
+	 */
 	public final boolean getModulationEnable() {
 		return m_bModulationEnable;
 	}
+	
+	/**
+	 * 没有实例调用
+	 */
 	public void setModulationEnable(boolean enable) {
 		m_bModulationEnable = enable;
 		InstrumentChanged();

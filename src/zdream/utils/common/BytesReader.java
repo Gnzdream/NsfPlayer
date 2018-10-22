@@ -113,10 +113,16 @@ public class BytesReader {
 	
 	/**
 	 * 跳过数据
-	 * @return
 	 */
 	public void skip(int length) {
 		offset += length;
+	}
+	
+	/**
+	 * 回滚数据位置
+	 */
+	public void rollback(int length) {
+		offset -= length;
 	}
 	
 	public boolean isFinished() {
