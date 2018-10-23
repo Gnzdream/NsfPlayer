@@ -24,11 +24,9 @@ public class FamiTrackerApplication {
 	}
 	
 	public FamiTrackerApplication() {
-		m_pSettings = new FamiTrackerSetting();
 		factory = new FtmAudioFactory();
 	}
 	
-	public final FamiTrackerSetting m_pSettings;
 	public final FtmAudioFactory factory;
 	
 	/**

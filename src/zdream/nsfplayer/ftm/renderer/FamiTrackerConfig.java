@@ -1,19 +1,17 @@
-package zdream.nsfplayer.ftm;
+package zdream.nsfplayer.ftm.renderer;
 
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
- * TODO
+ * 用于设置启动 {@link FamiTrackerRenderer} 的启动参数.
+ * 
  * @author Zdream
+ * @since v0.2.3
  */
-public class FamiTrackerSetting {
+public class FamiTrackerConfig {
 
-	public FamiTrackerSetting() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	public class General {
-		public boolean bNoDPCMReset = false;
+	public FamiTrackerConfig() {
+		
 	}
 	
 	/**
@@ -31,7 +29,7 @@ public class FamiTrackerSetting {
 	/**
 	 * 帧率
 	 */
-	public int frameRate = 60;
+	//public int frameRate = 60;
 	
 	/**
 	 * BlipBuffer 参数
@@ -41,34 +39,31 @@ public class FamiTrackerSetting {
 			trebleDamping = 24,
 			mixVolume = 100;
 	
-	public class Sound {
-		public int iDevice = 0;
-		//public int iSampleRate = 48000;
-		//public int iSampleSize = 16;
-		public int iBufferLength = 40;
-		//public int iBassFilter = 30;
-		//public int iTrebleFilter = 12000;
-		//public int iTrebleDamping = 24;
-		//public int iMixVolume = 100;
-	}
-	
 	/**
-	 * 默认全是 0
+	 * 默认全是 1
 	 */
-	public class ChipLevels{
-		public int iLevelAPU1;
-		public int iLevelAPU2;
-		public int iLevelVRC6;
-		public int iLevelVRC7;
-		public int iLevelMMC5;
-		public int iLevelFDS;
-		public int iLevelN163;
-		public int iLevelS5B;
+	public class ChannelLevels{
+		
+		public float level2A03Pules1 = 1.0f;
+		public float level2A03Pules2 = 1.0f;
+		public float level2A03Triangle = 1.0f;
+		public float level2A03Noise = 1.0f;
+		public float level2A03DPCM = 1.0f;
+		
+		public float levelVRC6Pules1 = 1.0f;
+		public float levelVRC6Pules2 = 1.0f;
+		public float levelVRC6Sawtooth = 1.0f;
+		
+		public float levelMMC5Pules1 = 1.0f;
+		public float levelMMC5Pules2 = 1.0f;
+		
+		public float levelFDS = 1.0f;
+//		public float levelVRC7 = 1.0f;
+//		public float levelN163 = 1.0f;
+//		public float levelS5B = 1.0f;
 	}
 	
-	public General general = new General();
-	public Sound sound = new Sound();
-	public ChipLevels chipLevels = new ChipLevels();
+	public ChannelLevels channelLevels = new ChannelLevels();
 	
 	// 其它常数
 

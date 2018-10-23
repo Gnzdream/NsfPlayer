@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerException;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.document.FtmAudio;
@@ -35,11 +34,11 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	 * 利用默认配置产生一个音频渲染器
 	 */
 	public FamiTrackerRenderer() {
-		this(new FamiTrackerSetting());
+		this(new FamiTrackerConfig());
 	}
 	
-	public FamiTrackerRenderer(FamiTrackerSetting setting) {
-		this.runtime.setting = setting;
+	public FamiTrackerRenderer(FamiTrackerConfig config) {
+		this.runtime.config = config;
 		this.runtime.init();
 	}
 	
@@ -86,7 +85,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 			throws FamiTrackerException {
 		fetcher.ready(audio, track, section);
 		
-		runtime.param.sampleRate = this.runtime.setting.sampleRate;
+		runtime.param.sampleRate = this.runtime.config.sampleRate;
 		runtime.param.calcFreq(runtime.querier.getFrameRate());
 		initMixer();
 		initChannels();
@@ -453,7 +452,7 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 	 */
 	private int countNextFrame() {
 		int maxFrameCount = fetcher.getFrameRate();
-		int maxSampleCount = runtime.setting.sampleRate;
+		int maxSampleCount = runtime.config.sampleRate;
 		
 		if (frameCount == maxFrameCount) {
 			frameCount = 0;
@@ -516,10 +515,49 @@ public class FamiTrackerRenderer implements INsfChannelCode {
 				// TODO
 				IMixerChannel mix = runtime.mixer.allocateChannel(code);
 				sound.setOut(mix);
+				
+				// 音量
+				mix.setLevel(getInitLevel(code));
 			}
 			
 			// TODO 后面的配置
 		}
+	}
+	
+	/**
+	 * 获得某个轨道的原始音量. 这个值要从 {@link FamiTrackerConfig} 中取
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   范围 [0, 1]
+	 * @since v0.2.4
+	 */
+	private float getInitLevel(byte channelCode) {
+		float level = 0;
+		switch (channelCode) {
+		case CHANNEL_2A03_PULSE1: level = runtime.config.channelLevels.level2A03Pules1; break;
+		case CHANNEL_2A03_PULSE2: level = runtime.config.channelLevels.level2A03Pules2; break;
+		case CHANNEL_2A03_TRIANGLE: level = runtime.config.channelLevels.level2A03Triangle; break;
+		case CHANNEL_2A03_NOISE: level = runtime.config.channelLevels.level2A03Noise; break;
+		case CHANNEL_2A03_DPCM: level = runtime.config.channelLevels.level2A03DPCM; break;
+
+		case CHANNEL_VRC6_PULSE1: level = runtime.config.channelLevels.levelVRC6Pules1; break;
+		case CHANNEL_VRC6_PULSE2: level = runtime.config.channelLevels.levelVRC6Pules2; break;
+		case CHANNEL_VRC6_SAWTOOTH: level = runtime.config.channelLevels.levelVRC6Sawtooth; break;
+
+		case CHANNEL_MMC5_PULSE1: level = runtime.config.channelLevels.levelMMC5Pules1; break;
+		case CHANNEL_MMC5_PULSE2: level = runtime.config.channelLevels.levelMMC5Pules2; break;
+		
+		case CHANNEL_FDS: level = runtime.config.channelLevels.levelFDS; break;
+		}
+		
+		if (level > 1) {
+			level = 1.0f;
+		} else if (level < 0) {
+			level = 0;
+		}
+		
+		return level;
 	}
 	
 	/**

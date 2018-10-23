@@ -1,20 +1,18 @@
 package zdream.nsfplayer.ftm.factory;
 
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_DSAMPLES;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_FRAMES;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_PATTERN_LENGTH;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_SEQUENCES;
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_TEMPO;
 import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.*;
-
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_DSAMPLES;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_FRAMES;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_INSTRUMENTS;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_PATTERN;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_PATTERN_LENGTH;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_SEQUENCES;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_TEMPO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
@@ -28,6 +26,7 @@ import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 import zdream.utils.common.BytesReader;
 
 /**
@@ -1050,7 +1049,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		}
 
 		// DPCM 部分
-		int octaves = (version == 1) ? 6 : FamiTrackerSetting.OCTAVE_RANGE;
+		int octaves = (version == 1) ? 6 : FamiTrackerConfig.OCTAVE_RANGE;
 
 		for (int i = 0; i < octaves; ++i) {
 			for (int j = 0; j < 12; ++j) {

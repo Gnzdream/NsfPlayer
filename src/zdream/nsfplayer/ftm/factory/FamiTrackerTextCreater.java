@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.document.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
@@ -14,6 +13,7 @@ import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 import zdream.utils.common.CodeSpliter;
 import zdream.utils.common.TextReader;
 
@@ -382,7 +382,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 		// 乐器部分
 		t = strs[offset + 2];
 		if ("..".equals(t)) {
-			note.instrument = FamiTrackerSetting.MAX_INSTRUMENTS;
+			note.instrument = FamiTrackerConfig.MAX_INSTRUMENTS;
 		} else {
 			note.instrument = Integer.parseInt(t, 16);
 			empty = false;
@@ -391,7 +391,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 		// 音量部分
 		t = strs[offset + 3];
 		if (".".equals(t)) {
-			note.vol = FamiTrackerSetting.MAX_VOLUMN;
+			note.vol = FamiTrackerConfig.MAX_VOLUMN;
 		} else {
 			note.vol = Byte.parseByte(t, 16);
 			empty = false;

@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.format;
 
-import zdream.nsfplayer.ftm.FamiTrackerSetting;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 
 /**
  * 2A03 乐器部分
@@ -20,9 +20,9 @@ public final class FtmInstrument2A03 extends AbstractFtmInstrument {
 	public int dut = -1;
 	
 	// 采样相关的数据
-	public final FtmDPCMSample[][] samples = new FtmDPCMSample[FamiTrackerSetting.OCTAVE_RANGE][12];
-	public final byte[][] samplePitches = new byte[FamiTrackerSetting.OCTAVE_RANGE][12];
-	public final byte[][] sampleDeltas = new byte[FamiTrackerSetting.OCTAVE_RANGE][12];
+	public final FtmDPCMSample[][] samples = new FtmDPCMSample[FamiTrackerConfig.OCTAVE_RANGE][12];
+	public final byte[][] samplePitches = new byte[FamiTrackerConfig.OCTAVE_RANGE][12];
+	public final byte[][] sampleDeltas = new byte[FamiTrackerConfig.OCTAVE_RANGE][12];
 	
 	/**
 	 * 设置采样数据

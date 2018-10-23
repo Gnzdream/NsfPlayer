@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.format;
 
-import static zdream.nsfplayer.ftm.FamiTrackerSetting.MAX_INSTRUMENTS;
+import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_INSTRUMENTS;
 
 /**
  * <p>FTM 每一个有效 note 数据.

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import zdream.nsfplayer.core.FamiTrackerParameter;
-import zdream.nsfplayer.ftm.FamiTrackerSetting;
 import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
@@ -25,7 +24,7 @@ public class FamiTrackerRuntime {
 	 ********** */
 	public FtmRowFetcher fetcher;
 	public IFtmEffectConverter converter;
-	public FamiTrackerSetting setting;
+	public FamiTrackerConfig config;
 	public FamiTrackerParameter param = new FamiTrackerParameter();
 	
 	/**
