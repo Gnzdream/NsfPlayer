@@ -3,7 +3,7 @@ package zdream.test;
 import com.zdream.famitracker.test.BytesPlayer;
 
 import zdream.nsfplayer.ftm.FamiTrackerApplication;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 

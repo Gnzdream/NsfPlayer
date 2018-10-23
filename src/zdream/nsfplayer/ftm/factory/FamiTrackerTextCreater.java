@@ -6,8 +6,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;

@@ -1,4 +1,4 @@
-package zdream.nsfplayer.nsf.device.cpu.km6502;
+package zdream.nsfplayer.nsf.device.cpu;
 
 import zdream.nsfplayer.nsf.device.IDevice;
 

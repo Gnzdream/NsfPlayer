@@ -1,71 +1,76 @@
 package zdream.nsfplayer.nsf.renderer;
 
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
-import zdream.nsfplayer.nsf.device.memory.NesBank;
-import zdream.nsfplayer.nsf.device.memory.NesMem;
 
 /**
- * NSF 渲染器
+ * <p>NSF 渲染器.
+ * <p>该类在 v0.2.3 版本以前基本处于不可用的状态, 直到 v0.2.4 版本进行了大量的改造.
+ * </p>
+ * 
  * @author Zdream
- * @date 2018-05-09
  * @since v0.1
  */
 public class NsfRenderer {
 	
-	NsfAudio audio;
-	NsfRendererConfig config;
-	
-	// 存储部件
-	NesMem mem;
-	NesBank bank;
-	
 	public NsfRenderer() {
-		config = new NsfRendererConfig();
-		
-		mem = new NesMem();
+		this.runtime = new NsfRuntime();
 	}
 	
 	/**
-	 * 读取 Nsf 音频
+	 * 读取 Nsf 音频, TODO 并以默认曲目进行准备
 	 * @param audio
 	 * @throws NullPointerException
 	 *   当 audio 为 null 时
 	 */
-	public void load(NsfAudio audio) {
+	public void ready(NsfAudio audio) {
 		if (audio == null) {
 			throw new NullPointerException("audio = null");
 		}
 		
-		this.audio = audio;
-		reload();
+		runtime.audio = audio;
+		runtime.reload();
 	}
-	
+
 	/**
-	 * 重读 Nsf 音频
+	 * 读取 Nsf 音频, TODO 以指定曲目进行准备
+	 * @param audio
+	 *   Nsf 音频实例
+	 * @param track
+	 *   曲目号
+	 * @throws NullPointerException
+	 *   当 audio 为 null 时
+	 * @throws IllegalArgumentException
+	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
 	 */
-	public void reload() {
-		reloadMemory();
-		
-		// TODO 这里参照 NsfPlayer 类
-	}
-	
-	/**
-	 * 用 audio 的数据内容, 重设、覆盖 memory 里面的数据内容
-	 */
-	private void reloadMemory() {
-		int i, bmax = 0;
-
-		for (i = 0; i < 8; i++)
-			if (bmax < audio.bankswitch[i])
-				bmax = audio.bankswitch[i];
-
-		mem.setImage(audio.body, audio.load_address, audio.body.length);
-
-		if (bmax != 0) {
-			bank.setImage(audio.body, audio.load_address, audio.body.length);
-			for (i = 0; i < 8; i++)
-				bank.setBankDefault(i + 8, audio.bankswitch[i]);
+	public void ready(NsfAudio audio, int track) {
+		if (audio == null) {
+			throw new NullPointerException("audio = null");
 		}
+		if (track < 0 || track >= audio.total_songs) {
+			throw new IllegalArgumentException(
+					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
+		}
+		
+		runtime.audio = audio;
+		// TODO track
+		runtime.reload();
+	}
+	
+	/**
+	 * <p>在不更改 Nsf 音频的同时, 切换到指定曲目的开头.
+	 * <p>第一次播放时需要指定 Nsf 音频数据.
+	 * 因此第一次需要调用含 {@link NsfAudio} 参数的重载方法
+	 * </p>
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 * @throws IllegalArgumentException
+	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
+	 */
+	public void ready(int track) throws NullPointerException {
+		// TODO
 	}
 
 	/**
@@ -79,7 +84,14 @@ public class NsfRenderer {
 	 *   实际填充的 byte 数据量
 	 */
 	public int render(byte[] b, int offset, int size) {
+		// TODO
 		return 0;
 	}
+
+	/* **********
+	 * 所含数据 *
+	 ********** */
+	
+	private NsfRuntime runtime;
 
 }

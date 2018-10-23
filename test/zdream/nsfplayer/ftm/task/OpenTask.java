@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import zdream.nsfplayer.ftm.FamiTrackerApplication;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 
 /**
  * 打开文件任务

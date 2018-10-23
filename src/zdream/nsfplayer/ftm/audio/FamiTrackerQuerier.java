@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.document;
+package zdream.nsfplayer.ftm.audio;
 
 import static zdream.nsfplayer.ftm.format.FtmChipType.*;
 import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;

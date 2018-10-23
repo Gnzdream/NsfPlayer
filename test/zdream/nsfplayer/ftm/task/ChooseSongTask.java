@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.task;
 
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 
 /**

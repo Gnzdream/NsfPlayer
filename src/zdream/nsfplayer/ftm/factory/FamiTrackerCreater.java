@@ -13,8 +13,8 @@ import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_TEMPO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.document.FamiTrackerHandler;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmChipType;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;

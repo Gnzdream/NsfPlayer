@@ -3,7 +3,7 @@ package zdream.nsfplayer.ftm;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
 import zdream.nsfplayer.ftm.factory.FtmParseException;
 

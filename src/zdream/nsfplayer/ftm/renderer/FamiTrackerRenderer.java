@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.document.FamiTrackerException;
-import zdream.nsfplayer.ftm.document.FamiTrackerQuerier;
-import zdream.nsfplayer.ftm.document.FtmAudio;
+import zdream.nsfplayer.ftm.audio.FamiTrackerException;
+import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
