@@ -40,8 +40,6 @@ public class FamiTrackerRuntime {
 	
 	void init() {
 		initMixer();
-		
-		mixer.init();
 	}
 	
 	private void initMixer() {
@@ -61,6 +59,8 @@ public class FamiTrackerRuntime {
 		XgmSoundMixer mixer = new XgmSoundMixer();
 		mixer.param = param;
 		this.mixer = mixer;
+
+		mixer.init();
 	}
 	
 	/* **********

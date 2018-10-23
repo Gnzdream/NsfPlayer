@@ -12,7 +12,7 @@ public class FamiTrackerParameter {
 	/**
 	 * 现在仅允许包内进行实例化
 	 */
-	FamiTrackerParameter() {
+	public FamiTrackerParameter() {
 		
 	}
 	

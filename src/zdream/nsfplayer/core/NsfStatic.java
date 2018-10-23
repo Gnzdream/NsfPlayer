@@ -28,4 +28,9 @@ public class NsfStatic {
 	 */
 	public static final int BASE_FREQ_PAL = 1662607;
 
+	/**
+	 * DENDY 基础 CPU 时钟数
+	 */
+	public static final int BASE_FREQ_DENDY = 1773448;
+
 }

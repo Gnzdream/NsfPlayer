@@ -18,7 +18,7 @@ public class NsfRenderer {
 	}
 	
 	/**
-	 * 读取 Nsf 音频, TODO 并以默认曲目进行准备
+	 * 读取 Nsf 音频, 并以默认曲目进行准备
 	 * @param audio
 	 * @throws NullPointerException
 	 *   当 audio 为 null 时
@@ -29,11 +29,12 @@ public class NsfRenderer {
 		}
 		
 		runtime.audio = audio;
-		runtime.reload();
+		runtime.manager.setSong(audio.start);
+		runtime.reset();
 	}
 
 	/**
-	 * 读取 Nsf 音频, TODO 以指定曲目进行准备
+	 * 读取 Nsf 音频, 以指定曲目进行准备
 	 * @param audio
 	 *   Nsf 音频实例
 	 * @param track
@@ -53,8 +54,8 @@ public class NsfRenderer {
 		}
 		
 		runtime.audio = audio;
-		// TODO track
-		runtime.reload();
+		runtime.manager.setSong(track);
+		runtime.reset();
 	}
 	
 	/**

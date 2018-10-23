@@ -71,6 +71,7 @@ public class BlipSoundMixer extends SoundMixer {
 	/**
 	 * 配置音频轨道
 	 * @param code
+	 *   轨道号
 	 */
 	private static void configMixChannel(byte code, BlipMixerChannel mixer) {
 		switch (code) {
