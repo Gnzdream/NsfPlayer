@@ -30,19 +30,11 @@ public class FamiTrackerApplication {
 	public final FtmAudioFactory factory;
 	
 	/**
-	 * 这是我所定义的方法, 用来加载 FamiTracker (.ftm) 的文件.
+	 * 加载 FamiTracker (.ftm) 的文件, 形成 {@link FtmAudio} 实例
 	 * @param filename
 	 */
 	public FtmAudio open(String filename) throws IOException, FtmParseException {
 		return factory.create(filename);
 	}
 	
-	/**
-	 * <p>这是我所定义的方法, 用来播放. 调用的前提是你已经加载完 FamiTrackerDoc.
-	 * <p>它毫无疑问是个阻塞方法.
-	 */
-	public void play(int track) {
-		
-	}
-
 }

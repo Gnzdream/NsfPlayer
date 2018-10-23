@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.format;
 
+import zdream.nsfplayer.core.FtmChipType;
+
 /**
  * VRC6 乐器部分
  * @author Zdream

@@ -3,7 +3,6 @@ package zdream.nsfplayer.ftm.renderer;
 import java.util.HashMap;
 import java.util.Map;
 
-import zdream.nsfplayer.core.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;

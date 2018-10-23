@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.audio;
 
-import static zdream.nsfplayer.ftm.format.FtmChipType.*;
+import static zdream.nsfplayer.core.FtmChipType.*;
 import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
 
 import zdream.nsfplayer.core.INsfChannelCode;

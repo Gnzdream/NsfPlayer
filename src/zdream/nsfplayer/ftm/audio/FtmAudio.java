@@ -3,8 +3,8 @@ package zdream.nsfplayer.ftm.audio;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.format.FtmChipType;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;

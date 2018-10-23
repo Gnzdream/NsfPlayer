@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.factory;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
-import zdream.nsfplayer.ftm.format.FtmChipType;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 

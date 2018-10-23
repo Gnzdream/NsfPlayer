@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.format;
 
+import zdream.nsfplayer.core.FtmChipType;
+
 /**
  * <p>乐器接口.
  * 

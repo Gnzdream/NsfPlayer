@@ -3,20 +3,14 @@ package zdream.nsfplayer.ftm.factory;
 import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.*;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_DSAMPLES;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_FRAMES;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_INSTRUMENTS;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_PATTERN;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_PATTERN_LENGTH;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_SEQUENCES;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_TEMPO;
+import static zdream.nsfplayer.core.FtmChipType.*;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.format.FtmChipType;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
@@ -26,7 +20,6 @@ import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 import zdream.utils.common.BytesReader;
 
 /**
@@ -474,7 +467,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 
 			// 创建乐器实例
 			byte type = block.readByte();
-			AbstractFtmInstrument inst = createInstrument(FtmChipType.ofInstrumentType(type), doc, block);
+			AbstractFtmInstrument inst = createInstrument(ofInstrumentType(type), doc, block);
 			inst.seq = index;
 
 			// 读取乐器名称
@@ -1049,7 +1042,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		}
 
 		// DPCM 部分
-		int octaves = (version == 1) ? 6 : FamiTrackerConfig.OCTAVE_RANGE;
+		int octaves = (version == 1) ? 6 : OCTAVE_RANGE;
 
 		for (int i = 0; i < octaves; ++i) {
 			for (int j = 0; j < 12; ++j) {
@@ -1349,6 +1342,23 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		}
 		
 		return block;
+	}
+	
+	/**
+	 * 用所给的 (TODO) 类型号确定它是 Nsf 的什么芯片
+	 * @param type
+	 * @return
+	 */
+	public FtmChipType ofInstrumentType(int type) {
+		switch (type) {
+		case 1: return _2A03;
+		case 2: return VRC6;
+		case 3: return VRC7;
+		case 4: return FDS;
+		case 5: return N163;
+
+		default: return null;
+		}
 	}
 	
 }

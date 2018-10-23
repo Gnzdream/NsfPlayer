@@ -2,7 +2,7 @@ package zdream.nsfplayer.sound.blip;
 
 import java.util.HashMap;
 
-import zdream.nsfplayer.core.FamiTrackerParameter;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**

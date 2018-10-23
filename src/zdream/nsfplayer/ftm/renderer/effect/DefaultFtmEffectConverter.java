@@ -27,7 +27,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_NONE;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_RELEASE;
-import static zdream.nsfplayer.ftm.renderer.FamiTrackerConfig.MAX_INSTRUMENTS;
+import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
 
 import java.util.Map;
 

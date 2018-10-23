@@ -5,8 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import zdream.nsfplayer.core.FamiTrackerParameter;
 import zdream.nsfplayer.core.NsfChannelCode;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
 import zdream.nsfplayer.sound.interceptor.Amplifier;
 import zdream.nsfplayer.sound.interceptor.Compressor;
 import zdream.nsfplayer.sound.interceptor.DCFilter;

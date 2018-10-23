@@ -2,10 +2,10 @@ package zdream.nsfplayer.ftm.audio;
 
 import java.util.ArrayList;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.factory.FtmParseException;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
-import zdream.nsfplayer.ftm.format.FtmChipType;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;

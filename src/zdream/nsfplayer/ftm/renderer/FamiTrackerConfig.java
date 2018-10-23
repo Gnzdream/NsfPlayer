@@ -1,7 +1,5 @@
 package zdream.nsfplayer.ftm.renderer;
 
-import zdream.nsfplayer.ftm.format.FtmTrack;
-
 /**
  * 用于设置启动 {@link FamiTrackerRenderer} 的启动参数.
  * 
@@ -63,53 +61,6 @@ public class FamiTrackerConfig {
 //		public float levelS5B = 1.0f;
 	}
 	
-	public ChannelLevels channelLevels = new ChannelLevels();
+	public final ChannelLevels channelLevels = new ChannelLevels();
 	
-	// 其它常数
-
-	public static final int OCTAVE_RANGE = 8;
-
-	/**
-	 * 序列的最大个数
-	 * <br>Maximum number of sequence lists
-	 */
-	public static final int MAX_SEQUENCES = 128;
-
-	/**
-	 * 最大支持的 Frame (段落) 数目. 即每个 {@link FtmTrack} 中支持的 Frame 的数量
-	 * <p>Maximum number of frames
-	 */
-	public static final int MAX_FRAMES = 128;
-
-	/**
-	 * 最多支持的乐器数量
-	 */
-	public static final int MAX_INSTRUMENTS = 128;
-	
-	/**
-	 * 最大音量
-	 */
-	public static final byte MAX_VOLUMN = 16;
-	
-	/**
-	 * Tempo 支持的最大值.
-	 */
-	public static final int MAX_TEMPO = 255;
-
-	/**
-	 * <p>每个 Frame (段落) 的最大行数. 这个值在 NSF 中也有明确定义
-	 * <p>Maximum length of patterns (in rows). 256 is max in NSF
-	 */
-	public static final int MAX_PATTERN_LENGTH = 256;
-
-	/**
-	 * <p>每条轨道最大的 Pattern 数. 等同于最大段落数目
-	 * <p>Maximum number of patterns per channel
-	 */
-	public static final int MAX_PATTERN = MAX_FRAMES;
-	
-	/**
-	 * Maximum number of DPCM samples, cannot be increased unless the NSF driver is modified.
-	 */
-	public static final int MAX_DSAMPLES = 64;
 }

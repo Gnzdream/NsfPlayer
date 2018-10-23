@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.tools;
 
-import zdream.nsfplayer.core.FamiTrackerParameter;
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
 
 /**
  * 用于音键向波长转化.
@@ -16,8 +17,8 @@ public class NoteLookupTable {
 		ntscTable = new short[96];
 		sawTable = new short[96];
 		
-		double clock_ntsc = FamiTrackerParameter.BASE_FREQ_NTSC / 16.0;
-		double clock_pal = FamiTrackerParameter.BASE_FREQ_PAL / 16.0;
+		double clock_ntsc = BASE_FREQ_NTSC / 16.0;
+		double clock_pal = BASE_FREQ_PAL / 16.0;
 		
 		for (int i = 0; i < 96; ++i) {
 			// Frequency (in Hz)
