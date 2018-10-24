@@ -175,7 +175,7 @@ public class NesCPU implements IDevice {
 	public void start(int start_adr, int int_adr, double int_freq, int a, int x, int y) {
 		// approximate frame timing as an integer number of CPU clocks
 		int_address = int_adr;
-		clock_per_frame = (int) ((1 << FRAME_FIXED) * NES_BASECYCLES / int_freq);
+		clock_per_frame = (int) ((long) (1 << FRAME_FIXED) * NES_BASECYCLES / int_freq);
 		clock_of_frame = 0;
 
 		// count clock quarters
