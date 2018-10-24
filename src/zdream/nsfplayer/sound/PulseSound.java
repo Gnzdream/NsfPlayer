@@ -87,7 +87,7 @@ public class PulseSound extends Sound2A03 {
 	
 	/**
 	 * <p>3 号位: xxxxx000
-	 * <p>查找索引
+	 * <p>查找索引. 设值的时候请设值为 LENGTH_TABLE[?].
 	 * </p>
 	 */
 	public int lengthCounter;

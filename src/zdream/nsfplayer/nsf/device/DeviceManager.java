@@ -5,6 +5,7 @@ import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.chip.NesAPU;
 import zdream.nsfplayer.nsf.device.chip.NesDMC;
+import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
@@ -14,6 +15,9 @@ import zdream.nsfplayer.sound.mixer.IMixerChannel;
 import static zdream.nsfplayer.core.ERegion.*;
 import static zdream.nsfplayer.core.NsfStatic.*;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 /**
  * 用于管理 Nsf 运行时状态的所有硬件设备的管理者
  * 
@@ -22,7 +26,7 @@ import static zdream.nsfplayer.core.NsfStatic.*;
  */
 public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	
-	NsfRuntime runtime = new NsfRuntime();
+	NsfRuntime runtime;
 
 	public DeviceManager(NsfRuntime runtime) {
 		this.runtime = runtime;
@@ -41,11 +45,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 *   参数   *
 	 ********** */
 	
-	/**
-	 * 可能是每帧 CPU, APU 剩余周期数
-	 * NsfPlayer.cpu_clock_rest 和 NsfPlayer.apu_clock_rest
-	 */
-	double cpu_clock_rest, apu_clock_rest;
 	/**
 	 * 实际采用的制式
 	 */
@@ -111,6 +110,28 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			runtime.chips.put(channelCode, chip);
 		}
 	}
+	
+	/**
+	 * 所有的 sound 调用 sound.process(freqPerFrame);
+	 */
+	private void processSounds(int freq) {
+		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
+			Entry<Byte, AbstractSoundChip> entry = it.next();
+			byte channelCode = entry.getKey();
+			entry.getValue().getSound(channelCode).process(freq);
+		}
+	}
+	
+	/**
+	 * 所有的 sound 调用 sound.endFrame();
+	 */
+	private void endFrame() {
+		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
+			Entry<Byte, AbstractSoundChip> entry = it.next();
+			byte channelCode = entry.getKey();
+			entry.getValue().getSound(channelCode).endFrame();
+		}
+	}
 
 	/* **********
 	 *   重置   *
@@ -120,7 +141,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	public void reset() {
 		// 见 NsfPlayer.reset()
 		
-		cpu_clock_rest = apu_clock_rest = 0;
 		region = confirmRegion(runtime.audio.pal_ntsc);
 		switch (region) {
 		case NTSC:
@@ -141,6 +161,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		stack.reset();
 		// 总线重置后, CPU 也需要重置
 		runtime.cpu.reset();
+		resetCPUCounter();
 		
 		double speed;
 		/*if (this.config.get("VSYNC_ADJUST").toInt() != 0)
@@ -341,6 +362,88 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	private float getInitLevel(byte channelCode) {
 		// TODO 原本从参数 param / 配置 config 中去取, 现在先这样
 		return 1.0f;
+	}
+
+	/* **********
+	 *   执行   *
+	 ********** */
+	
+	/**
+	 * 在当前这一秒内, 已经执行的时钟数.
+	 * 范围 [0, CPU 每秒的时钟数)
+	 */
+	int freqConsumed;
+	/**
+	 * 在当前这一秒内, 已经输出的采样数.
+	 * 范围 [0, 采样率)
+	 */
+	int sampleConsumed;
+	
+	/**
+	 * CPU 剩余没有用完的时钟数.
+	 * NsfPlayer.cpu_clock_rest
+	 */
+	int cpuFreqRemain;
+	
+	private void resetCPUCounter() {
+		freqConsumed = 0;
+		sampleConsumed = 0;
+		cpuFreqRemain = 0; // apuFreqRemain = 0
+	}
+	
+	/**
+	 * 让 CPU 往下走一帧
+	 * (虽然说是一帧, 但是实际上是看当前帧的采样数决定的)
+	 */
+	public void tickCPU() {
+		int sampleInCurFrame = runtime.param.sampleInCurFrame;
+		
+		for (int i = 0; i < sampleInCurFrame; i++) {
+			int freqInCurSample = countFreqInCurSample();
+			NesCPU cpu = runtime.cpu;
+			
+			cpuFreqRemain += freqInCurSample;
+			if (cpuFreqRemain > 0) {
+				int realCpuFreq = cpu.exec(cpuFreqRemain);
+				cpuFreqRemain -= realCpuFreq;
+
+				// tick APU frame sequencer
+				/*fsc.tickFrameSequence(real_cpu_clocks);
+				if (nsf.useMmc5)
+					mmc5.tickFrameSequence(real_cpu_clocks);*/
+			}
+			
+			processSounds(freqInCurSample);
+		}
+		
+		endFrame();
+	}
+	
+	/**
+	 * 计算输出当前采样, 需要的时钟周期数, 并返回
+	 */
+	private int countFreqInCurSample() {
+		int sampleRate = runtime.param.sampleRate; // 默认 48000
+		int freqPerSec = runtime.param.freqPerSec; // 每秒时钟周期数
+		
+		int ret = 0;
+		
+		sampleConsumed += 1;
+		int to = (int) ((long) sampleConsumed * freqPerSec / sampleRate);
+		ret = to - freqConsumed;
+		freqConsumed = to;
+		
+		if (sampleConsumed >= sampleRate) {
+			if (sampleConsumed > sampleRate || freqConsumed != freqPerSec) {
+				// 出现了问题
+				throw new IllegalStateException("时钟计算出现了错误");
+			}
+			
+			freqConsumed = 0;
+			sampleConsumed = 0;
+		}
+		
+		return ret;
 	}
 
 }

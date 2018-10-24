@@ -1,7 +1,7 @@
 package zdream.nsfplayer.nsf.device;
 
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.xgm.device.IntHolder;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
 /**
  * 用仪器、设备使用的装置的抽象

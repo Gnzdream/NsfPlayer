@@ -19,8 +19,9 @@ import com.zdream.famitracker.sound.channels.VRC6Square1;
 import com.zdream.famitracker.sound.channels.VRC6Square2;
 import com.zdream.famitracker.sound.emulation.APU;
 import com.zdream.famitracker.sound.emulation.Mixer;
-import com.zdream.famitracker.test.BytesPlayer;
 import com.zdream.famitracker.test.FamitrackerLogger;
+
+import zdream.utils.common.BytesPlayer;
 
 import static com.zdream.famitracker.FamitrackerTypes.*;
 import static com.zdream.famitracker.sound.emulation.Types.*;

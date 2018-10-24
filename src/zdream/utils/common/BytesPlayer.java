@@ -1,4 +1,4 @@
-package com.zdream.famitracker.test;
+package zdream.utils.common;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;

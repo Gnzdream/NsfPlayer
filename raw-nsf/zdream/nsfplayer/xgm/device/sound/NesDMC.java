@@ -1,9 +1,9 @@
 package zdream.nsfplayer.xgm.device.sound;
 
 import zdream.nsfplayer.nsf.device.IDevice;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
-import zdream.nsfplayer.xgm.device.IntHolder;
 import zdream.nsfplayer.xgm.device.TrackInfoBasic;
 
 /**

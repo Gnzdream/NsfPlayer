@@ -1,7 +1,7 @@
 package zdream.nsfplayer.nsf.device.memory;
 
 import zdream.nsfplayer.nsf.device.IDevice;
-import zdream.nsfplayer.xgm.device.IntHolder;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 
 /**

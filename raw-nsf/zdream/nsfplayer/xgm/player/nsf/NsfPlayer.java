@@ -2,6 +2,7 @@ package zdream.nsfplayer.xgm.player.nsf;
 
 import zdream.nsfplayer.nsf.device.Bus;
 import zdream.nsfplayer.nsf.device.Layer;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.device.memory.NesBank;
 import zdream.nsfplayer.nsf.device.memory.NesMem;
@@ -9,7 +10,6 @@ import zdream.nsfplayer.vcm.Value;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.InfoBuffer;
-import zdream.nsfplayer.xgm.device.IntHolder;
 import zdream.nsfplayer.xgm.device.audio.Amplifier;
 import zdream.nsfplayer.xgm.device.audio.Compressor;
 import zdream.nsfplayer.xgm.device.audio.DCFilter;
@@ -719,6 +719,7 @@ public class NsfPlayer extends MultiSongPlayer {
 		int ptr = offset; // 指向 b 的索引指针
 
 		double apu_clock_per_sample = cpu.NES_BASECYCLES / rate;
+		// MULT_SPEED 起到变速的作用
 		double cpu_clock_per_sample = apu_clock_per_sample * (double) (intConfig("MULT_SPEED") / 256.0);
 
 		int length = size / 4; // 2 = 16 / 8, 每个音频采样需要 2 byte (16 bit)
