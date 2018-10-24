@@ -62,7 +62,7 @@ public class NsfAudio {
 	 */
 	public short bankswitch[] = new short[8];
 	/**
-	 * NTSC 制式下乐曲循环播放速度
+	 * PAL 制式下乐曲循环播放速度, 常为 [20000]
 	 */
 	public int speed_pal;
 	/**
