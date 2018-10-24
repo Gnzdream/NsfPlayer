@@ -31,11 +31,11 @@ public class NsfRuntime implements IResetable {
 	public DeviceManager manager;
 	
 	// 存储部件
-	public NesMem mem;
-	public NesBank bank;
+	public final NesMem mem;
+	public final NesBank bank;
 	
 	// 执行部件
-	public NesCPU cpu;
+	public final NesCPU cpu;
 	
 	// 模拟声卡
 	/**
@@ -58,7 +58,8 @@ public class NsfRuntime implements IResetable {
 		manager = new DeviceManager(this);
 		
 		mem = new NesMem();
-		//cpu = new NesCPU(clock)
+		bank = new NesBank();
+		cpu = new NesCPU();
 	}
 	
 	void init() {

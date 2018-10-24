@@ -34,6 +34,13 @@ public class NesCPU implements IDevice {
 	
 	public int NES_BASECYCLES;
 	
+	/**
+	 * 默认初始化. 没有设定 NES_BASECYCLES, 它是没办法工作的
+	 */
+	public NesCPU() {
+		this(-1);
+	}
+	
 	public NesCPU(int clock) {
 		NES_BASECYCLES = clock;
 		bus = null;

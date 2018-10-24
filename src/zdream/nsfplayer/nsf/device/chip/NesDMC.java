@@ -29,8 +29,31 @@ public class NesDMC extends AbstractSoundChip {
 
 	@Override
 	public boolean write(int adr, int val, int id) {
-		// TODO Auto-generated method stub
-		return false;
+		/*
+		 * APU 这里要接收的地址有:
+		 * [0x4000, 0x4007], 0x4015, 0x4017
+		 */
+		switch (adr) {
+		case 0x4008: case 0x4009: case 0x400A: case 0x400B: {
+			// triangle
+		} break;
+		case 0x400C: case 0x400D: case 0x400E: case 0x400F: {
+			// noise
+		} break;
+		case 0x4010: case 0x4011: case 0x4012: case 0x4013: {
+			// dpcm
+		} break;
+		case 0x4015: {
+			// enable
+		} break;
+
+		default:
+			return false;
+		}
+		
+		if (adr != 0x4015)
+			System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
+		return true;
 	}
 
 	@Override

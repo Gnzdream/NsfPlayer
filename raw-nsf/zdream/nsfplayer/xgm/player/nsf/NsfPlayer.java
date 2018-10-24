@@ -719,6 +719,7 @@ public class NsfPlayer extends MultiSongPlayer {
 		int ptr = offset; // 指向 b 的索引指针
 
 		double apu_clock_per_sample = cpu.NES_BASECYCLES / rate;
+		// MULT_SPEED 起到变速的作用
 		double cpu_clock_per_sample = apu_clock_per_sample * (double) (intConfig("MULT_SPEED") / 256.0);
 
 		int length = size / 4; // 2 = 16 / 8, 每个音频采样需要 2 byte (16 bit)

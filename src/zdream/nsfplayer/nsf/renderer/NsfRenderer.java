@@ -18,6 +18,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	
 	public NsfRenderer() {
 		this.runtime = new NsfRuntime();
+		runtime.init();
 	}
 	
 	/* **********
@@ -98,6 +99,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	protected int renderFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
+		
+		// TODO 计算一帧的时钟数
+		
+		runtime.manager.tickCPU();
 		
 		// TODO
 		
