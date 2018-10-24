@@ -1,6 +1,7 @@
 package zdream.nsfplayer.nsf.renderer;
 
-import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.core.AbstractNsfRenderer;
+import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 
 /**
@@ -11,11 +12,23 @@ import zdream.nsfplayer.nsf.audio.NsfAudio;
  * @author Zdream
  * @since v0.1
  */
-public class NsfRenderer {
+public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
+	
+	private NsfRuntime runtime;
 	
 	public NsfRenderer() {
 		this.runtime = new NsfRuntime();
 	}
+	
+	/* **********
+	 * 准备部分 *
+	 ********** */
+	
+	/**
+	 * 这里其实选 50 和 60 是不影响的,
+	 * 因为 Nsf 播放器是以一个采样为计算步长的, 而非帧.
+	 */
+	private int frameRate = NsfStatic.FRAME_RATE_NTSC;
 	
 	/**
 	 * 读取 Nsf 音频, 并以默认曲目进行准备
@@ -53,6 +66,9 @@ public class NsfRenderer {
 					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
 		}
 		
+		runtime.param.sampleRate = this.runtime.config.sampleRate;
+		runtime.param.calcFreq(frameRate);
+		
 		runtime.audio = audio;
 		runtime.manager.setSong(track);
 		runtime.reset();
@@ -66,33 +82,132 @@ public class NsfRenderer {
 	 * @param track
 	 *   曲目号, 从 0 开始
 	 * @throws NullPointerException
-	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 *   当调用该方法前未指定 {@link NsfAudio} 音频时
 	 * @throws IllegalArgumentException
 	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
 	 */
 	public void ready(int track) throws NullPointerException {
 		// TODO
 	}
-
-	/**
-	 * 渲染 Nsf 音频, 将音频采样的数据放入到 b 数组中
-	 * 需要之前 load 过.
-	 * @param b
-	 *   需要填充的 byte 数组
-	 * @param offset
-	 * @param size
-	 * @return
-	 *   实际填充的 byte 数据量
-	 */
-	public int render(byte[] b, int offset, int size) {
-		// TODO
-		return 0;
-	}
-
-	/* **********
-	 * 所含数据 *
-	 ********** */
 	
-	private NsfRuntime runtime;
+	/* **********
+	 * 渲染部分 *
+	 ********** */
+
+	@Override
+	protected int renderFrame() {
+		int ret = countNextFrame();
+		runtime.param.sampleInCurFrame = ret;
+		
+		// TODO
+		
+		/*
+		int[] buf = new int[2], out = new int[2];
+		int outm, i;
+		int master_volume = intConfig("MASTER_VOLUME");
+		int ptr = offset; // 指向 b 的索引指针
+
+		double apu_clock_per_sample = cpu.NES_BASECYCLES / rate;
+		// MULT_SPEED 起到变速的作用
+		double cpu_clock_per_sample = apu_clock_per_sample * (double) (intConfig("MULT_SPEED") / 256.0);
+
+		int length = size / 4; // 2 = 16 / 8, 每个音频采样需要 2 byte (16 bit)
+		for (i = 0; i < length; i ++) {
+			total_render ++;
+
+			// tick CPU
+			cpu_clock_rest += cpu_clock_per_sample;
+			int cpu_clocks = (int) (cpu_clock_rest);
+			if (cpu_clocks > 0) {
+				int real_cpu_clocks = cpu.exec(cpu_clocks);
+				cpu_clock_rest -= (double) (real_cpu_clocks);
+
+				// tick APU frame sequencer
+				fsc.tickFrameSequence(real_cpu_clocks);
+				if (nsf.useMmc5)
+					mmc5.tickFrameSequence(real_cpu_clocks);
+			}
+
+			updateInfo();
+
+			// tick APU / expansions
+			apu_clock_rest += apu_clock_per_sample;
+			int apu_clocks = (int) (apu_clock_rest);
+			if (apu_clocks > 0) {
+				mixer.tick(apu_clocks);
+				apu_clock_rest -= (double) (apu_clocks);
+			}
+
+			// render output
+			mixer.render(buf);
+			outm = (buf[0] + buf[1]) >> 1; // mono mix
+			if (outm == last_out) // 这里用两段时间里面输出采样没变来判定 silent
+				silent_length++;
+			else
+				silent_length = 0;
+			last_out = outm;
+
+			// echo.FastRender(buf);
+			dcf.fastRender(buf);
+			lpf.fastRender(buf);
+			cmp.fastRender(buf);
+
+			// mfilter.Put(buf[0]);
+			// out = mfilter.get();
+
+			out[0] = (buf[0] * master_volume) >> 8;
+			out[1] = (buf[1] * master_volume) >> 8;
+
+			if (out[0] < -32767)
+				out[0] = -32767;
+			else if (32767 < out[0])
+				out[0] = 32767;
+
+			if (out[1] < -32767)
+				out[1] = -32767;
+			else if (32767 < out[1])
+				out[1] = 32767;
+
+			if (nch == 2) {
+				b[ptr++] = (byte) out[0]; // 低位 (一声道)
+				b[ptr++] = (byte) ((out[0] & 0xFF00) >> 8); // 高位 (一声道)
+				b[ptr++] = (byte) out[1]; // 低位 (二声道)
+				b[ptr++] = (byte) ((out[1] & 0xFF00) >> 8); // 高位 (二声道)
+			} else // if not 2 channels, presume mono
+			{
+				outm = (out[0] + out[1]) >> 1;
+				for (int ii = 0; ii < nch; ++ii) {
+					b[ptr++] = (byte) outm; // 低位
+					b[ptr++] = (byte) ((outm & 0xFF00) >> 8); // 高位
+				}
+			}
+		}
+
+		time_in_ms += (int) (1000 * size / rate * (intConfig("MULT_SPEED")) / 256);
+
+		checkTerminal();
+		detectLoop();
+		detectSilent();
+
+		return size;
+		 */
+		
+		return ret;
+	}
+	
+	/**
+	 * 计算下一帧需要的采样数
+	 */
+	private int countNextFrame() {
+		int maxFrameCount = frameRate;
+		int maxSampleCount = runtime.config.sampleRate;
+		
+		return countNextFrame(maxFrameCount, maxSampleCount);
+	}
+	
+	@Override
+	public boolean isFinished() {
+		return false;
+	}
 
 }

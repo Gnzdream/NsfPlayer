@@ -68,7 +68,7 @@ public class NsfRuntime implements IResetable {
 	}
 	
 	private void initParam() {
-		param.sampleRate = config.frameRate; // 默认: 48000
+		param.sampleRate = config.sampleRate; // 默认: 48000
 	}
 	
 	private void initMixer() {

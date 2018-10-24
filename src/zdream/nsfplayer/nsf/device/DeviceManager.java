@@ -141,6 +141,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		stack.reset();
 		// 总线重置后, CPU 也需要重置
 		runtime.cpu.reset();
+		resetCPUCounter();
 		
 		double speed;
 		/*if (this.config.get("VSYNC_ADJUST").toInt() != 0)
@@ -341,6 +342,20 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	private float getInitLevel(byte channelCode) {
 		// TODO 原本从参数 param / 配置 config 中去取, 现在先这样
 		return 1.0f;
+	}
+
+	/* **********
+	 *   执行   *
+	 ********** */
+	
+	/**
+	 * 在当前这一秒内, 已经执行的时钟数.
+	 * 范围 [0, CPU 每秒的时钟数)
+	 */
+	int clockConsumed;
+	
+	private void resetCPUCounter() {
+		clockConsumed = 0;
 	}
 
 }

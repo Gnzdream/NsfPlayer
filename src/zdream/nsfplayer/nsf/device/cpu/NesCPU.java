@@ -21,7 +21,7 @@ public class NesCPU implements IDevice {
 	public static final int FRAME_FIXED = 14;
 	
 	protected int int_address;
-	protected K6502Context context = new K6502Context();
+	protected final K6502Context context = new K6502Context();
 	protected boolean breaked;
 	protected int clock_per_frame;
 	protected int clock_of_frame;
@@ -32,14 +32,9 @@ public class NesCPU implements IDevice {
 	protected CPULogger log_cpu;
 	protected int pc_count = 0;
 	
-	public double NES_BASECYCLES;
+	public int NES_BASECYCLES;
 	
-	public static final double 
-			NTSC_BASECYCLES = 1789773,
-			PAL_BASECYCLES = 1662607;
-	
-	
-	public NesCPU(double clock) {
+	public NesCPU(int clock) {
 		NES_BASECYCLES = clock;
 		bus = null;
 		log_cpu = null;
@@ -173,7 +168,7 @@ public class NesCPU implements IDevice {
 	public void start(int start_adr, int int_adr, double int_freq, int a, int x, int y) {
 		// approximate frame timing as an integer number of CPU clocks
 		int_address = int_adr;
-		clock_per_frame = (int) ((double) ((1 << FRAME_FIXED) * NES_BASECYCLES) / int_freq);
+		clock_per_frame = (int) ((1 << FRAME_FIXED) * NES_BASECYCLES / int_freq);
 		clock_of_frame = 0;
 
 		// count clock quarters

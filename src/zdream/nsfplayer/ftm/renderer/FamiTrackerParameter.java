@@ -21,12 +21,12 @@ public class FamiTrackerParameter {
 	 ********** */
 	
 	/**
-	 * 每帧的时钟周期数
+	 * 每帧的时钟周期数, 非精确值
 	 */
 	public int freqPerFrame;
 	
 	/**
-	 * 每秒的时钟周期数
+	 * 每秒的时钟周期数, 精确值
 	 */
 	public int freqPerSec;
 	

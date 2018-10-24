@@ -11,7 +11,7 @@ public class NsfRendererConfig {
 	/**
 	 * 帧率
 	 */
-	public int frameRate = 48000;
+	public int sampleRate = 48000;
 	
 	/**
 	 * 用户指定用哪种制式进行播放, NTSC 或者 PAL

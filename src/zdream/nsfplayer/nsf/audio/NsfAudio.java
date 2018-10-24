@@ -1,5 +1,7 @@
 package zdream.nsfplayer.nsf.audio;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
+
 /**
  * <p>NSF 音频文件内的数据
  * <p>这里将不再存放播放相关的数据
@@ -7,7 +9,7 @@ package zdream.nsfplayer.nsf.audio;
  * @version v0.1
  * @date 2018-01-16
  */
-public class NsfAudio {
+public class NsfAudio extends AbstractNsfAudio {
 	
 	/**
 	 * 当前 NSF 文件的版本号<br>

@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.audio;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
@@ -10,7 +11,13 @@ import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
-public class FtmAudio {
+/**
+ * FamiTracker 的音频数据
+ * 
+ * @author Zdream
+ * @since v0.1
+ */
+public class FtmAudio extends AbstractNsfAudio {
 	
 	public final FamiTrackerHandler handler;
 	
