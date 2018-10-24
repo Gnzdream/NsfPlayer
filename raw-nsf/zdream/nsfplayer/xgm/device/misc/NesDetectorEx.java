@@ -1,6 +1,6 @@
 package zdream.nsfplayer.xgm.device.misc;
 
-import zdream.nsfplayer.xgm.device.IntHolder;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
 public class NesDetectorEx extends NesDetector {
 	

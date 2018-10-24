@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import com.zdream.famitracker.test.BytesPlayer;
-
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.cmd.BaseHandler;
 import zdream.nsfplayer.ftm.cmd.ChannelHandler;
@@ -19,6 +17,7 @@ import zdream.nsfplayer.ftm.task.IFtmTask;
 import zdream.nsfplayer.ftm.task.OpenTask;
 import zdream.nsfplayer.ftm.task.PauseTask;
 import zdream.nsfplayer.ftm.task.PlayTask;
+import zdream.utils.common.BytesPlayer;
 import zdream.utils.common.CodeSpliter;
 
 /**

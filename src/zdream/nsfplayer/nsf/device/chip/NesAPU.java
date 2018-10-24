@@ -1,10 +1,10 @@
 package zdream.nsfplayer.nsf.device.chip;
 
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.PulseSound;
-import zdream.nsfplayer.xgm.device.IntHolder;
 
 /**
  * APU 音频设备, 管理输出 Pulse1 和 Pulse2 轨道的音频

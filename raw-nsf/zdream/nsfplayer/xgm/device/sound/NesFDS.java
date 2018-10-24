@@ -2,9 +2,9 @@ package zdream.nsfplayer.xgm.device.sound;
 
 import java.util.Arrays;
 
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
-import zdream.nsfplayer.xgm.device.IntHolder;
 
 public class NesFDS implements ISoundChip {
 	

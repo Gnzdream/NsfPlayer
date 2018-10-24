@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import zdream.nsfplayer.nsf.device.IDevice;
-import zdream.nsfplayer.xgm.device.IntHolder;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
 /**
  * 这个类从 {@link NesDMC} 中分离出来, 主要侦测 0x4017 位置的内存

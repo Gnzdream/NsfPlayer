@@ -2,7 +2,7 @@ package zdream.nsfplayer.nsf.device;
 
 import java.util.Iterator;
 
-import zdream.nsfplayer.xgm.device.IntHolder;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
 /**
  * 图层

@@ -1,12 +1,12 @@
 package zdream.nsfplayer.nsf.device.chip;
 
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.DPCMSound;
 import zdream.nsfplayer.sound.NoiseSound;
 import zdream.nsfplayer.sound.TriangleSound;
-import zdream.nsfplayer.xgm.device.IntHolder;
 
 /**
  * 一种 2A03 音频设备, 管理输出 Triangle, Noise 和 DPCM 轨道的音频

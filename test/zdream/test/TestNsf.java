@@ -2,11 +2,10 @@ package zdream.test;
 
 import java.io.IOException;
 
-import com.zdream.famitracker.test.BytesPlayer;
-
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.audio.NsfAudioFactory;
 import zdream.nsfplayer.nsf.renderer.NsfRenderer;
+import zdream.utils.common.BytesPlayer;
 
 public class TestNsf {
 	

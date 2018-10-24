@@ -1,4 +1,4 @@
-package zdream.nsfplayer.xgm.device;
+package zdream.nsfplayer.nsf.device.cpu;
 
 public final class IntHolder {
 	public int val;

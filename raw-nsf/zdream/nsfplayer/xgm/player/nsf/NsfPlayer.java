@@ -2,6 +2,7 @@ package zdream.nsfplayer.xgm.player.nsf;
 
 import zdream.nsfplayer.nsf.device.Bus;
 import zdream.nsfplayer.nsf.device.Layer;
+import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.device.memory.NesBank;
 import zdream.nsfplayer.nsf.device.memory.NesMem;
@@ -9,7 +10,6 @@ import zdream.nsfplayer.vcm.Value;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.InfoBuffer;
-import zdream.nsfplayer.xgm.device.IntHolder;
 import zdream.nsfplayer.xgm.device.audio.Amplifier;
 import zdream.nsfplayer.xgm.device.audio.Compressor;
 import zdream.nsfplayer.xgm.device.audio.DCFilter;
