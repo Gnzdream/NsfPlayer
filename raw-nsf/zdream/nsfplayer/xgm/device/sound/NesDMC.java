@@ -389,6 +389,7 @@ public class NesDMC implements ISoundChip, IFrameSequencer {
 					daddress = ((daddress + 1) & 0xFFFF) | 0x8000;
 					length--;
 				}
+
 			}
 
 			if (length == 0) { // 最后的抽取结束（播放完毕前）马上结束处理
@@ -627,6 +628,10 @@ public class NesDMC implements ISoundChip, IFrameSequencer {
 				daddress = (0xC000 | (adr_reg << 6));
 				length = (len_reg << 4) + 1;
 				irq = false;
+				
+				if (length == 769) {
+					length += 1;
+				}
 			}
 
 			reg[adr - 0x4008] = val;

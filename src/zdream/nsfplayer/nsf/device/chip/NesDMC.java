@@ -1,11 +1,15 @@
 package zdream.nsfplayer.nsf.device.chip;
 
+import java.util.Arrays;
+
+import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.DPCMSound;
 import zdream.nsfplayer.sound.NoiseSound;
+import zdream.nsfplayer.sound.PulseSound;
 import zdream.nsfplayer.sound.TriangleSound;
 
 /**
@@ -19,6 +23,12 @@ public class NesDMC extends AbstractSoundChip {
 	private TriangleSound triangle;
 	private NoiseSound noise;
 	private DPCMSound dpcm;
+	
+	/**
+	 * 记录放置的参数
+	 */
+	private byte[] mem = new byte[12];
+	private byte mem4015 = 0;
 
 	public NesDMC(NsfRuntime runtime) {
 		super(runtime);
@@ -33,34 +43,131 @@ public class NesDMC extends AbstractSoundChip {
 		 * APU 这里要接收的地址有:
 		 * [0x4000, 0x4007], 0x4015, 0x4017
 		 */
-		/*switch (adr) {
+		switch (adr) {
 		case 0x4008: case 0x4009: case 0x400A: case 0x400B: {
 			// triangle
+			writeToTriangle(adr & 3, val);
+			mem[adr & 3] = (byte) val;
 		} break;
 		case 0x400C: case 0x400D: case 0x400E: case 0x400F: {
 			// noise
+			writeToNoise(adr & 3, val);
+			mem[(adr & 3) + 4] = (byte) val;
 		} break;
 		case 0x4010: case 0x4011: case 0x4012: case 0x4013: {
 			// dpcm
+			writeToDPCM(adr & 3, val);
+			mem[(adr & 3) + 8] = (byte) val;
 		} break;
 		case 0x4015: {
 			// enable
+			mem4015 = (byte) val;
+			handleEnable();
 		} break;
 
 		default:
 			return false;
 		}
 		
-		if (adr != 0x4015)
-			System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
-		return true;*/
+		return true;
+	}
+	
+	private void writeToTriangle(int adr, int value) {
+		switch (adr) {
+		case 0:
+			triangle.looping = (value >> 7) != 0;
+			triangle.linearLoad = (value & 0x7F);
+			break;
+			
+		// 忽略 1 号位
+			
+		case 2: {
+			int period = (triangle.period & 0xFF00) + value;
+			triangle.period = period;
+		} break;
+			
+		case 3: {
+			int period = (triangle.period & 0xFF) + ((value & 7) << 8);
+			triangle.period = period;
+			triangle.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+		} break;
 		
-		return false;
+		}
+	}
+	
+	private void writeToNoise(int adr, int value) {
+		switch (adr) {
+		case 0:
+			noise.looping = (value & 0x20) != 0;
+			noise.envelopeFix = (value & 0x10) != 0;
+			noise.fixedVolume = (value & 0xF);
+			break;
+			
+		// 忽略 1 号位
+			
+		case 2: {
+			noise.periodIndex = (value & 0xF);
+			noise.dutyType = (value & 0x80) != 0;
+		} break;
+			
+		case 3: {
+			noise.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+		} break;
+		
+		}
+	}
+	
+	private void writeToDPCM(int adr, int value) {
+		switch (adr) {
+		case 0:
+			dpcm.loop = (value & 0x40) != 0;
+			dpcm.periodIndex = (value & 0xF);
+			break;
+			
+		case 1:
+			dpcm.deltaCounter = (value & 0x7F);
+			break;
+			
+		case 2: {
+			dpcm.offsetAddress = value * 64;
+		} break;
+			
+		case 3: {
+			dpcm.length = value * 16;
+		} break;
+		
+		}
+	}
+	
+	/**
+	 * 这里主要处理 DPCM 读取采样的问题
+	 */
+	private void handleEnable() {
+		if ((mem4015 & 16) == 0) {
+			dpcm.sample = null; // not active, 禁用
+		} else if (dpcm.sample == null) {
+			// 需要准备读取
+			FtmDPCMSample sample = new FtmDPCMSample();
+			int address = (0xC000 | (dpcm.offsetAddress));
+			int length = (dpcm.length + 1);
+			sample.data = new byte[length];
+			
+			getRuntime().mem.read(sample.data, 0, length, address);
+			dpcm.sample = sample;
+			dpcm.offsetAddress = 0; // TODO 这个地方我用来强制重置
+			dpcm.reload();
+		}
 	}
 
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
-		// TODO Auto-generated method stub
+		if (adr >= 0x4008 && adr < 0x4014) {
+			val.val = mem[adr - 0x4008] & 0xFF;
+			return true;
+		} else if (adr == 0x4015) {
+			val.val = mem4015 & 0xFF;
+			return true;
+		}
 		return false;
 	}
 
@@ -70,7 +177,8 @@ public class NesDMC extends AbstractSoundChip {
 		noise.reset();
 		dpcm.reset();
 		
-		// TODO Auto-generated method stub
+		Arrays.fill(mem, (byte) 0);
+		mem4015 = 0x7F;
 	}
 
 	@Override

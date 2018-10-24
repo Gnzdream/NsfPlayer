@@ -1,5 +1,7 @@
 package zdream.nsfplayer.nsf.device.chip;
 
+import java.util.Arrays;
+
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
@@ -56,7 +58,7 @@ public class NesAPU extends AbstractSoundChip {
 			return false;
 		}
 		
-		System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
+//		System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
 		return true;
 	}
 	
@@ -138,7 +140,9 @@ public class NesAPU extends AbstractSoundChip {
 		pulse1.reset();
 		pulse2.reset();
 
-		// TODO
+		Arrays.fill(mem, (byte) 0);
+		mem4015 = 0x7F;
+		mem4017 = 0;
 	}
 
 	@Override

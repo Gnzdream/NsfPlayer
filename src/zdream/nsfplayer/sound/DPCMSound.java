@@ -122,6 +122,13 @@ public class DPCMSound extends Sound2A03 {
 	 */
 	private boolean silenceFlag;
 	
+	/**
+	 * 实际在渲染中使用的声像值.
+	 * 在初始化时会读取, dac = deltaCounter
+	 * 然后后面 dac 的变化将与 deltaCounter 无关.
+	 */
+	private int dac;
+	
 	/* **********
 	 * 公共方法 *
 	 ********** */
@@ -170,7 +177,6 @@ public class DPCMSound extends Sound2A03 {
 				address++;
 				remaining--;
 				sampleFilled = true;
-				
 				if (remaining == 0) {
 					if (loop) {
 						reload();
@@ -195,22 +201,22 @@ public class DPCMSound extends Sound2A03 {
 
 			if (!silenceFlag) {
 				if ((shiftReg & 1) == 1) {
-					if (deltaCounter < 126)
-						deltaCounter += 2;
+					if (dac < 126)
+						dac += 2;
 				} else {
-					if (deltaCounter > 1)
-						deltaCounter -= 2;
+					if (dac > 1)
+						dac -= 2;
 				}
 			}
 
 			shiftReg >>= 1;
 			--byteRemain;
 
-			mix(deltaCounter);
+			mix(dac);
 		}
 		
-		time -= counter;
-		this.time += counter;
+		counter -= time;
+		this.time += time;
 	}
 	
 	/**
@@ -220,7 +226,8 @@ public class DPCMSound extends Sound2A03 {
 	public void reload() {
 		address = offsetAddress;
 		remaining = length + 1;
-		mix(deltaCounter);
+		dac = deltaCounter;
+		mix(dac);
 	}
 	
 	/**

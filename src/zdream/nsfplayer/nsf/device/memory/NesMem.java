@@ -86,6 +86,22 @@ public class NesMem implements IDevice {
 		return false;
 	}
 	
+	/**
+	 * 复制内存的数据至 bs 数组中
+	 * @param bs
+	 *   盛放数据的数组
+	 * @param offset
+	 *   bs 的 offset
+	 * @param length
+	 *   复制的数据个数
+	 * @param address
+	 *   内存的复制起点位置
+	 * @since v0.2.4
+	 */
+	public void read(byte[] bs, int offset, int length, int address) {
+		System.arraycopy(image, address, bs, offset, length);
+	}
+	
 	public final void setFDSMode(boolean t) {
 		fdsEnable = t;
 	}

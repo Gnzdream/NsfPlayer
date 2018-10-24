@@ -30,6 +30,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 
 	public DeviceManager(NsfRuntime runtime) {
 		this.runtime = runtime;
+		
+		apu = new NesAPU(runtime);
+		dmc = new NesDMC(runtime);
 	}
 
 	@Override
@@ -84,8 +87,8 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	}
 	
 	// 音频芯片
-	public final NesAPU apu = new NesAPU(runtime);
-	public final NesDMC dmc = new NesDMC(runtime);
+	public final NesAPU apu;
+	public final NesDMC dmc;
 	
 	private void initSoundChip() {
 		// 先将声卡挂到 runtime 上去
@@ -115,6 +118,11 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 * 所有的 sound 调用 sound.process(freqPerFrame);
 	 */
 	private void processSounds(int freq) {
+		apu.beforeRender();
+		dmc.beforeRender();
+		// 其它的
+		// if (audio.useVrc6()) ...
+		
 		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
 			Entry<Byte, AbstractSoundChip> entry = it.next();
 			byte channelCode = entry.getKey();
