@@ -16,6 +16,12 @@ public class NesAPU extends AbstractSoundChip {
 	
 	private PulseSound pulse1, pulse2;
 	
+	/**
+	 * 记录放置的参数
+	 */
+	private byte[] mem = new byte[8];
+	private byte mem4015, mem4017 = 0;
+	
 	public NesAPU(NsfRuntime runtime) {
 		super(runtime);
 		pulse1 = new PulseSound();
@@ -31,15 +37,19 @@ public class NesAPU extends AbstractSoundChip {
 		switch (adr) {
 		case 0x4000: case 0x4001: case 0x4002: case 0x4003: {
 			writeToPulse1(adr & 3, val);
+			mem[adr & 3] = (byte) val;
 		} break;
 		case 0x4004: case 0x4005: case 0x4006: case 0x4007: {
 			writeToPulse2(adr & 3, val);
+			mem[(adr & 3) + 4] = (byte) val;
 		} break;
 		case 0x4015: {
 			// enable
+			mem4015 = (byte) val;
 		} break;
 		case 0x4017: {
 			// 未知
+			mem4017 = (byte) val;
 		} break;
 
 		default:
@@ -74,7 +84,7 @@ public class NesAPU extends AbstractSoundChip {
 		case 3: {
 			int period = (pulse1.period & 0xFF) + ((value & 7) << 8);
 			pulse1.period = period;
-			pulse1.lengthCounter = (value & 0xF8) >> 3;
+			pulse1.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
 		} break;
 		}
 	}
@@ -103,14 +113,23 @@ public class NesAPU extends AbstractSoundChip {
 		case 3: {
 			int period = (pulse2.period & 0xFF) + ((value & 7) << 8);
 			pulse2.period = period;
-			pulse2.lengthCounter = (value & 0xF8) >> 3;
+			pulse2.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
 		} break;
 		}
 	}
 
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
-		// TODO Auto-generated method stub
+		if (adr >= 0x4000 && adr < 0x4008) {
+			val.val = mem[adr & 0x7] & 0xFF;
+			return true;
+		} else if (adr == 0x4015) {
+			val.val = mem4015 & 0xFF;
+			return true;
+		} else if (adr == 0x4017) {
+			val.val = mem4017 & 0xFF;
+			return true;
+		}
 		return false;
 	}
 

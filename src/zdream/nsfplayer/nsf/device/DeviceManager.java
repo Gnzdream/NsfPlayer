@@ -15,6 +15,9 @@ import zdream.nsfplayer.sound.mixer.IMixerChannel;
 import static zdream.nsfplayer.core.ERegion.*;
 import static zdream.nsfplayer.core.NsfStatic.*;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 /**
  * 用于管理 Nsf 运行时状态的所有硬件设备的管理者
  * 
@@ -105,6 +108,28 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		for (int i = 0; i < channelCodes.length; i++) {
 			byte channelCode = channelCodes[i];
 			runtime.chips.put(channelCode, chip);
+		}
+	}
+	
+	/**
+	 * 所有的 sound 调用 sound.process(freqPerFrame);
+	 */
+	private void processSounds(int freq) {
+		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
+			Entry<Byte, AbstractSoundChip> entry = it.next();
+			byte channelCode = entry.getKey();
+			entry.getValue().getSound(channelCode).process(freq);
+		}
+	}
+	
+	/**
+	 * 所有的 sound 调用 sound.endFrame();
+	 */
+	private void endFrame() {
+		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
+			Entry<Byte, AbstractSoundChip> entry = it.next();
+			byte channelCode = entry.getKey();
+			entry.getValue().getSound(channelCode).endFrame();
 		}
 	}
 
@@ -388,9 +413,10 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 					mmc5.tickFrameSequence(real_cpu_clocks);*/
 			}
 			
-			// TODO
+			processSounds(freqInCurSample);
 		}
 		
+		endFrame();
 	}
 	
 	/**
@@ -403,18 +429,18 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		int ret = 0;
 		
 		sampleConsumed += 1;
+		int to = (int) ((long) sampleConsumed * freqPerSec / sampleRate);
+		ret = to - freqConsumed;
+		freqConsumed = to;
+		
 		if (sampleConsumed >= sampleRate) {
-			if (sampleConsumed > sampleRate) {
+			if (sampleConsumed > sampleRate || freqConsumed != freqPerSec) {
 				// 出现了问题
-				throw new IllegalStateException("出现了错误");
+				throw new IllegalStateException("时钟计算出现了错误");
 			}
-			ret = freqPerSec - freqConsumed;
+			
 			freqConsumed = 0;
 			sampleConsumed = 0;
-		} else {
-			int to = sampleConsumed * freqPerSec / sampleRate;
-			ret = to - freqConsumed;
-			freqConsumed = to;
 		}
 		
 		return ret;

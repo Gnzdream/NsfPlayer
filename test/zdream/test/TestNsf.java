@@ -25,9 +25,9 @@ public class TestNsf {
 		renderer.ready(nsf, 8);
 		
 		BytesPlayer player = new BytesPlayer();
-		byte[] bs = new byte[900];
+		byte[] bs = new byte[1600];
 		
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 3600; i++) {
 			System.out.println(String.format("---- %03d ----", i));
 			int len = renderer.renderOneFrame(bs, 0, bs.length);
 			player.writeSamples(bs, 0, len);

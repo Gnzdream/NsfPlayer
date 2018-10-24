@@ -33,7 +33,7 @@ public class NesDMC extends AbstractSoundChip {
 		 * APU 这里要接收的地址有:
 		 * [0x4000, 0x4007], 0x4015, 0x4017
 		 */
-		switch (adr) {
+		/*switch (adr) {
 		case 0x4008: case 0x4009: case 0x400A: case 0x400B: {
 			// triangle
 		} break;
@@ -53,7 +53,9 @@ public class NesDMC extends AbstractSoundChip {
 		
 		if (adr != 0x4015)
 			System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
-		return true;
+		return true;*/
+		
+		return false;
 	}
 
 	@Override

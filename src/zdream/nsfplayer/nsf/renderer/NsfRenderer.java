@@ -100,11 +100,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
 		
-		// TODO 计算一帧的时钟数
-		
 		runtime.manager.tickCPU();
-		
-		// TODO
+
+		// 从 mixer 中读取数据
+		readMixer();
 		
 		/*
 		int[] buf = new int[2], out = new int[2];
@@ -208,6 +207,14 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		int maxSampleCount = runtime.config.sampleRate;
 		
 		return countNextFrame(maxFrameCount, maxSampleCount);
+	}
+	
+	/**
+	 * 从 Mixer 中读取音频数据
+	 */
+	private void readMixer() {
+		runtime.mixer.finishBuffer();
+		runtime.mixer.readBuffer(data, 0, data.length);
 	}
 	
 	@Override
