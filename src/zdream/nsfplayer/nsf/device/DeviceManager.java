@@ -5,6 +5,7 @@ import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.chip.NesAPU;
 import zdream.nsfplayer.nsf.device.chip.NesDMC;
+import zdream.nsfplayer.nsf.device.chip.NesVRC6;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
@@ -33,6 +34,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		
 		apu = new NesAPU(runtime);
 		dmc = new NesDMC(runtime);
+		vrc6 = new NesVRC6(runtime);
 	}
 
 	@Override
@@ -89,12 +91,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	// 音频芯片
 	public final NesAPU apu;
 	public final NesDMC dmc;
+	public final NesVRC6 vrc6;
 	
 	private void initSoundChip() {
-		// 先将声卡挂到 runtime 上去
-		putSoundChipToRuntime(apu);
-		putSoundChipToRuntime(dmc);
-		
 		// 初始化声卡的部分数据.
 		// 现在可以通过 runtime.param.sampleRate 获得采样率
 		// 原本下面的工作在 NsfPlayer.setPlayFreq(double) 中
@@ -120,8 +119,12 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	private void processSounds(int freq) {
 		apu.beforeRender();
 		dmc.beforeRender();
+		
+		if (runtime.audio.useVrc6()) {
+			vrc6.beforeRender();
+		}
+		
 		// 其它的
-		// if (audio.useVrc6()) ...
 		
 		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
 			Entry<Byte, AbstractSoundChip> entry = it.next();
@@ -239,6 +242,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		// to various devices, expansions, etc.
 		// 应用 read() 和 write() 方法来控制虚拟设备, 以及它们的拓展类（子类）.
 		detachAll();
+		runtime.chips.clear();
 		
 		// 下面开始连接设备
 		
@@ -254,11 +258,22 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		// 连接音频芯片
 		apu_bus.attach(apu);
 		apu_bus.attach(dmc);
+		// 先将声卡挂到 runtime 上去
+		putSoundChipToRuntime(apu);
+		putSoundChipToRuntime(dmc);
+		// 混音器
+		attachSoundChipAndMixer(apu); // mixer.attach(apu);
+		attachSoundChipAndMixer(dmc); // mixer.attach(dmc);
+		
 		// apu_bus.attach(fsc); // FrameSequenceCounter
 		stack.attach(apu_bus);
 		
-		attachSoundChipAndMixer(apu); // mixer.attach(apu);
-		attachSoundChipAndMixer(dmc); // mixer.attach(dmc);
+		if (runtime.audio.useVrc6()) {
+			stack.attach(vrc6);
+			putSoundChipToRuntime(vrc6);
+			attachSoundChipAndMixer(vrc6);
+		}
+		// TODO 其它的芯片
 		
 		/*
 		if (nsf.useMmc5) {
@@ -406,9 +421,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	public void tickCPU() {
 		int sampleInCurFrame = runtime.param.sampleInCurFrame;
 		
+		NesCPU cpu = runtime.cpu;
 		for (int i = 0; i < sampleInCurFrame; i++) {
 			int freqInCurSample = countFreqInCurSample();
-			NesCPU cpu = runtime.cpu;
 			
 			cpuFreqRemain += freqInCurSample;
 			if (cpuFreqRemain > 0) {

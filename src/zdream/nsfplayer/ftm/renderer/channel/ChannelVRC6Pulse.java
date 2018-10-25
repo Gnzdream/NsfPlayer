@@ -100,9 +100,9 @@ public class ChannelVRC6Pulse extends ChannelVRC6 {
 		sound.duty = this.curDuty;
 		
 		if (!playing || masterNote == 0) {
-			sound.gate = false;
+			sound.setEnable(false);
 		} else {
-			sound.gate = true;
+			sound.setEnable(true);
 		}
 	}
 	

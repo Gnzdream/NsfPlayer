@@ -106,7 +106,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		FamiTrackerRenderer renderer = env.getRenderer();
 		Set<Byte> bs = renderer.allChannelSet();
 		
-		bs.forEach(code -> renderer.setChannelEnable(code, true));
+		bs.forEach(code -> renderer.setChannelMask(code, false));
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 */
 	private void muteClear(FtmPlayerConsole env, byte channelCode) {
 		FamiTrackerRenderer renderer = env.getRenderer();
-		renderer.setChannelEnable(channelCode, true);
+		renderer.setChannelMask(channelCode, false);
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 */
 	private void mute(FtmPlayerConsole env, byte channelCode) {
 		FamiTrackerRenderer renderer = env.getRenderer();
-		renderer.setChannelEnable(channelCode, false);
+		renderer.setChannelMask(channelCode, true);
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		for (Iterator<Byte> it = bs.iterator(); it.hasNext();) {
 			byte channelCode = it.next();
 			float vol = renderer.getLevel(channelCode);
-			if (!renderer.isChannelEnable(channelCode)) {
+			if (renderer.isChannelMask(channelCode)) {
 				vol = 0;
 			}
 			
@@ -159,7 +159,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> {
-			renderer.setChannelEnable(code, true);
+			renderer.setChannelMask(code, false);
 			renderer.setLevel(code, 1.0f);
 		});
 	}
@@ -172,7 +172,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> {
-			renderer.setChannelEnable(code, true);
+			renderer.setChannelMask(code, false);
 			renderer.setLevel(code, vol);
 		});
 	}
@@ -183,7 +183,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	private void volumePrint(FtmPlayerConsole env, byte channelCode) {
 		FamiTrackerRenderer renderer = env.getRenderer();
 		float vol = renderer.getLevel(channelCode);
-		if (!renderer.isChannelEnable(channelCode)) {
+		if (renderer.isChannelMask(channelCode)) {
 			vol = 0;
 		}
 		
@@ -199,7 +199,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	private void volumeSet(FtmPlayerConsole env, byte channelCode, float vol) {
 		FamiTrackerRenderer renderer = env.getRenderer();
 		
-		renderer.setChannelEnable(channelCode, true);
+		renderer.setChannelMask(channelCode, false);
 		renderer.setLevel(channelCode, vol);
 	}
 	
