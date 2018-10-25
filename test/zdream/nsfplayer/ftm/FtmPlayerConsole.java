@@ -80,7 +80,7 @@ public class FtmPlayerConsole {
 	 */
 	public void go() {
 		this.thread = new PlayThreadForFtm(this);
-		OpenTask t = new OpenTask("src\\assets\\test\\mm10nsf.ftm");
+		OpenTask t = new OpenTask("test\\assets\\test\\mm10nsf.ftm");
 		t.setOption("s", 8);
 		putTask(t);
 		

@@ -14,7 +14,7 @@ public class TestNsf {
 		NsfAudio nsf;
 		
 		try {
-			nsf = factory.createFromFile("src/assets/test/mm10nsf.nsf");
+			nsf = factory.createFromFile("test/assets/test/mm10nsf.nsf");
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;

@@ -29,7 +29,7 @@ public class TestFamiTracker {
 	
 	public static FtmAudio testReadFtm() throws Exception {
 		String path =
-				"src\\assets\\test\\mm10nsf.ftm"
+				"test\\assets\\test\\mm10nsf.ftm"
 				;
 		
 		FtmAudio audio = FamiTrackerApplication.app.open(path);

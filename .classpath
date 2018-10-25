@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="raw-fami"/>
-	<classpathentry kind="src" path="raw-nsf"/>
-	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" output="target-test" path="raw-fami"/>
+	<classpathentry kind="src" output="target-test" path="raw-nsf"/>
+	<classpathentry kind="src" output="target-test" path="test"/>
 	<classpathentry kind="output" path="target"/>
 </classpath>

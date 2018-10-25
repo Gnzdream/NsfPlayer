@@ -14,6 +14,7 @@ bin/
 src/db.properties
 /.settings/
 /target
+/target-test
 
 # virtual machine crash logs, see 
 

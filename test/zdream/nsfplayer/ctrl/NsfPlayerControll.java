@@ -138,7 +138,7 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 	 */
 	public void go() {
 		this.thread = new PlayThread(this);
-		OpenTask t = new OpenTask("src\\assets\\test\\mm10nsf.nsf");
+		OpenTask t = new OpenTask("test\\assets\\test\\mm10nsf.nsf");
 		t.setOption("s", 8);
 		putTask(t);
 		
