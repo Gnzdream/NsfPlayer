@@ -14,15 +14,14 @@ public class TestNsf {
 		NsfAudio nsf;
 		
 		try {
-//			nsf = factory.createFromFile("test/assets/test/mm10nsf.nsf");
-			nsf = factory.createFromFile("D:\\Program\\Rockman\\FamiTracker\\Project\\Rockman other\\Mega Man Free - Wily Stage 5 VRC6 Remix.nsf");
+			nsf = factory.createFromFile("test/assets/test/mm10nsf.nsf");
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
 		}
 		
 		NsfRenderer renderer = new NsfRenderer();
-		renderer.ready(nsf, 0); // 8
+		renderer.ready(nsf, 8);
 		
 		BytesPlayer player = new BytesPlayer();
 		byte[] bs = new byte[1600];

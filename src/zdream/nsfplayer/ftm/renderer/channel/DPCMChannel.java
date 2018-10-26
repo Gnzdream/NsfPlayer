@@ -82,7 +82,7 @@ public class DPCMChannel extends Channel2A03 {
 	
 	/**
 	 * 设置采样的起始读取位. Yxx 效果触发.
-	 * 如果没有重置, 或者重设, 该值不会清零.
+	 * 该值使用一次后会清零.
 	 * @param offset
 	 */
 	public void setOffset(int offset) {
@@ -113,6 +113,7 @@ public class DPCMChannel extends Channel2A03 {
 	protected void startFrame() {
 		masterPitch = -1;
 		retrigger = 0;
+		offset = 0; // 补充的
 		
 		super.startFrame();
 	}
