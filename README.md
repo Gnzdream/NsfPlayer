@@ -165,10 +165,23 @@ while (true) {
 
 <table>
 	<tr>
+		<th width=10%>芯片</th>
+		<th width=40% align="left">
+			NSF 部分
+		</th>
+		<th width=40% align="left">
+			FTM 部分
+		</th>
+	</tr>
+	<tr>
 		<td width=10%>2A03 + 2A07</td>
 		<td width=40% align="left">
-			大部分效果已经支持, 除了以下几个方面:
-			<br>Hxx, Ixx 的 sweep 效果 (Hardware Sweep Effect): 不支持 Unsupported
+			大部分效果已经支持, 除了以下几个方面(Supported except follow)：
+			<br>sweep 与 envelope 效果：不支持 Unsupported
+		</td>
+		<td width=40% align="left">
+			大部分效果已经支持, 除了以下几个方面 (Supported except follow):
+			<br>Hxx, Ixx 的 sweep 效果 (Hardware Sweep Effect)：不支持 Unsupported
 		</td>
 	</tr>
 	<tr>
@@ -176,9 +189,15 @@ while (true) {
 		<td width=40% align="left">
 			支持 Supported
 		</td>
+		<td width=40% align="left">
+			支持 Supported
+		</td>
 	</tr>
 	<tr>
 		<td width=10%>MMC5</td>
+		<td width=40% align="left">
+			除了 PCM 轨道外支持 (Supported except PCM channel)
+		</td>
 		<td width=40% align="left">
 			支持 Supported
 		</td>
@@ -188,15 +207,33 @@ while (true) {
 		<td width=40% align="left">
 			未完成 Unfinished
 		</td>
+		<td width=40% align="left">
+			未完成 Unfinished
+		</td>
 	</tr>
 	<tr>
 		<td width=10%>N163</td>
 		<td width=40% align="left">
 			未完成 Unfinished
 		</td>
+		<td width=40% align="left">
+			未完成 Unfinished
+		</td>
 	</tr>
 	<tr>
 		<td width=10%>VRC7</td>
+		<td width=40% align="left">
+			未完成 Unfinished
+		</td>
+		<td width=40% align="left">
+			未完成 Unfinished
+		</td>
+	</tr>
+	<tr>
+		<td width=10%>S5B</td>
+		<td width=40% align="left">
+			未完成 Unfinished
+		</td>
 		<td width=40% align="left">
 			未完成 Unfinished
 		</td>

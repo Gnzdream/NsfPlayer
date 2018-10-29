@@ -52,7 +52,8 @@ public class DPCMSound extends Sound2A03 {
 	 * <p>1 号位: 0xxxxxxx
 	 * <p>初始声像值. 声像值在 [0, 127] 的范围内震荡, 音波在震荡时才会发出声音.
 	 * 因此这个是控制音量的唯一方式, 但不是直接控制音量.
-	 * <p>范围 [0, 127]
+	 * <p>范围 [0, 127] 时, 当重新读取一个新的 DPCM 采样数据时, dac 将读取该值作为初始的声像值;
+	 * 其它值 -1, 代表 dac 数值不改变
 	 * </p>
 	 */
 	public int deltaCounter;
@@ -127,7 +128,7 @@ public class DPCMSound extends Sound2A03 {
 	 * 在初始化时会读取, dac = deltaCounter
 	 * 然后后面 dac 的变化将与 deltaCounter 无关.
 	 */
-	private int dac;
+	public int dac;
 	
 	/* **********
 	 * 公共方法 *
@@ -138,7 +139,7 @@ public class DPCMSound extends Sound2A03 {
 		// 原始记录参数
 		loop = false;
 		periodIndex = 0;
-		deltaCounter = 0;
+		deltaCounter = -1;
 		offsetAddress = 0;
 		length = 0;
 
@@ -226,7 +227,10 @@ public class DPCMSound extends Sound2A03 {
 	public void reload() {
 		address = offsetAddress;
 		remaining = length + 1;
-		dac = deltaCounter;
+		if (deltaCounter >= 0) {
+			dac = deltaCounter;
+			deltaCounter = -1;
+		}
 		mix(dac);
 	}
 	
