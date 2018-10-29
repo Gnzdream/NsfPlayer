@@ -5,6 +5,7 @@ import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.chip.NesAPU;
 import zdream.nsfplayer.nsf.device.chip.NesDMC;
+import zdream.nsfplayer.nsf.device.chip.NesMMC5;
 import zdream.nsfplayer.nsf.device.chip.NesVRC6;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
@@ -35,6 +36,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		apu = new NesAPU(runtime);
 		dmc = new NesDMC(runtime);
 		vrc6 = new NesVRC6(runtime);
+		mmc5 = new NesMMC5(runtime);
 	}
 
 	@Override
@@ -92,6 +94,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	public final NesAPU apu;
 	public final NesDMC dmc;
 	public final NesVRC6 vrc6;
+	public final NesMMC5 mmc5;
 	
 	private void initSoundChip() {
 		// 初始化声卡的部分数据.
@@ -122,6 +125,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		
 		if (runtime.audio.useVrc6()) {
 			vrc6.beforeRender();
+		}
+		if (runtime.audio.useMmc5()) {
+			mmc5.beforeRender();
 		}
 		
 		// 其它的
@@ -272,6 +278,11 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			stack.attach(vrc6);
 			putSoundChipToRuntime(vrc6);
 			attachSoundChipAndMixer(vrc6);
+		}
+		if (runtime.audio.useMmc5()) {
+			stack.attach(mmc5);
+			putSoundChipToRuntime(mmc5);
+			attachSoundChipAndMixer(mmc5);
 		}
 		// TODO 其它的芯片
 		
