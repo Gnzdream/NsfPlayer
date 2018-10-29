@@ -3,6 +3,7 @@ package zdream.nsfplayer.nsf.renderer;
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
+import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 
 /**
  * <p>NSF 渲染器.
@@ -220,6 +221,74 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	@Override
 	public boolean isFinished() {
 		return false;
+	}
+
+	/* **********
+	 * 仪表盘区 *
+	 ********** */
+	/*
+	 * 用于控制实际播放数据的部分.
+	 * 其中有: 控制音量、控制是否播放
+	 */
+	
+	/**
+	 * 设置某个轨道的音量
+	 * @param channelCode
+	 *   轨道号
+	 * @param level
+	 *   音量. 范围 [0, 1]
+	 * @since v0.2.4
+	 */
+	public void setLevel(byte channelCode, float level) {
+		if (level < 0) {
+			level = 0;
+		} else if (level > 1) {
+			level = 1;
+		}
+		runtime.mixer.setLevel(channelCode, level);
+	}
+	
+	/**
+	 * 获得某个轨道的音量
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   音量. 范围 [0, 1]
+	 * @throws NullPointerException
+	 *   当不存在 <code>channelCode</code> 对应的轨道时
+	 * @since v0.2.4
+	 */
+	public float getLevel(byte channelCode) throws NullPointerException {
+		return runtime.mixer.getLevel(channelCode);
+	}
+	
+	/**
+	 * 设置轨道是否发出声音
+	 * @param channelCode
+	 *   轨道号
+	 * @param mask
+	 *   false, 使该轨道发声; true, 则静音
+	 * @since v0.2.4
+	 */
+	public void setChannelMask(byte channelCode, boolean mask) {
+		AbstractSoundChip chip = runtime.chips.get(channelCode);
+		if (chip != null) {
+			chip.getSound(channelCode).setMask(mask);
+		}
+	}
+	
+	/**
+	 * 查看轨道是否能发出声音
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   false, 说明该轨道没有被屏蔽; true, 则已经被屏蔽
+	 * @throws NullPointerException
+	 *   当不存在 <code>channelCode</code> 对应的轨道时
+	 * @since v0.2.4
+	 */
+	public boolean isChannelMask(byte channelCode) throws NullPointerException {
+		return runtime.chips.get(channelCode).getSound(channelCode).isMask();
 	}
 
 }
