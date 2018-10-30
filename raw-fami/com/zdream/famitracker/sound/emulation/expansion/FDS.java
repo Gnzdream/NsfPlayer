@@ -63,15 +63,6 @@ public class FDS extends ExChannel implements External {
 	static final int LIN_BITS = 7;
 	static final int LOG_LIN_BITS = 30;
 	
-	/**
-	 * void __fastcall FDSSoundWrite(uint16 address, uint8 value);
-	 * @param address
-	 * @param value
-	 */
-	static void FDSSoundWrite(int address, byte value) {
-		
-	}
-	
 //	/**
 //	 * void FDSSoundInstall3(void);
 //	 */
@@ -81,12 +72,13 @@ public class FDS extends ExChannel implements External {
 	
 	/**
 	 * uint32 LinearToLog(int32 l);
+	 * 并没有使用
 	 * @param l
 	 * @return
 	 */
-	static int linearToLog(int l) {
+	/*static int linearToLog(int l) {
 		return (l < 0) ? (lineartbl[-l] + 1) : lineartbl[l];
-	}
+	}*/
 	
 	/**
 	 * int32 LogToLinear(uint32 l, uint32 sft);
@@ -127,14 +119,14 @@ public class FDS extends ExChannel implements External {
 				a = (1 << LOG_LIN_BITS) / Math.pow(2, i / (double)(1 << LOG_BITS));
 				logtbl[i] = (int) a;
 			}
-			lineartbl[0] = LOG_LIN_BITS << LOG_BITS;
+			/*lineartbl[0] = LOG_LIN_BITS << LOG_BITS;
 			for (i = 1; i < (1 << LIN_BITS) + 1; i++)
 			{
 				int ua; // unsigned
 				a = i << (LOG_LIN_BITS - LIN_BITS);
 				ua = (int)((LOG_LIN_BITS - ((double)(Math.log(a)) / (double)(Math.log(2.0)))) * (1 << LOG_BITS));
 				lineartbl[i] = ua << 1;
-			}
+			}*/
 			
 			initFlag = true;
 		}
@@ -143,7 +135,7 @@ public class FDS extends ExChannel implements External {
 	/**
 	 * static uint32 lineartbl[(1 << LIN_BITS) + 1];
 	 */
-	static int[] lineartbl = new int[(1 << LIN_BITS) + 1];
+	//static int[] lineartbl = new int[(1 << LIN_BITS) + 1];
 	
 	/**
 	 * static uint32 logtbl[1 << LOG_BITS];
@@ -224,11 +216,11 @@ public class FDS extends ExChannel implements External {
 		 */
 		int phase;
 		
-		byte[] wave = new byte[0x40];
-		/**
-		 * uint8
-		 */
-		int wavptr;
+		byte[] wave = new byte[0x40]; // 64 个单位
+//		/**
+//		 * uint8
+//		 */
+//		int wavptr;
 		
 		byte output;
 		/**
@@ -243,7 +235,7 @@ public class FDS extends ExChannel implements External {
 		public void clear() {
 			phase = 0;
 			Arrays.fill(wave, (byte) 0);
-			wavptr = 0;
+//			wavptr = 0;
 			output = 0;
 			disable = 0;
 			disable2 = 0;
@@ -251,7 +243,7 @@ public class FDS extends ExChannel implements External {
 
 		@Override
 		public String toString() {
-			return "{phase=" + phase + ", wave=" + Arrays.toString(wave) + ", wavptr=" + wavptr + ", output="
+			return "{phase=" + phase + ", wave=" + Arrays.toString(wave) + /*", wavptr=" + wavptr + */", output="
 					+ output + ", disable=" + disable + ", disable2=" + disable2 + "}";
 		}
 	}
@@ -327,6 +319,7 @@ public class FDS extends ExChannel implements External {
 		int mastervolume;
 		/**
 		 * uint32
+		 * APU.freq()
 		 */
 		int srate;
 		/**
@@ -492,6 +485,7 @@ public class FDS extends ExChannel implements External {
 
 	/**
 	 * static const uint8 wave_delta_table[8] = {...}
+	 * 并没有使用
 	 */
 	static final int wave_delta_table[] = {
 		0,(1 << FM_DEPTH),(2 << FM_DEPTH),(4 << FM_DEPTH),
@@ -513,7 +507,7 @@ public class FDS extends ExChannel implements External {
 					pop.eg.mode = value & 0xc0;
 					if ((pop.eg.mode & 0x80) != 0) {
 						pop.eg.volume = (value & 0x3f);
-						if (pop.eg.volume != 0) {
+						if (pop.eg.volume != 0) { // TEST
 							value += 0;
 						}
 					} else {
@@ -543,7 +537,7 @@ public class FDS extends ExChannel implements External {
 					pop.wg.disable = value & 0x80;
 					if (pop.wg.disable != 0) {
 						pop.wg.phase = 0;
-						pop.wg.wavptr = 0;
+//						pop.wg.wavptr = 0;
 						pop.wavebase = 0;
 					}
 					break;
