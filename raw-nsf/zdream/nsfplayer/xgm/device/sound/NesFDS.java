@@ -33,7 +33,10 @@ public class NesFDS implements ISoundChip {
 	protected int[] option = new int[OPT_END];
 
 	protected boolean master_io;
-	/** unsigned */
+	/**
+	 * unsigned
+	 * <br>$4089 总音量
+	 */
 	protected int master_vol;
 	/** for trackinfo. unsigned */
 	protected int last_freq;
@@ -41,30 +44,65 @@ public class NesFDS implements ISoundChip {
 	protected int last_vol;
 	
 	// two wavetables
+	/**
+	 * [0] $4040 - $407F 波形表
+	 * <br>
+	 * [1] $4088 MOD 表
+	 */
 	protected int[][] wave = new int[2][64];
-	/** unsigned */
+	/**
+	 * unsigned
+	 * <br>$4082/$4083 波形波长值, $4086/$4087 MOD 波长值
+	 */
 	protected int[] freq = new int[2];
 	/** unsigned */
 	protected int[] phase = new int[2];
+	/**
+	 * $4089 波形写入标识
+	 */
 	protected boolean wav_write;
+	/**
+	 * $4083 波形禁用标识, 为 false 时表示启用播放
+	 */
 	protected boolean wav_halt;
+	/**
+	 * $4083 信封禁用标识, 为 false 时表示启用播放
+	 */
 	protected boolean env_halt;
+	/**
+	 * $4087 MOD 禁用标识, 为 false 时表示启用 MOD 列表
+	 */
 	protected boolean mod_halt;
-	/** unsigned */
+	/**
+	 * unsigned
+	 * <br>$4085 MOD 相位值
+	 */
 	protected int mod_pos;
 	/** unsigned */
 	protected int mod_write_pos;
 
 	// two ramp envelopes
+	/**
+	 * $4080 音量信封（声像）模式标志, $4084 MOD 信封模式标志
+	 */
 	protected boolean[] env_mode = new boolean[2];
+	/**
+	 * $4080 音量信封（声像）禁用标志, $4084 MOD 信封禁用标志, 为 false 时表示启用
+	 */
 	protected boolean[] env_disable = new boolean[2];
 	/** unsigned */
 	protected int[] env_timer = new int[2];
-	/** unsigned */
+	/**
+	 * unsigned
+	 * <br>$4080 音量信封（声像）播放速度, $4084 MOD 信封播放速度
+	 */
 	protected int[] env_speed = new int[2];
 	/** unsigned */
 	protected int[] env_out = new int[2];
-	/** unsigned */
+	/**
+	 * unsigned
+	 * <br>$408A 信封速度
+	 */
 	protected int master_env_speed;
 
 	// 1-pole RC lowpass filter
