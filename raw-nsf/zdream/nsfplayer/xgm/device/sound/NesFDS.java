@@ -78,7 +78,10 @@ public class NesFDS implements ISoundChip {
 	 * <br>$4085 MOD 相位值
 	 */
 	protected int mod_pos;
-	/** unsigned */
+	/**
+	 * unsigned
+	 * 专门为 OPT_4085_RESET 选项设置的值. 如果该选项未开启, 该值没有作用
+	 */
 	protected int mod_write_pos;
 
 	// two ramp envelopes

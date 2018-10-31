@@ -171,7 +171,46 @@ public class SoundFDS extends AbstractNsfSound {
 	 */
 	public int masterEnvSpeed;
 	
-	// TODO
+	/*
+	 * 辅助参数
+	 */
+	
+	/**
+	 * 波形相位
+	 * 相位的值为了提高精度, 实际记录的值比原值做了 << 24 位的处理.
+	 */
+	private int wavPhase;
+	
+	/**
+	 * 调制相位
+	 * 相位的值为了提高精度, 实际记录的值比原值做了 << 24 位的处理.
+	 */
+	private int modPhase;
+	
+	/**
+	 * 波形时钟计数器
+	 */
+	private int wavEnvCounter;
+	
+	/**
+	 * 调制时钟计数器
+	 */
+	private int modEnvCounter;
+	
+	/**
+	 * 波形输出
+	 */
+	private int wavEnvOut;
+	
+	/**
+	 * 调制输出
+	 */
+	private int modEnvOut;
+	
+	/**
+	 * 现在整体的输出值
+	 */
+	private int curOut;
 	
 	/* **********
 	 * 输入方法 *
@@ -185,7 +224,14 @@ public class SoundFDS extends AbstractNsfSound {
 	 *   范围 [0, 7]
 	 */
 	public void writeMods(byte mod) {
-		// TODO
+		if (modHalt) {
+			// 下面是原话
+			// writes to current playback position (there is no direct way to set phase)
+			mods[(modPhase >> 16) & 0x3F] = (byte) (mod & 0x07);
+			modPhase = (modPhase + 0x010000) & 0x3FFFFF;
+			mods[(modPhase >> 16) & 0x3F] = (byte) (mod & 0x07);
+			modPhase = (modPhase + 0x010000) & 0x3FFFFF;
+		}
 	}
 	
 	/* **********
@@ -214,12 +260,15 @@ public class SoundFDS extends AbstractNsfSound {
 		masterEnvSpeed = 0xE8;
 		
 		// 辅助参数
-		// TODO
+		wavPhase = modPhase = 0;
+		wavEnvCounter = modEnvCounter = 0;
+		wavEnvOut = modEnvOut = 0;
+		curOut = 0;
 		
 		super.reset();
 		
 		// 还要补充的
-		// TODO write(0x408A, 0xE8, 0);
+		// write(0x408A, 0xE8, 0);
 		// 0x4080
 		// 0x4083
 		// 0x4084
@@ -227,11 +276,214 @@ public class SoundFDS extends AbstractNsfSound {
 		// 0x4087
 		
 	}
+	
+	public void resetCounter() {
+		wavEnvCounter = modEnvCounter = 0;
+	}
 
 	@Override
 	protected void onProcess(int time) {
-		// TODO Auto-generated method stub
+		// 前置操作
+		if (wavHalt) {
+			wavPhase = 0;
+		}
+		
+		if (modHalt) {
+			modPhase &= 0x3F0000; // 重置累积的相位
+		}
+		
+		if (envHalt) {
+			resetCounter();
+		}
+		
+		if (wavEnvDisable) {
+			wavEnvOut = wavEnvSpeed;
+		}
+		
+		// 下面是 tick 部分
+		if (!envHalt && !wavHalt && (masterEnvSpeed != 0)) {
+			int period = ((wavEnvSpeed + 1) * masterEnvSpeed) << 3;
+			
+			if (!wavEnvDisable) {
+				wavEnvCounter += time;
+			}
+			
+			if (!modEnvDisable) {
+				modEnvCounter += time;
+			}
+			
+			int left = time;
+			
+			// 以 wav 循环为准
+			// wav 部分
+			if (!wavEnvDisable) {
+				while (wavEnvCounter >= period) {
+					// 信封按时钟向前走
+					// clock the envelope
+					if (wavEnvMode) {
+						if (wavEnvOut < 32)
+							++wavEnvOut;
+					} else {
+						if (wavEnvOut > 0)
+							--wavEnvOut;
+					}
+					this.time += period;
+					left -= period;
+					putOut(wavEnvOut);
+					wavEnvCounter -= period;
+					
+					if (!modEnvDisable) {
+						modCounterStep(period);
+						modTableStep(period);
+						wavTableStep(period);
+					}
+				}
+				
+				// 最后的 left
+				modCounterStep(left);
+				modTableStep(left);
+				wavTableStep(left);
+			}
+		} else {
+			modTableStep(time);
+			wavTableStep(time);
+		}
 
+		// NOTE: during wav_halt, the unit still outputs (at phase 0)
+		// and volume can affect it if the first sample is nonzero.
+		// haven't worked out 100% of the conditions for volume to
+		// effect (vol envelope does not seem to run, but am unsure)
+		// but this implementation is very close to correct
+	}
+	
+	/**
+	 * mod 计数器向前走
+	 */
+	private void modCounterStep(int time) {
+		modEnvCounter += time;
+		int modPeriod = ((modEnvSpeed + 1) * masterEnvSpeed) << 3;
+		while (modEnvCounter >= modPeriod) {
+			// clock the envelope
+			if (modEnvMode) {
+				if (modEnvOut < 32)
+					++modEnvOut;
+			} else {
+				if (modEnvOut > 0)
+					--modEnvOut;
+			}
+			modEnvCounter -= modPeriod;
+		}
+	}
+	
+	/**
+	 * mod 调制表向前走
+	 * @param time
+	 */
+	private void modTableStep(int time) {
+		if (!modHalt) {
+			// advance phase, adjust for modulator | unsigned
+			int start_pos = modPhase >> 16;
+			modPhase += (time * modFreq);
+			// unsigned
+			int end_pos = modPhase >> 16;
+
+			// wrap the phase to the 64-step table (+ 16 bit accumulator)
+			modPhase = modPhase & 0x3FFFFF;
+
+			// execute all clocked steps
+			for (int p = start_pos; p < end_pos; ++p) {
+				int wv = mods[p & 0x3F];
+				if (wv == 4) // 4 resets mod position
+					modPos = 0;
+				else {
+					final int BIAS[] = { 0, 1, 2, 4, 0, -4, -2, -1 };
+					modPos += BIAS[wv];
+					modPos &= 0x7F; // 7-bit clamp
+				}
+			}
+		}
+	}
+	
+	/**
+	 * wav 波形表向前走
+	 * @param time
+	 */
+	private void wavTableStep(int time) {
+		if (!wavHalt) {
+			// complex mod calculation
+			int mod = 0;
+			if (modEnvOut != 0) { // skip if modulator off
+				// convert mod_pos to 7-bit signed
+				int pos = (modPos < 64) ? modPos : (modPos - 128);
+
+				// multiply pos by gain,
+				// shift off 4 bits but with odd "rounding" behaviour
+				int temp = pos * modEnvOut;
+				int rem = temp & 0x0F;
+				temp >>= 4;
+				if ((rem > 0) && ((temp & 0x80) == 0)) {
+					if (pos < 0)
+						temp -= 1;
+					else
+						temp += 2;
+				}
+
+				// wrap if range is exceeded
+				while (temp >= 192)
+					temp -= 256;
+				while (temp < -64)
+					temp += 256;
+
+				// multiply result by pitch,
+				// shift off 6 bits, round to nearest
+				temp = wavFreq * temp;
+				rem = temp & 0x3F;
+				temp >>= 6;
+				if (rem >= 32)
+					temp += 1;
+
+				mod = temp;
+			}
+
+			// advance wavetable position
+			int f = wavFreq + mod;
+			wavPhase += (time * f);
+			wavPhase &= 0x3FFFFF; // wrap
+		}
+	}
+	
+	private void putOut(int vol_out) {
+		if (vol_out > 32)
+			vol_out = 32;
+
+		// final output
+		if (!wavWrite)
+			curOut = wave[(wavPhase >> 16) & 0x3F] * vol_out;
+		
+		// 最终输出部分
+		// 8 bit approximation of master volume
+		final double MASTER_VOL = 2935.2; // = 2.4 * 1223.0; max FDS vol vs max APU square (arbitrarily 1223)
+		final double MAX_OUT = 2016; // = 32.0f * 63.0f; value that should map to master vol
+		
+		// 音量的档位
+		int v = 0;
+		
+		switch (masterVolume) {
+		case 0:
+			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 2.0f);
+			break;
+		case 1:
+			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 3.0f);
+			break;
+		case 2:
+			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 4.0f);
+			break;
+		case 3:
+			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 5.0f);
+			break;
+		}
+		
+		mix(curOut * v >> 8);
 	}
 
 }
