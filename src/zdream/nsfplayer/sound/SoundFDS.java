@@ -149,7 +149,7 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>09 号位: x0000000
-	 * <p>波形写入标志
+	 * <p>波形可以写入标志
 	 * <p>为 1 时为 true; 为 0 时为 false
 	 * </p>
 	 */
@@ -223,7 +223,7 @@ public class SoundFDS extends AbstractNsfSound {
 	 * @param mod
 	 *   范围 [0, 7]
 	 */
-	public void writeMods(byte mod) {
+	public void writeMods(int mod) {
 		if (modHalt) {
 			// 下面是原话
 			// writes to current playback position (there is no direct way to set phase)
@@ -232,6 +232,18 @@ public class SoundFDS extends AbstractNsfSound {
 			mods[(modPhase >> 16) & 0x3F] = (byte) (mod & 0x07);
 			modPhase = (modPhase + 0x010000) & 0x3FFFFF;
 		}
+	}
+	
+	/* **********
+	 * 查询方法 *
+	 ********** */
+	
+	public int getWavEnvOut() {
+		return wavEnvOut;
+	}
+	
+	public int getModEnvOut() {
+		return modEnvOut;
 	}
 	
 	/* **********
@@ -279,6 +291,14 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	public void resetCounter() {
 		wavEnvCounter = modEnvCounter = 0;
+	}
+	
+	public void resetWavCounter() {
+		wavEnvCounter = 0;
+	}
+	
+	public void resetModCounter() {
+		modEnvCounter = 0;
 	}
 
 	@Override
@@ -329,7 +349,6 @@ public class SoundFDS extends AbstractNsfSound {
 					}
 					this.time += period;
 					left -= period;
-					putOut(wavEnvOut);
 					wavEnvCounter -= period;
 					
 					if (!modEnvDisable) {
@@ -340,11 +359,17 @@ public class SoundFDS extends AbstractNsfSound {
 				}
 				
 				// 最后的 left
+				this.time += left;
 				modCounterStep(left);
 				modTableStep(left);
 				wavTableStep(left);
+			} else {
+				this.time += time;
+				modTableStep(time);
+				wavTableStep(time);
 			}
 		} else {
+			this.time += time;
 			modTableStep(time);
 			wavTableStep(time);
 		}
@@ -354,6 +379,10 @@ public class SoundFDS extends AbstractNsfSound {
 		// haven't worked out 100% of the conditions for volume to
 		// effect (vol envelope does not seem to run, but am unsure)
 		// but this implementation is very close to correct
+		
+		// 输出
+		int vol_out = wavEnvOut;
+		putOut(vol_out);
 	}
 	
 	/**
@@ -455,35 +484,31 @@ public class SoundFDS extends AbstractNsfSound {
 	private void putOut(int vol_out) {
 		if (vol_out > 32)
 			vol_out = 32;
-
+		
 		// final output
 		if (!wavWrite)
 			curOut = wave[(wavPhase >> 16) & 0x3F] * vol_out;
 		
-		// 最终输出部分
-		// 8 bit approximation of master volume
-		final double MASTER_VOL = 2935.2; // = 2.4 * 1223.0; max FDS vol vs max APU square (arbitrarily 1223)
-		final double MAX_OUT = 2016; // = 32.0f * 63.0f; value that should map to master vol
-		
 		// 音量的档位
 		int v = 0;
-		
 		switch (masterVolume) {
 		case 0:
-			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 2.0f);
+			v = 30;
 			break;
 		case 1:
-			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 3.0f);
+			v = 20;
 			break;
 		case 2:
-			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 4.0f);
+			v = 15;
 			break;
 		case 3:
-			v = (int) ((MASTER_VOL / MAX_OUT) * 256.0 * 2.0f / 5.0f);
+			v = 12;
 			break;
 		}
 		
-		mix(curOut * v >> 8);
+		v = (curOut * v) / 30;
+		
+		mix(v);
 	}
 
 }

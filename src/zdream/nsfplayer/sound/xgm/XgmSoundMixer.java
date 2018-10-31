@@ -100,6 +100,9 @@ public class XgmSoundMixer extends SoundMixer {
 		case CHIP_MMC5:
 			multi = new XgmMMC5Mixer();
 			break;
+		case CHIP_FDS:
+			multi = new XgmFDSMixer();
+			break;
 		}
 		
 		if (multi != null) {
