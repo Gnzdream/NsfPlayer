@@ -176,14 +176,16 @@ public class SoundFDS extends AbstractNsfSound {
 	 */
 	
 	/**
-	 * 波形相位
-	 * 相位的值为了提高精度, 实际记录的值比原值做了 << 24 位的处理.
+	 * <p>波形相位
+	 * 相位的值为了提高精度, 实际记录的值比原值做了 << 16 位的处理.
+	 * <p>该值每增加 0x10000, 波形往前进一格, {@link #wave} 的索引添加 1.
+	 * </p>
 	 */
 	private int wavPhase;
 	
 	/**
 	 * 调制相位
-	 * 相位的值为了提高精度, 实际记录的值比原值做了 << 24 位的处理.
+	 * 相位的值为了提高精度, 实际记录的值比原值做了 << 16 位的处理.
 	 */
 	private int modPhase;
 	
@@ -320,69 +322,73 @@ public class SoundFDS extends AbstractNsfSound {
 			wavEnvOut = wavEnvSpeed;
 		}
 		
-		// 下面是 tick 部分
-		if (!envHalt && !wavHalt && (masterEnvSpeed != 0)) {
-			int period = ((wavEnvSpeed + 1) * masterEnvSpeed) << 3;
+		// new
+		int clockLeft = time;
+		
+		if (!wavHalt) {
+			int wavePhaseDelta = countWavePhaseDelta();
+			int waveLeft = (((wavPhase >> 16) + 1) << 16) - wavPhase;
+			int clockAccum = 0;
 			
+			while (clockLeft > 0) {
+				waveLeft -= wavePhaseDelta;
+				wavPhase += wavePhaseDelta;
+				if (waveLeft < 0) {
+					wavPhase &= 0x3FFFFF;
+					// 上面这个条件满足时, wavPhase 指向的 wave 数组的索引向前挪了一格.
+					stepAll(clockAccum);
+					putOut(wavEnvOut);
+					clockAccum = 0;
+					waveLeft = (((wavPhase >> 16) + 1) << 16) - wavPhase;
+				}
+				
+				clockAccum ++;
+				clockLeft --;
+				this.time ++;
+			}
+			
+			if (clockAccum > 0) {
+				stepAll(clockAccum);
+			}
+		} else {
+			if (!modHalt) {
+				modTableStep(time);
+			}
+			this.time += time;
+		}
+	}
+	
+	private void stepAll(int time) {
+		if (!envHalt && !wavHalt && (masterEnvSpeed != 0)) {
 			if (!wavEnvDisable) {
-				wavEnvCounter += time;
+				wavCounterStep(time);
 			}
 			
 			if (!modEnvDisable) {
-				modEnvCounter += time;
+				modCounterStep(time);
 			}
-			
-			int left = time;
-			
-			// 以 wav 循环为准
-			// wav 部分
-			if (!wavEnvDisable) {
-				while (wavEnvCounter >= period) {
-					// 信封按时钟向前走
-					// clock the envelope
-					if (wavEnvMode) {
-						if (wavEnvOut < 32)
-							++wavEnvOut;
-					} else {
-						if (wavEnvOut > 0)
-							--wavEnvOut;
-					}
-					this.time += period;
-					left -= period;
-					wavEnvCounter -= period;
-					
-					if (!modEnvDisable) {
-						modCounterStep(period);
-						modTableStep(period);
-						wavTableStep(period);
-					}
-				}
-				
-				// 最后的 left
-				this.time += left;
-				modCounterStep(left);
-				modTableStep(left);
-				wavTableStep(left);
-			} else {
-				this.time += time;
-				modTableStep(time);
-				wavTableStep(time);
-			}
-		} else {
-			this.time += time;
-			modTableStep(time);
-			wavTableStep(time);
 		}
-
-		// NOTE: during wav_halt, the unit still outputs (at phase 0)
-		// and volume can affect it if the first sample is nonzero.
-		// haven't worked out 100% of the conditions for volume to
-		// effect (vol envelope does not seem to run, but am unsure)
-		// but this implementation is very close to correct
-		
-		// 输出
-		int vol_out = wavEnvOut;
-		putOut(vol_out);
+		if (!modHalt) {
+			modTableStep(time);
+		}
+	}
+	
+	private void wavCounterStep(int time) {
+		wavEnvCounter += time;
+		int period = ((wavEnvSpeed + 1) * masterEnvSpeed) << 3;
+		while (wavEnvCounter >= period) {
+			// 信封按时钟向前走
+			// clock the envelope
+			if (wavEnvMode) {
+				if (wavEnvOut < 32)
+					++wavEnvOut;
+			} else {
+				if (wavEnvOut > 0)
+					--wavEnvOut;
+			}
+			this.time += period;
+			wavEnvCounter -= period;
+		}
 	}
 	
 	/**
@@ -434,51 +440,44 @@ public class SoundFDS extends AbstractNsfSound {
 	}
 	
 	/**
-	 * wav 波形表向前走
-	 * @param time
+	 * 计算 wavFreq 每个时钟会往上加多少值
 	 */
-	private void wavTableStep(int time) {
-		if (!wavHalt) {
-			// complex mod calculation
-			int mod = 0;
-			if (modEnvOut != 0) { // skip if modulator off
-				// convert mod_pos to 7-bit signed
-				int pos = (modPos < 64) ? modPos : (modPos - 128);
+	private int countWavePhaseDelta() {
+		int mod = 0;
+		if (modEnvOut != 0) { // skip if modulator off
+			// convert mod_pos to 7-bit signed
+			int pos = (modPos < 64) ? modPos : (modPos - 128);
 
-				// multiply pos by gain,
-				// shift off 4 bits but with odd "rounding" behaviour
-				int temp = pos * modEnvOut;
-				int rem = temp & 0x0F;
-				temp >>= 4;
-				if ((rem > 0) && ((temp & 0x80) == 0)) {
-					if (pos < 0)
-						temp -= 1;
-					else
-						temp += 2;
-				}
-
-				// wrap if range is exceeded
-				while (temp >= 192)
-					temp -= 256;
-				while (temp < -64)
-					temp += 256;
-
-				// multiply result by pitch,
-				// shift off 6 bits, round to nearest
-				temp = wavFreq * temp;
-				rem = temp & 0x3F;
-				temp >>= 6;
-				if (rem >= 32)
-					temp += 1;
-
-				mod = temp;
+			// multiply pos by gain,
+			// shift off 4 bits but with odd "rounding" behaviour
+			int temp = pos * modEnvOut;
+			int rem = temp & 0x0F;
+			temp >>= 4;
+			if ((rem > 0) && ((temp & 0x80) == 0)) {
+				if (pos < 0)
+					temp -= 1;
+				else
+					temp += 2;
 			}
 
-			// advance wavetable position
-			int f = wavFreq + mod;
-			wavPhase += (time * f);
-			wavPhase &= 0x3FFFFF; // wrap
+			// wrap if range is exceeded
+			while (temp >= 192)
+				temp -= 256;
+			while (temp < -64)
+				temp += 256;
+
+			// multiply result by pitch,
+			// shift off 6 bits, round to nearest
+			temp = wavFreq * temp;
+			rem = temp & 0x3F;
+			temp >>= 6;
+			if (rem >= 32)
+				temp += 1;
+
+			mod = temp;
 		}
+		
+		return wavFreq + mod;
 	}
 	
 	private void putOut(int vol_out) {
