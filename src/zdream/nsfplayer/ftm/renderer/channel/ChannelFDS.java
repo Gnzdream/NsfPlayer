@@ -118,7 +118,9 @@ public class ChannelFDS extends AbstractFtmChannel {
 	}
 	
 	/**
-	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 240] 范围内
+	 * 计算音量, 将序列所得出的音量合并计算, 最后将音量限定在 [0, 480] 范围内.
+	 * <br>masterVolume 范围 [0, 15]
+	 * <br>seq.volume 范围 [0, 31]
 	 */
 	protected void calculateVolume() {
 		int volume = masterVolume * 16 + curVolume; // 精度 240
@@ -127,10 +129,10 @@ public class ChannelFDS extends AbstractFtmChannel {
 			return;
 		}
 		
-		volume = (seq.volume * volume) / 15;
+		volume = (seq.volume * volume) / 15; // 最大值可以达到 496
 		
-		if (volume > 240) {
-			curVolume = 240;
+		if (volume > 480) {
+			curVolume = 480;
 		} else if (volume < 1) {
 			curVolume = (seq.volume == 0) ? 0 : 1;
 		} else {
