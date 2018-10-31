@@ -6,6 +6,7 @@ import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -170,6 +171,7 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 	/**
 	 * 返回 2A03 乐器. 如果指定位置的乐器为空, 或者不是 2A03 类型的, 返回 null
 	 * @param instrument
+	 *   乐器号码
 	 * @return
 	 * @since v0.2.2
 	 */
@@ -182,6 +184,24 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 			return null;
 		}
 		return (FtmInstrument2A03) inst;
+	}
+	
+	/**
+	 * 返回 FDS 乐器. 如果指定位置的乐器为空, 或者不是 FDS 类型的, 返回 null
+	 * @param instrument
+	 *   乐器号码
+	 * @return
+	 * @since v0.2.4
+	 */
+	public FtmInstrumentFDS getFDSInstrument(int instrument) {
+		AbstractFtmInstrument inst = getInstrument(instrument);
+		if (inst == null) {
+			return null;
+		}
+		if (inst.instType() != FDS) {
+			return null;
+		}
+		return (FtmInstrumentFDS) inst;
 	}
 	
 	public FtmSequence[] getSequences(int instrument) {
@@ -211,6 +231,11 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 					i2.hip == -1 ? null : audio.getSequence(VRC6, HI_PITCH, i2.hip),
 					i2.dut == -1 ? null : audio.getSequence(VRC6, DUTY, i2.dut),
 			};
+		}
+		
+		case FDS: {
+			FtmInstrumentFDS i2 = (FtmInstrumentFDS) inst;
+			return new FtmSequence[] {i2.seqVolume, i2.seqArpeggio, i2.seqPitch};
 		}
 
 		default:

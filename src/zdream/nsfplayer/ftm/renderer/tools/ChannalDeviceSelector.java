@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.renderer.tools;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
+import zdream.nsfplayer.ftm.renderer.channel.ChannelFDS;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Sawtooth;
@@ -70,6 +71,11 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 		}
 		case CHANNEL_MMC5_PULSE2: {
 			return new ChannelMMC5Pulse(false);
+		}
+		
+		// FDS
+		case CHANNEL_FDS: {
+			return new ChannelFDS();
 		}
 
 		default:

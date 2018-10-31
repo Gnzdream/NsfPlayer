@@ -230,6 +230,10 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 			return CHANNEL_MMC5_PULSE1;
 		case "mmc5pulse2": case "mmc5p2": case "42":
 			return CHANNEL_MMC5_PULSE2;
+			
+		// FDS
+		case "fds": case "31":
+			return CHANNEL_FDS;
 		}
 		
 		throw new IllegalArgumentException("无法解析轨道号: " + c);
@@ -252,6 +256,9 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		// MMC5
 		case CHANNEL_MMC5_PULSE1: return "MMC5Pulse1";
 		case CHANNEL_MMC5_PULSE2: return "MMC5Pulse2";
+		
+		// FDS
+		case CHANNEL_FDS: return "FDS";
 		}
 		
 		return "";

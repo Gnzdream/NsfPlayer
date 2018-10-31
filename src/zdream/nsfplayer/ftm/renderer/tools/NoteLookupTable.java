@@ -6,16 +6,17 @@ import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
 /**
  * 用于音键向波长转化.
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class NoteLookupTable {
 	
-	private static short[] palTable, ntscTable, sawTable;
+	private static short[] palTable, ntscTable, sawTable, fds;
 	
 	static {
 		palTable = new short[96];
 		ntscTable = new short[96];
 		sawTable = new short[96];
+		fds = new short[96];
 		
 		double clock_ntsc = BASE_FREQ_NTSC / 16.0;
 		double clock_pal = BASE_FREQ_PAL / 16.0;
@@ -38,9 +39,9 @@ public class NoteLookupTable {
 			sawTable[i] = (short) pitch;
 
 			// FDS
-//			m_iNoteLookupTableFDS[i] = (int) pitch;
-//			pitch = (freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
-
+			pitch = (freq * 65536.0) / (clock_ntsc / 1.0) + 0.5;
+			fds[i] = (short) pitch;
+			
 			// N163
 //			pitch = (Freq * double(NamcoChannels) * 983040.0) / clock_ntsc;
 //			m_iNoteLookupTableN163[i] = (int)(pitch) / 4;
@@ -83,6 +84,16 @@ public class NoteLookupTable {
 	 */
 	public static short saw(int note) {
 		return sawTable[note - 1];
+	}
+	
+	/**
+	 * FDS 轨道采用的音键的波长
+	 * @param note
+	 *   音键, [1, 96]
+	 * @return
+	 */
+	public static short fds(int note) {
+		return fds[note - 1];
 	}
 
 }

@@ -69,7 +69,8 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>00 号位: 00xxxxxx
-	 * <p>波形信封播放速度
+	 * <p>波形信封播放速度 / 波形总体音量. 它取哪个意思以 wavEnvDisable 的值而定.
+	 * 当 <code>wavEnvDisable == true</code> 时, 该值表示总体音量.
 	 * <p>范围 [0, 63]
 	 * </p>
 	 */
