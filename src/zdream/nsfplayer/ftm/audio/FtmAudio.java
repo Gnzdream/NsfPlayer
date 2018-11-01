@@ -12,7 +12,8 @@ import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
- * FamiTracker 的音频数据
+ * FamiTracker 的音频数据,
+ * 一个抽象的 .ftm 文件或者该数据格式的替代对象.
  * 
  * @author Zdream
  * @since v0.1

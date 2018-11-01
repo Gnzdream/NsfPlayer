@@ -23,11 +23,15 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.BytesReader;
 
 /**
- * 用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
+ * <p>用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
  * 允许将转成 .txt 的文件也能够解析.
+ * <p>一个该创建者实例只能创建一个 {@link FtmAudio}.
+ * 如果要创建更多 {@link FtmAudio} 请新建更多该创建者实例.
+ * </p>
  * @author Zdream
+ * @since v0.1
  */
-public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
+public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> {
 	
 	/*
 	 * FTM 的每个块的 ID, 用于标识这个块的内容.
@@ -48,6 +52,10 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	public static final String FILE_BLOCK_COMMENTS = "COMMENTS";
 	
 	public static final String FILE_BLOCK_SEQUENCES_VRC6 = "SEQUENCES_VRC6";
+	// 尚未使用的
+	public static final String FILE_BLOCK_SEQUENCES_N163 = "SEQUENCES_N163";
+	public static final String FILE_BLOCK_SEQUENCES_N106 = "SEQUENCES_N106";
+	public static final String FILE_BLOCK_SEQUENCES_S5B = "SEQUENCES_S5B";
 	/**
 	 * FTM 整个文件的结束标识
 	 */
@@ -74,11 +82,15 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	public static final int DEFAULT_SPEED = 6;
 	
 	/**
-	 * 这个数值由于 FamiTracker 的版本兼容问题而导致
+	 * <p>这个数值由于 FamiTracker 的版本兼容问题而导致.
+	 * <p>FDS 的 ftm 文件在低版本（尚不清楚版本号）下, 由于原 FamiTracker 的开发者原因,
+	 * 它的音阶数据会和实际音阶数据相差 2.
+	 * <p>当检测到有该问题时, 该值就会置为 true, 引起后面的处理工作.
+	 * </p>
 	 */
 	private boolean adjustFDSArpeggio;
 	
-	private void reset() {
+	private void init() {
 		trackCount = 0;
 		effColumnCounts = null;
 		adjustFDSArpeggio = false;
@@ -91,26 +103,26 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	public static final int COMPATIBLE_VER = 0x0200;
 	
 	public void doCreate(BytesReader reader, FamiTrackerHandler doc) {
-		reset();
+		init();
+		
+		validateHeader(reader);
 		
 		int version;
-		
-		if (!validateHeader(reader)) {
-			throw new FamiTrackerFormatException("文件格式不正确: 文件头不匹配");
-		}
-		
 		version = reader.readAsCInt();
 
 		if (version < 0x0200) {
 			// 读取低版本的文件
-			throw new FamiTrackerFormatException("文件版本太低, 无法产生");
+			handleException(reader, EX_GENERAL_LOW_VERSION, version);
 		} else if (version >= 0x0200) {
-			doCreateNew(doc, reader, version);
+			try {
+				doCreateNew(doc, reader, version);
+			} catch (RuntimeException e) {
+				handleException(reader, e);
+			}
 		}
 	}
 	
 	private void doCreateNew(FamiTrackerHandler doc, BytesReader reader, int version) {
-		
 		doc.allocateTrack(1);
 		
 		/*
@@ -124,7 +136,6 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 				break;
 			}
 			
-			// System.out.println(block.id);
 			switch (block.id) {
 			
 			case FILE_END_ID: // 已经读取结束
@@ -169,23 +180,18 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 			case FILE_BLOCK_SEQUENCES_VRC6: {
 				readBlockSequencesVRC6(doc, block);
 			} break;
-			/*
+			
 			// FILE_BLOCK_SEQUENCES_N106 是出于向后兼容的目的
 			case FILE_BLOCK_SEQUENCES_N163: case FILE_BLOCK_SEQUENCES_N106: {
-				errorFlag = readBlock_SequencesN163(documentFile);
+				// TODO 暂时无法处理 N163 部分
 			} break;
 			
 			case FILE_BLOCK_SEQUENCES_S5B: {
-				errorFlag = readBlock_SequencesS5B(documentFile);
+				// TODO 暂时无法处理 S5B 部分
 			} break;
-			
-			case "END": {
-				fileFinished = true;
-			} break;*/
 
 			default:
-				System.err.println("出现了未知的 blockID: " + block.id);
-				//errorFlag = true;
+				handleException(block, EX_BLOCK_UNKNOWED_ID);
 				break;
 			}
 		}
@@ -1275,31 +1281,87 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	}
 	
 	/* **********
+	 * 错误处理 *
+	 ********** */
+	
+	/*
+	 * 产生的消息错误列表
+	 */
+	static final String EX_GENERAL_WRONG_HEAD = "FTM 文件格式不正确, 文件头不匹配";
+	static final String EX_GENERAL_LOW_VERSION = "FTM 文件版本 %x 太低, 无法创建";
+	static final String EX_BLOCK_UNKNOWED_ID = "未知的块 ID";
+	
+	/**
+	 * @param block
+	 *   当前的错误块
+	 * @param msg
+	 *   错误消息内容
+	 * @throws FamiTrackerFormatException
+	 * @since v0.2.5
+	 */
+	protected void handleException(Block block, String msg) throws FamiTrackerFormatException {
+		String msg0 = String.format("位置 $%x (%s) 发现错误: %s",
+				block.getOffset() + block.blockOffset, block.id, msg);
+		
+		throw new FamiTrackerFormatException(msg0);
+	}
+
+	protected void handleException(Block block, String msg, Object... args) throws FamiTrackerFormatException {
+		handleException(block, String.format(msg, args));
+	}
+	
+	/**
+	 * @param reader
+	 *   当前 byte[] 的数据载体
+	 * @param msg
+	 *   错误消息内容
+	 * @throws FamiTrackerFormatException
+	 * @since v0.2.5
+	 */
+	protected void handleException(BytesReader reader, String msg) throws FamiTrackerFormatException {
+		String msg0 = String.format("位置 $%x 发现错误: %s", reader.getOffset(), msg);
+		
+		throw new FamiTrackerFormatException(msg0);
+	}
+
+	protected void handleException(BytesReader reader, String msg, Object... args) throws FamiTrackerFormatException {
+		handleException(reader, String.format(msg, args));
+	}
+	
+	protected void handleException(BytesReader reader, RuntimeException exp)
+			throws FamiTrackerFormatException, RuntimeException {
+		if (exp instanceof FamiTrackerFormatException) {
+			throw exp;
+		} else {
+			String msg0 = String.format("位置 $%x 发现错误 %s: %s", reader.getOffset(),
+					exp.getClass().getSimpleName(), exp.getMessage());
+			throw new FamiTrackerFormatException(msg0, exp);
+		}
+	}
+	
+	/* **********
 	 *   其它   *
 	 ********** */
 
 	/**
-	 * 检查头部 ID
+	 * 检查头部 ID. 检查到出现问题时, 抛出 {@link FamiTrackerFormatException}
 	 * @param reader
-	 * @return
 	 */
-	boolean validateHeader(BytesReader reader) {
+	void validateHeader(BytesReader reader) {
 		int len = FILE_HEADER_ID.length();
 		byte[] bs_head = new byte[len];
 		int i = reader.read(bs_head);
 		
 		if (i != len) {
-			return false;
+			handleException(reader, EX_GENERAL_WRONG_HEAD);
 		}
 		
 		byte[] id_head = FILE_HEADER_ID.getBytes();
 		for (int j = 0; j < bs_head.length; j++) {
 			if (id_head[j] != bs_head[j]) {
-				return false;
+				handleException(reader, EX_GENERAL_WRONG_HEAD);
 			}
 		}
-		
-		return true;
 	}
 	
 
@@ -1330,12 +1392,13 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		
 		block.version = reader.readAsCInt();
 		block.setSize(reader.readAsCInt());
+		block.blockOffset = reader.getOffset();
 		
 		// TODO 原程序判断 version 和 size 的合法性, 这里跳过
 		
 		bytesRead = reader.read(block.bytes());
 		if (bytesRead != block.size) {
-			throw new RuntimeException("块: " + block.id + " 大小为 " + block.size +
+			throw new FamiTrackerFormatException("块: " + block.id + " 大小为 " + block.size +
 					" 但是只能读取 " + bytesRead + " 字节. 文件似乎已经损坏");
 		}
 		

@@ -18,7 +18,7 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
 import zdream.utils.common.TextReader;
 
-public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
+public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReader> {
 	
 	/**
 	 * 文本读取器
@@ -565,6 +565,16 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater {
 			Entry<Integer, FtmPattern[]> entry = it.next();
 			curTrack.patterns[entry.getKey()] = entry.getValue();
 		}
+	}
+	
+	/* **********
+	 * 错误处理 *
+	 ********** */
+	
+	@Override
+	protected void handleException(TextReader t, String msg) throws FamiTrackerFormatException {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

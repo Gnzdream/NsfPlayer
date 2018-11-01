@@ -136,5 +136,9 @@ public class BytesReader {
 	public int length() {
 		return bs.length;
 	}
+	
+	public int getOffset() {
+		return offset;
+	}
 
 }

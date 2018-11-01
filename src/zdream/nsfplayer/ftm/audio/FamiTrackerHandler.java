@@ -14,10 +14,12 @@ import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
- * FamiTracker 的文本的操作器.
+ * FamiTracker 的数据的操作器.
  * 每一个 {@link FtmAudio} 都有且仅有一个唯一的 FamiTrackerHandler.
+ * 
  * @author Zdream
  * @date 2018-04-25
+ * @since v0.1
  */
 public class FamiTrackerHandler implements INsfChannelCode {
 	

@@ -33,6 +33,14 @@ class Block extends BytesReader {
 	 */
 	int size;
 	
+	/**
+	 * <p>该文件块在整个文件数据的位置. 即该块的 [0] 号单位在整个文件数据的索引值.
+	 * <p>这个值有助于在检查到数据错误时, 能够在抛出错误时指定错误的位置
+	 * </p>
+	 * @since v0.2.5
+	 */
+	int blockOffset;
+	
 	public void setSize(int size) {
 		this.size = size;
 		bs = new byte[size];
