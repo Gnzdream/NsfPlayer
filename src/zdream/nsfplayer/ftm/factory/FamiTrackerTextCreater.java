@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -18,6 +19,15 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
 import zdream.utils.common.TextReader;
 
+/**
+ * <p>用来将 FamiTracker 的导出的文本文件 (.txt) 利用 {@link FamiTrackerHandler}
+ * 填充 {@link FtmAudio} 的数据
+ * <p>一个该创建者实例只能填充一个 {@link FtmAudio} 的数据.
+ * 如果要填充更多 {@link FtmAudio} 请新建更多该创建者实例.
+ * </p>
+ * @author Zdream
+ * @since v0.1
+ */
 public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReader> {
 	
 	/**
@@ -87,13 +97,9 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	/**
 	 * 按照文本内容来生成 {@link FtmAudio}
-	 * @param reader
-	 * @param doc
-	 * @throws FtmParseException
 	 */
-	public void doCreate(TextReader reader, FamiTrackerHandler doc) throws FtmParseException {
+	public void doCreate(TextReader reader, FamiTrackerHandler doc) throws FamiTrackerFormatException {
 		this.reader = reader;
-		reset();
 		
 		if (!reader.isFinished()) {
 			while (reader.toNextValidLine() > 0) {
@@ -103,10 +109,6 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		statusChange(-1, doc);
 		reader.close();
-	}
-	
-	public void reset() {
-		
 	}
 	
 	private void handleLine(TextReader reader, FamiTrackerHandler doc) {
@@ -181,8 +183,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	private void parseInst2A03(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 8) {
-			throw new FtmParseException(reader.line(),
-					"乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 " + strs.length);
+			handleException(reader, EX_INST2A03_WRONG_ITEMS, strs.length);
 		}
 		
 		FtmInstrument2A03 inst = new FtmInstrument2A03();
@@ -219,8 +220,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 5) {
-			throw new FtmParseException(reader.line(),
-					"曲目部分解析错误, TRACK 格式规定项数为 5, 但是这里只有 " + strs.length);
+			handleException(reader, EX_TRACK_WRONG_ITEMS, strs.length);
 		}
 		
 		statusChange(3, doc);
@@ -240,8 +240,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	private void parseColumns(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (!":".equals(strs[1])) {
-			throw new FtmParseException(reader.line(),
-					"曲目部分解析错误, COLUMNS 部分");
+			handleException(reader, EX_COLUMNS_WRONG_TOKEN);
 		}
 		
 		columns = new int[strs.length - 2];
@@ -253,19 +252,15 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	private void parseOrder(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 3 + columns.length) {
-			throw new FtmParseException(reader.line(),
-					String.format("曲目部分解析错误, ORDER 格式规定项数为 %d, 但是这里只有 %d",
-							3 + columns.length, strs.length));
+			handleException(reader, EX_OREDR_WRONG_ITEMS, 3 + columns.length, strs.length);
 		}
 		if (!":".equals(strs[2])) {
-			throw new FtmParseException(reader.line(),
-					"曲目部分解析错误, COLUMNS 部分");
+			handleException(reader, EX_OREDR_WRONG_TOKEN);
 		}
 		
 		int index = Integer.parseInt(strs[1], 16);
 		if (index != orders.size()) {
-			throw new FtmParseException(reader.line(),
-					"曲目部分解析错误, ORDER 部分序号不匹配: " + index + " != " + orders.size());
+			handleException(reader, EX_OREDR_WRONG_OREDR_NO, index, orders.size());
 		}
 		
 		statusChange(1, doc);
@@ -279,8 +274,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	private void parsePattern(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 2) {
-			throw new FtmParseException(reader.line(),
-					"曲目部分解析错误, PATTERN 部分");
+			handleException(reader, EX_PATTERN_WRONG_TOKEN);
 		}
 		
 		statusChange(2, doc);
@@ -303,24 +297,20 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 		
 		if (strs.length != lenExp) {
-			throw new FtmParseException(reader.line(),
-				String.format("曲目部分解析错误, ROW 格式规定项数为 %d, 但是这里只有 %d",
-					lenExp, strs.length));
+			handleException(reader, EX_ROW_WRONG_ITEMS, lenExp, strs.length);
 		}
 		
 		// 行数
 		int row = Integer.parseInt(strs[1], 16);
 		if (row != rowIdx) {
-			throw new FtmParseException(reader.line(),
-				String.format("曲目部分解析错误, ROW 格式中预计行数为 %d, 但是是 %d",
-					rowIdx, reader.line()));
+			handleException(reader, EX_ROW_WRONG_ROW_NO, row, rowIdx);
 		}
 		
 		// 解析部分
 		int offset = 2;
 		for (int column = 0; column < columns.length; column++) {
 			int length = 4 + columns[column];
-			parseColumn(reader, doc, strs, column, offset, length);
+			parseColumnInRow(reader, doc, strs, column, offset, length);
 			offset += length;
 		}
 		
@@ -340,7 +330,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 *   属于该列的 strs 的长度, 至少是 5
 	 *   <br>(第一个是 ':', 第二个是音调, 第三个是乐器, 第四个是音量, 第五个以及后面都是效果)
 	 */
-	private void parseColumn(
+	private void parseColumnInRow(
 			TextReader reader,
 			FamiTrackerHandler doc,
 			String[] strs,
@@ -349,9 +339,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			final int length) {
 		// 第一个元素必须是 ":"
 		if (!":".equals(strs[offset])) {
-			throw new FtmParseException(reader.line(),
-				String.format("曲目部分解析错误, ROW 格式中第 %d 个元素必须是 ':'",
-					offset + 1, reader.line()));
+			handleException(reader, EX_ROW_WRONG_TOKEN_IN_COLUMN, column);
 		}
 		
 		boolean empty = true;
@@ -428,17 +416,13 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		case "B-": note.note = FtmNote.NOTE_B; break;
 
 		default:
-			throw new FtmParseException(reader.line(),
-				String.format("曲目部分解析错误, ROW 格式中第 '%s' 无法解析",
-					tt, reader.line()));
+			handleException(reader, EX_ROW_WRONG_NOTE, tt);
 		}
 		
 		// 音阶
 		byte octave = Byte.parseByte(text.substring(2));
 		if (octave < 0 || octave > 9) {
-			throw new FtmParseException(reader.line(),
-				String.format("曲目部分解析错误, ROW 格式中音阶 '%d' 无法解析",
-					octave, reader.line()));
+			handleException(reader, EX_ROW_WRONG_OCTAVE, octave);
 		}
 		note.octave = octave;
 	}
@@ -466,9 +450,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		case "F-#": note.note = FtmNote.NOTE_DS; note.octave = 1; break;
 
 		default:
-			throw new FtmParseException(reader.line(),
-				String.format("曲目部分解析错误, ROW 格式中第 '%s' 无法解析",
-						text, reader.line()));
+			handleException(reader, EX_ROW_WRONG_NOISE, text);
 		}
 	}
 	
@@ -571,10 +553,32 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 * 错误处理 *
 	 ********** */
 	
+	/*
+	 * 产生的消息错误列表
+	 */
+	static final String EX_INST2A03_WRONG_ITEMS = "乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 %d";
+	static final String EX_TRACK_WRONG_ITEMS = "曲目部分解析错误, TRACK 格式规定项数为 5, 但是这里只有 %d";
+	static final String EX_COLUMNS_WRONG_TOKEN = "COLUMNS 部分解析错误";
+	static final String EX_OREDR_WRONG_ITEMS = "曲目部分解析错误, ORDER 格式规定项数为 %d, 但是这里只有 %d";
+	static final String EX_OREDR_WRONG_TOKEN = "OREDR 部分解析错误";
+	static final String EX_OREDR_WRONG_OREDR_NO = "OREDR 序号不匹配, 值为 %d, 原期望为 %d";
+	static final String EX_PATTERN_WRONG_TOKEN = "PATTERN 部分解析错误";
+	static final String EX_ROW_WRONG_ITEMS = "曲目部分解析错误, ROW 格式规定项数为 %d, 但是这里只有 %d";
+	static final String EX_ROW_WRONG_ROW_NO = "ROW 序号不匹配, 值为 %d, 原期望为 %d";
+	static final String EX_ROW_WRONG_TOKEN_IN_COLUMN = "轨道序号为 %d 的 ROW 部分解析错误";
+	static final String EX_ROW_WRONG_NOTE = "曲目部分解析错误, ROW 格式中音符 '%s' 无法解析";
+	static final String EX_ROW_WRONG_OCTAVE = "曲目部分解析错误, ROW 格式中音阶 %d 错误";
+	static final String EX_ROW_WRONG_NOISE = "曲目部分解析错误, ROW 格式中噪音轨道中的 '%s' 无法解析";
+	
 	@Override
-	protected void handleException(TextReader t, String msg) throws FamiTrackerFormatException {
-		// TODO Auto-generated method stub
+	protected void handleException(TextReader reader, String msg) throws FamiTrackerFormatException {
+		String msg0 = String.format("行号 %d 发现错误: %s", reader.line(), msg);
 		
+		throw new FamiTrackerFormatException(msg0);
+	}
+	
+	protected void handleException(TextReader reader, String msg, Object... args) throws FamiTrackerFormatException {
+		handleException(reader, String.format(msg, args));
 	}
 	
 }

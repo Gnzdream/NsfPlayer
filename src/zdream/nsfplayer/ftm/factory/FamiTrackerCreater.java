@@ -23,10 +23,10 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.BytesReader;
 
 /**
- * <p>用来将 FamiTracker 的文件 (.ftm) 转换成 {@link FamiTrackerHandler}
- * 允许将转成 .txt 的文件也能够解析.
- * <p>一个该创建者实例只能创建一个 {@link FtmAudio}.
- * 如果要创建更多 {@link FtmAudio} 请新建更多该创建者实例.
+ * <p>用来将 FamiTracker 的文件 (.ftm) 利用 {@link FamiTrackerHandler}
+ * 填充 {@link FtmAudio} 的数据
+ * <p>一个该创建者实例只能填充一个 {@link FtmAudio} 的数据.
+ * 如果要填充更多 {@link FtmAudio} 请新建更多该创建者实例.
  * </p>
  * @author Zdream
  * @since v0.1
@@ -88,12 +88,12 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * <p>当检测到有该问题时, 该值就会置为 true, 引起后面的处理工作.
 	 * </p>
 	 */
-	private boolean adjustFDSArpeggio;
+	private boolean needAdjustFDSArpeggio;
 	
 	private void init() {
 		trackCount = 0;
 		effColumnCounts = null;
-		adjustFDSArpeggio = false;
+		needAdjustFDSArpeggio = false;
 	}
 	
 	/**
@@ -196,8 +196,6 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			}
 		}
 		
-		afterCreate(doc);
-		
 		// 当 doc 建立完成之后, 开始进入检查部分
 		revise(doc);
 	}
@@ -276,7 +274,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private void readBlockParameters(FamiTrackerHandler doc, Block block, int fileVersion) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("PARAM 版本号: " + version + " 不支持");
+			handleException(block, EX_PARAM_LOW_VERSION, version);
 		}
 
 		FtmTrack track = doc.audio.getTrack(0);
@@ -407,7 +405,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private void readBlockHeader(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("HEADER 版本号: " + version + " 不支持");
+			handleException(block, EX_HEADER_LOW_VERSION, version);
 		}
 		
 		if (version == 1) {
@@ -461,7 +459,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private void readBlockInstruments(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
 		if (version < 1) {
-			throw new FtmParseException("INSTRUMENTS 版本号: " + version + " 不支持");
+			handleException(block, EX_INSTS_LOW_VERSION, version);
 		}
 		
 		// 乐器中, 序号最大的值 + 1
@@ -565,9 +563,8 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 					seq.settings = (byte) settings;
 				}
 			}
-		} 
-		else {
-			throw new FtmParseException("Sequences 部分暂时不支持老版本");
+		} else {
+			handleException(block, EX_SEQS_LOW_VERSION, version);
 		}
 	}
 	
@@ -605,7 +602,10 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				indices[i] = index;
 				types[i] = type;
 				
-				assert(index < MAX_SEQUENCES);
+				// 检查 index
+				if (index >= MAX_SEQUENCES) {
+					handleException(block, EX_SEQSVRC6_MAX_SEQUENCES, index);
+				}
 
 				FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
 				seq.clear();
@@ -655,7 +655,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	}
 
 	/**
-	 * <p>处理 Frames.
+	 * <p>处理段 Frames.
 	 * <br>根据文件里面写明的 FRAMES 的块版本号, 确定 {@code block} 里面的文件格式:
 	 * 
 	 * <p>当<b>块版本为 1 </b>时不支持
@@ -682,90 +682,83 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private void readBlockFrames(FamiTrackerHandler doc, Block block) {
 		int version = block.version;
 		if (version <= 1) {
-			throw new FtmParseException("FRAMES 版本号: " + version + " 不支持");
+			handleException(block, EX_FRAMES_LOW_VERSION, version);
 		}
 		
-		if (version > 1) {
-			int trackIdx = 0;
-			
-			for (; trackIdx < trackCount; ++trackIdx) {
-				// 曲目的所有段数 Frame
-				int frameCount = block.readAsCInt();
-				if (frameCount <= 0 || frameCount > MAX_FRAMES) {
-					throw new FtmParseException("曲目 " + trackIdx + " 的 Frame 数量: " + frameCount + " 不合法");
-				}
-					
-				int speed = block.readAsCInt();
-				if (speed <= 0) {
-					throw new FtmParseException("曲目 " + trackIdx + " 的 speed: " + speed + " 不合法");
-				}
+		int trackIdx = 0;
+		
+		for (; trackIdx < trackCount; ++trackIdx) {
+			// 曲目的所有段数 Frame
+			int frameCount = block.readAsCInt();
+			if (frameCount <= 0 || frameCount > MAX_FRAMES) {
+				handleException(block, EX_FRAMES_WRONG_FRAME_COUNT, trackIdx, frameCount);
+			}
 				
-				FtmTrack track = doc.getOrCreateTrack(trackIdx);
-				// pTrack.setFrameCount(frameCount);
-
-				if (version == 3) {
-					int tempo = block.readAsCInt();
-					if (tempo <= 0 || tempo > MAX_TEMPO) {
-						throw new FtmParseException("曲目 " + trackIdx + " 的 tempo: " + tempo + " 不合法");
-					}
-					track.tempo = tempo;
-					track.speed = speed;
-					
-				} else {
-					if (speed < 20) {
-						int tempo = (doc.audio.getMachine() == FtmAudio.MACHINE_NTSC) ?
-								FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
-						track.tempo = tempo;
-						track.speed = speed;
-					} else {
-						if (speed > MAX_TEMPO) {
-							throw new FtmParseException("曲目 " + trackIdx + " 的 speed: " + speed + " 不合法");
-						}
-						track.tempo = speed;
-						track.speed = DEFAULT_SPEED;
-					}
-				}
-
-				// 每个段落的行数
-				int rowCount = block.readAsCInt();
-				if (rowCount <= 0 || rowCount > MAX_PATTERN_LENGTH) {
-					throw new FtmParseException("曲目 " + trackIdx + " 的 patternLength: " + rowCount + " 不合法");
-				}
-				
-				track.length = rowCount;
-				int channelsCount = doc.channelCount();
-				track.orders = new int[frameCount][channelsCount];
-				
-				for (int frameIdx = 0; frameIdx < frameCount; ++frameIdx) {
-					for (int channelIdx = 0; channelIdx < channelsCount; ++channelIdx) {
-						// order 就类似于索引指针, 告诉你某个曲目第 x 段应该播放第几号段落.
-						int order = block.readUnsignedByte();
-						if (order < 0 || order >= MAX_PATTERN) {
-							throw new FtmParseException(
-									String.format("曲目 %d, Frame %d, 轨道 %d 的 order: %d 不合法",
-											trackIdx, frameIdx, channelIdx, order));
-						}
-						
-						track.orders[frameIdx][channelIdx] = order;
-					}
-				}
+			int speed = block.readAsCInt();
+			if (speed <= 0) {
+				handleException(block, EX_FRAMES_WRONG_SPEED, trackIdx, speed);
 			}
 			
-		} else {
-			throw new FtmParseException("Frame 部分暂时不支持老版本");
+			FtmTrack track = doc.getOrCreateTrack(trackIdx);
+
+			if (version == 3) {
+				int tempo = block.readAsCInt();
+				if (tempo <= 0 || tempo > MAX_TEMPO) {
+					handleException(block, EX_FRAMES_WRONG_TEMPO, trackIdx, tempo);
+				}
+				track.tempo = tempo;
+				track.speed = speed;
+				
+			} else {
+				if (speed < 20) {
+					int tempo = (doc.audio.getMachine() == FtmAudio.MACHINE_NTSC) ?
+							FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
+					track.tempo = tempo;
+					track.speed = speed;
+				} else {
+					if (speed > MAX_TEMPO) {
+						handleException(block, EX_FRAMES_WRONG_SPEED, trackIdx, speed);
+					}
+					track.tempo = speed;
+					track.speed = DEFAULT_SPEED;
+				}
+			}
+
+			// 每个段落的行数
+			int rowCount = block.readAsCInt();
+			if (rowCount <= 0 || rowCount > MAX_PATTERN_LENGTH) {
+				handleException(block, EX_FRAMES_WRONG_ROW_NO, trackIdx, rowCount);
+			}
+			
+			track.length = rowCount;
+			int channelsCount = doc.channelCount();
+			track.orders = new int[frameCount][channelsCount];
+			
+			for (int frameIdx = 0; frameIdx < frameCount; ++frameIdx) {
+				for (int channelIdx = 0; channelIdx < channelsCount; ++channelIdx) {
+					// order 就类似于索引指针, 告诉你某个曲目第 x 段应该播放第几号段落.
+					int order = block.readUnsignedByte();
+					if (order < 0 || order >= MAX_PATTERN) {
+						handleException(block, EX_FRAMES_WRONG_ORDER_NO,
+								trackIdx, frameIdx, channelIdx, order);
+					}
+					
+					track.orders[frameIdx][channelIdx] = order;
+				}
+			}
 		}
 	}
 
 	/**
-	 * <p>处理段 (Pattern).
+	 * <p>处理模式 (Pattern).
 	 * <br>根据文件里面写明的 PATTERNS 的块版本号, 确定 {@code block} 里面的文件格式
 	 * <p>当<b>块版本为 1 </b>时不支持.
 	 * 
-	 * <p>每个段 (pattern) 都含以下数据:
+	 * <p>每个模式 (pattern) 都含以下数据:
 	 * <li>轨道号
-	 * <li>段号 pattern
+	 * <li>模式号 pattern
 	 * <li>键数据个数 note count
-	 * <li>该段的所有键数据
+	 * <li>该模式的所有键数据
 	 * </li>
 	 * 
 	 * <p>每个键 (note) 都含以下数据:
@@ -786,7 +779,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private void readBlockPatterns(FamiTrackerHandler doc, Block block, int fileVersion) {
 		int version = block.version;
 		if (version <= 1) {
-			throw new FtmParseException("PATTERNS 版本号: " + version + " 不支持");
+			handleException(block, EX_PAT_LOW_VERSION, version);
 		}
 		
 		while (!block.isFinished()) {
@@ -802,13 +795,13 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			int items = block.readAsCInt();
 			
 			if (channelIdx < 0) {
-				throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的轨道数 %d 不合法", trackIdx, channelIdx));
+				handleException(block, EX_PAT_WRONG_CHANNEL_NO, trackIdx, channelIdx);
 			}
 			if (patternIdx < 0 || patternIdx >= MAX_PATTERN) {
-				throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的 pattern %d 不合法", trackIdx, patternIdx));
+				handleException(block, EX_PAT_WRONG_PATTERN_NO, trackIdx, patternIdx);
 			}
 			if (items <= 0 || items >= MAX_PATTERN_LENGTH) {
-				throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的 items %d 不合法", trackIdx, items));
+				handleException(block, EX_PAT_WRONG_NOTE_AMOUNT, trackIdx, items);
 			}
 			
 			for (int i = 0; i < items; ++i) {
@@ -820,9 +813,10 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				
 				FtmNote note;
 				if (row >= MAX_PATTERN_LENGTH) {
-					throw new FtmParseException(String.format("PATTERNS: 曲目 %d 的第 %d 个数据的行数 %d 不合法",
-							trackIdx, i, row));
-				} else if (row >= doc.audio.getTrack(trackIdx).length) {
+					handleException(block, EX_PAT_WRONG_ROW_NO, trackIdx, patternIdx, channelIdx, i, row);
+				}
+				
+				if (row >= doc.audio.getTrack(trackIdx).length) {
 					// 这个 note 不会加到 doc 中去
 					note = new FtmNote();
 				} else {
@@ -875,8 +869,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				}
 
 				if (note.vol > FtmNote.MAX_VOLUME) {
-					throw new FtmParseException(String.format("曲目 %d, 轨道 %d, 段号 %d, 行号 %d, 音量 %d 不合法",
-							trackIdx, channelIdx, patternIdx, row, note.vol));
+					handleException(block, EX_PAT_WRONG_VOLUME, trackIdx, patternIdx, channelIdx, row, note.vol);
 				}
 
 				// Specific for version 2.0
@@ -928,7 +921,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 					if (doc.audio.isUseFds() && doc.channelCode(channelIdx) == INsfChannelCode.CHANNEL_FDS
 							&& note.octave < 6) {
 						note.octave += 2;
-						adjustFDSArpeggio = true;
+						needAdjustFDSArpeggio = true;
 					}
 				}
 			}
@@ -952,13 +945,13 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private void readBlockDSamples(FamiTrackerHandler doc, Block block) {
 		int count = block.readUnsignedByte();
 		if (count < 0 || count >= MAX_DSAMPLES) {
-			throw new FtmParseException(String.format("DSAMPLES: 数量 %d 不合法", count));
+			handleException(block, EX_DSMP_WRONG_AMOUNT, count);
 		}
 		
 		for (int i = 0; i < count; ++i) {
 			int index = block.readUnsignedByte();
 			if (index < 0 || index >= MAX_DSAMPLES) {
-				throw new FtmParseException(String.format("DSAMPLES: 第 %d 个采样的序号 %d 不合法", i, index));
+				handleException(block, EX_DSMP_WRONG_INDEX, i, index);
 			}
 			
 			FtmDPCMSample sample = doc.getOrCreateDPCMSample(index);
@@ -970,13 +963,12 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			// 数据
 			int size = block.readAsCInt();
 			if (size < 0 || size >= 0x8000) {
-				throw new FtmParseException(String.format("DSAMPLES: 第 %d 个采样的数据长度 %d 不合法", i, size));
+				handleException(block, EX_DSMP_WRONG_SIZE, i, size);
 			}
 			byte[] bs = new byte[size];
 			int relSize = block.read(bs);
 			if (relSize != size) {
-				throw new FtmParseException(String.format("DSAMPLES: 第 %d 个采样的数据长度 %d 不合法, 实际只能读取 %d",
-						i, size, relSize));
+				handleException(block, EX_DSMP_NOT_REACH_END, i, size, relSize);
 			}
 			sample.data = bs;
 		}
@@ -1177,7 +1169,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		int releasePoint = block.readAsCInt();
 		int settings = block.readAsCInt(); // 仅 Arpeggio 序列使用
 
-		// assert(seqCount <= FamitrackerTypes.MAX_SEQUENCE_ITEMS);
+		if (seqCount > SEQUENCE_COUNT_FDS) {
+			handleException(block, EX_INSTS_WRONG_SEQ_AMOUNT, seqCount);
+		}
 		FtmSequence seq = new FtmSequence(type);
 
 		// seq.  setItemCount(seqCount);
@@ -1199,28 +1193,6 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		seq.clear();
 		return seq;
 	}
-
-	private void afterCreate(FamiTrackerHandler doc) {
-		// FDS 乐器兼容问题
-		if (adjustFDSArpeggio) {
-			for (int i = 0; i < doc.audio.instrumentCount(); ++i) {
-				AbstractFtmInstrument inst = doc.audio.getInstrument(i);
-				if (inst == null || inst.instType() != FtmChipType.FDS) {
-					continue;
-				}
-				
-				FtmInstrumentFDS instfds = (FtmInstrumentFDS) inst;
-				FtmSequence seq = instfds.seqArpeggio;
-				
-				if (seq.length() > 0 && seq.settings == FtmSequence.ARP_SETTING_FIXED) {
-					final int length = seq.length();
-					for (int j = 0; j < length; ++j) {
-						seq.data[j] += 24;
-					}
-				}
-			}
-		}
-	}
 	
 	/* **********
 	 *   检查   *
@@ -1231,7 +1203,32 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 */
 	void revise(FamiTrackerHandler doc) {
 		reviseNotes(doc);
+		
+		// FDS 乐器兼容问题
+		if (needAdjustFDSArpeggio) {
+			adjustFDSArpeggio(doc);
+		}
+		
 		// TODO 其它检查项
+	}
+
+	private void adjustFDSArpeggio(FamiTrackerHandler doc) {
+		for (int i = 0; i < doc.audio.instrumentCount(); ++i) {
+			AbstractFtmInstrument inst = doc.audio.getInstrument(i);
+			if (inst == null || inst.instType() != FtmChipType.FDS) {
+				continue;
+			}
+			
+			FtmInstrumentFDS instfds = (FtmInstrumentFDS) inst;
+			FtmSequence seq = instfds.seqArpeggio;
+			
+			if (seq.length() > 0 && seq.settings == FtmSequence.ARP_SETTING_FIXED) {
+				final int length = seq.length();
+				for (int j = 0; j < length; ++j) {
+					seq.data[j] += 24;
+				}
+			}
+		}
 	}
 	
 	/**
@@ -1288,8 +1285,38 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * 产生的消息错误列表
 	 */
 	static final String EX_GENERAL_WRONG_HEAD = "FTM 文件格式不正确, 文件头不匹配";
-	static final String EX_GENERAL_LOW_VERSION = "FTM 文件版本 %x 太低, 无法创建";
+	static final String EX_GENERAL_LOW_VERSION = "FTM 文件版本 %x 太低, 无法解析";
 	static final String EX_BLOCK_UNKNOWED_ID = "未知的块 ID";
+	// Parameters
+	static final String EX_PARAM_LOW_VERSION = "FTM Parameters 块版本 %d 太低, 无法解析";
+	// Header
+	static final String EX_HEADER_LOW_VERSION = "FTM Header 块版本 %d 太低, 无法解析";
+	// Instruments
+	static final String EX_INSTS_LOW_VERSION = "FTM Instruments 块版本 %d 太低, 无法解析";
+	static final String EX_INSTS_WRONG_SEQ_AMOUNT = "乐器序列的数量: %d 有误";
+	// Sequences
+	static final String EX_SEQS_LOW_VERSION = "FTM Sequences 块版本 %d 太低, 无法解析";
+	// Seq VRC6
+	static final String EX_SEQSVRC6_MAX_SEQUENCES = "VRC6 序列的序号 %d 异常";
+	// FRAMES
+	static final String EX_FRAMES_LOW_VERSION = "FTM Frames 块版本 %d 太低, 无法解析";
+	static final String EX_FRAMES_WRONG_FRAME_COUNT = "曲目 %d 的段 Frame 数量: %d 有误";
+	static final String EX_FRAMES_WRONG_SPEED = "曲目 %d 的速度值 speed: %d 有误";
+	static final String EX_FRAMES_WRONG_TEMPO = "曲目 %d 的节奏值 tempo: %d 有误";
+	static final String EX_FRAMES_WRONG_ROW_NO = "曲目 %d 的行号: %d 有误";
+	static final String EX_FRAMES_WRONG_ORDER_NO = "曲目 %d, 段 (Frame) 号 %d, 轨道序号 %d 的顺序号 order: %d 有误";
+	// PATTERNS
+	static final String EX_PAT_LOW_VERSION = "FTM Patterns 块版本 %d 太低, 无法解析";
+	static final String EX_PAT_WRONG_CHANNEL_NO = "曲目 %d 的轨道序号: %d 有误";
+	static final String EX_PAT_WRONG_PATTERN_NO = "曲目 %d 的模式序号: %d 有误";
+	static final String EX_PAT_WRONG_NOTE_AMOUNT = "曲目 %d 的键个数: %d 有误";
+	static final String EX_PAT_WRONG_ROW_NO = "曲目 %d, 模式号 %d, 轨道序号 %d, 第 %d 个键的行号: %d 有误";
+	static final String EX_PAT_WRONG_VOLUME = "曲目 %d, 模式号 %d, 轨道序号 %d, 行号 %d 的键的音量: %d 有误";
+	// DSamples
+	static final String EX_DSMP_WRONG_AMOUNT = "DPCM 采样的数量: %d 有误";
+	static final String EX_DSMP_WRONG_INDEX = "第 %d 个采样序号: %d 有误";
+	static final String EX_DSMP_WRONG_SIZE = "第 %d 个采样的数据长度: %d 有误";
+	static final String EX_DSMP_NOT_REACH_END = "第 %d 个采样的数据长度: %d 不合法, 实际只能读取 %d";
 	
 	/**
 	 * @param block
@@ -1300,8 +1327,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * @since v0.2.5
 	 */
 	protected void handleException(Block block, String msg) throws FamiTrackerFormatException {
-		String msg0 = String.format("位置 $%x (%s) 发现错误: %s",
-				block.getOffset() + block.blockOffset, block.id, msg);
+		String msg0 = String.format("位置 0x%x [0x%x + 0x%x] (%s) 版本号 %d, 发现错误: %s",
+				block.getOffset() + block.blockOffset, block.getOffset(), block.blockOffset,
+				block.id, block.version, msg);
 		
 		throw new FamiTrackerFormatException(msg0);
 	}
@@ -1319,7 +1347,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * @since v0.2.5
 	 */
 	protected void handleException(BytesReader reader, String msg) throws FamiTrackerFormatException {
-		String msg0 = String.format("位置 $%x 发现错误: %s", reader.getOffset(), msg);
+		String msg0 = String.format("位置 0x%x 发现错误: %s", reader.getOffset(), msg);
 		
 		throw new FamiTrackerFormatException(msg0);
 	}

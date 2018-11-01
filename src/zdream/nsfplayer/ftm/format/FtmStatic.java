@@ -61,5 +61,15 @@ public class FtmStatic {
 	 * Maximum number of DPCM samples, cannot be increased unless the NSF driver is modified.
 	 */
 	public static final int MAX_DSAMPLES = 64;
+	
+	/**
+	 * @see FtmSequence#SEQUENCE_COUNT
+	 */
+	public static final int SEQUENCE_COUNT = FtmSequence.SEQUENCE_COUNT;
+	
+	/**
+	 * @see FtmSequence#SEQUENCE_COUNT_FDS
+	 */
+	public static final int SEQUENCE_COUNT_FDS = FtmSequence.SEQUENCE_COUNT_FDS;
 
 }

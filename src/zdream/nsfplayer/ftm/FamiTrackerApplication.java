@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.factory.FamiTrackerFormatException;
 import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
-import zdream.nsfplayer.ftm.factory.FtmParseException;
 
 /**
  * 应用的实体. 用于打开 FamiTracker 的文件等操作
@@ -33,7 +33,7 @@ public class FamiTrackerApplication {
 	 * 加载 FamiTracker (.ftm) 的文件, 形成 {@link FtmAudio} 实例
 	 * @param filename
 	 */
-	public FtmAudio open(String filename) throws IOException, FtmParseException {
+	public FtmAudio open(String filename) throws IOException, FamiTrackerFormatException {
 		return factory.create(filename);
 	}
 	

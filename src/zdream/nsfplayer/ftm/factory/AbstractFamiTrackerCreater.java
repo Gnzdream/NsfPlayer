@@ -31,9 +31,12 @@ public abstract class AbstractFamiTrackerCreater<T> {
 	 * @param handler
 	 *   FamiTracker 的音频的操作器.
 	 *   通过该操作器可以向特定的 {@link FtmAudio} 写入数据
+	 * @throws FamiTrackerFormatException
+	 *   当 <code>reader</code> 提供的数据有误时
 	 * @since v0.2.5
 	 */
-	public abstract void doCreate(T reader, FamiTrackerHandler handler);
+	public abstract void doCreate(T reader, FamiTrackerHandler handler)
+			throws FamiTrackerFormatException;
 	
 	/* **********
 	 *   序列   *

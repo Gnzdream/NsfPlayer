@@ -57,7 +57,7 @@ public class TextReader {
 	
 	/**
 	 * @return
-	 *  本行行号, 第一行为 1. 还没读取或已经读取完毕时第一行时为 0
+	 *  本行行号, 第一行为 1. 还没读取或已经读取完毕时为 0
 	 */
 	public int line() {
 		return l;

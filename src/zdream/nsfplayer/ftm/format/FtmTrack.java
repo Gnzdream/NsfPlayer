@@ -34,8 +34,8 @@ public final class FtmTrack {
 	 *   模式   *
 	 ********** */
 	/*
-	 * 模式 PATTERN
-	 * [段数][轨道数]
+	 * 模式 PATTERN (段是 FRAME)
+	 * [模式号][轨道数]
 	 */
 	public FtmPattern[][] patterns;
 	

@@ -23,7 +23,7 @@ public class FtmAudioFactory {
 	 *   文件数据
 	 * @return
 	 */
-	public FtmAudio create(byte[] bs) throws FtmParseException {
+	public FtmAudio create(byte[] bs) throws FamiTrackerFormatException {
 		BytesReader reader = new BytesReader(bs);
 		return createFtm(reader);
 	}
@@ -34,7 +34,7 @@ public class FtmAudioFactory {
 	 *   文件路径
 	 * @return
 	 */
-	public FtmAudio create(String filepath) throws IOException, FtmParseException {
+	public FtmAudio create(String filepath) throws IOException, FamiTrackerFormatException {
 		DocumentReader openFile = new DocumentReader(filepath);
 		
 		openFile.open();
@@ -47,7 +47,7 @@ public class FtmAudioFactory {
 		return createFtm(openFile);
 	}
 	
-	private FtmAudio createFtm(BytesReader reader) throws FtmParseException {
+	private FtmAudio createFtm(BytesReader reader) throws FamiTrackerFormatException {
 		FamiTrackerCreater creater = new FamiTrackerCreater();
 		
 		FtmAudio audio = new FtmAudio();
@@ -62,7 +62,7 @@ public class FtmAudioFactory {
 	 *   文件数据, 任意字符串类型
 	 * @return
 	 */
-	public FtmAudio createFromText(String txt) throws FtmParseException {
+	public FtmAudio createFromText(String txt) throws FamiTrackerFormatException {
 		FamiTrackerTextCreater creater = new FamiTrackerTextCreater();
 		
 		TextReader reader = new TextReader(txt);
@@ -78,7 +78,7 @@ public class FtmAudioFactory {
 	 *   文件路径
 	 * @return
 	 */
-	public FtmAudio createFromTextPath(String path) throws IOException, FtmParseException {
+	public FtmAudio createFromTextPath(String path) throws IOException, FamiTrackerFormatException {
 		return createFromText(FileUtils.readFileAsString(path));
 	}
 

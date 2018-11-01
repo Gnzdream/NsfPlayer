@@ -10,10 +10,15 @@ public class FtmSequence {
 	
 	/**
 	 * <p>2A03 和 VRC6 一共有 5 类 FtmSequence
-	 * <p>FDS 只有音量 (VOLUME)、琶音 (ARPEGGIO)、音高 (PITCH) 3 类
 	 * </p>
 	 */
 	public static final int SEQUENCE_COUNT = 5;
+	
+	/**
+	 * <p>FDS 只有音量 (VOLUME)、琶音 (ARPEGGIO)、音高 (PITCH) 3 类
+	 * </p>
+	 */
+	public static final int SEQUENCE_COUNT_FDS = 3;
 	
 	/**
 	 * 设置项. {@link FtmSequenceType#ARPEGGIO} 序列的 setting 有以下三个可选值
