@@ -12,6 +12,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
@@ -151,13 +152,22 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			doc.setSplit(Integer.parseInt(strs[1]));
 		} break;
 		
+		// Macros
+		case "MACRO": { // 就是 sequence
+			parseMacro(reader, doc, strs);
+		} break;
+		
+		case "MACROVRC6": {
+			parseMacroVRC6(reader, doc, strs);
+		} break;
+		
 		// Instruments
 		case "INST2A03": {
 			parseInst2A03(reader, doc, strs);
 		} break;
-		
-		case "MACRO": { // 就是 sequence
-			parseMacro(reader, doc, strs);
+
+		case "INSTVRC6": {
+			parseInstVRC6(reader, doc, strs);
 		} break;
 		
 		// Tracks
@@ -184,43 +194,6 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		default:
 			break;
 		}
-	}
-	
-	private void parseInst2A03(TextReader reader, FamiTrackerHandler doc, String[] strs) {
-		if (strs.length != 8) {
-			handleException(reader, EX_INST2A03_WRONG_ITEMS, strs.length);
-		}
-		
-		FtmInstrument2A03 inst = new FtmInstrument2A03();
-		inst.seq = Integer.parseInt(strs[1]);
-		inst.name = strs[7];
-		
-		inst.vol = Integer.parseInt(strs[2]);
-		if (inst.vol != -1) {
-			createSequence(doc, inst.vol, FtmSequenceType.VOLUME);
-		}
-		
-		inst.arp = Integer.parseInt(strs[3]);
-		if (inst.arp != -1) {
-			createSequence(doc, inst.arp, FtmSequenceType.ARPEGGIO);
-		}
-		
-		inst.pit = Integer.parseInt(strs[4]);
-		if (inst.pit != -1) {
-			createSequence(doc, inst.pit, FtmSequenceType.PITCH);
-		}
-		
-		inst.hip = Integer.parseInt(strs[5]);
-		if (inst.hip != -1) {
-			createSequence(doc, inst.hip, FtmSequenceType.HI_PITCH);
-		}
-		
-		inst.dut = Integer.parseInt(strs[6]);
-		if (inst.dut != -1) {
-			createSequence(doc, inst.dut, FtmSequenceType.DUTY);
-		}
-
-		doc.registerInstrument(inst);
 	}
 	
 	/**
@@ -264,6 +237,139 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			data[i] = Byte.parseByte(strs[i + 7]);
 		}
 		seq.data = data;
+	}
+	
+	/**
+	 * <p>解析 MacroVRC6 部分, 即 VRC6 sequence 部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     MACROVRC6   0   1  -1   1   0 : 11 9 5 2 0
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     MACRO &lt;类型&gt; &lt;序号&gt; &lt;循环点位置&gt; &lt;释放点位置&gt; &lt;辅助参数&gt; : &lt;序列&gt; ...
+     * </pre></blockquote>
+     * 辅助参数, 见 {@link FtmSequence#settings}
+     * <p>可以看到, 和 Macro 基本没区别
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseMacroVRC6(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length < 7) {
+			handleException(reader, EX_MACROVRC6_WRONG_ITEMS, strs.length);
+		}
+		if (!":".equals(strs[6])) {
+			handleException(reader, EX_MACROVRC6_WRONG_TOKEN);
+		}
+		
+		int type = Integer.parseInt(strs[1]);
+		int index = Integer.parseInt(strs[2]);
+		int loop = Integer.parseInt(strs[3]);
+		int release = Integer.parseInt(strs[4]);
+		int settings = Integer.parseInt(strs[5]);
+		
+		FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+		seq.loopPoint = loop;
+		seq.releasePoint = release;
+		seq.settings = (byte) settings;
+		
+		// 序列存储
+		final int length = strs.length - 7;
+		byte[] data = new byte[length];
+		for (int i = 0; i < length; i++) {
+			data[i] = Byte.parseByte(strs[i + 7]);
+		}
+		seq.data = data;
+	}
+	
+	private void parseInst2A03(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 8) {
+			handleException(reader, EX_INST2A03_WRONG_ITEMS, strs.length);
+		}
+		
+		FtmInstrument2A03 inst = new FtmInstrument2A03();
+		inst.seq = Integer.parseInt(strs[1]);
+		inst.name = strs[7];
+		
+		inst.vol = Integer.parseInt(strs[2]);
+		if (inst.vol != -1) {
+			createSequence(doc, inst.vol, FtmSequenceType.VOLUME);
+		}
+		
+		inst.arp = Integer.parseInt(strs[3]);
+		if (inst.arp != -1) {
+			createSequence(doc, inst.arp, FtmSequenceType.ARPEGGIO);
+		}
+		
+		inst.pit = Integer.parseInt(strs[4]);
+		if (inst.pit != -1) {
+			createSequence(doc, inst.pit, FtmSequenceType.PITCH);
+		}
+		
+		inst.hip = Integer.parseInt(strs[5]);
+		if (inst.hip != -1) {
+			createSequence(doc, inst.hip, FtmSequenceType.HI_PITCH);
+		}
+		
+		inst.dut = Integer.parseInt(strs[6]);
+		if (inst.dut != -1) {
+			createSequence(doc, inst.dut, FtmSequenceType.DUTY);
+		}
+
+		doc.registerInstrument(inst);
+	}
+	
+	/**
+	 * <p>解析 InstVRC6 部分, 即 VRC6 Instrument 部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     INSTVRC6   7     1  -1  -1  -1   0 "VRC6 lead 1"
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     INSTVRC6 &lt;序号&gt; &lt;音量序列号&gt; &lt;琶音序列号&gt; &lt;音高序列号&gt;
+     *     &lt;大音高序列号&gt; &lt;音色序列号&gt; &lt;乐器名称&gt;
+     * </pre></blockquote>
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseInstVRC6(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 8) {
+			handleException(reader, EX_INSTVRC6_WRONG_ITEMS, strs.length);
+		}
+		
+		FtmInstrumentVRC6 inst = new FtmInstrumentVRC6();
+		inst.seq = Integer.parseInt(strs[1]);
+		inst.name = strs[7];
+		
+		inst.vol = Integer.parseInt(strs[2]);
+		if (inst.vol != -1) {
+			createSequence(doc, inst.vol, FtmSequenceType.VOLUME);
+		}
+		
+		inst.arp = Integer.parseInt(strs[3]);
+		if (inst.arp != -1) {
+			createSequence(doc, inst.arp, FtmSequenceType.ARPEGGIO);
+		}
+		
+		inst.pit = Integer.parseInt(strs[4]);
+		if (inst.pit != -1) {
+			createSequence(doc, inst.pit, FtmSequenceType.PITCH);
+		}
+		
+		inst.hip = Integer.parseInt(strs[5]);
+		if (inst.hip != -1) {
+			createSequence(doc, inst.hip, FtmSequenceType.HI_PITCH);
+		}
+		
+		inst.dut = Integer.parseInt(strs[6]);
+		if (inst.dut != -1) {
+			createSequence(doc, inst.dut, FtmSequenceType.DUTY);
+		}
+
+		doc.registerInstrument(inst);
 	}
 	
 	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
@@ -605,8 +711,11 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 * 产生的消息错误列表
 	 */
 	static final String EX_INST2A03_WRONG_ITEMS = "乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 %d";
+	static final String EX_INSTVRC6_WRONG_ITEMS = "乐器部分解析错误, VRC6 乐器格式规定项数为 8, 但是这里只有 %d";
 	static final String EX_MACRO_WRONG_ITEMS = "曲目部分解析错误, MACRO 格式规定项数至少为 8, 但是这里只有 %d";
 	static final String EX_MACRO_WRONG_TOKEN = "MACRO 部分解析错误";
+	static final String EX_MACROVRC6_WRONG_ITEMS = "曲目部分解析错误, MACROVRC6 格式规定项数至少为 8, 但是这里只有 %d";
+	static final String EX_MACROVRC6_WRONG_TOKEN = "MACROVRC6 部分解析错误";
 	static final String EX_TRACK_WRONG_ITEMS = "曲目部分解析错误, TRACK 格式规定项数为 5, 但是这里只有 %d";
 	static final String EX_COLUMNS_WRONG_TOKEN = "COLUMNS 部分解析错误";
 	static final String EX_OREDR_WRONG_ITEMS = "曲目部分解析错误, ORDER 格式规定项数为 %d, 但是这里只有 %d";
