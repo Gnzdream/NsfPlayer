@@ -6,7 +6,7 @@
 （2018-10-22）
 
 *	（FTM）支持 VRC6 和 MMC5 芯片音轨；
-*	（Mixer）补充 XgmSoundMixer 混音器，以及相关的拦截器（效果器）
+*	（Mixer）补充 XgmSoundMixer 混音器，以及相关的拦截器（效果器）；
 
 #### v0.2.4
 
@@ -20,3 +20,9 @@
 *	（NSF）支持 FDS 芯片音轨；
 *	（FTM）支持 FDS 芯片音轨；
 *	（Mixer）支持 FDS 芯片类型的音频播放；
+
+（2018-11-01）
+
+*	（FTM）支持 FDS 的 FamiTracker 效果；
+
+#### v0.2.5
