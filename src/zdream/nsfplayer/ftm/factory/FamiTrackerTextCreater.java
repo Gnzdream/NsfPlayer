@@ -14,6 +14,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
+import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 import zdream.utils.common.CodeSpliter;
@@ -155,6 +156,10 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			parseInst2A03(reader, doc, strs);
 		} break;
 		
+		case "MACRO": { // 就是 sequence
+			parseMacro(reader, doc, strs);
+		} break;
+		
 		// Tracks
 		case "TRACK": {
 			parseTrack(reader, doc, strs);
@@ -216,6 +221,49 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 
 		doc.registerInstrument(inst);
+	}
+	
+	/**
+	 * <p>解析 Macro 部分, 即 sequence 部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     MACRO       0   4  -1   3   0 : 9 5 3 2 1 1 0
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     MACRO &lt;类型&gt; &lt;序号&gt; &lt;循环点位置&gt; &lt;释放点位置&gt; &lt;辅助参数&gt; : &lt;序列&gt; ...
+     * </pre></blockquote>
+     * 辅助参数, 见 {@link FtmSequence#settings}
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseMacro(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length < 7) {
+			handleException(reader, EX_MACRO_WRONG_ITEMS, strs.length);
+		}
+		if (!":".equals(strs[6])) {
+			handleException(reader, EX_MACRO_WRONG_TOKEN);
+		}
+		
+		int type = Integer.parseInt(strs[1]);
+		int index = Integer.parseInt(strs[2]);
+		int loop = Integer.parseInt(strs[3]);
+		int release = Integer.parseInt(strs[4]);
+		int settings = Integer.parseInt(strs[5]);
+		
+		FtmSequence seq = doc.getOrCreateSequence2A03(FtmSequenceType.get(type), index);
+		seq.loopPoint = loop;
+		seq.releasePoint = release;
+		seq.settings = (byte) settings;
+		
+		// 序列存储
+		final int length = strs.length - 7;
+		byte[] data = new byte[length];
+		for (int i = 0; i < length; i++) {
+			data[i] = Byte.parseByte(strs[i + 7]);
+		}
+		seq.data = data;
 	}
 	
 	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
@@ -557,6 +605,8 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 * 产生的消息错误列表
 	 */
 	static final String EX_INST2A03_WRONG_ITEMS = "乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 %d";
+	static final String EX_MACRO_WRONG_ITEMS = "曲目部分解析错误, MACRO 格式规定项数至少为 8, 但是这里只有 %d";
+	static final String EX_MACRO_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_TRACK_WRONG_ITEMS = "曲目部分解析错误, TRACK 格式规定项数为 5, 但是这里只有 %d";
 	static final String EX_COLUMNS_WRONG_TOKEN = "COLUMNS 部分解析错误";
 	static final String EX_OREDR_WRONG_ITEMS = "曲目部分解析错误, ORDER 格式规定项数为 %d, 但是这里只有 %d";

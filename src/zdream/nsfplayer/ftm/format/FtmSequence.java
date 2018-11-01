@@ -75,18 +75,22 @@ public class FtmSequence {
 	public String toString() {
 		StringBuilder b = new StringBuilder(60);
 		
-		b.append("Sequence[");
-		final int length = data.length - 1;
-		for (int i = 0; i < length; i++) {
-			if (loopPoint == i) {
-				b.append("| ");
+		if (data != null) {
+			b.append("Sequence").append('[');
+			final int length = data.length - 1;
+			for (int i = 0; i < length; i++) {
+				if (loopPoint == i) {
+					b.append("| ");
+				}
+				if (releasePoint == i) {
+					b.append("\\ ");
+				}
+				b.append(data[i]).append(' ');
 			}
-			if (releasePoint == i) {
-				b.append("\\ ");
-			}
-			b.append(data[i]).append(' ');
+			b.append(data[length]).append(']');
+		} else {
+			b.append("Empty Sequence");
 		}
-		b.append(data[length]).append(']');
 		
 		return b.toString();
 	}

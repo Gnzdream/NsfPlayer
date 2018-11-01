@@ -479,20 +479,18 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	}
 	
 	/**
-	 * 注册序列
+	 * 注册序列. 这里只支持 2A03 和 VRC6 芯片的.
 	 */
 	public FtmSequence getOrCreateSequence(FtmChipType chip, FtmSequenceType type, int index) {
-		FtmSequence seq = new FtmSequence(type);
-		
-		int key = chip.ordinal() * FtmSequenceType.values().length + seq.type.ordinal();
-		ArrayList<FtmSequence> list = audio.seqs.get(key);
-		if (list == null) {
-			list = new ArrayList<>();
-			audio.seqs.put(key, list);
+		switch (chip) {
+		case _2A03:
+			return getOrCreateSequence2A03(type, index);
+		case VRC6:
+			return getOrCreateSequenceVRC6(type, index);
+
+		default:
+			return null;
 		}
-		
-		registerT(list, seq, index);
-		return seq;
 	}
 
 	/**
