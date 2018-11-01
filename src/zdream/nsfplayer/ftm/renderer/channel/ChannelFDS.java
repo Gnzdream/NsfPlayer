@@ -62,6 +62,27 @@ public class ChannelFDS extends AbstractFtmChannel {
 	private boolean resetMod = false;
 	
 	/**
+	 * 设置 modDepth. 该方法由效果 Hxx 调用
+	 */
+	public void setModDepth(int modDepth) {
+		this.modDepth = modDepth;
+	}
+	
+	/**
+	 * 设置 modSpeed 高 4 位. 该方法由效果 Ixx 调用
+	 */
+	public void setModFreqHigh(int freq) {
+		this.modSpeed = (this.modSpeed & 0xFF) | (freq << 8);
+	}
+	
+	/**
+	 * 设置 modSpeed 低 8 位. 该方法由效果 Jxx 调用
+	 */
+	public void setModFreqLow(int freq) {
+		this.modSpeed = (this.modSpeed & 0xF00) | (freq);
+	}
+	
+	/**
 	 * 更新序列, 并将序列的数据回写到轨道上
 	 */
 	private void updateSequence() {

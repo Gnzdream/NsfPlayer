@@ -22,6 +22,9 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_DAC;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SAMPLE_OFFSET;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_RETRIGGER;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_DPCM_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_DEPTH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_HI;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_LO;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_EFFECT_COLUMNS;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
@@ -333,6 +336,26 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 			case EF_DPCM_PITCH:
 				if (channelCode == CHANNEL_2A03_DPCM) {
 					putEffect(channelCode, effects, DPCMPitchEffect.of(note.effParam[i] & 0xF));
+				}
+				break;
+				
+				// FDS 轨道
+				
+			case EF_FDS_MOD_DEPTH: // Hxx
+				if (channelCode == CHANNEL_FDS) {
+					putEffect(channelCode, effects, FDSModDepthEffect.of(note.effParam[i] & 0x3F));
+				}
+				break;
+				
+			case EF_FDS_MOD_SPEED_HI: // Ixx
+				if (channelCode == CHANNEL_FDS) {
+					putEffect(channelCode, effects, FDSModSpeedHighEffect.of(note.effParam[i] * 15));
+				}
+				break;
+				
+			case EF_FDS_MOD_SPEED_LO: // Jxx
+				if (channelCode == CHANNEL_FDS) {
+					putEffect(channelCode, effects, FDSModSpeedLowEffect.of(note.effParam[i] & 0xFF));
 				}
 				break;
 			

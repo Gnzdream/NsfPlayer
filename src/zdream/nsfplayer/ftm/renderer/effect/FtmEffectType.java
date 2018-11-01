@@ -219,22 +219,28 @@ public enum FtmEffectType {
 	DPCM_PITCH,
 	
 	/**
-	 * Hxx, FDS 限定
-	 * TODO
+	 * Hxx, 设置 FDS 频率调制器的音源深度
+	 * <p>FDS 特有
+	 * </p>
+	 * @see FDSModDepthEffect
 	 */
 	FDS_MOD_DEPTH,
 	
 	/**
-	 * Ixx, FDS 限定
-	 * TODO
+	 * Ixx, 设置 FDS 调制器频率高 4 位
+	 * <p>FDS 特有
+	 * </p>
+	 * @see FDSModSpeedHighEffect
 	 */
-	FDS_MOD_SPEED_HI,
+	FDS_MOD_SPEED_HIGH,
 	
 	/**
-	 * Jxx, FDS 限定
-	 * TODO
+	 * Jxx, 设置 FDS 调制器频率低 8 位
+	 * <p>FDS 特有
+	 * </p>
+	 * @see FDSModSpeedLowEffect
 	 */
-	FDS_MOD_SPEED_LO,
+	FDS_MOD_SPEED_LOW,
 	
 	/**
 	 * Hxx
