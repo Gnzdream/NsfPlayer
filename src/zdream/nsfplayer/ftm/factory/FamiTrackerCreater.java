@@ -566,8 +566,6 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 	}
 	
 	private void readBlockSequencesVRC6(FamiTrackerHandler doc, Block block) {
-		// TODO
-
 		int version = block.version;
 		int count = block.readAsCInt();
 
@@ -1356,6 +1354,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater {
 		case 3: return VRC7;
 		case 4: return FDS;
 		case 5: return N163;
+		case 6: return S5B;
 
 		default: return null;
 		}

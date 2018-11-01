@@ -38,8 +38,6 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 		}
 		this.audio = audio;
 		this.frameRate = audio.getFrameRate();
-		
-		reScanChannel();
 	}
 	
 	/* **********
@@ -54,93 +52,13 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 	/* **********
 	 *   轨道   *
 	 ********** */
-	/*
-	 * 该区域的数据在查询器生成时就确定了
-	 * 
-	 * 这里和 Handler 的方法重合了, TODO 需要删掉多余的.
-	 */
-	
-	/**
-	 * 缓存第 n 个轨道对应的轨道号是什么
-	 */
-	private byte[] channelCode;
-	
-	/**
-	 * 重新计算轨道音源相关的数据.
-	 */
-	private void reScanChannel() {
-		// 计算轨道总数
-		int channelCount = 5; // 2A03
-		if (audio.useVcr6) {
-			channelCount += 3;
-		}
-		if (audio.useVcr7) {
-			channelCount += 6;
-		}
-		if (audio.useFds) {
-			channelCount += 1;
-		}
-		if (audio.useMmc5) {
-			channelCount += 2;
-		}
-		if (audio.useN163) {
-			channelCount += audio.namcoChannels;
-		}
-		/*if (audio.useS5b) { // 忽略
-			count += 3;
-		}*/
-		
-		// 补充轨道号
-		channelCode = new byte[channelCount];
-		int codePtr = 0;
-		channelCode[codePtr++] = CHANNEL_2A03_PULSE1;
-		channelCode[codePtr++] = CHANNEL_2A03_PULSE2;
-		channelCode[codePtr++] = CHANNEL_2A03_TRIANGLE;
-		channelCode[codePtr++] = CHANNEL_2A03_NOISE;
-		channelCode[codePtr++] = CHANNEL_2A03_DPCM;
-		
-		if (audio.useVcr6) {
-			channelCode[codePtr++] = CHANNEL_VRC6_PULSE1;
-			channelCode[codePtr++] = CHANNEL_VRC6_PULSE2;
-			channelCode[codePtr++] = CHANNEL_VRC6_SAWTOOTH;
-		}
-		if (audio.useVcr7) {
-			channelCode[codePtr++] = CHANNEL_VRC7_FM1;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM2;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM3;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM4;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM5;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM6;
-		}
-		if (audio.useFds) {
-			channelCode[codePtr++] = CHANNEL_FDS;
-		}
-		if (audio.useMmc5) {
-			channelCode[codePtr++] = CHANNEL_MMC5_PULSE1;
-			channelCode[codePtr++] = CHANNEL_MMC5_PULSE2;
-		}
-		if (audio.useN163) {
-			byte[] cs = new byte[] {
-					CHANNEL_N163_1,
-					CHANNEL_N163_2,
-					CHANNEL_N163_3,
-					CHANNEL_N163_4,
-					CHANNEL_N163_5,
-					CHANNEL_N163_6
-			};
-			int length = audio.namcoChannels;
-			for (int i = 0; i < length; i++) {
-				channelCode[codePtr++] = cs[i];
-			}
-		}
-	}
 	
 	/**
 	 * 计算轨道数总和
 	 * @return
 	 */
 	public int channelCount() {
-		return this.channelCode.length;
+		return audio.handler.channelCount();
 	}
 	
 	/**
@@ -148,7 +66,7 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 	 * @return
 	 */
 	public byte channelCode(int channel) {
-		return channelCode[channel];
+		return audio.handler.channelCode(channel);
 	}
 	
 	/* **********

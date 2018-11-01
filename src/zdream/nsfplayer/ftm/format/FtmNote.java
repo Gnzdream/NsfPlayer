@@ -134,7 +134,7 @@ public class FtmNote implements Cloneable {
 			'A',	// Volume slide
 			'S',	// Note cut
 			'X',	// DPCM retrigger						 
-			 0,		// (TODO, delayed volume)
+			 0,		// 已弃用
 			'H',	// FDS modulation depth
 			'I',	// FDS modulation speed hi
 			'J',	// FDS modulation speed lo

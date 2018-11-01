@@ -2,6 +2,15 @@ package zdream.nsfplayer.core;
 
 import static zdream.nsfplayer.core.INsfChannelCode.*;
 
+/**
+ * FamiTracker 与 NsfPlayer 使用的芯片枚举;
+ * 
+ * @version v0.2.5
+ *   补充 S5B 芯片以及相关方法的实现
+ * 
+ * @author Zdream
+ * @since v0.2.3
+ */
 public enum FtmChipType {
 	
 	_2A03(CHIP_2A03),
@@ -14,7 +23,9 @@ public enum FtmChipType {
 	
 	MMC5(CHIP_MMC5),
 	
-	N163(CHIP_N163)
+	N163(CHIP_N163),
+	
+	S5B(CHIP_S5B)
 	;
 	
 	public final byte chipCode;
@@ -47,6 +58,8 @@ public enum FtmChipType {
 			return MMC5;
 		case CHIP_N163:
 			return N163;
+		case CHIP_S5B:
+			return S5B;
 		}
 		return null;
 	}

@@ -431,19 +431,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 从 Mixer 中读取音频数据
 	 */
 	private void readMixer() {
-		// TODO
-		
 		runtime.mixer.finishBuffer();
 		runtime.mixer.readBuffer(data, 0, data.length);
-		
-		// 现在音频数据在 data 中
-		
-//		int SamplesAvail = m_pMixer.finishBuffer(m_iFrameCycles);
-//		int ReadSamples	= m_pMixer.readBuffer(SamplesAvail, m_pSoundBuffer, m_bStereoEnabled);
-//		m_pParent.flushBuffer(m_pSoundBuffer, 0, ReadSamples);
-//		
-//		m_iFrameClock= m_iFrameCycleCount;
-//		m_iFrameCycles = 0;
 	}
 	
 	/* **********

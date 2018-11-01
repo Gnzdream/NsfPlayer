@@ -162,8 +162,7 @@ public class PulseSound extends Sound2A03 {
 		counter = 0;
 		dutyCycle = 0;
 		
-		
-		// TODO
+		// TODO envelop 和 sweep 相关的
 		
 		super.reset();
 	}

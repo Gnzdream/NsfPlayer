@@ -8,6 +8,9 @@ package zdream.nsfplayer.core;
  *   修改接口名 IFtmChannelCode -> INsfChannelCode
  *   并移动接口至 nsfplayer.core 包下
  * 
+ * @version v0.2.5
+ *   补充 S5B 相关的参数
+ * 
  * @author Zdream
  * @since v0.2.1
  */
@@ -44,7 +47,11 @@ public interface INsfChannelCode {
 			CHANNEL_N163_3 = 0x53,
 			CHANNEL_N163_4 = 0x54,
 			CHANNEL_N163_5 = 0x55,
-			CHANNEL_N163_6 = 0x56;
+			CHANNEL_N163_6 = 0x56,
+					
+			CHANNEL_S5B_SQUARE1 = 0x61,
+			CHANNEL_S5B_SQUARE2 = 0x62,
+			CHANNEL_S5B_SQUARE3 = 0x63;
 	
 	/**
 	 * 各个芯片的标识号
@@ -56,6 +63,7 @@ public interface INsfChannelCode {
 			CHIP_VRC7 = 0x20,
 			CHIP_FDS = 0x30,
 			CHIP_MMC5 = 0x40,
-			CHIP_N163 = 0x50;
+			CHIP_N163 = 0x50,
+			CHIP_S5B = 0x60;
 
 }

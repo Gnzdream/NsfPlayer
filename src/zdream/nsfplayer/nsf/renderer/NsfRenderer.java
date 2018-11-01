@@ -89,7 +89,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
 	 */
 	public void ready(int track) throws NullPointerException {
-		// TODO
+		runtime.manager.setSong(track);
+		runtime.reset();
 	}
 	
 	/* **********
