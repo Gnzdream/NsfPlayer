@@ -2,6 +2,8 @@ package zdream.nsfplayer.ftm.factory;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_VOLUMN;
+import static zdream.utils.common.CodeSpliter.extract;
+import static zdream.utils.common.CodeSpliter.split;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.Map.Entry;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
@@ -18,7 +21,6 @@ import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.format.FtmTrack;
-import zdream.utils.common.CodeSpliter;
 import zdream.utils.common.TextReader;
 
 /**
@@ -93,6 +95,20 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 */
 	FtmPattern[] curPatternGroup;
 	
+	/*
+	 * DPCM 数据读取的暂存状态
+	 * 
+	 * 顺序: DPCMDEF -> DPCM -> DPCM ... DPCM -> 其它
+	 */
+	/**
+	 * 当前读取的 DPCM 的采样数据
+	 */
+	byte[] dpcmBytes;
+	/**
+	 * 当前读取的 DPCM 的位置, 相当于指向 dpcmBytes 的索引
+	 */
+	int dpcmOffset;
+	
 	public FamiTrackerTextCreater() {
 		// do nothing
 	}
@@ -114,7 +130,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	}
 	
 	private void handleLine(TextReader reader, FamiTrackerHandler doc) {
-		String[] strs = CodeSpliter.split(reader.thisLine());
+		String[] strs = split(reader.thisLine());
 		
 		switch (strs[0]) {
 		
@@ -161,9 +177,22 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			parseMacroVRC6(reader, doc, strs);
 		} break;
 		
+		// DPCM samples
+		case "DPCMDEF": {
+			parseDPCMDefine(reader, doc, strs);
+		} break;
+		
+		case "DPCM": {
+			parseDPCM(reader, doc, strs);
+		} break;
+		
 		// Instruments
 		case "INST2A03": {
 			parseInst2A03(reader, doc, strs);
+		} break;
+		
+		case "KEYDPCM": {
+			parseInstKeyDPCM(reader, doc, strs);
 		} break;
 
 		case "INSTVRC6": {
@@ -283,6 +312,59 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		seq.data = data;
 	}
 	
+	/**
+	 * <p>解析 DPCMDEF 部分, 即 DPCM define 部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     DPCMDEF   0   897 "fsharp"
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     DPCMDEF &lt;序号&gt; &lt;数据大小&gt; &lt;名称&gt;
+     * </pre></blockquote>
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseDPCMDefine(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 4) {
+			handleException(reader, EX_DPCMDEF_WRONG_ITEMS, strs.length);
+		}
+		
+		int index = Integer.parseInt(strs[1]);
+		int length = Integer.parseInt(strs[2]);
+		
+		FtmDPCMSample dsample = doc.getOrCreateDPCMSample(index);
+		dsample.data = this.dpcmBytes = new byte[length];
+		dsample.name = extract(strs[3]);
+		dpcmOffset = 0;
+	}
+	
+	/**
+	 * <p>解析 DPCM 部分, 即 DPCM 采样数据部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     DPCM : D5 FF FD 00 00 FF 01 1C 01 F0 E7 0F 00 FE FF 03 00 80 57 FF F1 FD 0F 00 40 FC FF FF 01 FE 08 80
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     DPCM : &lt;采样数据&gt; ...
+     * </pre></blockquote>
+     * 其中采样数据的个数在 [1, 32] 范围内, 均以 16 进制文本的形式呈现
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseDPCM(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (!":".equals(strs[1])) {
+			handleException(reader, EX_DPCM_WRONG_TOKEN, strs.length);
+		}
+		
+		for (int i = 2; i < strs.length; i++) {
+			this.dpcmBytes[this.dpcmOffset++] = (byte) Integer.parseInt(strs[i], 16);
+		}
+	}
+	
 	private void parseInst2A03(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 8) {
 			handleException(reader, EX_INST2A03_WRONG_ITEMS, strs.length);
@@ -290,7 +372,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		FtmInstrument2A03 inst = new FtmInstrument2A03();
 		inst.seq = Integer.parseInt(strs[1]);
-		inst.name = strs[7];
+		inst.name = extract(strs[7]);
 		
 		inst.vol = Integer.parseInt(strs[2]);
 		if (inst.vol != -1) {
@@ -318,6 +400,47 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 
 		doc.registerInstrument(inst);
+	}
+	
+	/**
+	 * <p>解析 KEYDPCM 部分, 即 2A03 Instrument 的 DPCM 参数部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     KEYDPCM   2   3   2     3  15   0     0  -1
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     KEYDPCM &lt;乐器序号&gt; &lt;音阶&gt; &lt;音高&gt; &lt;DPCM 采样序号&gt;
+     *     &lt;采样音高&gt; &lt;是否循环&gt; &lt;位置参数&gt; &lt;采样 delta 值&gt;
+     * </pre></blockquote>
+     * 音高指 pitchOfOctave;
+     * <br>是否循环, 1 为循环, 0 为不循环
+     * <br>采样音高, 见 {@link FtmInstrument2A03#samplePitches}
+     * <br>采样 delta 值, 见 {@link FtmInstrument2A03#sampleDeltas}
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseInstKeyDPCM(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 9) {
+			handleException(reader, EX_KEYDPCM_WRONG_ITEMS, strs.length);
+		}
+		
+		int index = Integer.parseInt(strs[1]);
+		int octave = Integer.parseInt(strs[2]);
+		int pitchOfOctave = Integer.parseInt(strs[3]);
+		int sIndex = Integer.parseInt(strs[4]);
+		byte samplePitch = Byte.parseByte(strs[5]);
+		boolean loop = Integer.parseInt(strs[6]) != 0;
+		// strs[7] 忽略
+		byte sampleDelta = Byte.parseByte(strs[8]);
+		
+		FtmInstrument2A03 inst = (FtmInstrument2A03) doc.audio.getInstrument(index);
+		FtmDPCMSample sample = doc.getOrCreateDPCMSample(sIndex);
+		
+		inst.samples[octave][pitchOfOctave] = sample;
+		inst.samplePitches[octave][pitchOfOctave] = (byte) (samplePitch | (loop ? 0x80 : 0));
+		inst.sampleDeltas[octave][pitchOfOctave] = sampleDelta;
 	}
 	
 	/**
@@ -711,7 +834,10 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 * 产生的消息错误列表
 	 */
 	static final String EX_INST2A03_WRONG_ITEMS = "乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 %d";
+	static final String EX_KEYDPCM_WRONG_ITEMS = "乐器部分解析错误, KEYDPCM 乐器格式规定项数为 9, 但是这里只有 %d";
 	static final String EX_INSTVRC6_WRONG_ITEMS = "乐器部分解析错误, VRC6 乐器格式规定项数为 8, 但是这里只有 %d";
+	static final String EX_DPCMDEF_WRONG_ITEMS = "曲目部分解析错误, DPCMDEF 格式规定项数为 4, 但是这里只有 %d";
+	static final String EX_DPCM_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_MACRO_WRONG_ITEMS = "曲目部分解析错误, MACRO 格式规定项数至少为 8, 但是这里只有 %d";
 	static final String EX_MACRO_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_MACROVRC6_WRONG_ITEMS = "曲目部分解析错误, MACROVRC6 格式规定项数至少为 8, 但是这里只有 %d";

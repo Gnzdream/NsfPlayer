@@ -39,13 +39,14 @@ public class TestFamiTracker {
 	}
 	
 	public static FtmAudio testReadFtmText() throws Exception {
-		FtmAudioFactory factory = new FtmAudioFactory();
-		
-		FtmAudio audio = factory.createFromTextPath(
+		String path =
 				"src\\assets\\test\\Editor_05.txt"
 //				"src\\assets\\test\\mm10nsf.txt"
-		);
-		System.out.println("完成");
+				;
+		
+		FtmAudioFactory factory = new FtmAudioFactory();
+		FtmAudio audio = factory.createFromTextPath(path);
+		System.out.println(path + "完成");
 		System.out.println(audio);
 		return audio;
 	}

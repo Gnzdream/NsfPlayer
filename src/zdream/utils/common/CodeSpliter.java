@@ -73,4 +73,61 @@ public class CodeSpliter {
 		return list.toArray(new String[list.size()]);
 	}
 	
+	/**
+	 * 将 "123" 这类文本, 将两端的引号去掉, 中间格式作处理之后, 返回
+	 * @since v0.2.5
+	 */
+	public static String extract(String raw) {
+		int head = 0; // 包括
+		int tail = raw.length(); // 不包括
+		
+		if (raw.charAt(0) == '"') {
+			head ++;
+		}
+		if (raw.charAt(tail - 1) == '"') {
+			tail --;
+		}
+		if (tail <= head) {
+			return "";
+		}
+
+		char[] chars = raw.toCharArray();
+		int status = 0;
+		int index = head;
+		StringBuilder b = new StringBuilder(tail - head);
+		
+		for (; index < tail; index++) {
+			char ch = chars[index];
+			switch (status) {
+			case 0: // 没有开始检索
+				if (ch == '\\') {
+					status = 1;
+				} else {
+					b.append(ch);
+				}
+				break;
+				
+			case 1: // 已经找到 '\', 有以下匹配:
+				// '\"' 转成 '"'
+				// '\\' 转成 '\'
+				// '\ ' 转成 ' '
+				// 其它情况, '\' 仍然视为有效字符 '\'
+				
+				if (Character.isSpaceChar(ch) || ch == '"' || ch == '\\') {
+					b.append(ch);
+				} else {
+					b.append('\\').append(ch);
+				}
+				status = 0;
+			}
+		}
+		
+		// 结尾
+		if (status == 1) {
+			b.append('\\');
+		}
+		
+		return b.toString();
+	}
+	
 }
