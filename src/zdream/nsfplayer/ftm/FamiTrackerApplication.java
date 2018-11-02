@@ -9,8 +9,10 @@ import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
 
 /**
  * 应用的实体. 用于打开 FamiTracker 的文件等操作
+ * 
  * @author Zdream
  * @date 2018-04-25
+ * @since v0.1
  */
 public class FamiTrackerApplication {
 	
@@ -30,11 +32,22 @@ public class FamiTrackerApplication {
 	public final FtmAudioFactory factory;
 	
 	/**
-	 * 加载 FamiTracker (.ftm) 的文件, 形成 {@link FtmAudio} 实例
-	 * @param filename
+	 * 加载 FamiTracker (.ftm) 的文件, 生成 {@link FtmAudio} 实例
+	 * @param filePath
+	 *   文件路径
 	 */
-	public FtmAudio open(String filename) throws IOException, FamiTrackerFormatException {
-		return factory.create(filename);
+	public FtmAudio open(String filePath) throws IOException, FamiTrackerFormatException {
+		return factory.create(filePath);
+	}
+	
+	/**
+	 * 加载 FamiTracker 导出的文本文件 (.txt), 生成 {@link FtmAudio} 实例
+	 * @param filePath
+	 *   文件路径
+	 * @since v0.2.5
+	 */
+	public FtmAudio openWithTxt(String filePath) throws IOException, FamiTrackerFormatException {
+		return factory.createFromTextPath(filePath);
 	}
 	
 }
