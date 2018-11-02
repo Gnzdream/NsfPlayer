@@ -1,5 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -69,8 +70,8 @@ public class DelayEffect implements IFtmEffect {
 		HashSet<IFtmState> set = channel.filterStates(state.name());
 		if (!set.isEmpty()) {
 			for (IFtmState s : set) {
-				// TODO 立即触发
-				channel.removeState(s);
+				// 立即触发
+				((DelayState) s).triggerNow(channelCode, runtime);
 			}
 		}
 		
@@ -134,6 +135,25 @@ public class DelayEffect implements IFtmEffect {
 		}
 		
 		/**
+		 * 现在立即将状态中的键触发掉, 并该状态删除
+		 * @since v0.2.5
+		 */
+		public void triggerNow(byte channelCode, FamiTrackerRuntime runtime) {
+			Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
+			
+			ArrayList<IFtmEffect> list = new ArrayList<>(effects);
+			list.sort(null);
+			
+			for (IFtmEffect eff : list) {
+				if (!map.containsKey(eff.type()))
+					map.put(eff.type(), eff);
+			}
+			
+			AbstractFtmChannel channel = runtime.channels.get(channelCode);
+			channel.removeState(this);
+		}
+		
+		/**
 		 * 最低优先级
 		 */
 		public final int priority() {
@@ -147,11 +167,14 @@ public class DelayEffect implements IFtmEffect {
 		public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
 			// 触发
 			Map<FtmEffectType, IFtmEffect> map = runtime.effects.get(channelCode);
-			for (IFtmEffect eff : effects) {
+			
+			ArrayList<IFtmEffect> list = new ArrayList<>(effects);
+			list.sort(null);
+			
+			for (IFtmEffect eff : list) {
 				if (!map.containsKey(eff.type()))
 					map.put(eff.type(), eff);
 			}
-			
 		}
 		
 	}
