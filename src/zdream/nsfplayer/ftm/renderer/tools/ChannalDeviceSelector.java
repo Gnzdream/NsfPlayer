@@ -3,14 +3,13 @@ package zdream.nsfplayer.ftm.renderer.tools;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
+import zdream.nsfplayer.ftm.renderer.channel.Channel2A03Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelFDS;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Sawtooth;
 import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
 import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
-import zdream.nsfplayer.ftm.renderer.channel.Square1Channel;
-import zdream.nsfplayer.ftm.renderer.channel.Square2Channel;
 import zdream.nsfplayer.ftm.renderer.channel.TriangleChannel;
 
 /**
@@ -35,11 +34,11 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 		switch (code) {
 		// 2A03
 		case CHANNEL_2A03_PULSE1: {
-			Square1Channel s = new Square1Channel();
+			Channel2A03Pulse s = new Channel2A03Pulse(true);
 			return s;
 		}
 		case CHANNEL_2A03_PULSE2: {
-			Square2Channel s = new Square2Channel();
+			Channel2A03Pulse s = new Channel2A03Pulse(false);
 			return s;
 		}
 		case CHANNEL_2A03_TRIANGLE: {

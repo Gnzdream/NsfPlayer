@@ -60,14 +60,12 @@ public abstract class ChannelMMC5 extends AbstractFtmChannel {
 		int period = -masterPitch + curPeriod + seq.period;
 		
 		if (seq.arp != 0) {
-			// TODO 存在问题
-			// 请注意 SequenceHandler.updateSequenceRunning 方法
 			switch (seq.arpSetting) {
 			case FtmSequence.ARP_SETTING_ABSOLUTE:
 				note += seq.arp;
 				break;
 			case FtmSequence.ARP_SETTING_FIXED: // 重置
-				note = seq.arp;
+				this.masterNote = note = seq.arp;
 				break;
 			case FtmSequence.ARP_SETTING_RELATIVE:
 				this.masterNote += seq.arp;

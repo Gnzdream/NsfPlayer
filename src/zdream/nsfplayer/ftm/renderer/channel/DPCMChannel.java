@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.sound.DPCMSound;
 
 /**
@@ -16,7 +17,7 @@ import zdream.nsfplayer.sound.DPCMSound;
  * @author Zdream
  * @since v0.2.2
  */
-public class DPCMChannel extends Channel2A03 {
+public class DPCMChannel extends AbstractFtmChannel {
 
 	public DPCMChannel() {
 		super(CHANNEL_2A03_DPCM);

@@ -1,29 +1,26 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
-import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 
 /**
- * 2A03 中的声音轨道, 包含 Pulse, Triangle 和 Noise 轨道
+ * <p>含音键处理的轨道, 包含:
+ * <li>2A03 Pulse, Triangle, Noise 轨道;
+ * <li>VRC6 Pulse, Sawtooth 轨道; (还未移动过来)
+ * <li>MMC5 Pulse 轨道; (还未移动过来)
+ * <li>FDS 轨道; (还未移动过来)
+ * <li>TODO 其它支持音键处理的轨道
+ * </li></p>
+ * 
  * @author Zdream
- * @since 0.2.1
+ * @since 0.2.5
  */
-public abstract class Channel2A03Tone extends Channel2A03 {
+public abstract class ChannelTone extends AbstractFtmChannel {
 
-	public Channel2A03Tone(byte channelCode) {
+	public ChannelTone(byte channelCode) {
 		super(channelCode);
 	}
-	
-	/* **********
-	 *  sweep   *
-	 ********** */
-	
-	/**
-	 * <p>范围 [0, 0xFF]
-	 * <p>暂时没有使用
-	 */
-	protected int sweep;
 	
 	/* **********
 	 *   序列   *
@@ -68,14 +65,12 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 		int period = -masterPitch + curPeriod + seq.period;
 		
 		if (seq.arp != 0) {
-			// TODO 存在问题
-			// 请注意 SequenceHandler.updateSequenceRunning 方法
 			switch (seq.arpSetting) {
 			case FtmSequence.ARP_SETTING_ABSOLUTE:
 				note += seq.arp;
 				break;
 			case FtmSequence.ARP_SETTING_FIXED: // 重置
-				note = seq.arp;
+				this.masterNote = note = seq.arp;
 				break;
 			case FtmSequence.ARP_SETTING_RELATIVE:
 				this.masterNote += seq.arp;
@@ -109,14 +104,6 @@ public abstract class Channel2A03Tone extends Channel2A03 {
 		} else {
 			curDuty = masterDuty;
 		}
-	}
-	
-	/**
-	 * 根据音键查询波长值.
-	 * 工具方法
-	 */
-	public int periodTable(int note) {
-		return NoteLookupTable.ntsc(note);
 	}
 	
 	@Override

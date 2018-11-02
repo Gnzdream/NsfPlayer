@@ -11,7 +11,7 @@ import zdream.nsfplayer.sound.NoiseSound;
  * @author Zdream
  * @since v0.2.2
  */
-public class NoiseChannel extends Channel2A03Tone {
+public class NoiseChannel extends ChannelTone {
 
 	public NoiseChannel() {
 		super(CHANNEL_2A03_NOISE);
@@ -90,14 +90,12 @@ public class NoiseChannel extends Channel2A03Tone {
 		note += (-masterPitch + curPeriod + seq.period);
 		
 		if (seq.arp != 0) {
-			// TODO 存在问题
-			// 请注意 SequenceHandler.updateSequenceRunning 方法
 			switch (seq.arpSetting) {
 			case FtmSequence.ARP_SETTING_ABSOLUTE:
 				note += seq.arp;
 				break;
 			case FtmSequence.ARP_SETTING_FIXED: // 重置
-				note = seq.arp;
+				this.masterNote = note = seq.arp;
 				break;
 			case FtmSequence.ARP_SETTING_RELATIVE:
 				this.masterNote += seq.arp;

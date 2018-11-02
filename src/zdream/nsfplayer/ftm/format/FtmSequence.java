@@ -21,7 +21,21 @@ public class FtmSequence {
 	public static final int SEQUENCE_COUNT_FDS = 3;
 	
 	/**
-	 * 设置项. {@link FtmSequenceType#ARPEGGIO} 序列的 setting 有以下三个可选值
+	 * <p>琶音设置项. {@link FtmSequenceType#ARPEGGIO} 序列的 setting 有以下三个可选值:
+	 * 
+	 * <li><b>ARP_SETTING_ABSOLUTE  绝对方式 (默认)</b>
+	 * <br>如果设置了该值, 最后产生的音键, 为当前其它状态计算得到的音键, 加上琶音的值.
+	 * <br>例如, 如果其它状态总和得到音键为 C-4, 琶音值为 3, 则最后得到的音键比 C-4 高 3 个半音, 为 D#4.
+	 * </li>
+	 * <p><li><b>ARP_SETTING_RELATIVE  相对方式</b>
+	 * <br>如果设置了该值, 第一帧产生的值的方法与绝对方式一样,
+	 * <br>但是到第二帧, 音键加上的值等于前两帧值的总和.
+	 * <br>例如, 如果其它状态总和得到音键为 C-4, 第一帧琶音值为 3, 则第一帧得到的音键比 C-4 高 3 个半音, 为 D#4.
+	 * 第二帧琶音值为 2, 则前二帧琶音值总和为 5, 得到的音键比 C-4 高 5 个半音, 为 F-4.
+	 * </li>
+	 * <p><li><b>ARP_SETTING_FIXED  修正方式</b>
+	 * <br>如果设置了该值, 则系统会忽略其它状态计算得到的音键, 转而使用琶音值作为音键.
+	 * </li></p>
 	 */
 	public static final byte
 			ARP_SETTING_ABSOLUTE = 0,

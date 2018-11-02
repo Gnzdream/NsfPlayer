@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 import zdream.nsfplayer.sound.TriangleSound;
 
 /**
@@ -10,7 +11,7 @@ import zdream.nsfplayer.sound.TriangleSound;
  * @author Zdream
  * @since v0.2.2
  */
-public class TriangleChannel extends Channel2A03Tone {
+public class TriangleChannel extends ChannelTone {
 
 	public TriangleChannel() {
 		super(CHANNEL_2A03_TRIANGLE);
@@ -117,6 +118,18 @@ public class TriangleChannel extends Channel2A03Tone {
 		
 		// 结束
 		sound.endFrame();
+	}
+	
+	/* **********
+	 *   其它   *
+	 ********** */
+	
+	/**
+	 * 根据音键查询波长值.
+	 * 工具方法
+	 */
+	public int periodTable(int note) {
+		return NoteLookupTable.ntsc(note);
 	}
 
 }

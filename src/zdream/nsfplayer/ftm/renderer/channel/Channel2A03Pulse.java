@@ -4,18 +4,27 @@ import static zdream.nsfplayer.sound.Sound2A03.LENGTH_TABLE;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
+import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 import zdream.nsfplayer.sound.PulseSound;
 
 /**
- * 2A03 矩形轨道 1
+ * 2A03 矩形轨道 1 / 2
+ * 
+ * @version v0.2.5
+ *   将两个 2A03 矩形轨道进行了合并
  * 
  * @author Zdream
  * @since v0.2.1
  */
-public final class Square1Channel extends Channel2A03Tone {
+public final class Channel2A03Pulse extends ChannelTone {
 
-	public Square1Channel() {
-		super(CHANNEL_2A03_PULSE1);
+	/**
+	 * @param isPulse1
+	 *   如果是 2A03 一号矩形轨道, 为 true
+	 *   如果是 2A03 二号矩形轨道, 为 false
+	 */
+	public Channel2A03Pulse(boolean isPulse1) {
+		super(isPulse1 ? CHANNEL_2A03_PULSE1 : CHANNEL_2A03_PULSE2);
 	}
 
 	@Override
@@ -36,6 +45,16 @@ public final class Square1Channel extends Channel2A03Tone {
 		seq.reset();
 		sound.reset();
 	}
+	
+	/* **********
+	 *  sweep   *
+	 ********** */
+	
+	/**
+	 * <p>范围 [0, 0xFF]
+	 * <p>暂时没有使用
+	 */
+	protected int sweep;
 	
 	/* **********
 	 *   序列   *
@@ -153,6 +172,18 @@ public final class Square1Channel extends Channel2A03Tone {
 		
 		// 结束
 		sound.endFrame();
+	}
+	
+	/* **********
+	 *   其它   *
+	 ********** */
+	
+	/**
+	 * 根据音键查询波长值.
+	 * 工具方法
+	 */
+	public int periodTable(int note) {
+		return NoteLookupTable.ntsc(note);
 	}
 	
 }
