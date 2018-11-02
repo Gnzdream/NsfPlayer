@@ -349,7 +349,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				
 			case EF_FDS_MOD_SPEED_HI: // Ixx
 				if (channelCode == CHANNEL_FDS) {
-					putEffect(channelCode, effects, FDSModSpeedHighEffect.of(note.effParam[i] * 15));
+					putEffect(channelCode, effects, FDSModSpeedHighEffect.of(note.effParam[i] & 15));
 				}
 				break;
 				

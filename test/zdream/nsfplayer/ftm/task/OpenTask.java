@@ -42,6 +42,7 @@ public class OpenTask implements IFtmTask {
 			env.setAudio(audio);
 			env.getRenderer().ready(audio);
 		} catch (IOException | RuntimeException e) {
+			env.printOut("[OPEN] 读取错误原因: %s", e.getMessage());
 			env.printOut("[OPEN] 读取文件: %s 失败. 继续播放原音频", filename);
 			return;
 		}

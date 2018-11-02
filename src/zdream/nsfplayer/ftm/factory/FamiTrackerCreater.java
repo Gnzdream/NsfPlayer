@@ -1169,7 +1169,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		int releasePoint = block.readAsCInt();
 		int settings = block.readAsCInt(); // 仅 Arpeggio 序列使用
 
-		if (seqCount > SEQUENCE_COUNT_FDS) {
+		if (seqCount > MAX_SEQUENCES) {
 			handleException(block, EX_INSTS_WRONG_SEQ_AMOUNT, seqCount);
 		}
 		FtmSequence seq = new FtmSequence(type);
@@ -1244,6 +1244,10 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		for (int i = 0; i < trackLen; i++) {
 			FtmTrack track = audio.getTrack(i);
 			FtmPattern[][] ps = track.patterns;
+			if (ps == null) {
+				track.patterns = new FtmPattern[1][doc.channelCount()];
+				continue;
+			}
 			
 			for (int x = 0; x < ps.length; x++) {
 				FtmPattern[] ys = ps[x];
