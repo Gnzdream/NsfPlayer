@@ -6,6 +6,7 @@ import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
+import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
@@ -470,15 +471,6 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	}
 	
 	/**
-	 * 注册乐器
-	 */
-	public void registerInstrument(AbstractFtmInstrument inst) {
-		int index = inst.seq;
-		ArrayList<AbstractFtmInstrument> list = audio.insts;
-		registerT(list, inst, index);
-	}
-	
-	/**
 	 * 注册序列. 这里只支持 2A03 和 VRC6 芯片的.
 	 */
 	public FtmSequence getOrCreateSequence(FtmChipType chip, FtmSequenceType type, int index) {
@@ -491,6 +483,47 @@ public class FamiTrackerHandler implements INsfChannelCode {
 		default:
 			return null;
 		}
+	}
+	
+	/**
+	 * 注册乐器
+	 */
+	public void registerInstrument(AbstractFtmInstrument inst) {
+		int index = inst.seq;
+		ArrayList<AbstractFtmInstrument> list = audio.insts;
+		registerT(list, inst, index);
+	}
+	
+	/**
+	 * <p>获得指定乐器序号的 FDS 乐器.
+	 * <li>如果该乐器序号没有乐器实例, 则创建一个返回;
+	 * <li>如果该乐器序号存在的乐器实例不是 FDS 的, 返回 null;
+	 * </li>
+	 * </p>
+	 * @param index
+	 *   乐器序号. 该值需要为非负数
+	 * @return
+	 *   FDS 乐器实例, 或 null
+	 * @since v0.2.5
+	 */
+	public FtmInstrumentFDS getOrCreateInstrumentFDS(int index) {
+		ArrayList<AbstractFtmInstrument> list = audio.insts;
+		AbstractFtmInstrument inst;
+		if (index < list.size()) {
+			inst = list.get(index);
+		} else {
+			inst = null;
+		}
+		
+		if (inst != null) {
+			return (inst.instType() == FtmChipType.FDS) ? (FtmInstrumentFDS) inst : null;
+		}
+		
+		FtmInstrumentFDS instfds = new FtmInstrumentFDS();
+		instfds.seq = index;
+		registerInstrument(instfds);
+
+		return instfds;
 	}
 
 	/**

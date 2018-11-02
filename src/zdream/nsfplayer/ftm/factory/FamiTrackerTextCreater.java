@@ -1,9 +1,41 @@
 package zdream.nsfplayer.ftm.factory;
 
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_DPCM;
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_NOISE;
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_FDS;
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE1;
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE2;
+import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE3;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_ARPEGGIO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DAC;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DELAY;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DPCM_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_DEPTH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_HI;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_LO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_NOTE_CUT;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTAMENTO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_DOWN;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_UP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_RETRIGGER;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SAMPLE_OFFSET;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SUNSOFT_ENV_HI;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SUNSOFT_ENV_LO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SUNSOFT_ENV_TYPE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_VOLUMN;
-import static zdream.nsfplayer.ftm.format.FtmNote.*;
-import static zdream.nsfplayer.core.INsfChannelCode.*;
 import static zdream.utils.common.CodeSpliter.extract;
 import static zdream.utils.common.CodeSpliter.split;
 
@@ -16,6 +48,7 @@ import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
+import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -198,6 +231,18 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 
 		case "INSTVRC6": {
 			parseInstVRC6(reader, doc, strs);
+		} break;
+		
+		case "FDSWAVE": {
+			parseFDSWave(reader, doc, strs);
+		} break;
+		
+		case "FDSMOD": {
+			parseFDSMod(reader, doc, strs);
+		} break;
+		
+		case "FDSMACRO": {
+			parseFDSMacro(reader, doc, strs);
 		} break;
 		
 		// Tracks
@@ -494,6 +539,119 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 
 		doc.registerInstrument(inst);
+	}
+	
+	/**
+	 * <p>解析 FDSWave 部分, 即 FDS 声像数据部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     FDSWAVE    2 : 35 39 42 41 39 45 48 45 42 45 46 ...
+     * </pre></blockquote>
+     * 注, 冒号后面的数字个数固定为 64 个.
+	 * <br>各个参数的意义是:
+	 * <blockquote><pre>
+     *     FDSWAVE &lt;乐器序号&gt; : &lt;64 个声像值&gt;
+     * </pre></blockquote>
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseFDSWave(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 67) {
+			handleException(reader, EX_FDSWAVE_WRONG_ITEMS, strs.length);
+		}
+		if (!":".equals(strs[2])) {
+			handleException(reader, EX_FDSWAVE_WRONG_TOKEN);
+		}
+		
+		int index = Integer.parseInt(strs[1]);
+		FtmInstrumentFDS instfds = doc.getOrCreateInstrumentFDS(index);
+		byte[] bs = instfds.samples;
+		
+		for (int i = 0; i < bs.length; i++) {
+			bs[i] = Byte.parseByte(strs[i + 3]);
+		}
+	}
+	
+	/**
+	 * <p>解析 FDSMod 部分, 即 FDS 调制数据部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     FDSMOD    2 : 35 39 42 41 39 45 48 45 42 45 46 ...
+     * </pre></blockquote>
+     * 注, 冒号后面的数字个数固定为 32 个.
+	 * <br>各个参数的意义是:
+	 * <blockquote><pre>
+     *     FDSMOD &lt;乐器序号&gt; : &lt;32 个调制值&gt;
+     * </pre></blockquote>
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseFDSMod(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 35) {
+			handleException(reader, EX_FDSMOD_WRONG_ITEMS, strs.length);
+		}
+		if (!":".equals(strs[2])) {
+			handleException(reader, EX_FDSMOD_WRONG_TOKEN);
+		}
+		
+		int index = Integer.parseInt(strs[1]);
+		FtmInstrumentFDS instfds = doc.getOrCreateInstrumentFDS(index);
+		byte[] bs = instfds.modulation;
+		
+		for (int i = 0; i < bs.length; i++) {
+			bs[i] = Byte.parseByte(strs[i + 3]);
+		}
+	}
+	
+	/**
+	 * <p>解析 FDSMacro 部分, 即 FDS 序列部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     FDSMACRO   2   0  -1  -1   0 : 24 18 16 14 13 12
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     FDSMACRO &lt;乐器序号&gt; &lt;类型&gt; &lt;循环点位置&gt; &lt;释放点位置&gt; &lt;辅助参数&gt; : &lt;序列&gt; ...
+     * </pre></blockquote>
+	 * </p>
+	 * 
+	 * @since v0.2.5
+	 */
+	private void parseFDSMacro(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (!":".equals(strs[6])) {
+			handleException(reader, EX_FDSMACRO_WRONG_TOKEN);
+		}
+		
+		int index = Integer.parseInt(strs[1]);
+		FtmInstrumentFDS instfds = doc.getOrCreateInstrumentFDS(index);
+		
+		int type = Integer.parseInt(strs[2]);
+		FtmSequence seq = new FtmSequence(FtmSequenceType.get(type));
+		seq.loopPoint = Integer.parseInt(strs[3]);
+		seq.releasePoint = Integer.parseInt(strs[4]);
+		seq.settings = Byte.parseByte(strs[5]);
+		
+		// 序列存储
+		final int length = strs.length - 7;
+		byte[] data = new byte[length];
+		for (int i = 0; i < length; i++) {
+			data[i] = Byte.parseByte(strs[i + 7]);
+		}
+		seq.data = data;
+		
+		switch (type) {
+		case 0:
+			instfds.seqVolume = seq;
+			break;
+		case 1:
+			instfds.seqArpeggio = seq;
+			break;
+		case 2:
+			instfds.seqPitch = seq;
+			break;
+		}
 	}
 	
 	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
@@ -990,6 +1148,11 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	static final String EX_INST2A03_WRONG_ITEMS = "乐器部分解析错误, 2A03 乐器格式规定项数为 8, 但是这里只有 %d";
 	static final String EX_KEYDPCM_WRONG_ITEMS = "乐器部分解析错误, KEYDPCM 乐器格式规定项数为 9, 但是这里只有 %d";
 	static final String EX_INSTVRC6_WRONG_ITEMS = "乐器部分解析错误, VRC6 乐器格式规定项数为 8, 但是这里只有 %d";
+	static final String EX_FDSWAVE_WRONG_ITEMS = "乐器部分解析错误, FDSWAVE 格式规定项数为 67, 但是这里只有 %d";
+	static final String EX_FDSWAVE_WRONG_TOKEN = "FDSWAVE 部分解析错误";
+	static final String EX_FDSMOD_WRONG_ITEMS = "乐器部分解析错误, FDSMOD 格式规定项数为 67, 但是这里只有 %d";
+	static final String EX_FDSMOD_WRONG_TOKEN = "FDSMOD 部分解析错误";
+	static final String EX_FDSMACRO_WRONG_TOKEN = "FDSMACRO 部分解析错误";
 	static final String EX_DPCMDEF_WRONG_ITEMS = "曲目部分解析错误, DPCMDEF 格式规定项数为 4, 但是这里只有 %d";
 	static final String EX_DPCM_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_MACRO_WRONG_ITEMS = "曲目部分解析错误, MACRO 格式规定项数至少为 8, 但是这里只有 %d";
