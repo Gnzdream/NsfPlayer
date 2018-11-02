@@ -323,7 +323,18 @@ public class SoundFDS extends AbstractNsfSound {
 			wavEnvOut = wavEnvSpeed;
 		}
 		
-		// new
+		// 上面是开胃菜, 下面才是主菜
+		/*
+		 * 我在这里做了调整, 因为不确定上面 time 的值,
+		 * NSF 部分调用时 time 为一采样的时间, FTM 部分调用时 time 为一帧的时间, 这两个 time 相差很大.
+		 * 因此我决定以 wavPhase 代表的相位作为统一的时间步长.
+		 * 
+		 * 当 wavPhase 代表的相位向前挪了一格, 相应的所有部分,
+		 * 包括 wavCounter, modCounter, modTable 都执行这部分的时间.
+		 * 
+		 * 这样虽然会和真实的音频输出会有非常细微的差别（人感觉不到的）,
+		 * 但是这样的 CPU 和代码可读性都会有显著提高.
+		 */
 		int clockLeft = time;
 		
 		if (!wavHalt) {
@@ -417,24 +428,25 @@ public class SoundFDS extends AbstractNsfSound {
 	 */
 	private void modTableStep(int time) {
 		if (!modHalt) {
+			// 分别计算前进前和前进后的相位
 			// advance phase, adjust for modulator | unsigned
 			int start_pos = modPhase >> 16;
 			modPhase += (time * modFreq);
-			// unsigned
 			int end_pos = modPhase >> 16;
 
+			// modPhase 含低 24 位累积值位, 和高 6 位表示真正相位的数据, 范围 [0, 64 * 0xFFFF - 1]
 			// wrap the phase to the 64-step table (+ 16 bit accumulator)
 			modPhase = modPhase & 0x3FFFFF;
 
 			// execute all clocked steps
 			for (int p = start_pos; p < end_pos; ++p) {
 				int wv = mods[p & 0x3F];
-				if (wv == 4) // 4 resets mod position
+				if (wv == 4) // 4 意味着重置 mod position
 					modPos = 0;
 				else {
 					final int BIAS[] = { 0, 1, 2, 4, 0, -4, -2, -1 };
 					modPos += BIAS[wv];
-					modPos &= 0x7F; // 7-bit clamp
+					modPos &= 0x7F; // 7-bit 数值, 无符号位
 				}
 			}
 		}
@@ -461,12 +473,14 @@ public class SoundFDS extends AbstractNsfSound {
 					temp += 2;
 			}
 
+			// temp 的范围在 [-64, 191]. 超过范围时, 进行修改
 			// wrap if range is exceeded
 			while (temp >= 192)
 				temp -= 256;
 			while (temp < -64)
 				temp += 256;
-
+			
+			// 乘以 pitch 值, 再右移 6 位
 			// multiply result by pitch,
 			// shift off 6 bits, round to nearest
 			temp = wavFreq * temp;
@@ -485,7 +499,7 @@ public class SoundFDS extends AbstractNsfSound {
 		if (vol_out > 32)
 			vol_out = 32;
 		
-		// final output
+		// 最终输出
 		if (!wavWrite)
 			curOut = wave[(wavPhase >> 16) & 0x3F] * vol_out;
 		

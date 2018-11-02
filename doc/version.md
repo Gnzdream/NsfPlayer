@@ -26,3 +26,10 @@
 *	（FTM）支持 FDS 的 FamiTracker 效果；
 
 #### v0.2.5
+
+（2018-11-03）
+
+*	（FTM）支持读取 FTM 生成的 txt 文件，使用该文件生成 FtmAudio。支持的芯片有 2A03、2A05、VRC6 、 MMC5 和 FDS；
+*	（FTM）统一了在生成 FtmAudio 时，出现的格式错误的异常消息反馈；
+*	（BUG 修复）（FTM）修复了 Gxx 延迟效果在新一个 Gxx 效果出现时产生的问题；
+*	（BUG 修复）（FTM）修复了序列中的琶音（ARPEGGIO）在相对方式（RELATIVE）时产生的问题；
