@@ -2,6 +2,8 @@ package zdream.nsfplayer.ftm.factory;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_VOLUMN;
+import static zdream.nsfplayer.ftm.format.FtmNote.*;
+import static zdream.nsfplayer.core.INsfChannelCode.*;
 import static zdream.utils.common.CodeSpliter.extract;
 import static zdream.utils.common.CodeSpliter.split;
 
@@ -10,7 +12,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
@@ -637,7 +638,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			note.octave = 0;
 			empty = false;
 		} else {
-			if (doc.channelCode(column) == INsfChannelCode.CHANNEL_2A03_NOISE) {
+			if (doc.channelCode(column) == CHANNEL_2A03_NOISE) {
 				parseNoiseNote(t, note);
 			} else {
 				parseAudioNote(t, note);
@@ -664,9 +665,10 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 		
 		// 效果部分
+		byte channelCode = doc.channelCode(column);
 		for (int idx = 4; idx < length; idx++) {
 			t = strs[offset + idx];
-			empty &= parseEffect(t, note, idx - 4);
+			empty &= parseEffect(t, note, idx - 4, channelCode);
 		}
 		
 		if (!empty)
@@ -733,25 +735,19 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	
 	/**
 	 * 效果部分解析
+	 * @param channelCode
+	 *   现在处理的轨道号 (不是轨道序号)
 	 */
-	private boolean parseEffect(String text, FtmNote note, int index) {
+	private boolean parseEffect(String text, FtmNote note, int index, byte channelCode) {
 		if ("...".equals(text)) {
 			return true;
 		}
 		
 		char head = text.charAt(0);
-		byte eff = -1;
-		
-		char[] eff_chars = FtmNote.EFF_CHAR;
-		for (byte i = 0; i < eff_chars.length; i++) {
-			if (head == eff_chars[i]) {
-				eff = i;
-				break;
-			}
-		}
+		byte eff = this.conventEffectToCode(head, channelCode);
 		
 		if (eff == -1) {
-			return true; // 或者报错
+			return true; // 找不到效果是什么, 可以选择报错, 但是这里不这样做
 		}
 		
 		note.effNumber[index] = eff;
@@ -824,6 +820,164 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			Entry<Integer, FtmPattern[]> entry = it.next();
 			curTrack.patterns[entry.getKey()] = entry.getValue();
 		}
+	}
+	
+	/* **********
+	 *   工具   *
+	 ********** */
+	
+	/*
+	 * 下面是所有效果字符和对应的解释.
+	'.',	// None
+	'F',	// Speed
+	'B',	// Jump 
+	'D',	// Skip 
+	'C',	// Halt
+	'E',	// Volume
+	'3',	// Porta on
+	 0,		// Porta off // 已弃用
+	'H',	// Sweep up
+	'I',	// Sweep down
+	'0',	// Arpeggio 琶音
+	'4',	// Vibrato
+	'7',	// Tremolo
+	'P',	// Pitch
+	'G',	// Note delay
+	'Z',	// DAC setting
+	'1',	// Portamento up
+	'2',	// Portamento down
+	'V',	// Duty cycle
+	'Y',	// Sample offset
+	'Q',	// Slide up
+	'R',	// Slide down
+	'A',	// Volume slide
+	'S',	// Note cut
+	'X',	// DPCM retrigger						 
+	 0,		// 已弃用
+	'H',	// FDS modulation depth
+	'I',	// FDS modulation speed hi
+	'J',	// FDS modulation speed lo
+	'W',	// DPCM Pitch
+	'H',	// Sunsoft envelope low
+	'I',	// Sunsoft envelope high
+	'J',	// Sunsoft envelope type
+	'9',	// Targeted volume slide
+	'H',	// VRC7 modulator
+	'I',	// VRC7 carrier
+	'J',	// VRC7 modulator/feedback level
+	 */
+	
+	/**
+	 * 将所给的效果的字符, 转换成效果码
+	 * @param ch
+	 *   在 txt 文档中写明的、所给的效果的字符
+	 * @param channelCode
+	 *   所在的轨道号
+	 * @return
+	 *   效果码. 这个码在 {@link FtmNote} 中定义.
+	 *   如果找不到对应的效果码, 返回 -1.
+	 * @since v0.2.5
+	 */
+	private byte conventEffectToCode(char ch, byte channelCode) {
+		switch (ch) {
+		// 全局效果
+		case 'F': return EF_SPEED;
+		case 'B': return EF_JUMP;
+		case 'D': return EF_SKIP;
+		case 'C': return EF_HALT;
+		
+		// 通用轨道效果
+		case 'E': return EF_VOLUME; // 已弃用
+		case '3': return EF_PORTAMENTO;
+		// TODO Sweep up 和 Sweep down 这里暂时未实现
+		case '0': return EF_ARPEGGIO;
+		case '4': return EF_VIBRATO;
+		case '7': return EF_TREMOLO;
+		case 'P': return EF_PITCH;
+		case 'G': return EF_DELAY;
+		case '1': return EF_PORTA_UP;
+		case '2': return EF_PORTA_DOWN;
+		case 'V': return EF_DUTY_CYCLE;
+		case 'Q': return EF_SLIDE_UP;
+		case 'R': return EF_SLIDE_DOWN;
+		case 'A': return EF_VOLUME_SLIDE;
+		case 'S': return EF_NOTE_CUT;
+//		case '9': return ?; // Targeted volume slide, 该效果 FTM 工程未实现
+		
+		// OCC 新效果含 T, O, L, M, 尚不清楚作用
+		
+		// DPCM 轨道专用效果
+		case 'Z': if (channelCode == CHANNEL_2A03_DPCM) return EF_DAC; break;
+		case 'Y': if (channelCode == CHANNEL_2A03_DPCM) return EF_SAMPLE_OFFSET; break;
+		case 'X': if (channelCode == CHANNEL_2A03_DPCM) return EF_RETRIGGER; break;
+		case 'W': if (channelCode == CHANNEL_2A03_DPCM) return EF_DPCM_PITCH; break;
+		
+		// 特殊轨道专用效果
+		case 'H': {
+			// 2A03 sweep, 未实现
+			// FDS modulation depth
+			// Sunsoft envelope low
+			// TODO VRC7 modulator, 未实现 'H' 效果
+			switch (channelCode) {
+			case CHANNEL_FDS:
+				return EF_FDS_MOD_DEPTH;
+			case CHANNEL_S5B_SQUARE1:
+			case CHANNEL_S5B_SQUARE2:
+			case CHANNEL_S5B_SQUARE3:
+				return EF_SUNSOFT_ENV_LO;
+//			case CHANNEL_VRC7_FM1:
+//			case CHANNEL_VRC7_FM2:
+//			case CHANNEL_VRC7_FM3:
+//			case CHANNEL_VRC7_FM4:
+//			case CHANNEL_VRC7_FM5:
+//			case CHANNEL_VRC7_FM6:
+//				return ?;
+			}
+		} break;
+		case 'I': {
+			// 2A03 sweep, 未实现
+			// FDS modulation speed hi
+			// Sunsoft envelope high
+			// TODO VRC7 carrier, 未实现 'I' 效果
+			switch (channelCode) {
+			case CHANNEL_FDS:
+				return EF_FDS_MOD_SPEED_HI;
+			case CHANNEL_S5B_SQUARE1:
+			case CHANNEL_S5B_SQUARE2:
+			case CHANNEL_S5B_SQUARE3:
+				return EF_SUNSOFT_ENV_HI;
+//			case CHANNEL_VRC7_FM1:
+//			case CHANNEL_VRC7_FM2:
+//			case CHANNEL_VRC7_FM3:
+//			case CHANNEL_VRC7_FM4:
+//			case CHANNEL_VRC7_FM5:
+//			case CHANNEL_VRC7_FM6:
+//				return ?;
+			}
+		} break;
+		case 'J': {
+			// FDS modulation speed lo
+			// Sunsoft envelope type
+			// TODO VRC7 modulator/feedback level, 未实现 'I' 效果
+			switch (channelCode) {
+			case CHANNEL_FDS:
+				return EF_FDS_MOD_SPEED_LO;
+			case CHANNEL_S5B_SQUARE1:
+			case CHANNEL_S5B_SQUARE2:
+			case CHANNEL_S5B_SQUARE3:
+				return EF_SUNSOFT_ENV_TYPE;
+//			case CHANNEL_VRC7_FM1:
+//			case CHANNEL_VRC7_FM2:
+//			case CHANNEL_VRC7_FM3:
+//			case CHANNEL_VRC7_FM4:
+//			case CHANNEL_VRC7_FM5:
+//			case CHANNEL_VRC7_FM6:
+//				return ?;
+			}
+		} break;
+
+		}
+		return -1;
 	}
 	
 	/* **********

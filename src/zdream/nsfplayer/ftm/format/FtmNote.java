@@ -108,6 +108,7 @@ public class FtmNote implements Cloneable {
 		EF_COUNT = 33;
 	
 	// Channel effect letters
+	@Deprecated
 	public static final char EFF_CHAR[] = {
 			'.',	// None 这个是我补上去的, 为了和上面的效果数组元素一一对应
 			'F',	// Speed
