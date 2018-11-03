@@ -196,7 +196,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 		if (valid) {
 			putEffect(channelCode, effects, InstrumentEffect.of(inst));
 		} else {
-			putEffect(channelCode, effects, StopEffect.of());
+			putEffect(channelCode, effects, NoteHaltEffect.of());
 		}
 	}
 	

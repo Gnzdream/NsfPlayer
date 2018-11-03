@@ -15,6 +15,12 @@ public class OpenTask implements IFtmTask {
 	String filename;
 	int beginSong = -1;
 	
+	/**
+	 * 是否按照 txt 形式打开文件
+	 * @since v0.2.5-test
+	 */
+	boolean isTxt;
+	
 	public OpenTask() {}
 
 	/**
@@ -30,15 +36,25 @@ public class OpenTask implements IFtmTask {
 	public void setOption(String key, Object arg) {
 		if ("filename".equals(key) || "f".equals(key)) {
 			filename = arg.toString();
-		} else if ("beginSong".equals(key) || "s".equals(key)) {
+		} else if ("beginSong".equals(key)) {
 			beginSong = (Integer) arg;
+		} else if ("format".equals(key)) {
+			switch (arg.toString().toLowerCase()) {
+			case "txt":
+				isTxt = true;
+				break;
+			default:
+				isTxt = false;
+				break;
+			}
 		}
 	}
 
 	@Override
 	public void execute(FtmPlayerConsole env) {
 		try {
-			FtmAudio audio = FamiTrackerApplication.app.open(filename);
+			FtmAudio audio = (isTxt) ? FamiTrackerApplication.app.openWithTxt(filename) :
+				FamiTrackerApplication.app.open(filename);
 			env.setAudio(audio);
 			env.getRenderer().ready(audio);
 		} catch (IOException | RuntimeException e) {

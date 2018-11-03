@@ -81,7 +81,7 @@ public class FtmPlayerConsole {
 	public void go() {
 		this.thread = new PlayThreadForFtm(this);
 		OpenTask t = new OpenTask("test\\assets\\test\\mm10nsf.ftm");
-		t.setOption("s", 8);
+		t.setOption("beginSong", 8);
 		putTask(t);
 		
 		Thread thread = new Thread(this.thread, "player");

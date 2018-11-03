@@ -6,9 +6,38 @@ import zdream.nsfplayer.ftm.task.PlayTask;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
 
 /**
- * 基础命令处理器
+ * <p>基础命令处理器
+ * 
+ * <p>
+ * <b>open</b> 命令:
+ * <li><code>open [filePath]</code>
+ * <br>打开某个文件.
+ * <li><code>open [filePath] --beginSong [song]</code>
+ * <li><code>open [filePath] -s [song]</code>
+ * <br>打开某个文件, 并指定开始播放的曲目号
+ * <li><code>open [filePath] --format txt</code>
+ * <li><code>open [filePath] -fm txt</code>
+ * <br>打开某个 txt 格式的文件
+ * </li>
+ * <br>注: 上面的选项可以联合使用
+ * </p>
+ * 
+ * <p>
+ * <b>pause</b> 命令:
+ * <br>暂停
+ * </p>
+ * 
+ * <p>
+ * <b>play</b> 命令:
+ * <br>暂停后播放
+ * </p>
+ * 
+ * @version v0.2.5-test
+ * <br>补充对打开 txt 格式的文件功能的支持
+ * 
  * @author Zdream
  * @date 2017-09-23
+ * @since v0.2
  */
 public class BaseHandler implements ICommandHandler {
 	
@@ -46,9 +75,18 @@ public class BaseHandler implements ICommandHandler {
 				break A;
 			}
 			
-			if ("-s".equals(args[2]) || "--beginSong".equals(args[2])) {
-				t.setOption("beginSong", Integer.valueOf(args[3]));
+			for (int i = 2; i < args.length;) {
+				if ("-s".equals(args[i]) || "--beginSong".equals(args[i])) {
+					t.setOption("beginSong", Integer.valueOf(args[i + 1]));
+					i += 2;
+				} else if ("-fm".equals(args[i]) || "--format".equals(args[i])) {
+					t.setOption("format", args[i + 1]);
+					i += 2;
+				} else {
+					i++;
+				}
 			}
+			
 		}
 		
 		env.putTask(t);
