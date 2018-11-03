@@ -889,7 +889,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				}
 
 				if (version == 3) {
-					// Fix for VRC7 portamento TODO
+					// Fix for VRC7 portamento TODO VRC7 相关
 					/*if (expansionEnabled(SNDCHIP_VRC7) && channel > 4) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
 							switch (note.effNumber[n]) {

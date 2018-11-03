@@ -1,8 +1,15 @@
 package zdream.nsfplayer.ftm.audio;
 
-import static zdream.nsfplayer.core.FtmChipType.*;
-import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
+import static zdream.nsfplayer.core.FtmChipType.FDS;
+import static zdream.nsfplayer.core.FtmChipType.VRC6;
+import static zdream.nsfplayer.core.FtmChipType._2A03;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.ARPEGGIO;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.DUTY;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.HI_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.PITCH;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.VOLUME;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
@@ -76,6 +83,7 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 	/**
 	 * 返回乐器. 如果指定位置的乐器为空, 返回 null
 	 * @param instrument
+	 *   乐器序号
 	 * @return
 	 * @since v0.2.2
 	 */
@@ -84,6 +92,21 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 			return null;
 		}
 		return audio.getInstrument(instrument);
+	}
+	
+	/**
+	 * 返回乐器所属的芯片状态. 如果指定位置的乐器为空, 返回 null
+	 * @param instrument
+	 *   乐器序号
+	 * @return
+	 * @since v0.2.5
+	 */
+	public FtmChipType getInstrumentType(int instrument) {
+		AbstractFtmInstrument inst = getInstrument(instrument);
+		if (inst != null) {
+			return inst.instType();
+		}
+		return null;
 	}
 	
 	/**

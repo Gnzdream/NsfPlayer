@@ -347,15 +347,12 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			
 			AbstractNsfSound sound = ch.getSound();
 			if (sound != null) {
-				// TODO
 				IMixerChannel mix = runtime.mixer.allocateChannel(code);
 				sound.setOut(mix);
 				
 				// 音量
 				mix.setLevel(getInitLevel(code));
 			}
-			
-			// TODO 后面的配置
 		}
 	}
 	

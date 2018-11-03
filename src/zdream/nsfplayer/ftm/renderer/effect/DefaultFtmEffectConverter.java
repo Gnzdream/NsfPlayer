@@ -1,39 +1,42 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_DELAY;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_ARPEGGIO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTAMENTO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_UP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_DOWN;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_NOTE_CUT;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_DAC;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SAMPLE_OFFSET;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_RETRIGGER;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DELAY;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_DPCM_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_DEPTH;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_HI;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_LO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_NONE;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_NOTE_CUT;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTAMENTO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_DOWN;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_UP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_RETRIGGER;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SAMPLE_OFFSET;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_EFFECT_COLUMNS;
 import static zdream.nsfplayer.ftm.format.FtmNote.MAX_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_HALT;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_NONE;
 import static zdream.nsfplayer.ftm.format.FtmNote.NOTE_RELEASE;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
+import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
+import static zdream.nsfplayer.core.FtmChipType.*;
 
 import java.util.Map;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
@@ -167,9 +170,34 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 	 * @param effects
 	 */
 	private void handleInst(byte channelCode, FtmNote note, Map<FtmEffectType, IFtmEffect> effects) {
-		// TODO 检查该轨道所属芯片能否应用该乐器
+		int inst = note.instrument;
+		if (inst < 0) {
+			return;
+		}
 		
-		putEffect(channelCode, effects, InstrumentEffect.of(note.instrument));
+		// 检查该轨道所属芯片能否应用该乐器
+		boolean valid = false;
+		FtmChipType type = runtime.querier.getInstrumentType(inst);
+		switch (chipOfChannel(channelCode)) {
+		case CHIP_2A03: case CHIP_MMC5:
+			valid = type == _2A03; break;
+		case CHIP_VRC6:
+			valid = type == VRC6; break;
+		case CHIP_FDS:
+			valid = type == FDS; break;
+		case CHIP_N163:
+			valid = type == N163; break;
+		case CHIP_VRC7:
+			valid = type == VRC7; break;
+		case CHIP_S5B:
+			valid = type == S5B; break;
+		}
+		
+		if (valid) {
+			putEffect(channelCode, effects, InstrumentEffect.of(inst));
+		} else {
+			putEffect(channelCode, effects, StopEffect.of());
+		}
 	}
 	
 	/**
