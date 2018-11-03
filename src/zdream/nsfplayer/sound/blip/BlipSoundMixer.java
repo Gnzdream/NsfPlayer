@@ -119,6 +119,12 @@ public class BlipSoundMixer extends SoundMixer {
 			mixer.setExpression((x) -> (x > 0) ? (int) (96 * 360 / ((8000.0 / x) + 180)) : 0);
 		} break;
 		
+		case CHANNEL_FDS:
+		{
+			mixer.updateSetting(12, -3500);
+			mixer.setExpression((x) -> (x > 0) ? (int) (x / 1.9) : 0);
+		} break;
+		
 		default:
 			break;
 		}
