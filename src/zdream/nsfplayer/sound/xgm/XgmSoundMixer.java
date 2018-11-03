@@ -34,6 +34,16 @@ public class XgmSoundMixer extends SoundMixer {
 	public void init() {
 		
 	}
+
+	/**
+	 * 设置配置项
+	 * @param config
+	 *   配置项数据
+	 * @since v0.2.5
+	 */
+	public void setConfig(XgmMixerConfig config) {
+		
+	}
 	
 	/* **********
 	 * 音频管道 *

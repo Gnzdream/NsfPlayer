@@ -33,6 +33,18 @@ public class BlipSoundMixer extends SoundMixer {
 		buffer.clockRate(param.freqPerSec);
 	}
 	
+	/**
+	 * 根据配置项重置参数
+	 * @param config
+	 *   配置项数据
+	 * @since v0.2.5
+	 */
+	public void setConfig(BlipMixerConfig config) {
+		this.bassFilter = config.bassFilter;
+		this.trebleDamping = config.trebleDamping;
+		this.trebleFilter = config.trebleFilter;
+	}
+	
 	/* **********
 	 * 音频管道 *
 	 ********** */

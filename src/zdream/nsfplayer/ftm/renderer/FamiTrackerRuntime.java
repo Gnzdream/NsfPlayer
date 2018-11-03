@@ -7,7 +7,11 @@ import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
+import zdream.nsfplayer.sound.blip.BlipMixerConfig;
+import zdream.nsfplayer.sound.blip.BlipSoundMixer;
+import zdream.nsfplayer.sound.mixer.IMixerConfig;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
+import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
 import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
 
 /**
@@ -23,6 +27,7 @@ public class FamiTrackerRuntime {
 	 ********** */
 	public FtmRowFetcher fetcher;
 	public IFtmEffectConverter converter;
+	
 	public FamiTrackerConfig config;
 	public FamiTrackerParameter param = new FamiTrackerParameter();
 	
@@ -43,24 +48,30 @@ public class FamiTrackerRuntime {
 	}
 	
 	private void initMixer() {
+		IMixerConfig mixerConfig = config.mixerConfig;
+		if (mixerConfig == null) {
+			mixerConfig = new XgmMixerConfig();
+		}
 		
-		// 可以采用 Blip 音频混合器 (FamiTracker 使用的)
-//		BlipSoundMixer mixer = new BlipSoundMixer();
-//		mixer.sampleRate = setting.sampleRate;
-//		mixer.frameRate = setting.frameRate;
-//		mixer.bassFilter = setting.bassFilter;
-//		mixer.trebleDamping = setting.trebleDamping;
-//		mixer.trebleFilter = setting.trebleFilter;
-//		
-//		mixer.param = param;
-//		this.mixer = mixer;
+		if (mixerConfig instanceof XgmMixerConfig) {
+			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
+			XgmSoundMixer mixer = new XgmSoundMixer();
+			mixer.setConfig((XgmMixerConfig) mixerConfig);
+			mixer.param = param;
+			this.mixer = mixer;
+		} else if (mixerConfig instanceof BlipMixerConfig) {
+			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
+			BlipSoundMixer mixer = new BlipSoundMixer();
+			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
+			mixer.sampleRate = config.sampleRate;
+			mixer.setConfig((BlipMixerConfig) mixerConfig);
+			mixer.param = param;
+			this.mixer = mixer;
+		} else {
+			// TODO 暂时不支持 xgm 和 blip 之外的 mixerConfig
+		}
 
-		// 也可以采用 Xgm 音频混合器 (NsfPlayer 使用的)
-		XgmSoundMixer mixer = new XgmSoundMixer();
-		mixer.param = param;
-		this.mixer = mixer;
-
-		mixer.init();
+		this.mixer.init();
 	}
 	
 	/* **********

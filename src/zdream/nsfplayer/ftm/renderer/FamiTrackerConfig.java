@@ -1,12 +1,14 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import zdream.nsfplayer.sound.mixer.IMixerConfig;
+
 /**
  * 用于设置启动 {@link FamiTrackerRenderer} 的启动参数.
  * 
  * @author Zdream
  * @since v0.2.3
  */
-public class FamiTrackerConfig {
+public class FamiTrackerConfig implements Cloneable {
 
 	public FamiTrackerConfig() {
 		
@@ -25,22 +27,18 @@ public class FamiTrackerConfig {
 	public int sampleSize = 16;
 	
 	/**
-	 * 帧率
+	 * Mixer 参数
 	 */
-	//public int frameRate = 60;
+	IMixerConfig mixerConfig;
 	
-	/**
-	 * BlipBuffer 参数
-	 */
-	public int bassFilter = 30,
-			trebleFilter = 12000,
-			trebleDamping = 24,
-			mixVolume = 100;
+	/* **********
+	 *   音量   *
+	 ********** */
 	
 	/**
 	 * 默认全是 1
 	 */
-	public class ChannelLevels{
+	public class ChannelLevels {
 		
 		public float level2A03Pules1 = 1.0f;
 		public float level2A03Pules2 = 1.0f;
@@ -62,5 +60,15 @@ public class FamiTrackerConfig {
 	}
 	
 	public final ChannelLevels channelLevels = new ChannelLevels();
+	
+	@Override
+	public FamiTrackerConfig clone() {
+		try {
+			return (FamiTrackerConfig) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 }

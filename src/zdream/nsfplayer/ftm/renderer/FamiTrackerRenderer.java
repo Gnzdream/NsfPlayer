@@ -44,11 +44,16 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 利用默认配置产生一个音频渲染器
 	 */
 	public FamiTrackerRenderer() {
-		this(new FamiTrackerConfig());
+		this(null);
 	}
 	
 	public FamiTrackerRenderer(FamiTrackerConfig config) {
-		this.runtime.config = config;
+		if (config == null) {
+			this.runtime.config = new FamiTrackerConfig();
+		} else {
+			this.runtime.config = config.clone();
+		}
+		
 		this.runtime.init();
 		
 		runtime.param.sampleRate = this.runtime.config.sampleRate;
