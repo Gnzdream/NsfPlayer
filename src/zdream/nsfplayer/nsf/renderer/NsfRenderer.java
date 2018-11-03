@@ -74,6 +74,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.audio = audio;
 		runtime.manager.setSong(track);
 		runtime.reset();
+		
+		super.resetCounterParam(frameRate, runtime.config.sampleRate);
 	}
 	
 	/**
@@ -199,16 +201,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		 */
 		
 		return ret;
-	}
-	
-	/**
-	 * 计算下一帧需要的采样数
-	 */
-	private int countNextFrame() {
-		int maxFrameCount = frameRate;
-		int maxSampleCount = runtime.config.sampleRate;
-		
-		return countNextFrame(maxFrameCount, maxSampleCount);
 	}
 	
 	/**

@@ -50,6 +50,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	public FamiTrackerRenderer(FamiTrackerConfig config) {
 		this.runtime.config = config;
 		this.runtime.init();
+		
+		runtime.param.sampleRate = this.runtime.config.sampleRate;
 	}
 	
 	/* **********
@@ -95,14 +97,13 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			throws FamiTrackerException {
 		fetcher.ready(audio, track, section);
 		
-		runtime.param.sampleRate = this.runtime.config.sampleRate;
-		runtime.param.calcFreq(runtime.querier.getFrameRate());
+		// 重置播放相关的数据
+		int frameRate = fetcher.getFrameRate();
+		resetCounterParam(frameRate, runtime.config.sampleRate);
+		runtime.param.calcFreq(frameRate);
+		
 		initMixer();
 		initChannels();
-		
-		// TODO 重置播放相关的数据
-		
-		// TODO SoundGen.loadMachineSettings()
 	}
 	
 	/**
@@ -176,16 +177,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		log();
 		
 		return ret;
-	}
-	
-	/**
-	 * 计算下一帧需要的采样数
-	 */
-	private int countNextFrame() {
-		int maxFrameCount = fetcher.getFrameRate();
-		int maxSampleCount = runtime.config.sampleRate;
-		
-		return countNextFrame(maxFrameCount, maxSampleCount);
 	}
 	
 	/**

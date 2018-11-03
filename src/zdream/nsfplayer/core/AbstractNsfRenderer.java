@@ -2,8 +2,6 @@ package zdream.nsfplayer.core;
 
 import java.util.Arrays;
 
-import zdream.nsfplayer.ftm.audio.FtmAudio;
-
 /**
  * 抽象的 NSF 音源的渲染器, 用于输出以 byte 数组组织的 PCM 音频数据
  * 
@@ -118,22 +116,11 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	/*
 	 * 渲染参数 
 	 */
-	
 	/**
-	 * 已渲染的采样数, 累加
-	 * <br>渲染完一秒的所有采样后, 就会清零.
-	 * <br>所以, 该数据值域为 [0, setting.sampleRate]
+	 * 采样率计数器.
+	 * @since v0.2.5
 	 */
-	protected int sampleCount;
-	
-	/**
-	 * 已渲染的帧数, 计数
-	 * <br>渲染完一秒的所有采样后, 就会清零.
-	 * <br>每秒的帧率是 audio.framerate
-	 * <br>该数据值域为 [0, audio.framerate]
-	 * @see FtmAudio#getFramerate()
-	 */
-	protected int frameCount;
+	protected final CycleCounter counter = new CycleCounter();
 	
 	/**
 	 * 音频数据.
@@ -189,26 +176,13 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	
 	/**
 	 * 计算下一帧需要的采样数 (每个声道)
-	 * <br>并修改 {@link #sampleCount} 和 {@link #frameCount} 的数据
-	 * @param maxFrameCount
-	 *   帧率, 一般为 60
-	 * @param maxSampleCount
-	 *   采样率, 一般为 48000
 	 * @return
+	 *   下一帧需要的采样数
 	 */
-	protected int countNextFrame(int maxFrameCount, int maxSampleCount) {
-		if (frameCount == maxFrameCount) {
-			frameCount = 0;
-			sampleCount = 0;
-		}
+	protected int countNextFrame() {
+		int ret = counter.tick();
 		
-		frameCount++;
-		int oldSampleCount = sampleCount;
-		sampleCount = maxSampleCount / maxFrameCount * frameCount;
-		
-		int ret = sampleCount - oldSampleCount;
-		
-		if (data == null || data.length < ret) {
+		if (data == null || data.length < ret || data.length - ret > 16) {
 			data = new short[ret];
 		} else {
 			Arrays.fill(data, (byte) 0);
@@ -217,6 +191,26 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 		offset = 0;
 		
 		return ret;
+	}
+	
+	/**
+	 * 重置帧率与采样率. 如果该渲染器需要替换音频, 则需要调用该参数来重置计数器
+	 * @param maxFrameCount
+	 *   帧率, 一般为 60
+	 * @param maxSampleCount
+	 *   采样率, 一般为 48000
+	 * @since v0.2.5
+	 */
+	protected void resetCounterParam(int maxFrameCount, int maxSampleCount) {
+		// 重置计数器
+		counter.setParam(maxSampleCount, maxFrameCount);
+		
+		// 重置音频部分, 包括 buffer 数组
+		offset = 0;
+		length = 0;
+		if (data != null) {
+			Arrays.fill(data, (byte) 0);
+		}
 	}
 	
 	/**
