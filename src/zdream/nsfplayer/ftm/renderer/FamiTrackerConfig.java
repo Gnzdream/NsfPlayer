@@ -23,13 +23,17 @@ public class FamiTrackerConfig implements Cloneable {
 	/**
 	 * 原 sound.iSampleSize
 	 * 渲染每个采样点的位深, 以 bit 计
+	 * 
+	 * v0.2.5 现在对该参数没有实际上的控制权.
+	 * 无论写多少, 最后输出的一定时 16 bit.
+	 * 所以先将其注释掉
 	 */
-	public int sampleSize = 16;
+	// public int sampleSize = 16;
 	
 	/**
 	 * Mixer 参数
 	 */
-	IMixerConfig mixerConfig;
+	public IMixerConfig mixerConfig;
 	
 	/* **********
 	 *   音量   *

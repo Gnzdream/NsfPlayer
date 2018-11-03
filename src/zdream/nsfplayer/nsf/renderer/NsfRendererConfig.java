@@ -1,12 +1,15 @@
 package zdream.nsfplayer.nsf.renderer;
 
+import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
+import zdream.nsfplayer.sound.mixer.IMixerConfig;
+
 /**
  * NSF 渲染器配置
  * @author Zdream
  * @date 2018-05-09
  * @since v0.1
  */
-public class NsfRendererConfig {
+public class NsfRendererConfig implements Cloneable {
 	
 	/**
 	 * 帧率
@@ -33,5 +36,20 @@ public class NsfRendererConfig {
 	 * 强制要求 DENDY
 	 */
 	public static final int REGION_FORCE_DENDY = 3;
+	
+	/**
+	 * Mixer 参数
+	 */
+	public IMixerConfig mixerConfig;
+	
+	@Override
+	public FamiTrackerConfig clone() {
+		try {
+			return (FamiTrackerConfig) super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 }
