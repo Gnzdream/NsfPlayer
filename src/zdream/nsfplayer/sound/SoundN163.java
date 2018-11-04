@@ -1,5 +1,7 @@
 package zdream.nsfplayer.sound;
 
+import java.util.Arrays;
+
 /**
  * N163 轨道的发声器, 在 NSF 中最多有 8 个轨道
  * 
@@ -86,6 +88,28 @@ public class SoundN163 extends AbstractNsfSound {
 	 */
 	public int volume;
 	
+	/*
+	 * 辅助参数
+	 */
+	
+	/**
+	 * <p>每次音频的状态变化相隔的时钟数. 该值需要外部输入.
+	 * 该数值有这样的计算方式:
+	 * <blockquote><pre>
+	 * step = 15 * channelCount
+	 * </pre></blockquote>
+	 * 其中 channelCount 为 N163 的轨道个数.
+	 * <p>step 将不会被 {@link #reset()} 重置.
+	 * </p>
+	 */
+	public int step;
+	
+	/**
+	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
+	 * 该参数就用来记录时钟数.
+	 */
+	private int clockCounter;
+	
 	/* **********
 	 * 公共方法 *
 	 ********** */
@@ -97,26 +121,45 @@ public class SoundN163 extends AbstractNsfSound {
 		phase = 0;
 		length = 0;
 		volume = 0;
+		Arrays.fill(wave, (byte) 0);
+		
+		// 辅助参数
+		clockCounter = 0;
+		// step 不进行初始化
 		
 		super.reset();
 	}
 
 	@Override
 	protected void onProcess(int time) {
-		phase = (phase + period) & 0x00FFFFFF;
-
-		// 相位边界值
-		int hilen = length << 16;
-		// 相位控制在相位边界值内
-		while (phase >= hilen)
-			phase -= hilen;
+		clockCounter += time;
 		
-		// NsfPlayer 工程原话:
-		// fetch sample (note: N163 output is centred at 8, and inverted w.r.t 2A03)
-		// 意思是说, N163 输出以 8 为中心, 这个与 2A03 有本质不同
-		int index = (phase >> 16);
-		int sample = 8 - wave[index];
-		mix(sample * volume); // TODO 不能调一次 onProcess 只输出一次声音数据. 也按照 phase 来
+		// 请务必设置 step 的值
+		if (step <= 0) {
+			this.time += time;
+			return;
+		}
+		
+		while (clockCounter > 0) {
+			phase = (phase + period) & 0x00FFFFFF;
+
+			// 相位边界值
+			int hilen = length << 16;
+			// 相位控制在相位边界值内
+			while (phase >= hilen)
+				phase -= hilen;
+			
+			// NsfPlayer 工程原话:
+			// fetch sample (note: N163 output is centred at 8, and inverted w.r.t 2A03)
+			// 意思是说, N163 输出以 8 为中心, 这个与 2A03 有本质不同
+			int index = (phase >> 16);
+			int sample = 8 - wave[index];
+			mix(sample * volume);
+			
+			clockCounter -= step;
+		}
+		
+		this.time += time;
 	}
 
 }
