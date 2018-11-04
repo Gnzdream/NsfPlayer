@@ -48,6 +48,8 @@ public interface INsfChannelCode {
 			CHANNEL_N163_4 = 0x54,
 			CHANNEL_N163_5 = 0x55,
 			CHANNEL_N163_6 = 0x56,
+			CHANNEL_N163_7 = 0x57,
+			CHANNEL_N163_8 = 0x58,
 					
 			CHANNEL_S5B_SQUARE1 = 0x61,
 			CHANNEL_S5B_SQUARE2 = 0x62,

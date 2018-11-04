@@ -49,6 +49,8 @@ public class NsfChannelCode implements INsfChannelCode {
 		case CHANNEL_N163_4:
 		case CHANNEL_N163_5:
 		case CHANNEL_N163_6:
+		case CHANNEL_N163_7:
+		case CHANNEL_N163_8:
 			return CHIP_N163;
 
 		}
