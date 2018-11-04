@@ -44,8 +44,8 @@ public class NesMMC5 implements ISoundChip {
 	protected int[] out = new int[3];
 	protected boolean[] enable = new boolean[2];
 
-	protected boolean[] envelope_disable = new boolean[2]; // 信封启用标志
-	protected boolean[] envelope_loop = new boolean[2]; // 信封循环标志
+	protected boolean[] envelope_disable = new boolean[2]; // 包络启用标志
+	protected boolean[] envelope_loop = new boolean[2]; // 包络循环标志
 	protected boolean[] envelope_write = new boolean[2];
 	protected int[] envelope_div_period = new int[2];
 	protected int[] envelope_div = new int[2];

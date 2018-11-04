@@ -542,7 +542,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	}
 	
 	/**
-	 * <p>解析 FDSWave 部分, 即 FDS 声像数据部分
+	 * <p>解析 FDSWave 部分, 即 FDS 音量包络数据部分
 	 * <p>示例:
 	 * <blockquote><pre>
      *     FDSWAVE    2 : 35 39 42 41 39 45 48 45 42 45 46 ...
@@ -550,7 +550,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
      * 注, 冒号后面的数字个数固定为 64 个.
 	 * <br>各个参数的意义是:
 	 * <blockquote><pre>
-     *     FDSWAVE &lt;乐器序号&gt; : &lt;64 个声像值&gt;
+     *     FDSWAVE &lt;乐器序号&gt; : &lt;64 个包络值&gt;
      * </pre></blockquote>
 	 * </p>
 	 * 

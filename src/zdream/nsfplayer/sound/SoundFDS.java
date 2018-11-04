@@ -20,32 +20,32 @@ public class SoundFDS extends AbstractNsfSound {
 	/*
 	 * 原始记录参数
 	 * 
-	 * 波形信封表部分:
+	 * 波形包络表部分:
 	 *   [0x4040, 0x407F]
 	 * 其它参数部分:
-	 * 00 号位: 0x4080 波形信封控制
+	 * 00 号位: 0x4080 波形包络控制
 	 * 01 号位: 0x4081 无
 	 * 02 号位: 0x4082 波形频率参数的低 8 位（共 12 位）
 	 * 03 号位: 0x4083 波形频率参数的高 4 位（共 12 位）, 禁用标识
-	 * 04 号位: 0x4084 调制信封控制
+	 * 04 号位: 0x4084 调制包络控制
 	 * 05 号位: 0x4085 调制相位
 	 * 06 号位: 0x4086 调制频率参数的低 8 位（共 12 位）
 	 * 07 号位: 0x4087 调制频率参数的高 4 位（共 12 位）, 禁用标识
-	 * 08 号位: 0x4088 调制信封表输入
+	 * 08 号位: 0x4088 调制包络表输入
 	 * 09 号位: 0x4089 波形写入标识, 总音量
-	 * 10 号位: 0x408A 信封播放速度
+	 * 10 号位: 0x408A 包络播放速度
 	 */
 	
 	/**
 	 * <p>[0x4040, 0x407F]
-	 * <p>波形信封表, 每个单元的值的范围 [0, 63]
+	 * <p>波形包络表, 每个单元的值的范围 [0, 63]
 	 * </p>
 	 */
 	public final byte[] wave = new byte[64];
 	
 	/**
 	 * <p>08 号位: 00000xxx 累积值的表数据
-	 * <p>调制信封表, 每个单元的值的范围 [0, 7].
+	 * <p>调制包络表, 每个单元的值的范围 [0, 7].
 	 * <p>推荐使用 {@link #writeMods(byte)} 方法来写入该值
 	 * </p>
 	 */
@@ -53,15 +53,15 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>00 号位: x0000000
-	 * <p>波形信封禁用标志.
-	 * <p>为 1 时为 true, 此时波形信封被禁用; 为 0 时为 false, 此时启用波形信封
+	 * <p>波形包络禁用标志.
+	 * <p>为 1 时为 true, 此时波形包络被禁用; 为 0 时为 false, 此时启用波形包络
 	 * </p>
 	 */
 	public boolean wavEnvDisable;
 	
 	/**
 	 * <p>00 号位: 0x000000
-	 * <p>波形信封模式
+	 * <p>波形包络模式
 	 * <p>为 1 时为 true, 为 0 时为 false
 	 * </p>
 	 */
@@ -69,7 +69,7 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>00 号位: 00xxxxxx
-	 * <p>波形信封播放速度 / 波形总体音量. 它取哪个意思以 wavEnvDisable 的值而定.
+	 * <p>波形包络播放速度 / 波形总体音量. 它取哪个意思以 wavEnvDisable 的值而定.
 	 * 当 <code>wavEnvDisable == true</code> 时, 该值表示总体音量.
 	 * <p>范围 [0, 63]
 	 * </p>
@@ -94,23 +94,23 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>03 号位: 0x000000
-	 * <p>信封暂停标志
-	 * <p>为 1 时为 true, 信封暂停; 为 0 时为 false
+	 * <p>包络暂停标志
+	 * <p>为 1 时为 true, 包络暂停; 为 0 时为 false
 	 * </p>
 	 */
 	public boolean envHalt;
 	
 	/**
 	 * <p>04 号位: x0000000
-	 * <p>调制信封禁用标志.
-	 * <p>为 1 时为 true, 此时调制信封被禁用; 为 0 时为 false, 此时启用调制信封
+	 * <p>调制包络禁用标志.
+	 * <p>为 1 时为 true, 此时调制包络被禁用; 为 0 时为 false, 此时启用调制包络
 	 * </p>
 	 */
 	public boolean modEnvDisable;
 	
 	/**
 	 * <p>04 号位: 0x000000
-	 * <p>调制信封模式
+	 * <p>调制包络模式
 	 * <p>为 1 时为 true, 为 0 时为 false
 	 * </p>
 	 */
@@ -118,7 +118,7 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>04 号位: 00xxxxxx
-	 * <p>调制信封播放速度
+	 * <p>调制包络播放速度
 	 * <p>范围 [0, 63]
 	 * </p>
 	 */
@@ -126,7 +126,7 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>05 号位: 0xxxxxxx
-	 * <p>调制信封相位
+	 * <p>调制包络相位
 	 * <p>范围 [0, 127]
 	 * </p>
 	 */
@@ -166,7 +166,7 @@ public class SoundFDS extends AbstractNsfSound {
 	
 	/**
 	 * <p>10 号位: xxxxxxxx
-	 * <p>总信封速度
+	 * <p>总包络速度
 	 * <p>范围 [0, 255]
 	 * </p>
 	 */
@@ -220,7 +220,7 @@ public class SoundFDS extends AbstractNsfSound {
 	 ********** */
 	
 	/**
-	 * <p>写入 mod 值到调制信封表中.
+	 * <p>写入 mod 值到调制包络表中.
 	 * <p>在原 NSF 程序中, 通过写入 0x4088 单元来控制该表, 而该方法就模拟这个行为.
 	 * </p>
 	 * @param mod
@@ -389,7 +389,7 @@ public class SoundFDS extends AbstractNsfSound {
 		wavEnvCounter += time;
 		int period = ((wavEnvSpeed + 1) * masterEnvSpeed) << 3;
 		while (wavEnvCounter >= period) {
-			// 信封按时钟向前走
+			// 包络按时钟向前走
 			// clock the envelope
 			if (wavEnvMode) {
 				if (wavEnvOut < 32)

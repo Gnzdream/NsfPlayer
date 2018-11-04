@@ -14,7 +14,7 @@ public class FtmInstrumentFDS extends AbstractFtmInstrument {
 	public static final int MODULATION_LENGTH = 32;
 	
 	/**
-	 * 一个周期内声像的变动情况数据
+	 * 一个周期内音量包络的变动情况数据
 	 */
 	public final byte[] samples = new byte[SAMPLE_LENGTH];
 	

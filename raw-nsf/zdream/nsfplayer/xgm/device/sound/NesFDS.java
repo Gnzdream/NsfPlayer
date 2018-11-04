@@ -66,7 +66,7 @@ public class NesFDS implements ISoundChip {
 	 */
 	protected boolean wav_halt;
 	/**
-	 * $4083 信封禁用标识, 为 false 时表示启用播放
+	 * $4083 包络禁用标识, 为 false 时表示启用播放
 	 */
 	protected boolean env_halt;
 	/**
@@ -86,25 +86,25 @@ public class NesFDS implements ISoundChip {
 
 	// two ramp envelopes
 	/**
-	 * $4080 音量信封（声像）模式标志, $4084 MOD 信封模式标志
+	 * $4080 音量包络模式标志, $4084 MOD 包络模式标志
 	 */
 	protected boolean[] env_mode = new boolean[2];
 	/**
-	 * $4080 音量信封（声像）禁用标志, $4084 MOD 信封禁用标志, 为 false 时表示启用
+	 * $4080 音量包络禁用标志, $4084 MOD 包络禁用标志, 为 false 时表示启用
 	 */
 	protected boolean[] env_disable = new boolean[2];
 	/** unsigned */
 	protected int[] env_timer = new int[2];
 	/**
 	 * unsigned
-	 * <br>$4080 音量信封（声像）播放速度, $4084 MOD 信封播放速度
+	 * <br>$4080 音量包络播放速度, $4084 MOD 包络播放速度
 	 */
 	protected int[] env_speed = new int[2];
 	/** unsigned */
 	protected int[] env_out = new int[2];
 	/**
 	 * unsigned
-	 * <br>$408A 信封速度
+	 * <br>$408A 包络速度
 	 */
 	protected int master_env_speed;
 
