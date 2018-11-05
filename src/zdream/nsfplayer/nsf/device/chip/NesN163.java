@@ -259,8 +259,10 @@ public class NesN163 extends AbstractSoundChip {
 			len = sound.wave.length;
 		}
 		
+		// TODO offset 为奇数, 一般不会发生, 但可能也是正常情况, 没有做
+		int index = offset / 2; // 指向 this.reg
+		
 		// len 一定是 2 的倍数
-		int index = offset; // 指向 this.reg
 		for (int i = 0; i < len;) {
 			sound.wave[i++] = (byte) (this.reg[index] & 0xF); // 低位
 			sound.wave[i++] = (byte) ((this.reg[index] >> 4) & 0xF); // 高位
@@ -278,7 +280,9 @@ public class NesN163 extends AbstractSoundChip {
 				continue;
 			}
 			
-			int offset = this.offsets[i];
+			// TODO offset 为奇数的情况, 一般不会发生, 但可能也是正常情况, 没有做
+			int offset = this.offsets[i] / 2;
+			
 			int length = sound.length;
 			int index = (address - offset) * 2;
 			

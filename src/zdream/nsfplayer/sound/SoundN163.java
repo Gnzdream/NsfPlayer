@@ -106,9 +106,9 @@ public class SoundN163 extends AbstractNsfSound {
 	
 	/**
 	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
-	 * 该参数就用来记录时钟数.
+	 * 记录现在到下一个 step 触发点剩余的时钟数
 	 */
-	private int clockCounter;
+	private int counter;
 	
 	/* **********
 	 * 公共方法 *
@@ -124,7 +124,7 @@ public class SoundN163 extends AbstractNsfSound {
 		Arrays.fill(wave, (byte) 0);
 		
 		// 辅助参数
-		clockCounter = 0;
+		counter = step;
 		// step 不进行初始化
 		
 		super.reset();
@@ -132,34 +132,39 @@ public class SoundN163 extends AbstractNsfSound {
 
 	@Override
 	protected void onProcess(int time) {
-		clockCounter += time;
-		
 		// 请务必设置 step 的值
 		if (step <= 0) {
+			this.counter = 0;
 			this.time += time;
 			return;
 		}
 		
-		while (clockCounter > 0) {
+		while (time >= counter) {
+			time -= counter;
+			this.time += counter;
+			counter	= step;
+			
 			phase = (phase + period) & 0x00FFFFFF;
 
 			// 相位边界值
 			int hilen = length << 16;
 			// 相位控制在相位边界值内
-			while (phase >= hilen)
-				phase -= hilen;
+			if (hilen > 0) {
+				while (phase >= hilen)
+					phase -= hilen;
+			}
 			
 			// NsfPlayer 工程原话:
 			// fetch sample (note: N163 output is centred at 8, and inverted w.r.t 2A03)
 			// 意思是说, N163 输出以 8 为中心, 这个与 2A03 有本质不同
 			int index = (phase >> 16);
 			int sample = 8 - wave[index];
-			mix(sample * volume);
 			
-			clockCounter -= step;
+			mix(sample * volume);
 		}
 		
 		this.time += time;
+		counter -= time;
 	}
 
 }
