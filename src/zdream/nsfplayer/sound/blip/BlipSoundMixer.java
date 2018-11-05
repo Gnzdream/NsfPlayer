@@ -63,6 +63,7 @@ public class BlipSoundMixer extends SoundMixer {
 	public BlipMixerChannel allocateChannel(byte code) {
 		BlipMixerChannel c = new BlipMixerChannel(this);
 		mixers.put(code, c);
+		c.setEnable(true);
 		
 		configMixChannel(code, c);
 		c.synth.output(buffer);

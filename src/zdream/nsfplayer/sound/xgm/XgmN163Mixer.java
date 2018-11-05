@@ -71,7 +71,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 		int sum = 0, count = 0;
 		for (int i = 0; i < n163s.length; i++) {
 			XgmAudioChannel ch = n163s[i];
-			if (ch == null) {
+			if (ch == null || !ch.isEnable()) {
 				continue;
 			}
 			sum += (int) (ch.buffer[idx] * ch.getLevel());

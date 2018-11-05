@@ -133,7 +133,7 @@ public class NsfAudio extends AbstractNsfAudio {
 	 * <p>N163 (Namco 163) 又称为 N106.
 	 * @return
 	 */
-	public boolean useN106() {
+	public boolean useN163() {
 		return (soundchip & 16) != 0;
 	}
 	

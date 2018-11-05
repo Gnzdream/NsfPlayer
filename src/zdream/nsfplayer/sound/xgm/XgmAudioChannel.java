@@ -32,6 +32,11 @@ public class XgmAudioChannel implements IMixerChannel {
 	 * 但是实际上音量的作用位置不在这个类, 而是在 IXgmMultiChannelMixer 中
 	 */
 	float level = 1.0f;
+	
+	/**
+	 * 是否被打开的标志
+	 */
+	boolean enable = true;
 
 	public XgmAudioChannel() {
 		
@@ -68,5 +73,15 @@ public class XgmAudioChannel implements IMixerChannel {
 	void beforeSubmit() {
 		Arrays.fill(buffer, lastTime, buffer.length, lastValue);
 		this.lastTime = 0;
+	}
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 }

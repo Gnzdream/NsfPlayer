@@ -3,9 +3,9 @@ package zdream.nsfplayer.nsf.device.chip;
 import java.util.Arrays;
 
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
+import zdream.nsfplayer.nsf.device.DeviceManager;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
-import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.SoundN163;
 
 /**
@@ -74,7 +74,12 @@ public class NesN163 extends AbstractSoundChip {
 
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
-		// TODO Auto-generated method stub
+		if (adr == 0x4800) { // register read
+			val.val = handleRead();
+			if (regAdvance)
+				regSelect = (regSelect + 1) & 0x7F;
+			return true;
+		}
 		return false;
 	}
 
@@ -89,9 +94,19 @@ public class NesN163 extends AbstractSoundChip {
 		Arrays.fill(reg, (byte) 0);
 		Arrays.fill(offsets, 0);
 	}
+	
+	/**
+	 * 外部 (一般是 {@link DeviceManager}) 调用, 强制更新 N163 的轨道数.
+	 * 不自动处理与 mixer 的连接
+	 * @param num
+	 *   总轨道数, 范围 [1, 8]
+	 */
+	public void forceChannelCount(int num) {
+		this.writeChannelCount(num, false);
+	}
 
 	@Override
-	public AbstractNsfSound getSound(byte channelCode) {
+	public SoundN163 getSound(byte channelCode) {
 		switch (channelCode) {
 		case CHANNEL_N163_1:
 		case CHANNEL_N163_2:
@@ -101,7 +116,10 @@ public class NesN163 extends AbstractSoundChip {
 		case CHANNEL_N163_6:
 		case CHANNEL_N163_7:
 		case CHANNEL_N163_8:
-			return n163s[channelCode - CHANNEL_N163_1];
+			int index = channelCode - CHANNEL_N163_1;
+			if (ons[index]) {
+				return n163s[index];
+			}
 		}
 		return null;
 	}
@@ -142,11 +160,11 @@ public class NesN163 extends AbstractSoundChip {
 			
 			// 0x7F 既是第一个轨道设置的音量的地方, 也是设置总轨道数的地方
 			if (regSelect == 0x7F) {
-				writeChannelCount(((val >> 4) & 0x07) + 1);
+				writeChannelCount(((val >> 4) & 0x07) + 1, true);
 			}
 			// 上面说过, 在 reg[] 中, 轨道号是从高到低的
 			int x = 7 - ((regSelect - 0x40) >> 3);
-			whiteParamToSound(x, regSelect & 7, val);
+			writeParamToSound(x, regSelect & 7, val);
 		}
 		
 		reg[regSelect] = (byte) val;
@@ -156,8 +174,10 @@ public class NesN163 extends AbstractSoundChip {
 	 * 设置总轨道数
 	 * @param num
 	 *   总轨道数, 范围 [1, 8]
+	 * @param b
+	 *   是否需要处理、更新和 mixer 的连接
 	 */
-	private void writeChannelCount(int num) {
+	private void writeChannelCount(int num, boolean b) {
 		int step = num * 15;
 		
 		for (int i = 0; i < n163s.length; i++) {
@@ -177,7 +197,10 @@ public class NesN163 extends AbstractSoundChip {
 			}
 		}
 		
-		// TODO 向 DeviceManager 报告现在的轨道数, 让它将 sound 和 mixer 相连
+		if (b) {
+			// 向 DeviceManager 报告现在的轨道数, 让它将 sound 和 mixer 相连
+			getRuntime().manager.reattachN163(num);
+		}
 	}
 	
 	/**
@@ -189,7 +212,7 @@ public class NesN163 extends AbstractSoundChip {
 	 * @param value
 	 *   值, 范围 [0, 0xFF]
 	 */
-	private void whiteParamToSound(int x, int address, int value) {
+	private void writeParamToSound(int x, int address, int value) {
 		SoundN163 sound = n163s[x];
 		if (sound == null) {
 			return;
@@ -231,8 +254,18 @@ public class NesN163 extends AbstractSoundChip {
 	 * 将 reg[] 的音量包络数据整体拷贝到 sound.wave 中
 	 */
 	private void copyEnvelop(SoundN163 sound, int offset) {
-		int len = Math.min(sound.length, this.reg.length - offset);
-		System.arraycopy(reg, offset, sound.wave, 0, len);
+		int len = Math.min(sound.length, (this.reg.length - offset) * 2);
+		if (len > sound.wave.length) {
+			len = sound.wave.length;
+		}
+		
+		// len 一定是 2 的倍数
+		int index = offset; // 指向 this.reg
+		for (int i = 0; i < len;) {
+			sound.wave[i++] = (byte) (this.reg[index] & 0xF); // 低位
+			sound.wave[i++] = (byte) ((this.reg[index] >> 4) & 0xF); // 高位
+			index++;
+		}
 	}
 	
 	/**
@@ -247,12 +280,60 @@ public class NesN163 extends AbstractSoundChip {
 			
 			int offset = this.offsets[i];
 			int length = sound.length;
-			int index = address - offset;
+			int index = (address - offset) * 2;
 			
-			if (index < length) {
-				sound.wave[index] = value;
+			if (index < length && index >= 0) {
+				sound.wave[index++] = (byte) (value & 0xF); // 低位
+				sound.wave[index] = (byte) ((value >> 4) & 0xF); // 高位
 			}
 		}
+	}
+
+	/* **********
+	 * 处理读取 *
+	 ********** */
+	
+	/**
+	 * 处理读的结果
+	 * @return
+	 *   读的数据
+	 */
+	private int handleRead() {
+		if (regSelect > 0x3F) {
+			int x = 7 - ((regSelect - 0x40) >> 3);
+			readParamFromSound(x, regSelect & 7);
+		}
+		
+		return reg[regSelect] & 0xFF;
+	}
+	
+	/**
+	 * 从指定的发声器读取数据, 写回到 reg 数组中
+	 * @param x
+	 *   发声器序号, 从 0 开始, 范围 [0, 7]
+	 * @param address
+	 *   地址, 范围 [0, 7]
+	 */
+	private void readParamFromSound(int x, int address) {
+		SoundN163 sound = n163s[x];
+		if (sound == null) {
+			return;
+		}
+		
+		int value = 0;
+		switch (address) {
+		case 1:
+			value = (sound.phase & 0xFF);
+			break;
+		case 3:
+			value = (sound.phase & 0xFF00);
+			break;
+		case 5:
+			value = (sound.phase & 0xFF0000);
+			break;
+		}
+		
+		reg[regSelect] = (byte) value;
 	}
 
 }

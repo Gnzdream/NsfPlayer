@@ -18,6 +18,11 @@ public class BlipMixerChannel implements IMixerChannel {
 	float level = 1;
 	
 	/**
+	 * 是否被打开的标志
+	 */
+	boolean enable = true;
+	
+	/**
 	 * 设置的表达式
 	 */
 	IExpression expression;
@@ -72,6 +77,16 @@ public class BlipMixerChannel implements IMixerChannel {
 	@Override
 	public void reset() {
 		lastInValue = lastMixValue = 0;
+	}
+
+	@Override
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
+	@Override
+	public boolean isEnable() {
+		return enable;
 	}
 
 }

@@ -1,5 +1,14 @@
 package zdream.nsfplayer.nsf.device;
 
+import static zdream.nsfplayer.core.ERegion.NTSC;
+import static zdream.nsfplayer.core.ERegion.PAL;
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_DENDY;
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
+
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -7,19 +16,15 @@ import zdream.nsfplayer.nsf.device.chip.NesAPU;
 import zdream.nsfplayer.nsf.device.chip.NesDMC;
 import zdream.nsfplayer.nsf.device.chip.NesFDS;
 import zdream.nsfplayer.nsf.device.chip.NesMMC5;
+import zdream.nsfplayer.nsf.device.chip.NesN163;
 import zdream.nsfplayer.nsf.device.chip.NesVRC6;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.SoundN163;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
-
-import static zdream.nsfplayer.core.ERegion.*;
-import static zdream.nsfplayer.core.NsfStatic.*;
-
-import java.util.Iterator;
-import java.util.Map.Entry;
 
 /**
  * 用于管理 Nsf 运行时状态的所有硬件设备的管理者
@@ -39,6 +44,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		vrc6 = new NesVRC6(runtime);
 		mmc5 = new NesMMC5(runtime);
 		fds = new NesFDS(runtime);
+		n163 = new NesN163(runtime);
 	}
 
 	@Override
@@ -98,6 +104,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	public final NesVRC6 vrc6;
 	public final NesMMC5 mmc5;
 	public final NesFDS fds;
+	public final NesN163 n163;
 	
 	private void initSoundChip() {
 		// 初始化声卡的部分数据.
@@ -134,6 +141,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		}
 		if (runtime.audio.useFds()) {
 			fds.beforeRender();
+		}
+		if (runtime.audio.useN163()) {
+			n163.beforeRender();
 		}
 		
 		// 其它的
@@ -295,6 +305,12 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			putSoundChipToRuntime(fds);
 			attachSoundChipAndMixer(fds);
 		}
+		if (runtime.audio.useN163()) {
+			n163.forceChannelCount(1);
+			stack.attach(n163);
+			putSoundChipToRuntime(n163);
+			attachSoundChipAndMixer(n163);
+		}
 		// TODO 其它的芯片
 		
 		/*
@@ -353,6 +369,36 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 
 		runtime.cpu.setMemory(stack);
 		
+	}
+	
+	/**
+	 * 根据重置后 N163 的轨道数, 对 N163 相关的轨道重新和 mixer 相连
+	 * @param n163ChannelCount
+	 */
+	public void reattachN163(int n163ChannelCount) {
+		for (int i = 0; i < 8; i++) {
+			byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
+			SoundN163 sound = n163.getSound(channelCode);
+			boolean on = sound != null;
+			
+			if (on) {
+				if (!runtime.chips.containsKey(channelCode)) {
+					runtime.chips.put(channelCode, n163);
+					
+					IMixerChannel mix = runtime.mixer.allocateChannel(channelCode);
+					sound.setOut(mix);
+					
+					mix.setLevel(getInitLevel(channelCode));
+				}
+			} else {
+				if (runtime.chips.containsKey(channelCode)) {
+					runtime.chips.remove(channelCode);
+					
+					IMixerChannel mix = runtime.mixer.getMixerChannel(channelCode);
+					mix.setEnable(false);
+				}
+			}
+		}
 	}
 	
 	/**

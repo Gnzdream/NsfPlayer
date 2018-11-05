@@ -66,6 +66,7 @@ public class XgmSoundMixer extends SoundMixer {
 		
 		ch.buffer = new short[param.freqPerFrame + 16];
 		ch.reset();
+		ch.setEnable(true);
 		
 		byte chip = chipOfChannel(channelCode);
 		AbstractXgmMultiMixer multi = multis.get(chip);
