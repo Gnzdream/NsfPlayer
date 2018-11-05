@@ -10,6 +10,7 @@ import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
  * <li>VRC6 Pulse, Sawtooth 轨道; (还未移动过来)
  * <li>MMC5 Pulse 轨道; (还未移动过来)
  * <li>FDS 轨道; (还未移动过来)
+ * <li>N163 轨道;
  * <li>TODO 其它支持音键处理的轨道
  * </li></p>
  * 

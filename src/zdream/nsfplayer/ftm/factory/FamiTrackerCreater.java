@@ -14,6 +14,7 @@ import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
+import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -991,8 +992,11 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			
 		case FDS:
 			return createFDSInstrument(doc, block);
+			
+		case N163:
+			return createN163Instrument(doc, block);
 
-		// TODO 其它芯片 N163 VRC7 S5B
+		// TODO 其它芯片 VRC7 S5B
 			
 		default:
 			break;
@@ -1186,6 +1190,15 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		}
 
 		return seq;
+	}
+	
+	private FtmInstrumentN163 createN163Instrument(FamiTrackerHandler doc, Block block) {
+		FtmInstrumentN163 inst = new FtmInstrumentN163();
+		
+		
+		
+		// TODO
+		return inst;
 	}
 	
 	private FtmSequence createEmptySequence(FtmSequenceType type) {

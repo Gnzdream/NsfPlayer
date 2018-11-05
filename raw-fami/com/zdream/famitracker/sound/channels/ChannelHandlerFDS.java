@@ -19,6 +19,7 @@ public class ChannelHandlerFDS extends ChannelHandler {
 		
 		m_bResetMod = false;
 	}
+	
 	public void processChannel() {
 		// Default effects
 		super.processChannel();	

@@ -7,6 +7,7 @@ import com.zdream.famitracker.document.Sequence;
 import com.zdream.famitracker.document.StChanNote;
 import com.zdream.famitracker.sound.channels.ChannelHandler;
 import com.zdream.famitracker.sound.channels.ChannelHandlerFDS;
+import com.zdream.famitracker.sound.channels.ChannelHandlerN163;
 import com.zdream.famitracker.sound.channels.DPCMChan;
 import com.zdream.famitracker.sound.channels.MMC5Square1Chan;
 import com.zdream.famitracker.sound.channels.MMC5Square2Chan;
@@ -288,7 +289,7 @@ public class SoundGen implements IAudioCallback {
 	int[] m_iNoteLookupTablePAL = new int[96]; // For 2A07
 	int[] m_iNoteLookupTableSaw = new int[96]; // For VRC6 sawtooth
 	int[] m_iNoteLookupTableFDS = new int[96];	// For FDS
-//	int[] m_iNoteLookupTableN163[96];			// For N163
+	int[] m_iNoteLookupTableN163 = new int[96];	 // For N163
 //	int[] m_iNoteLookupTableS5B[96];			// For sunsoft
 //	int[] m_iVibratoTable[VIBRATO_LENGTH];
 
@@ -349,15 +350,15 @@ public class SoundGen implements IAudioCallback {
 //		AssignChannel(new CTrackerChannel(_T("Pulse 1"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE1), new CMMC5Square1Chan());
 //		AssignChannel(new CTrackerChannel(_T("Pulse 2"), SNDCHIP_MMC5, CHANID_MMC5_SQUARE2), new CMMC5Square2Chan());
 //
-//		// Namco N163
-//		AssignChannel(new CTrackerChannel(_T("Namco 1"), SNDCHIP_N163, CHANID_N163_CHAN1), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 2"), SNDCHIP_N163, CHANID_N163_CHAN2), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 3"), SNDCHIP_N163, CHANID_N163_CHAN3), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 4"), SNDCHIP_N163, CHANID_N163_CHAN4), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 5"), SNDCHIP_N163, CHANID_N163_CHAN5), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 6"), SNDCHIP_N163, CHANID_N163_CHAN6), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 7"), SNDCHIP_N163, CHANID_N163_CHAN7), new CChannelHandlerN163());
-//		AssignChannel(new CTrackerChannel(_T("Namco 8"), SNDCHIP_N163, CHANID_N163_CHAN8), new CChannelHandlerN163());
+		// Namco N163
+		assignChannel(new TrackerChannel("Namco 1", SNDCHIP_N163, CHANID_N163_CHAN1), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 2", SNDCHIP_N163, CHANID_N163_CHAN2), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 3", SNDCHIP_N163, CHANID_N163_CHAN3), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 4", SNDCHIP_N163, CHANID_N163_CHAN4), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 5", SNDCHIP_N163, CHANID_N163_CHAN5), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 6", SNDCHIP_N163, CHANID_N163_CHAN6), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 7", SNDCHIP_N163, CHANID_N163_CHAN7), new ChannelHandlerN163());
+		assignChannel(new TrackerChannel("Namco 8", SNDCHIP_N163, CHANID_N163_CHAN8), new ChannelHandlerN163());
 		
 		// Sunsoft 5B
 //		AssignChannel(new CTrackerChannel(_T("Square 1"), SNDCHIP_S5B, CHANID_S5B_CH1), new CS5BChannel1());
@@ -1270,8 +1271,8 @@ public class SoundGen implements IAudioCallback {
 			m_iNoteLookupTableFDS[i] = (int) pitch;
 
 			// N163
-//			pitch = (Freq * double(NamcoChannels) * 983040.0) / clock_ntsc;
-//			m_iNoteLookupTableN163[i] = (int)(pitch) / 4;
+			pitch = (freq/* * namcoChannels*/ * 983040.0) / clock_ntsc;
+			m_iNoteLookupTableN163[i] = (int)(pitch) / 4;
 
 //			if (m_iNoteLookupTableN163[i] > 0xFFFF)	// 0x3FFFF
 //				m_iNoteLookupTableN163[i] = 0xFFFF;	// 0x3FFFF

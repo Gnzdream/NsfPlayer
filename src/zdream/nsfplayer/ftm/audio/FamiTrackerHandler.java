@@ -338,7 +338,9 @@ public class FamiTrackerHandler implements INsfChannelCode {
 					CHANNEL_N163_3,
 					CHANNEL_N163_4,
 					CHANNEL_N163_5,
-					CHANNEL_N163_6
+					CHANNEL_N163_6,
+					CHANNEL_N163_7,
+					CHANNEL_N163_8
 			};
 			int length = audio.namcoChannels;
 			for (int i = 0; i < length; i++) {

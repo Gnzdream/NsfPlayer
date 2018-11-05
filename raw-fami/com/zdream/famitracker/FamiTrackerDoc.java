@@ -414,8 +414,7 @@ public class FamiTrackerDoc {
 	}
 
 	public final int getNamcoChannels() {
-		// TODO
-		return 0;
+		return m_iNamcoChannels;
 	}
 	
 	public void setNamcoChannels(int channels) {
@@ -1115,11 +1114,21 @@ public class FamiTrackerDoc {
 			m_iChannelTypes[i++] = CHANID_MMC5_SQUARE2;
 		}
 		
-		// TODO VRC7, 6 个轨道
+		if ((m_iExpansionChip & SNDCHIP_N163) != 0) {
+			byte[] n163s = {CHANID_N163_CHAN1, CHANID_N163_CHAN2, CHANID_N163_CHAN3, CHANID_N163_CHAN4,
+					CHANID_N163_CHAN5, CHANID_N163_CHAN6, CHANID_N163_CHAN7, CHANID_N163_CHAN8};
+			
+			int len = getNamcoChannels();
+			for (int j = 0; j < len; j++) {
+				m_iChannelTypes[i++] = n163s[j]; // FDS 轨道号是哪个数我已经不清楚了
+			}
+		}
 		
 		if ((m_iExpansionChip & SNDCHIP_FDS) != 0) {
 			m_iChannelTypes[i++] = CHANID_FDS; // FDS 轨道号是哪个数我已经不清楚了
 		}
+		
+		// TODO VRC7, 6 个轨道
 		
 		// TODO 其它芯片
 	}
@@ -1282,8 +1291,6 @@ public class FamiTrackerDoc {
 		} else {
 			m_iExpansionChip = pDocFile.getBlockChar();
 		}
-		
-		handleFinish();
 
 		m_iChannelsCount = pDocFile.getBlockInt();
 		m_iMachine = (byte) pDocFile.getBlockInt();
@@ -1341,6 +1348,8 @@ public class FamiTrackerDoc {
 			// Determine if new or old split point is preferred
 			m_iSpeedSplitPoint = OLD_SPEED_SPLIT_POINT;
 		}
+		
+		handleFinish();
 
 		setupChannels(m_iExpansionChip);
 		
