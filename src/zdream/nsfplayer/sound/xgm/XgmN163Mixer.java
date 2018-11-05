@@ -82,24 +82,32 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 			return 0;
 		}
 		
+		// 这里原本乘的值分别是:
+		// 256 / 1
+		// 256 / 2
+		// 256 / 3
+		// 256 / 4
+		// 256 / 5
+		// 256 / 6
+		// 由于只有一个轨道时声音比较爆炸, 所以这里也进行轨道声音的修正
 		switch (count) {
 		case 1:
-			sum *= 256;
+			sum *= 100;
 			break;
 		case 2:
-			sum *= 128;
+			sum *= 85;
 			break;
 		case 3:
-			sum = sum * 256 / 3;
+			sum *= 72;
 			break;
 		case 4:
 			sum *= 64;
 			break;
 		case 5:
-			sum = sum * 256 / 5;
+			sum *= 56;
 			break;
 		default:
-			sum = sum * 256 / 6;
+			sum *= 50;
 			break;
 		}
 		
