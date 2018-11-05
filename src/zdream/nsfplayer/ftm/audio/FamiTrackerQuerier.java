@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.audio;
 
 import static zdream.nsfplayer.core.FtmChipType.FDS;
+import static zdream.nsfplayer.core.FtmChipType.N163;
 import static zdream.nsfplayer.core.FtmChipType.VRC6;
 import static zdream.nsfplayer.core.FtmChipType._2A03;
 import static zdream.nsfplayer.ftm.format.FtmSequenceType.ARPEGGIO;
@@ -14,6 +15,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
+import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -145,6 +147,24 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 		return (FtmInstrumentFDS) inst;
 	}
 	
+	/**
+	 * 返回 N163 乐器. 如果指定位置的乐器为空, 或者不是 N163 类型的, 返回 null
+	 * @param instrument
+	 *   乐器号码
+	 * @return
+	 * @since v0.2.6
+	 */
+	public FtmInstrumentN163 getN163Instrument(int instrument) {
+		AbstractFtmInstrument inst = getInstrument(instrument);
+		if (inst == null) {
+			return null;
+		}
+		if (inst.instType() != N163) {
+			return null;
+		}
+		return (FtmInstrumentN163) inst;
+	}
+	
 	public FtmSequence[] getSequences(int instrument) {
 		AbstractFtmInstrument inst = getInstrument(instrument);
 		if (inst == null) {
@@ -177,6 +197,17 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 		case FDS: {
 			FtmInstrumentFDS i2 = (FtmInstrumentFDS) inst;
 			return new FtmSequence[] {i2.seqVolume, i2.seqArpeggio, i2.seqPitch};
+		}
+		
+		case N163: {
+			FtmInstrumentN163 i2 = (FtmInstrumentN163) inst;
+			return new FtmSequence[] {
+					i2.vol == -1 ? null : audio.getSequence(N163, VOLUME, i2.vol),
+					i2.arp == -1 ? null : audio.getSequence(N163, ARPEGGIO, i2.arp),
+					i2.pit == -1 ? null : audio.getSequence(N163, PITCH, i2.pit),
+					i2.hip == -1 ? null : audio.getSequence(N163, HI_PITCH, i2.hip),
+					i2.dut == -1 ? null : audio.getSequence(N163, DUTY, i2.dut),
+			};
 		}
 
 		default:

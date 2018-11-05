@@ -58,6 +58,16 @@ public class FamiTrackerConfig implements Cloneable {
 		public float levelMMC5Pules2 = 1.0f;
 		
 		public float levelFDS = 1.0f;
+		
+		public float levelN163Namco1 = 1.0f;
+		public float levelN163Namco2 = 1.0f;
+		public float levelN163Namco3 = 1.0f;
+		public float levelN163Namco4 = 1.0f;
+		public float levelN163Namco5 = 1.0f;
+		public float levelN163Namco6 = 1.0f;
+		public float levelN163Namco7 = 1.0f;
+		public float levelN163Namco8 = 1.0f;
+		
 //		public float levelVRC7 = 1.0f;
 //		public float levelN163 = 1.0f;
 //		public float levelS5B = 1.0f;

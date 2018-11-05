@@ -10,13 +10,14 @@ import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
  */
 public class NoteLookupTable {
 	
-	private static short[] palTable, ntscTable, sawTable, fds;
+	private static short[] palTable, ntscTable, sawTable, fds, n163;
 	
 	static {
 		palTable = new short[96];
 		ntscTable = new short[96];
 		sawTable = new short[96];
 		fds = new short[96];
+		n163 = new short[96];
 		
 		double clock_ntsc = BASE_FREQ_NTSC / 16.0;
 		double clock_pal = BASE_FREQ_PAL / 16.0;
@@ -43,6 +44,10 @@ public class NoteLookupTable {
 			fds[i] = (short) pitch;
 			
 			// N163
+			pitch = (freq/* * namcoChannels*/ * 983040.0) / clock_ntsc;
+			n163[i] = (short) (pitch / 4);
+			// n163 的值域在 [71.84945516, 18393.46052] 内
+			
 //			pitch = (Freq * double(NamcoChannels) * 983040.0) / clock_ntsc;
 //			m_iNoteLookupTableN163[i] = (int)(pitch) / 4;
 
@@ -94,6 +99,22 @@ public class NoteLookupTable {
 	 */
 	public static short fds(int note) {
 		return fds[note - 1];
+	}
+	
+	/**
+	 * <p>N163 轨道采用的音键的波长. 注意, 计算的时候波长值 (period) 还需要进行转换:
+	 * <blockquote><pre>
+	 * period = n163(note) * ch * 4
+	 * </pre></blockquote>
+	 * 其中, ch 为当前 N163 的轨道数
+	 * </p>
+	 * @param note
+	 *   音键, [1, 96]
+	 * @return
+	 * @since v0.2.6
+	 */
+	public static short n163(int note) {
+		return n163[note - 1];
 	}
 
 }

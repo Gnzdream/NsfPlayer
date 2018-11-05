@@ -6,6 +6,7 @@ import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Channel2A03Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelFDS;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
+import zdream.nsfplayer.ftm.renderer.channel.ChannelN163;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Sawtooth;
 import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
@@ -75,6 +76,32 @@ public class ChannalDeviceSelector implements INsfChannelCode {
 		// FDS
 		case CHANNEL_FDS: {
 			return new ChannelFDS();
+		}
+		
+		// N163
+		case CHANNEL_N163_1: {
+			return new ChannelN163(0);
+		}
+		case CHANNEL_N163_2: {
+			return new ChannelN163(1);
+		}
+		case CHANNEL_N163_3: {
+			return new ChannelN163(2);
+		}
+		case CHANNEL_N163_4: {
+			return new ChannelN163(3);
+		}
+		case CHANNEL_N163_5: {
+			return new ChannelN163(4);
+		}
+		case CHANNEL_N163_6: {
+			return new ChannelN163(5);
+		}
+		case CHANNEL_N163_7: {
+			return new ChannelN163(6);
+		}
+		case CHANNEL_N163_8: {
+			return new ChannelN163(7);
 		}
 
 		default:

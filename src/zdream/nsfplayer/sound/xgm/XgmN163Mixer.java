@@ -114,11 +114,14 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 		// max N163 vol vs max APU square
 		// unfortunately, games have been measured as low as 3.4x and as high as 8.5x
 		// with higher volumes on Erika, King of Kings, and Rolling Thunder
-		// and lower volumes on others. Using 6.0x as a rough "one size fits all".
+		// and lower volumes on others. Using 5.2x as a rough "one size fits all".
 		// 根据测量结果, N163 音量在不同的游戏中表现得很不稳定,
-		// 范围在 APU 矩形脉冲波声音的 [3.4, 8.5] 倍. 这里决定采用 6 倍.
+		// 范围在 APU 矩形脉冲波声音的 [3.4, 8.5] 倍. 这里决定采用 4.5 倍.
 		
-		final double MASTER_VOL = 7338.0; // 6.0 * 1223.0
+		// 另外提一句, 源程序用的是 6 倍, 但是我是要兼容 FTM 的.
+		// 我用 6 倍来播放 FTM 后发现, 声音还是太响了, 因此把音量继续往下降至 4.5
+		
+		final double MASTER_VOL = 5503.5; // 4.5 * 1223.0
 		final double MAX_OUT = 57600; // max digital value: = 15.0 * 15.0 * 256.0
 		
 		sum = (int) ((MASTER_VOL / MAX_OUT) * sum);
