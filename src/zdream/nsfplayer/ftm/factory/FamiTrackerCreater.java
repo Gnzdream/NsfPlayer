@@ -184,7 +184,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			
 			// FILE_BLOCK_SEQUENCES_N106 是出于向后兼容的目的
 			case FILE_BLOCK_SEQUENCES_N163: case FILE_BLOCK_SEQUENCES_N106: {
-				// TODO 暂时无法处理 N163 部分
+				readBlockSequencesN163(doc, block);
 			} break;
 			
 			case FILE_BLOCK_SEQUENCES_S5B: {
@@ -651,6 +651,47 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 					seq.releasePoint = releasePoint;
 					seq.settings = (byte) settings;
 				}
+			}
+		}
+	}
+	
+	/**
+	 * <p>处理段 Sequences N163
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param block
+	 * @since v0.2.6
+	 */
+	private void readBlockSequencesN163(FamiTrackerHandler doc, Block block) {
+		// int version = block.version;
+
+		int count = block.readAsCInt();
+//		assert(count < (MAX_SEQUENCES * SEQ_COUNT));
+
+		for (int i = 0; i < count; i++) {
+			int index = block.readAsCInt();
+			int type = block.readAsCInt();
+			byte seqCount = block.readByte();
+			int loopPoint = block.readAsCInt();
+			int releasePoint = block.readAsCInt();
+			int setting = block.readAsCInt();
+
+			assert(index < MAX_SEQUENCES);
+			assert(type < 5);
+
+			FtmSequence seq = doc.getOrCreateSequenceN163(FtmSequenceType.get(type), index);
+
+			seq.clear();
+			seq.data = new byte[seqCount];
+			
+			seq.loopPoint = loopPoint;
+			seq.releasePoint = releasePoint;
+			seq.settings = (byte) setting;
+
+			for (int j = 0; j < seqCount; ++j) {
+				byte value = block.readByte();
+				seq.data[j] = value;
 			}
 		}
 	}
@@ -1195,9 +1236,61 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	private FtmInstrumentN163 createN163Instrument(FamiTrackerHandler doc, Block block) {
 		FtmInstrumentN163 inst = new FtmInstrumentN163();
 		
+		int seqCnt = block.readAsCInt();
+		assert(seqCnt < (SEQUENCE_COUNT + 1));
+
+		seqCnt = SEQUENCE_COUNT;
+
+		for (int type = 0; type < seqCnt; ++type) {
+			boolean seqEnable = (block.readByte() != 0);
+			int index = block.readUnsignedByte();
+			
+			if (!seqEnable) {
+				continue;
+			}
+			
+			assert(index < MAX_SEQUENCES);
+			switch (type) {
+			case 0:
+				inst.vol = index;
+				break;
+			case 1:
+				inst.arp = index;
+				break;
+			case 2:
+				inst.pit = index;
+				break;
+			case 3:
+				inst.hip = index;
+				break;
+			case 4:
+				inst.dut = index;
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		int waveSize = block.readAsCInt();
+		assert(waveSize >= 0 && waveSize <= 128);
 		
+		inst.wavePos = block.readAsCInt();
+		assert(inst.wavePos >= 0 && inst.wavePos < 128);
+
+		int waveCount = block.readAsCInt();
+		assert(waveCount >= 1 && waveCount <= 16);
 		
-		// TODO
+		// 最多 16 个 wave, 每个 wave 最长 128 段
+		inst.waves = new byte[waveCount][waveSize];
+		for (int i = 0; i < waveCount; ++i) {
+			for (int j = 0; j < waveSize; ++j) {
+				byte waveSample = block.readByte();
+				assert(waveSample < 16);
+				inst.waves[i][j] = waveSample;
+			}
+		}
+		
 		return inst;
 	}
 	

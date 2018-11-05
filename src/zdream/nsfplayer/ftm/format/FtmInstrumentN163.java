@@ -29,12 +29,20 @@ public class FtmInstrumentN163 extends AbstractFtmInstrument {
 	public int dut = -1;
 	
 	/**
-	 * 原: samples, [序号][位置号]
+	 * 原: samples, [序号][位置号].
+	 * 生成时是, new byte[inst.waveCount][inst.waveSize].
 	 */
-	public int[][] waves;
-	public int waveSize;
+	public byte[][] waves;
+	
+	public int getWaveSize() {
+		return waves[0].length;
+	}
+	
+	public int getWaveCount() {
+		return waves.length;
+	}
+	
 	public int wavePos;
-	public int waveCount;
 
 	@Override
 	public FtmChipType instType() {
