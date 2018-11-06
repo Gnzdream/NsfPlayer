@@ -234,6 +234,24 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		// FDS
 		case "fds": case "31":
 			return CHANNEL_FDS;
+			
+		// N163
+		case "namco1": case "n163_1": case "51":
+			return CHANNEL_N163_1;
+		case "namco2": case "n163_2": case "52":
+			return CHANNEL_N163_2;
+		case "namco3": case "n163_3": case "53":
+			return CHANNEL_N163_3;
+		case "namco4": case "n163_4": case "54":
+			return CHANNEL_N163_4;
+		case "namco5": case "n163_5": case "55":
+			return CHANNEL_N163_5;
+		case "namco6": case "n163_6": case "56":
+			return CHANNEL_N163_6;
+		case "namco7": case "n163_7": case "57":
+			return CHANNEL_N163_7;
+		case "namco8": case "n163_8": case "58":
+			return CHANNEL_N163_8;
 		}
 		
 		throw new IllegalArgumentException("无法解析轨道号: " + c);
@@ -259,6 +277,16 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		
 		// FDS
 		case CHANNEL_FDS: return "FDS";
+		
+		// N163
+		case CHANNEL_N163_1: return "Namco1";
+		case CHANNEL_N163_2: return "Namco2";
+		case CHANNEL_N163_3: return "Namco3";
+		case CHANNEL_N163_4: return "Namco4";
+		case CHANNEL_N163_5: return "Namco5";
+		case CHANNEL_N163_6: return "Namco6";
+		case CHANNEL_N163_7: return "Namco7";
+		case CHANNEL_N163_8: return "Namco8";
 		}
 		
 		return "";

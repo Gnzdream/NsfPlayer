@@ -82,10 +82,10 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	/**
 	 * 设置 N163 轨道数
 	 * @param count
-	 *   有效值 [0, 6]
+	 *   有效值 [0, 8]
 	 */
 	public void setNamcoChannels(int count) {
-		if (count < 0 || count > 6) {
+		if (count < 0 || count > 8) {
 			throw new FamiTrackerException("N163 轨道数错误: " + count);
 		}
 		audio.namcoChannels = count;

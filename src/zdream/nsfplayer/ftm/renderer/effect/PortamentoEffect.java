@@ -31,7 +31,7 @@ public class PortamentoEffect implements IFtmEffect {
 	/**
 	 * 形成一个随时间变化修改音高的滑音效果
 	 * @param delta
-	 *   变化量. 每帧变化音高的波长数 (一般是 1/60 s), 范围 [-256, 256]
+	 *   变化量. 每帧变化音高的波长数 (一般是 1/60 s), 无范围
 	 *   <br>正数, 则随时间变化, 波长增大, 声音不断变低;
 	 *   <br>负数, 则随时间变化, 波长增小, 声音不断变高;
 	 *   <br>0, 则音高不随时间变化而变化, 也可以禁掉原来作用在轨道上的滑音效果
@@ -42,9 +42,6 @@ public class PortamentoEffect implements IFtmEffect {
 	 *   当变化量 <code>delta</code> 不在指定范围内时
 	 */
 	public static PortamentoEffect of(int delta) throws IllegalArgumentException {
-		if (delta < -256 || delta > 256) {
-			throw new IllegalArgumentException("变化量必须在 -256 到 256 之间");
-		}
 		return new PortamentoEffect(delta);
 	}
 	

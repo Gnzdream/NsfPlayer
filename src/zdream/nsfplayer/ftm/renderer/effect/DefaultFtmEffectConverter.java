@@ -38,6 +38,7 @@ import java.util.Map;
 
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.core.NsfChannelCode;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
@@ -287,6 +288,8 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				int speed;
 				if (channelCode == CHANNEL_2A03_NOISE) {
 					speed = (param == 0) ? 1 : param;
+				} else if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_N163) {
+					speed = (param << 3) + 1;
 				} else {
 					speed = (param << 1) + 1;
 				}
@@ -314,13 +317,25 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				
 			case EF_PORTA_UP: // 1xx
 				if (channelCode != CHANNEL_2A03_DPCM) {
-					putEffect(channelCode, effects, PortamentoEffect.of(-note.effParam[i]));
+					int speed;
+					if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_N163) {
+						speed = (note.effParam[i] << 2);
+					} else {
+						speed = note.effParam[i];
+					}
+					putEffect(channelCode, effects, PortamentoEffect.of(-speed));
 				}
 				break;
 				
 			case EF_PORTA_DOWN: // 2xx
 				if (channelCode != CHANNEL_2A03_DPCM) {
-					putEffect(channelCode, effects, PortamentoEffect.of(note.effParam[i]));
+					int speed;
+					if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_N163) {
+						speed = (note.effParam[i] << 2);
+					} else {
+						speed = note.effParam[i];
+					}
+					putEffect(channelCode, effects, PortamentoEffect.of(speed));
 				}
 				break;
 				
@@ -337,7 +352,13 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				
 			case EF_PORTAMENTO: // 3xx
 				if (channelCode != CHANNEL_2A03_DPCM) {
-					putEffect(channelCode, effects, PortamentoOnEffect.of(note.effParam[i]));
+					int speed;
+					if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_N163) {
+						speed = (note.effParam[i] << 2);
+					} else {
+						speed = note.effParam[i];
+					}
+					putEffect(channelCode, effects, PortamentoOnEffect.of(speed));
 				}
 				break;
 				

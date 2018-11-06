@@ -97,7 +97,8 @@ public class ChannelN163 extends ChannelTone {
 	
 	@Override
 	public int periodTable(int note) {
-		return NoteLookupTable.n163(note) * getRuntime().querier.audio.getNamcoChannels() * 4;
+		int ch = getRuntime().querier.audio.getNamcoChannels();
+		return NoteLookupTable.n163(note) * ch;
 	}
 	
 	/* **********
@@ -130,7 +131,6 @@ public class ChannelN163 extends ChannelTone {
 			byte[] wave = this.currentInst.waves[duty];
 			System.arraycopy(wave, 0, sound.wave, 0, wave.length);
 			sound.length = wave.length;
-			sound.phase = 0;
 			
 			lastDuty = duty;
 		}
@@ -140,7 +140,7 @@ public class ChannelN163 extends ChannelTone {
 		sound.step = 15 * ch;
 		
 		// 其它参数
-		sound.period = this.curPeriod;
+		sound.period = this.curPeriod * 4;
 		sound.volume = this.curVolume / 16;
 		sound.setEnable(true);
 	}

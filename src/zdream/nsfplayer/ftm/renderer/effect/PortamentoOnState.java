@@ -32,8 +32,12 @@ public class PortamentoOnState extends NoteSlideState {
 		
 		int masterNote = ch.getMasterNote();
 		if (masterNote != baseNote) {
-			delta += ch.periodTable(baseNote) - ch.periodTable(masterNote);
-			baseNote = masterNote;
+			if (speed != 0) {
+				delta += ch.periodTable(baseNote) - ch.periodTable(masterNote);
+				baseNote = masterNote;
+			} else {
+				delta = 0; // delta = 0, speed = 0, 等待删除
+			}
 		}
 		
 		if (delta > 0) {
