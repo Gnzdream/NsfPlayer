@@ -195,7 +195,12 @@ public class FamiTrackerHandler implements INsfChannelCode {
 			}
 		}
 		
-		FtmPattern pattern = track.patterns[patternIdx][channelIdx];
+		FtmPattern pattern = null;
+		try {
+			pattern = track.patterns[patternIdx][channelIdx];
+		} catch (Exception e) {
+			System.out.println();
+		}
 		
 		if (pattern == null) {
 			track.patterns[patternIdx][channelIdx] = pattern = new FtmPattern();

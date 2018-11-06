@@ -319,11 +319,13 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				if (channelCode != CHANNEL_2A03_DPCM) {
 					int speed;
 					if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_N163) {
+						// N163 修改的是波长的倒数, 是增加的
 						speed = (note.effParam[i] << 2);
 					} else {
-						speed = note.effParam[i];
+						// 其它轨道修改的是波长, 波长是减少的
+						speed = -note.effParam[i];
 					}
-					putEffect(channelCode, effects, PortamentoEffect.of(-speed));
+					putEffect(channelCode, effects, PortamentoEffect.of(speed));
 				}
 				break;
 				
@@ -331,8 +333,10 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				if (channelCode != CHANNEL_2A03_DPCM) {
 					int speed;
 					if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_N163) {
-						speed = (note.effParam[i] << 2);
+						// N163 修改的是波长的倒数, 是减少的
+						speed = -(note.effParam[i] << 2);
 					} else {
+						// 其它轨道修改的是波长, 波长是增加的
 						speed = note.effParam[i];
 					}
 					putEffect(channelCode, effects, PortamentoEffect.of(speed));

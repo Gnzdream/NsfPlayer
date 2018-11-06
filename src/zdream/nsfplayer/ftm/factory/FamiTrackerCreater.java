@@ -227,7 +227,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * <li>震动模式 (忽略)
 	 * </li>
 	 * 
-	 * <p>当<b>块版本为 4 或 5 </b>时:
+	 * <p>当<b>块版本为 4 </b>时:
 	 * <li>扩展芯片码
 	 * <li>所用的轨道数
 	 * <li>制式
@@ -237,7 +237,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * <li>拍间隔 (忽略)
 	 * </li>
 	 * 
-	 * <p>当<b>块版本为 6 </b>时:
+	 * <p>当<b>块版本为 5 </b>时:
 	 * <li>扩展芯片码
 	 * <li>所用的轨道数
 	 * <li>制式
@@ -248,7 +248,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 * <li>Namco 轨道数 (当上面的扩展芯片码说该音乐使用了 Namco 音源时存在)
 	 * </li>
 	 * 
-	 * <p><b>其它高于 6 的版本</b>时:
+	 * <p>当<b>块版本为 6 或更高的版本</b>时:
 	 * <li>扩展芯片码
 	 * <li>所用的轨道数
 	 * <li>制式
@@ -309,7 +309,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			
 			break;
 			
-		case 4: case 5:
+		case 4:
 			doc.setChip(block.readByte());
 			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
@@ -321,7 +321,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			
 			break;
 			
-		case 6:
+		case 5:
 			doc.setChip(block.readByte());
 			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
@@ -336,7 +336,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			
 			break;
 			
-		default:
+		case 6: default:
 			doc.setChip(block.readByte());
 			block.skip(4); // 轨道数, 忽略
 			doc.setMechine((byte) block.readAsCInt());
