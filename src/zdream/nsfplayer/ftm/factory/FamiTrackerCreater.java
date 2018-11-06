@@ -512,7 +512,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				indices[i] = index;
 				types[i] = type;
 
-				FtmSequence seq = doc.getOrCreateSequence2A03(FtmSequenceType.get(type), index);
+				FtmSequence seq = doc.getOrCreateSequence(_2A03, FtmSequenceType.get(type), index);
 
 				seq.clear();
 				seq.loopPoint = loopPoint;
@@ -580,7 +580,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				int seqCount = block.readUnsignedByte();
 				int loopPoint = block.readAsCInt();
 				
-				FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+				FtmSequence seq = doc.getOrCreateSequence(VRC6, FtmSequenceType.get(type), index);
 				seq.clear();
 				
 				seq.loopPoint = loopPoint;
@@ -608,7 +608,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 					handleException(block, EX_SEQSVRC6_MAX_SEQUENCES, index);
 				}
 
-				FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+				FtmSequence seq = doc.getOrCreateSequence(VRC6, FtmSequenceType.get(type), index);
 				seq.clear();
 
 				seq.loopPoint = loopPoint;
@@ -646,7 +646,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 					int index = indices[i];
 					int type = types[i];
 					
-					FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+					FtmSequence seq = doc.getOrCreateSequence(VRC6, FtmSequenceType.get(type), index);
 					
 					seq.releasePoint = releasePoint;
 					seq.settings = (byte) settings;
@@ -667,7 +667,6 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		// int version = block.version;
 
 		int count = block.readAsCInt();
-//		assert(count < (MAX_SEQUENCES * SEQ_COUNT));
 
 		for (int i = 0; i < count; i++) {
 			int index = block.readAsCInt();
@@ -677,10 +676,14 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			int releasePoint = block.readAsCInt();
 			int setting = block.readAsCInt();
 
-			assert(index < MAX_SEQUENCES);
-			assert(type < 5);
+			if (index >= MAX_SEQUENCES) {
+				handleException(block, EX_SEQSN163_MAX_SEQUENCES, index);
+			}
+			if (type >= 5) {
+				handleException(block, EX_SEQSN163_WRONG_TYPE, type);
+			}
 
-			FtmSequence seq = doc.getOrCreateSequenceN163(FtmSequenceType.get(type), index);
+			FtmSequence seq = doc.getOrCreateSequence(N163, FtmSequenceType.get(type), index);
 
 			seq.clear();
 			seq.data = new byte[seqCount];
@@ -1154,6 +1157,86 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		return inst;
 	}
 	
+	/**
+	 * <p>创建 N163 乐器
+	 * </p>
+	 * @return
+	 *   N163 乐器
+	 * @since v0.2.6
+	 */
+	private FtmInstrumentN163 createN163Instrument(FamiTrackerHandler doc, Block block) {
+		FtmInstrumentN163 inst = new FtmInstrumentN163();
+		
+		int seqCount = block.readAsCInt();
+		if (seqCount >= (SEQUENCE_COUNT + 1)) {
+			handleException(block, EX_INSTN163_WRONG_SEQ_AMOUNT, seqCount);
+		}
+	
+		seqCount = SEQUENCE_COUNT;
+	
+		for (int type = 0; type < seqCount; ++type) {
+			boolean seqEnable = (block.readByte() != 0);
+			int index = block.readUnsignedByte();
+			
+			if (!seqEnable) {
+				continue;
+			}
+			
+			if (index >= MAX_SEQUENCES) {
+				handleException(block, EX_INSTN163_WRONG_SEQ_NO, index);
+			}
+			switch (type) {
+			case 0:
+				inst.vol = index;
+				break;
+			case 1:
+				inst.arp = index;
+				break;
+			case 2:
+				inst.pit = index;
+				break;
+			case 3:
+				inst.hip = index;
+				break;
+			case 4:
+				inst.dut = index;
+				break;
+	
+			default:
+				break;
+			}
+		}
+	
+		int waveSize = block.readAsCInt();
+		if (waveSize < 0 || waveSize > 128) {
+			handleException(block, EX_INSTN163_WRONG_WAVE_SIZE, waveSize);
+		}
+		
+		inst.wavePos = block.readAsCInt();
+		if (inst.wavePos < 0 || inst.wavePos >= 128) {
+			handleException(block, EX_INSTN163_WRONG_WAVE_POS, inst.wavePos);
+		}
+	
+		int waveCount = block.readAsCInt();
+		if (waveCount < 1 || waveCount > 16) {
+			handleException(block, EX_INSTN163_WRONG_WAVE_AMOUNT, waveCount);
+		}
+		
+		// 最多 16 个 wave, 每个 wave 最长 128 段
+		inst.waves = new byte[waveCount][waveSize];
+		for (int i = 0; i < waveCount; ++i) {
+			for (int j = 0; j < waveSize; ++j) {
+				byte waveSample = block.readByte();
+				if (waveSample < 0 || waveSample >= 16) {
+					handleException(block, EX_INSTN163_WRONG_WAVE_VALUE, i, j, waveSample);
+				}
+				inst.waves[i][j] = waveSample;
+			}
+		}
+		
+		return inst;
+	}
+
 	private FtmInstrumentFDS createFDSInstrument(FamiTrackerHandler doc, Block block) {
 		FtmInstrumentFDS inst = new FtmInstrumentFDS();
 		
@@ -1233,67 +1316,6 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		return seq;
 	}
 	
-	private FtmInstrumentN163 createN163Instrument(FamiTrackerHandler doc, Block block) {
-		FtmInstrumentN163 inst = new FtmInstrumentN163();
-		
-		int seqCnt = block.readAsCInt();
-		assert(seqCnt < (SEQUENCE_COUNT + 1));
-
-		seqCnt = SEQUENCE_COUNT;
-
-		for (int type = 0; type < seqCnt; ++type) {
-			boolean seqEnable = (block.readByte() != 0);
-			int index = block.readUnsignedByte();
-			
-			if (!seqEnable) {
-				continue;
-			}
-			
-			assert(index < MAX_SEQUENCES);
-			switch (type) {
-			case 0:
-				inst.vol = index;
-				break;
-			case 1:
-				inst.arp = index;
-				break;
-			case 2:
-				inst.pit = index;
-				break;
-			case 3:
-				inst.hip = index;
-				break;
-			case 4:
-				inst.dut = index;
-				break;
-
-			default:
-				break;
-			}
-		}
-
-		int waveSize = block.readAsCInt();
-		assert(waveSize >= 0 && waveSize <= 128);
-		
-		inst.wavePos = block.readAsCInt();
-		assert(inst.wavePos >= 0 && inst.wavePos < 128);
-
-		int waveCount = block.readAsCInt();
-		assert(waveCount >= 1 && waveCount <= 16);
-		
-		// 最多 16 个 wave, 每个 wave 最长 128 段
-		inst.waves = new byte[waveCount][waveSize];
-		for (int i = 0; i < waveCount; ++i) {
-			for (int j = 0; j < waveSize; ++j) {
-				byte waveSample = block.readByte();
-				assert(waveSample < 16);
-				inst.waves[i][j] = waveSample;
-			}
-		}
-		
-		return inst;
-	}
-	
 	private FtmSequence createEmptySequence(FtmSequenceType type) {
 		FtmSequence seq = new FtmSequence(type);
 		seq.clear();
@@ -1309,6 +1331,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 */
 	void revise(FamiTrackerHandler doc) {
 		reviseNotes(doc);
+		reviseInsts(doc);
 		
 		// FDS 乐器兼容问题
 		if (needAdjustFDSArpeggio) {
@@ -1338,7 +1361,23 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	}
 	
 	/**
-	 * 检查乐器, 还有每个音键使用的乐器是否在正确的范围内.
+	 * 检查乐器, 设置所有乐器的 seq 值
+	 */
+	private void reviseInsts(FamiTrackerHandler doc) {
+		FtmAudio audio = doc.audio;
+		final int instMax = audio.instrumentCount();
+		
+		for (int i = 0; i < instMax; i++) {
+			AbstractFtmInstrument inst = audio.getInstrument(i);
+			
+			if (inst != null) {
+				inst.seq = i;
+			}
+		}
+	}
+	
+	/**
+	 * 检查每个音键使用的乐器是否在正确的范围内.
 	 * 修复: 将不在正确的范围内的乐器号码修改成统一值 -1
 	 * @param doc
 	 */
@@ -1404,10 +1443,20 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	// Instruments
 	static final String EX_INSTS_LOW_VERSION = "FTM Instruments 块版本 %d 太低, 无法解析";
 	static final String EX_INSTS_WRONG_SEQ_AMOUNT = "乐器序列的数量: %d 有误";
+	// Inst N163
+	static final String EX_INSTN163_WRONG_SEQ_AMOUNT = "N163 乐器序列的数量: %d 有误";
+	static final String EX_INSTN163_WRONG_SEQ_NO = "N163 乐器序列号: %d 有误";
+	static final String EX_INSTN163_WRONG_WAVE_SIZE = "N163 乐器波形大小: %d 有误";
+	static final String EX_INSTN163_WRONG_WAVE_POS = "N163 乐器波形位置: %d 有误";
+	static final String EX_INSTN163_WRONG_WAVE_AMOUNT = "N163 乐器波形数量: %d 有误";
+	static final String EX_INSTN163_WRONG_WAVE_VALUE = "N163 乐器波形号: %d, 索引: %d, 值: %d 有误";
 	// Sequences
 	static final String EX_SEQS_LOW_VERSION = "FTM Sequences 块版本 %d 太低, 无法解析";
 	// Seq VRC6
 	static final String EX_SEQSVRC6_MAX_SEQUENCES = "VRC6 序列的序号 %d 异常";
+	// Seq N163
+	static final String EX_SEQSN163_MAX_SEQUENCES = "N163 序列的序号 %d 异常";
+	static final String EX_SEQSN163_WRONG_TYPE = "N163 序列的类型号 type: %d 异常";
 	// FRAMES
 	static final String EX_FRAMES_LOW_VERSION = "FTM Frames 块版本 %d 太低, 无法解析";
 	static final String EX_FRAMES_WRONG_FRAME_COUNT = "曲目 %d 的段 Frame 数量: %d 有误";

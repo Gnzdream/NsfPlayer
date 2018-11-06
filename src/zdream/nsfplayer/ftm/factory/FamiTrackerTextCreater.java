@@ -36,6 +36,7 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_VOLUMN;
+import static zdream.nsfplayer.core.FtmChipType.*;
 import static zdream.utils.common.CodeSpliter.extract;
 import static zdream.utils.common.CodeSpliter.split;
 
@@ -300,7 +301,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		int release = Integer.parseInt(strs[4]);
 		int settings = Integer.parseInt(strs[5]);
 		
-		FtmSequence seq = doc.getOrCreateSequence2A03(FtmSequenceType.get(type), index);
+		FtmSequence seq = doc.getOrCreateSequence(_2A03, FtmSequenceType.get(type), index);
 		seq.loopPoint = loop;
 		seq.releasePoint = release;
 		seq.settings = (byte) settings;
@@ -344,7 +345,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		int release = Integer.parseInt(strs[4]);
 		int settings = Integer.parseInt(strs[5]);
 		
-		FtmSequence seq = doc.getOrCreateSequenceVRC6(FtmSequenceType.get(type), index);
+		FtmSequence seq = doc.getOrCreateSequence(VRC6, FtmSequenceType.get(type), index);
 		seq.loopPoint = loop;
 		seq.releasePoint = release;
 		seq.settings = (byte) settings;

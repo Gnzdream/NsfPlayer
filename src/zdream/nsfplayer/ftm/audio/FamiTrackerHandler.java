@@ -432,90 +432,40 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	}
 	
 	/**
-	 * 获得 2A03 序列数据. 如果没有, 就创建一个
-	 */
-	public FtmSequence getOrCreateSequence2A03(FtmSequenceType type, int index) {
-		int key = FtmChipType._2A03.ordinal() * FtmSequenceType.values().length + type.ordinal();
-		ArrayList<FtmSequence> list = audio.seqs.get(key);
-		if (list == null) {
-			list = new ArrayList<>();
-			audio.seqs.put(key, list);
-		}
-		
-		FtmSequence seq = null;
-		if (index < list.size()) {
-			seq = list.get(index);
-		}
-		
-		if (seq == null) {
-			seq = new FtmSequence(type);
-			registerT(list, seq, index);
-		}
-		return seq;
-	}
-	
-	/**
-	 * 获得 VRC6 序列数据. 如果没有, 就创建一个
-	 */
-	public FtmSequence getOrCreateSequenceVRC6(FtmSequenceType type, int index) {
-		int key = FtmChipType.VRC6.ordinal() * FtmSequenceType.values().length + type.ordinal();
-		ArrayList<FtmSequence> list = audio.seqs.get(key);
-		if (list == null) {
-			list = new ArrayList<>();
-			audio.seqs.put(key, list);
-		}
-		
-		FtmSequence seq = null;
-		if (index < list.size()) {
-			seq = list.get(index);
-		}
-		
-		if (seq == null) {
-			seq = new FtmSequence(type);
-			registerT(list, seq, index);
-		}
-		return seq;
-	}
-	
-	/**
-	 * 获得 N163 序列数据. 如果没有, 就创建一个
-	 * TODO 以后考虑把上面的三个函数合成一个
-	 */
-	public FtmSequence getOrCreateSequenceN163(FtmSequenceType type, int index) {
-		int key = FtmChipType.N163.ordinal() * FtmSequenceType.values().length + type.ordinal();
-		ArrayList<FtmSequence> list = audio.seqs.get(key);
-		if (list == null) {
-			list = new ArrayList<>();
-			audio.seqs.put(key, list);
-		}
-		
-		FtmSequence seq = null;
-		if (index < list.size()) {
-			seq = list.get(index);
-		}
-		
-		if (seq == null) {
-			seq = new FtmSequence(type);
-			registerT(list, seq, index);
-		}
-		return seq;
-	}
-	
-	/**
-	 * 注册序列. 这里只支持 2A03 和 VRC6 芯片的.
+	 * <p>获取序列. 如果没有, 就创建一个.
+	 * <p>支持 2A03, VRC6 和 N163 芯片
+	 * </p>
 	 */
 	public FtmSequence getOrCreateSequence(FtmChipType chip, FtmSequenceType type, int index) {
 		switch (chip) {
 		case _2A03:
-			return getOrCreateSequence2A03(type, index);
 		case VRC6:
-			return getOrCreateSequenceVRC6(type, index);
 		case N163:
-			return getOrCreateSequenceN163(type, index);
+			return getOrCreateSequence0(chip, type, index);
 
 		default:
 			return null;
 		}
+	}
+	
+	private FtmSequence getOrCreateSequence0(FtmChipType chip, FtmSequenceType type, int index) {
+		int key = chip.ordinal() * FtmSequenceType.values().length + type.ordinal();
+		ArrayList<FtmSequence> list = audio.seqs.get(key);
+		if (list == null) {
+			list = new ArrayList<>();
+			audio.seqs.put(key, list);
+		}
+		
+		FtmSequence seq = null;
+		if (index < list.size()) {
+			seq = list.get(index);
+		}
+		
+		if (seq == null) {
+			seq = new FtmSequence(type);
+			registerT(list, seq, index);
+		}
+		return seq;
 	}
 	
 	/**
