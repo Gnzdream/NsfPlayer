@@ -7,6 +7,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
+import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
@@ -507,6 +508,38 @@ public class FamiTrackerHandler implements INsfChannelCode {
 		registerInstrument(instfds);
 
 		return instfds;
+	}
+	
+	/**
+	 * <p>获得指定乐器序号的 N163 乐器.
+	 * <li>如果该乐器序号没有乐器实例, 则创建一个返回;
+	 * <li>如果该乐器序号存在的乐器实例不是 N163 的, 返回 null;
+	 * </li>
+	 * </p>
+	 * @param index
+	 *   乐器序号. 该值需要为非负数
+	 * @return
+	 *   N163 乐器实例, 或 null
+	 * @since v0.2.6
+	 */
+	public FtmInstrumentN163 getOrCreateInstrumentN163(int index) {
+		ArrayList<AbstractFtmInstrument> list = audio.insts;
+		AbstractFtmInstrument inst;
+		if (index < list.size()) {
+			inst = list.get(index);
+		} else {
+			inst = null;
+		}
+		
+		if (inst != null) {
+			return (inst.instType() == FtmChipType.N163) ? (FtmInstrumentN163) inst : null;
+		}
+		
+		FtmInstrumentN163 instNamco = new FtmInstrumentN163();
+		instNamco.seq = index;
+		registerInstrument(instNamco);
+
+		return instNamco;
 	}
 
 	/**

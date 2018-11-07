@@ -3,14 +3,23 @@ package zdream.nsfplayer.ftm.format;
 /**
  * 序列的类型
  * @author Zdream
- * @since 0.2.0
+ * @since v0.2.0
  */
 public enum FtmSequenceType {
 	
+	/**
+	 * 音量
+	 */
 	VOLUME,
 	
+	/**
+	 * 琶音
+	 */
 	ARPEGGIO,
 	
+	/**
+	 * 音高变化
+	 */
 	PITCH,
 	
 	/**
@@ -23,6 +32,7 @@ public enum FtmSequenceType {
 	 * Duty / Noise;
 	 * <br>VRC6 里面是 Pulse Width
 	 * <br>FDS 不存在该序列类型
+	 * <br>N163 里面是 Wave (波形包络) 号
 	 */
 	DUTY
 	;

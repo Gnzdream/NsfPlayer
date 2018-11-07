@@ -1,42 +1,10 @@
 package zdream.nsfplayer.ftm.factory;
 
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_DPCM;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_NOISE;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_FDS;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE3;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_ARPEGGIO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_DAC;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_DELAY;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_DPCM_PITCH;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_DUTY_CYCLE;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_DEPTH;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_HI;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_FDS_MOD_SPEED_LO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_HALT;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_JUMP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_NOTE_CUT;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTAMENTO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_DOWN;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PORTA_UP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_RETRIGGER;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SAMPLE_OFFSET;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SUNSOFT_ENV_HI;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SUNSOFT_ENV_LO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_SUNSOFT_ENV_TYPE;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
-import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
-import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_VOLUMN;
+import static zdream.nsfplayer.core.INsfChannelCode.*;
+import static zdream.nsfplayer.ftm.format.FtmNote.*;
+import static zdream.nsfplayer.ftm.format.FtmStatic.*;
 import static zdream.nsfplayer.core.FtmChipType.*;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
 import static zdream.utils.common.CodeSpliter.extract;
 import static zdream.utils.common.CodeSpliter.split;
 
@@ -45,11 +13,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
+import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
@@ -90,6 +60,14 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 * 各列的效果列数
 	 */
 	int[] columns;
+	
+	/**
+	 * 在 txt 的列号对应到 FtmAudio 中的轨道序号的对应关系.
+	 * 在含 N163 轨道时, FTM 会忽略 namco 轨道数的参数, 直接写入 8 个轨道的数据
+	 * 所以需要这个映射
+	 * @since v0.2.6
+	 */
+	int[] channelIndexs;
 	
 	/**
 	 * order 的列表
@@ -203,6 +181,10 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			doc.setSplit(Integer.parseInt(strs[1]));
 		} break;
 		
+		case "N163CHANNELS": {
+			doc.setNamcoChannels(Integer.parseInt(strs[1]));
+		} break;
+		
 		// Macros
 		case "MACRO": { // 就是 sequence
 			parseMacro(reader, doc, strs);
@@ -210,6 +192,10 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		case "MACROVRC6": {
 			parseMacroVRC6(reader, doc, strs);
+		} break;
+		
+		case "MACRON163": {
+			parseMacroN163(reader, doc, strs);
 		} break;
 		
 		// DPCM samples
@@ -244,6 +230,14 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		case "FDSMACRO": {
 			parseFDSMacro(reader, doc, strs);
+		} break;
+		
+		case "INSTN163": {
+			parseInstN163(reader, doc, strs);
+		} break;
+		
+		case "N163WAVE": {
+			parseN163Wave(reader, doc, strs);
 		} break;
 		
 		// Tracks
@@ -295,24 +289,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			handleException(reader, EX_MACRO_WRONG_TOKEN);
 		}
 		
-		int type = Integer.parseInt(strs[1]);
-		int index = Integer.parseInt(strs[2]);
-		int loop = Integer.parseInt(strs[3]);
-		int release = Integer.parseInt(strs[4]);
-		int settings = Integer.parseInt(strs[5]);
-		
-		FtmSequence seq = doc.getOrCreateSequence(_2A03, FtmSequenceType.get(type), index);
-		seq.loopPoint = loop;
-		seq.releasePoint = release;
-		seq.settings = (byte) settings;
-		
-		// 序列存储
-		final int length = strs.length - 7;
-		byte[] data = new byte[length];
-		for (int i = 0; i < length; i++) {
-			data[i] = Byte.parseByte(strs[i + 7]);
-		}
-		seq.data = data;
+		parseMacro0(reader, doc, strs, _2A03);
 	}
 	
 	/**
@@ -339,13 +316,44 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			handleException(reader, EX_MACROVRC6_WRONG_TOKEN);
 		}
 		
+		parseMacro0(reader, doc, strs, VRC6);
+	}
+	
+	/**
+	 * <p>解析 MacroN163 部分, 即 N163 sequence 部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     MACRON163   0   4  -1  -1   0 : 15 13 12
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     MACRON163 &lt;类型&gt; &lt;序号&gt; &lt;循环点位置&gt; &lt;释放点位置&gt; &lt;辅助参数&gt; : &lt;序列&gt; ...
+     * </pre></blockquote>
+     * 辅助参数, 见 {@link FtmSequence#settings}
+     * <p>可以看到, 和 Macro 基本没区别
+	 * </p>
+	 * 
+	 * @since v0.2.6
+	 */
+	private void parseMacroN163(TextReader reader, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length < 7) {
+			handleException(reader, EX_MACRON163_WRONG_ITEMS, strs.length);
+		}
+		if (!":".equals(strs[6])) {
+			handleException(reader, EX_MACRON163_WRONG_TOKEN);
+		}
+		
+		parseMacro0(reader, doc, strs, N163);
+	}
+	
+	private void parseMacro0(TextReader reader, FamiTrackerHandler doc, String[] strs, FtmChipType chip) {
 		int type = Integer.parseInt(strs[1]);
 		int index = Integer.parseInt(strs[2]);
 		int loop = Integer.parseInt(strs[3]);
 		int release = Integer.parseInt(strs[4]);
 		int settings = Integer.parseInt(strs[5]);
 		
-		FtmSequence seq = doc.getOrCreateSequence(VRC6, FtmSequenceType.get(type), index);
+		FtmSequence seq = doc.getOrCreateSequence(chip, FtmSequenceType.get(type), index);
 		seq.loopPoint = loop;
 		seq.releasePoint = release;
 		seq.settings = (byte) settings;
@@ -491,7 +499,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	}
 	
 	/**
-	 * <p>解析 InstVRC6 部分, 即 VRC6 Instrument 部分
+	 * <p>解析 InstVRC6 部分, 即 VRC6 乐器部分
 	 * <p>示例:
 	 * <blockquote><pre>
      *     INSTVRC6   7     1  -1  -1  -1   0 "VRC6 lead 1"
@@ -655,6 +663,99 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 	}
 	
+	/**
+	 * <p>解析 INSTN163 部分, 即 N163 乐器部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     INSTN163   6     0  -1  -1  -1  -1  32  96   1 "Choir"
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     INSTN163 &lt;序号&gt;
+     *     &lt;音量序列号&gt; &lt;琶音序列号&gt; &lt;音高序列号&gt; &lt;大音高序列号&gt; &lt;音色序列号&gt;
+     *     &lt;波形长度&gt; &lt;波形位置&gt; &lt;波形个数&gt; &lt;乐器名称&gt;
+     * </pre></blockquote>
+	 * </p>
+	 * 
+	 * @since v0.2.6
+	 */
+	private void parseInstN163(TextReader reader2, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 11) {
+			handleException(reader, EX_INSTN163_WRONG_ITEMS, strs.length);
+		}
+		
+		int seq = Integer.parseInt(strs[1]);
+		FtmInstrumentN163 inst = doc.getOrCreateInstrumentN163(seq);
+		inst.name = strs[10];
+		
+		inst.vol = Integer.parseInt(strs[2]);
+		if (inst.vol != -1) {
+			doc.getOrCreateSequence(N163, VOLUME, inst.vol);
+		}
+		
+		inst.arp = Integer.parseInt(strs[3]);
+		if (inst.arp != -1) {
+			doc.getOrCreateSequence(N163, ARPEGGIO, inst.arp);
+		}
+		
+		inst.pit = Integer.parseInt(strs[4]);
+		if (inst.pit != -1) {
+			doc.getOrCreateSequence(N163, PITCH, inst.pit);
+		}
+		
+		inst.hip = Integer.parseInt(strs[5]);
+		if (inst.hip != -1) {
+			doc.getOrCreateSequence(N163, HI_PITCH, inst.hip);
+		}
+		
+		inst.dut = Integer.parseInt(strs[6]);
+		if (inst.dut != -1) {
+			doc.getOrCreateSequence(N163, DUTY, inst.dut);
+		}
+		
+		int waveSize = Integer.parseInt(strs[7]);
+		int waveCount = Integer.parseInt(strs[9]);
+		inst.wavePos = Integer.parseInt(strs[8]);
+		
+		inst.waves = new byte[waveCount][waveSize];
+		doc.registerInstrument(inst);
+	}
+	
+	/**
+	 * <p>解析 N163WAVE 部分, 即 N163 波形 (包络) 数据部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     N163WAVE   6   0 : 4 2 2 2 1 1 0 0 1 5 8 11 13 14 15 15 15 14 13 10 7 3 1 1 0 0 0 0 1 2 4 5
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     N163WAVE &lt;乐器序号&gt; &lt;波形序号&gt; : &lt;波形数据&gt; ...
+     * </pre></blockquote>
+     * 波形数据个数不定, 一般有 32 个
+	 * </p>
+	 * 
+	 * @since v0.2.6
+	 */
+	private void parseN163Wave(TextReader reader2, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length < 5) {
+			handleException(reader, EX_N163WAVE_WRONG_ITEMS, strs.length);
+		}
+		if (!":".equals(strs[3])) {
+			handleException(reader, EX_FDSMACRO_WRONG_TOKEN);
+		}
+		
+		int instSeq = Integer.parseInt(strs[1]);
+		int waveSeq = Integer.parseInt(strs[2]);
+		
+		FtmInstrumentN163 inst = doc.getOrCreateInstrumentN163(instSeq);
+		
+		// 该函数运行前, 一定运行过 parseInstN163, 所以 inst.waves 一定不为 null
+		byte[] waves = inst.waves[waveSeq];
+		for (int i = 0; i < waves.length; i++) {
+			waves[i] = Byte.parseByte(strs[i + 4]);
+		}
+	}
+
 	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 5) {
 			handleException(reader, EX_TRACK_WRONG_ITEMS, strs.length);
@@ -684,6 +785,39 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		int length = strs.length - 2;
 		for (int i = 0; i < length; i++) {
 			columns[i] = Integer.parseInt(strs[i + 2]);
+		}
+		
+		// N163
+		// 如果该 txt 含 N163 芯片时, 会把所有 8 个轨道写上去. 因此这里需要做处理
+		channelIndexs = new int[columns.length];
+		if (doc.audio.isUseN163()) {
+			int namcoCount = doc.audio.getNamcoChannels();
+			int namco1Index = -1;
+			int i = 5;
+			for (; i < columns.length; i++) {
+				if (doc.channelCode(i) == CHANNEL_N163_1) {
+					namco1Index = i;
+					break;
+				}
+			}
+			
+			int end = namco1Index + namcoCount;
+			for (i = 0; i < end; i++) {
+				channelIndexs[i] = i;
+			}
+			int nextVal = i; // i = end
+			
+			end = namco1Index + 8;
+			for (; i < end; i++) {
+				channelIndexs[i] = -1;
+			}
+			for (; i < channelIndexs.length; i++, nextVal++) {
+				channelIndexs[i] = nextVal;
+			}
+		} else {
+			for (int i = 0; i < channelIndexs.length; i++) {
+				channelIndexs[i] = i;
+			}
 		}
 	}
 	
@@ -747,7 +881,13 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		int offset = 2;
 		for (int column = 0; column < columns.length; column++) {
 			int length = 4 + columns[column];
-			parseColumnInRow(reader, doc, strs, column, offset, length);
+			
+			// realColume 是在 FtmAudio 中的列数. 存在 N163 轨道时, realColume 可能不等于 column
+			int realColume = channelIndexs[column];
+			if (realColume != -1) {
+				parseColumnInRow(reader, doc, strs, realColume, offset, length);
+			}
+			
 			offset += length;
 		}
 		
@@ -824,6 +964,9 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 		
 		// 效果部分
+		if (column == 9) {
+			System.out.println();
+		}
 		byte channelCode = doc.channelCode(column);
 		for (int idx = 4; idx < length; idx++) {
 			t = strs[offset + idx];
@@ -1154,12 +1297,17 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	static final String EX_FDSMOD_WRONG_ITEMS = "乐器部分解析错误, FDSMOD 格式规定项数为 67, 但是这里只有 %d";
 	static final String EX_FDSMOD_WRONG_TOKEN = "FDSMOD 部分解析错误";
 	static final String EX_FDSMACRO_WRONG_TOKEN = "FDSMACRO 部分解析错误";
+	static final String EX_INSTN163_WRONG_ITEMS = "乐器部分解析错误, N163 乐器格式规定项数为 11, 但是这里只有 %d";
+	static final String EX_N163WAVE_WRONG_ITEMS = "乐器部分解析错误, N163 波形数据格式规定项数至少为 5, 但是这里只有 %d";
+	static final String EX_N163WAVE_WRONG_TOKEN = " N163WAVE 波形数据解析错误";
 	static final String EX_DPCMDEF_WRONG_ITEMS = "曲目部分解析错误, DPCMDEF 格式规定项数为 4, 但是这里只有 %d";
 	static final String EX_DPCM_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_MACRO_WRONG_ITEMS = "曲目部分解析错误, MACRO 格式规定项数至少为 8, 但是这里只有 %d";
 	static final String EX_MACRO_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_MACROVRC6_WRONG_ITEMS = "曲目部分解析错误, MACROVRC6 格式规定项数至少为 8, 但是这里只有 %d";
 	static final String EX_MACROVRC6_WRONG_TOKEN = "MACROVRC6 部分解析错误";
+	static final String EX_MACRON163_WRONG_ITEMS = "曲目部分解析错误, MACRON163 格式规定项数至少为 8, 但是这里只有 %d";
+	static final String EX_MACRON163_WRONG_TOKEN = "MACRON163 部分解析错误";
 	static final String EX_TRACK_WRONG_ITEMS = "曲目部分解析错误, TRACK 格式规定项数为 5, 但是这里只有 %d";
 	static final String EX_COLUMNS_WRONG_TOKEN = "COLUMNS 部分解析错误";
 	static final String EX_OREDR_WRONG_ITEMS = "曲目部分解析错误, ORDER 格式规定项数为 %d, 但是这里只有 %d";

@@ -3,7 +3,9 @@ package zdream.nsfplayer.ftm.format;
 /**
  * <p>序列. 每个乐器中音量、音调、音色的变化用数值来定量, 那么这个就是序列.
  * <p>所有的芯片类型的序列都是 FtmSequence.
+ * 
  * @author Zdream
+ * @since v0.2.0
  * @date 2018-04-25
  */
 public class FtmSequence {

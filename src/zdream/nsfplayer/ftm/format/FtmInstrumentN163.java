@@ -14,9 +14,6 @@ public class FtmInstrumentN163 extends AbstractFtmInstrument {
 	public static final int MAX_WAVE_SIZE = 32 /*128*/;		// Wave size (32 samples)
 	public static final int MAX_WAVE_COUNT = 16;		// Number of waves
 
-//	private int m_iSeqEnable[SEQ_COUNT];
-	
-//	public int[] seqIndex;
 	// 序列选择
 	public int vol = -1;
 	public int arp = -1;
@@ -43,7 +40,7 @@ public class FtmInstrumentN163 extends AbstractFtmInstrument {
 	}
 	
 	public int wavePos;
-
+	
 	@Override
 	public FtmChipType instType() {
 		return FtmChipType.N163;
