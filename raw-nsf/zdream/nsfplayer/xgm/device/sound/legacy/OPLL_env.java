@@ -1,5 +1,7 @@
 package zdream.nsfplayer.xgm.device.sound.legacy;
 
+import java.util.Arrays;
+
 /**
  * 只在 VRC7 中使用
  * @author Zdream
@@ -131,6 +133,14 @@ public class OPLL_env {
 		/** output, unsigned */
 		int egout;
 		
+		@Override
+		public String toString() {
+			return "[patch=" + patch + ", type=" + type + ", feedback=" + feedback
+					+ ", output=" + Arrays.toString(output) + ", sintbl=" + Arrays.toString(sintbl) + ", phase=" + phase
+					+ ", dphase=" + dphase + ", pgout=" + pgout + ", fnum=" + fnum + ", block=" + block + ", volume="
+					+ volume + ", sustine=" + sustine + ", tll=" + tll + ", rks=" + rks + ", eg_mode=" + eg_mode
+					+ ", eg_phase=" + eg_phase + ", eg_dphase=" + eg_dphase + ", egout=" + egout + "]";
+		}
 	}
 	
 	public final class OPLLPatch {
@@ -1111,6 +1121,7 @@ public class OPLL_env {
 	
 	/**
 	 * Reset patch datas by system default.
+	 * 初始化时调用
 	 */
 	public void reset_patch(OPLL opll, int type) {
 		int i;
@@ -1164,6 +1175,7 @@ public class OPLL_env {
 	
 	/**
 	 * Force Refresh (When external program changes some parameters).
+	 * (未调用)
 	 */
 	public void forceRefresh(OPLL opll) {
 		int i;
@@ -1496,6 +1508,11 @@ public class OPLL_env {
 		return out << 3;
 	}
 	
+	/**
+	 * NesVRC7.tick(int clocks) 调用
+	 * @param opll
+	 * @return
+	 */
 	public int calc0(OPLL opll) {
 		if (opll.quality == 0)
 			return calc1(opll);
@@ -1531,6 +1548,7 @@ public class OPLL_env {
 	}
 	
 	/**
+	 * (未调用)
 	 * @param mask
 	 *   unsigned
 	 * @return
@@ -1883,14 +1901,16 @@ public class OPLL_env {
 	 *   unsigned
 	 */
 	public void writeIO(OPLL opll, int adr, int val) {
-		if ((adr & 1) != 0)
+		if ((adr & 1) != 0) {
 			writeReg(opll, opll.adr, val);
+		}
 		else
 			opll.adr = val;
 	}
 	
 	/**
 	 * STEREO MODE (OPT)
+	 * (未调用)
 	 * @param ch
 	 *   unsigned
 	 * @param pan
@@ -1902,6 +1922,7 @@ public class OPLL_env {
 	
 	/**
 	 * static calc_stereo
+	 * (未调用)
 	 * @param out
 	 *   len : 2
 	 */
@@ -1956,6 +1977,7 @@ public class OPLL_env {
 	
 	/**
 	 * OPLL_calc_stereo
+	 * (未调用)
 	 * @param out
 	 *   len : 2
 	 */

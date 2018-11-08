@@ -8,8 +8,6 @@ import static zdream.nsfplayer.sound.vrc7.VRC7Static.*;
  */
 public class OPLL {
 	
-	/** unsigned */
-	int address;
 	int out;
 
 	/** unsigned */
@@ -59,232 +57,6 @@ public class OPLL {
 
 	/** unsigned */
 	int mask;
-
-	{
-		for (int i = 0; i < slots.length; i++) {
-			slots[i] = new OPLLSlot();
-		}
-		for (int i = 0; i < patches.length; i++) {
-			patches[i] = new OPLLPatch();
-		}
-	}
-	
-	public class OPLLSlot {
-		OPLLPatch patch;
-
-		/** 0 : modulator 1 : carrier */
-		int type;
-
-		/** OUTPUT */
-		int feedback;
-		/** Output value of slot */
-		public int[] output = new int[2];
-
-		// for Phase Generator (PG)
-		/** Wavetable, unsigned */
-		int[] sintbl;
-		/** Phase, unsigned */
-		int phase;
-		/** Phase increment amount, unsigned */
-		int dphase;
-		/** output, unsigned */
-		int pgout;
-
-		// for Envelope Generator (EG)
-		/** F-Number */
-		int fnum;
-		/** Block */
-		int block;
-		/** Current volume */
-		int volume;
-		/** Sustine 1 = ON, 0 = OFF */
-		int sustine;
-		/** Total Level + Key scale level, unsigned */
-		int tll;
-		/** Key scale offset (Rks), unsigned */
-		int rks;
-		/** Current state */
-		int eg_mode;
-		/** Phase, unsigned */
-		int eg_phase;
-		/** Phase increment amount, unsigned */
-		int eg_dphase;
-		/** output, unsigned */
-		int egout;
-	
-		/**
-		 * Change a rhythm voice
-		 */
-		void setPatch(OPLLPatch patch) {
-			this.patch = patch;
-		}
-		
-		/**
-		 * Slot key off
-		 * @param slot
-		 */
-		void slotOff() {
-			if (eg_mode == ATTACK)
-				eg_phase = ((AR_ADJUST_TABLE[((eg_phase) >> (EG_DP_BITS - EG_BITS))]) << ((EG_DP_BITS)
-						- (EG_BITS)));
-			eg_mode = RELEASE;
-			eg_dphase = calc_eg_dphase(); // UPDATE_EG(slot);
-		}
-		
-		/**
-		 * Slot key on
-		 * @param slot
-		 */
-		void slotOn() {
-			eg_mode = ATTACK;
-			eg_phase = 0;
-			phase = 0;
-			eg_dphase = calc_eg_dphase(); // UPDATE_EG(slot);
-		}
-		
-		void setVolume(int volume) {
-			this.volume = volume;
-		}
-		
-		/**
-		 * PG
-		 */
-		void calc_phase(int lfo) {
-			if (patch.PM != 0)
-				phase += ((dphase * lfo) >> PM_AMP_BITS);
-			else
-				phase += dphase;
-
-			phase &= (DP_WIDTH - 1);
-
-			pgout = (phase) >> (DP_BASE_BITS);
-		}
-		
-		/**
-		 * 计算参数
-		 * @return
-		 */
-		int calc_eg_dphase() {
-			switch (eg_mode) {
-			case ATTACK:
-				return dphaseARTable[patch.AR][rks];
-
-			case DECAY:
-				return dphaseDRTable[patch.DR][rks];
-
-			case SUSHOLD:
-				return 0;
-
-			case SUSTINE:
-				return dphaseDRTable[patch.RR][rks];
-
-			case RELEASE:
-				if (sustine != 0)
-					return dphaseDRTable[5][rks];
-				else if (patch.EG != 0)
-					return dphaseDRTable[patch.RR][rks];
-				else
-					return dphaseDRTable[7][rks];
-
-			case SETTLE:
-				return dphaseDRTable[15][0];
-
-			case FINISH:
-				return 0;
-
-			default:
-				return 0;
-			}
-		}
-		
-		/**
-		 * 初始化
-		 * @param type
-		 */
-		void reset(int type) {
-			this.type = type;
-			sintbl = waveform[0];
-			phase = 0;
-			dphase = 0;
-			output[0] = 0;
-			output[1] = 0;
-			feedback = 0;
-			eg_mode = FINISH;
-			eg_phase = EG_DP_WIDTH;
-			eg_dphase = 0;
-			rks = 0;
-			tll = 0;
-			sustine = 0;
-			fnum = 0;
-			block = 0;
-			volume = 0;
-			pgout = 0;
-			egout = 0;
-			patch = null_patch;
-		}
-		
-	}
-	
-	/** Size of Sintable ( 8 -- 18 can be used. 9 recommended.) */
-	public static final int
-			PG_BITS = 9,
-			PG_WIDTH = (1<<PG_BITS);
-
-	/** Phase increment counter */
-	public static final int
-			DP_BITS = 18,
-			DP_WIDTH = (1<<DP_BITS),
-			DP_BASE_BITS = (DP_BITS - PG_BITS);
-
-	/** Dynamic range (Accuracy of sin table) */
-	public static final int
-			DB_BITS = 8,
-			DB_MUTE = (1<<DB_BITS);
-	/** Dynamic range (Accuracy of sin table) */
-	public static final double DB_STEP = (48.0/(1<<DB_BITS));
-
-	/** Dynamic range of envelope */
-	public static final double EG_STEP = 0.375;
-	/** Dynamic range of envelope */
-	public static final int
-			EG_BITS = 7,
-			EG_MUTE = (1<<EG_BITS);
-
-	/** Dynamic range of total level */
-	public static final double TL_STEP = 0.75;
-	/** Dynamic range of total level */
-	public static final int
-			TL_BITS = 6,
-			TL_MUTE = (1<<TL_BITS);
-
-	/** Dynamic range of sustine level */
-	public static final double SL_STEP = 3.0;
-	/** Dynamic range of sustine level */
-	public static final int
-			SL_BITS = 4,
-			SL_MUTE = (1<<SL_BITS);
-
-	/** Bits for liner value */
-	public static final int DB2LIN_AMP_BITS = 8, SLOT_AMP_BITS = 8;
-
-	/** Bits for envelope phase incremental counter */
-	public static final int EG_DP_BITS = 22, EG_DP_WIDTH = (1<<EG_DP_BITS);
-
-	/** Bits for Pitch and Amp modulator */
-	public static final int
-			PM_PG_BITS = 8, PM_PG_WIDTH = (1 << PM_PG_BITS),
-			PM_DP_BITS = 16, PM_DP_WIDTH = (1 << PM_DP_BITS),
-			AM_PG_BITS = 8, AM_PG_WIDTH = (1 << AM_PG_BITS),
-			AM_DP_BITS = 16, AM_DP_WIDTH = (1 << AM_DP_BITS);
-
-	/** PM table is calcurated by PM_AMP * pow(2,PM_DEPTH*sin(x)/1200) */
-	public static final int PM_AMP_BITS = 8, PM_AMP = (1 << PM_AMP_BITS);
-
-	/** PM speed(Hz) and depth(cent) */
-	public static final double PM_SPEED = 6.4, PM_DEPTH = 13.75;
-
-	/** AM speed(Hz) and depth(dB) */
-	public static final double AM_SPEED = 3.6413, AM_DEPTH = 4.875;
 	
 	/** Input clock, unsigned */
 	int clk = 844451141;
@@ -317,17 +89,6 @@ public class OPLL {
 
 	// Basic voice Data
 	OPLLPatch[][] default_patch = new OPLLPatch[OPLL_TONE_NUM][(16 + 3) * 2];
-
-	// Definition of envelope mode
-	public static final int
-			READY = 0,
-			ATTACK = 1,
-			DECAY = 2,
-			SUSHOLD = 3,
-			SUSTINE = 4,
-			RELEASE = 5,
-			SETTLE = 6,
-			FINISH = 7; 
 
 	/** Phase incr table for Attack, unsigned */
 	int[][] dphaseARTable = new int[16][16];
@@ -377,6 +138,9 @@ public class OPLL {
 		patch1.RR = (dump[7 + offset]) & 15;
 	}
 	
+	/**
+	 * 仅初始化时调用
+	 */
 	private void makeDefaultPatch() {
 		for (int i = 0; i < OPLL_TONE_NUM; i++) {
 			for (int j = 0; j < 19; j++) {
@@ -420,22 +184,8 @@ public class OPLL {
 	}
 	
 /* ***********************************************************
-    Calc Parameters
-*********************************************************** */
-	
-	
-	
-/* ***********************************************************
     OPLL internal interfaces
 *********************************************************** */
-
-	public static final int
-			SLOT_BD1 = 12,
-			SLOT_BD2 = 13,
-			SLOT_HH = 14,
-			SLOT_SD = 15,
-			SLOT_TOM = 16,
-			SLOT_CYM = 17;
 	
 	/**
 	 * Slot key on without reseting the phase
@@ -712,11 +462,11 @@ public class OPLL {
 	}
 	
 	/**
-	 * 
+	 * 仅初始化时调用
 	 * @param c
 	 *   unsigned
 	 * @param r
-	 *   unsigned
+	 *   unsigned, 48000
 	 */
 	private void maketables(int c, int r) {
 		if (c != clk) {
@@ -844,6 +594,10 @@ public class OPLL {
 			internal_refresh();
 		}
 	}
+
+	public OPLL() {
+		this(3579545, 49716); // default
+	}
 	
 	/**
 	 * init OPLL
@@ -854,12 +608,17 @@ public class OPLL {
 	 * @return
 	 */
 	public OPLL (int clk, int rate) {
-		int i;
-
+		for (int i = 0; i < slots.length; i++) {
+			slots[i] = new OPLLSlot(this);
+		}
+		for (int i = 0; i < patches.length; i++) {
+			patches[i] = new OPLLPatch();
+		}
+		
+		initSound();
 		maketables(clk, rate);
 
-
-		for (i = 0; i < 19 * 2; i++) {
+		for (int i = 0; i < 19 * 2; i++) {
 			patches[i] = null_patch.clone();
 		}
 
@@ -887,7 +646,6 @@ public class OPLL {
 	public void reset() {
 		int i;
 
-		address = 0;
 		out = 0;
 
 		pm_phase = 0;
@@ -1608,19 +1366,6 @@ public class OPLL {
 	}
 	
 	/**
-	 * @param adr
-	 *   unsigned
-	 * @param val
-	 *   unsigned
-	 */
-	public void writeIO(int adr, int val) {
-		if ((adr & 1) != 0)
-			writeReg(adr, val);
-		else
-			this.address = val;
-	}
-	
-	/**
 	 * STEREO MODE (OPT)
 	 * @param ch
 	 *   unsigned
@@ -1708,6 +1453,28 @@ public class OPLL {
 				+ (double) sprev[0] * oplltime) / opllstep);
 		out[1] = (int) (((double) snext[1] * (opllstep - oplltime)
 				+ (double) sprev[1] * oplltime) / opllstep);
+	}
+	
+	/* **********
+	 *  发声器  *
+	 ********** */
+	
+	final RawSoundVRC7[] sounds = new RawSoundVRC7[6];
+	
+	private void initSound() {
+		for (int i = 0; i < sounds.length; i++) {
+			sounds[i] = new RawSoundVRC7(this, i);
+		}
+	}
+	
+	/**
+	 * 获得发声器实例
+	 * @param index
+	 *   范围 [0, 5]
+	 * @return
+	 */
+	public RawSoundVRC7 getSound(int index) {
+		return sounds[index];
 	}
 
 }

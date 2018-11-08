@@ -14,6 +14,86 @@ public class VRC7Static {
 	    OPLL_2413_TONE = 6,
 	    OPLL_281B_TONE = 7;
 	
+	/** Size of Sintable ( 8 -- 18 can be used. 9 recommended.) */
+	public static final int
+			PG_BITS = 9,
+			PG_WIDTH = (1<<PG_BITS);
+
+	/** Phase increment counter */
+	public static final int
+			DP_BITS = 18,
+			DP_WIDTH = (1<<DP_BITS),
+			DP_BASE_BITS = (DP_BITS - PG_BITS);
+
+	/** Dynamic range (Accuracy of sin table) */
+	public static final int
+			DB_BITS = 8,
+			DB_MUTE = (1<<DB_BITS);
+	/** Dynamic range (Accuracy of sin table) */
+	public static final double DB_STEP = (48.0/(1<<DB_BITS));
+
+	/** Dynamic range of envelope */
+	public static final double EG_STEP = 0.375;
+	/** Dynamic range of envelope */
+	public static final int
+			EG_BITS = 7,
+			EG_MUTE = (1<<EG_BITS);
+
+	/** Dynamic range of total level */
+	public static final double TL_STEP = 0.75;
+	/** Dynamic range of total level */
+	public static final int
+			TL_BITS = 6,
+			TL_MUTE = (1<<TL_BITS);
+
+	/** Dynamic range of sustine level */
+	public static final double SL_STEP = 3.0;
+	/** Dynamic range of sustine level */
+	public static final int
+			SL_BITS = 4,
+			SL_MUTE = (1<<SL_BITS);
+
+	/** Bits for liner value */
+	public static final int DB2LIN_AMP_BITS = 8, SLOT_AMP_BITS = 8;
+
+	/** Bits for envelope phase incremental counter */
+	public static final int EG_DP_BITS = 22, EG_DP_WIDTH = (1<<EG_DP_BITS);
+
+	/** Bits for Pitch and Amp modulator */
+	public static final int
+			PM_PG_BITS = 8, PM_PG_WIDTH = (1 << PM_PG_BITS),
+			PM_DP_BITS = 16, PM_DP_WIDTH = (1 << PM_DP_BITS),
+			AM_PG_BITS = 8, AM_PG_WIDTH = (1 << AM_PG_BITS),
+			AM_DP_BITS = 16, AM_DP_WIDTH = (1 << AM_DP_BITS);
+
+	/** PM table is calcurated by PM_AMP * pow(2,PM_DEPTH*sin(x)/1200) */
+	public static final int PM_AMP_BITS = 8, PM_AMP = (1 << PM_AMP_BITS);
+
+	/** PM speed(Hz) and depth(cent) */
+	public static final double PM_SPEED = 6.4, PM_DEPTH = 13.75;
+
+	/** AM speed(Hz) and depth(dB) */
+	public static final double AM_SPEED = 3.6413, AM_DEPTH = 4.875;
+
+	// Definition of envelope mode
+	public static final int
+			READY = 0,
+			ATTACK = 1,
+			DECAY = 2,
+			SUSHOLD = 3,
+			SUSTINE = 4,
+			RELEASE = 5,
+			SETTLE = 6,
+			FINISH = 7; 
+
+	public static final int
+			SLOT_BD1 = 12,
+			SLOT_BD2 = 13,
+			SLOT_HH = 14,
+			SLOT_SD = 15,
+			SLOT_TOM = 16,
+			SLOT_CYM = 17;
+	
 	/**
 	 * 原本存放的值都是 unsigned byte 的
 	 */

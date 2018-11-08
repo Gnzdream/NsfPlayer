@@ -117,6 +117,9 @@ public class XgmSoundMixer extends SoundMixer {
 		case CHIP_N163:
 			multi = new XgmN163Mixer();
 			break;
+		case CHIP_VRC7:
+			multi = new XgmVRC7Mixer();
+			break;
 		}
 		
 		if (multi != null) {
