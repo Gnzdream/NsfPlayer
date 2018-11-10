@@ -85,14 +85,14 @@ public class OPLL {
 	}
 	
 	private void dump2patch(short[] dump, int offset, OPLLPatch patch0, OPLLPatch patch1) {
-		patch0.AM = (dump[offset] >> 7) & 1;
-		patch1.AM = (dump[1 + offset] >> 7) & 1;
-		patch0.PM = (dump[offset] >> 6) & 1;
-		patch1.PM = (dump[1 + offset] >> 6) & 1;
-		patch0.EG = (dump[offset] >> 5) & 1;
-		patch1.EG = (dump[1 + offset] >> 5) & 1;
-		patch0.KR = (dump[offset] >> 4) & 1;
-		patch1.KR = (dump[1 + offset] >> 4) & 1;
+		patch0.AM = (dump[offset] & 0x80) != 0;
+		patch1.AM = (dump[1 + offset] & 0x80) != 0;
+		patch0.PM = (dump[offset] & 0x40) != 0;
+		patch1.PM = (dump[1 + offset] & 0x40) != 0;
+		patch0.EG = (dump[offset] & 0x20) != 0;
+		patch1.EG = (dump[1 + offset] & 0x20) != 0;
+		patch0.KR = (dump[offset] & 0x10) != 0;
+		patch1.KR = (dump[1 + offset] & 0x10) != 0;
 		patch0.ML = (dump[offset]) & 15;
 		patch1.ML = (dump[1 + offset]) & 15;
 		patch0.KL = (dump[2 + offset] >> 6) & 3;
@@ -121,39 +121,6 @@ public class OPLL {
 						default_patch[i][j * 2], default_patch[i][j * 2 + 1]);
 			}
 		}
-	}
-
-	// unused
-	public void setPatch (short[] dump) {
-		OPLLPatch[] patch = { new OPLLPatch(), new OPLLPatch() };
-		int i;
-
-		for (i = 0; i < 19; i++) {
-			dump2patch(dump, i * 16, patch[0], patch[1]);
-			patch[i * 2].copyFrom(patch[0]);
-			patch[i * 2 + 1].copyFrom(patch[1]);
-		}
-	}
-
-	// unused
-	public void patch2dump(OPLLPatch patch0, OPLLPatch patch1, int[] dump, int offset) {
-		dump[offset] = 0xFF & ((patch0.AM << 7) + (patch0.PM << 6) + (patch0.EG << 5) + (patch0.KR << 4) + patch0.ML);
-		dump[1 + offset] = 0xFF
-				& ((patch1.AM << 7) + (patch1.PM << 6) + (patch1.EG << 5) + (patch1.KR << 4) + patch1.ML);
-		dump[2 + offset] = 0xFF & ((patch0.KL << 6) + patch0.TL);
-		dump[3 + offset] = 0xFF & ((patch1.KL << 6) + (patch1.WF << 4) + (patch0.WF << 3) + patch0.FB);
-		dump[4 + offset] = 0xFF & ((patch0.AR << 4) + patch0.DR);
-		dump[5 + offset] = 0xFF & ((patch1.AR << 4) + patch1.DR);
-		dump[6 + offset] = 0xFF & ((patch0.SL << 4) + patch0.RR);
-		dump[7 + offset] = 0xFF & ((patch1.SL << 4) + patch1.RR);
-		dump[8 + offset] = 0;
-		dump[9 + offset] = 0;
-		dump[10 + offset] = 0;
-		dump[11 + offset] = 0;
-		dump[12 + offset] = 0;
-		dump[13 + offset] = 0;
-		dump[14 + offset] = 0;
-		dump[15 + offset] = 0;
 	}
 	
 /* ***********************************************************
@@ -237,8 +204,8 @@ public class OPLL {
 	 */
 	private void setPatch(int i, int num) {
 		patch_number[i] = num;
-		slots[i << 1].patch = patches[num * 2]; // MOD(opll,i)
-		slots[((i) << 1) | 1].patch = patches[num * 2 + 1]; // CAR(opll,i)
+		slots[i << 1].patch.copyFrom(patches[num * 2]);
+		slots[((i) << 1) | 1].patch.copyFrom(patches[num * 2 + 1]); // CAR(opll,i)
 	}
 	
 	/**
@@ -593,32 +560,32 @@ public class OPLL {
 
 		switch (reg) {
 		case 0x00:
-			patches[0].AM = (data >> 7) & 1;
-			patches[0].PM = (data >> 6) & 1;
-			patches[0].EG = (data >> 5) & 1;
-			patches[0].KR = (data >> 4) & 1;
+			patches[0].AM = (data & 0x80) != 0;
+			patches[0].PM = (data & 0x40) != 0;
+			patches[0].EG = (data & 0x20) != 0;
+			patches[0].KR = (data & 0x10) != 0;
 			patches[0].ML = (data) & 15;
 			for (i = 0; i < 6; i++) {
 				if (patch_number[i] == 0) {
 					OPLLSlot s = slots[i << 1];
 					s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-					s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+					s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 					s.eg_dphase = s.calc_eg_dphase();
 				}
 			}
 			break;
 
 		case 0x01:
-			patches[1].AM = (data >> 7) & 1;
-			patches[1].PM = (data >> 6) & 1;
-			patches[1].EG = (data >> 5) & 1;
-			patches[1].KR = (data >> 4) & 1;
+			patches[1].AM = (data & 0x80) != 0;
+			patches[1].PM = (data & 0x40) != 0;
+			patches[1].EG = (data & 0x20) != 0;
+			patches[1].KR = (data & 0x10) != 0;
 			patches[1].ML = (data) & 15;
 			for (i = 0; i < 6; i++) {
 				if (patch_number[i] == 0) {
 					OPLLSlot s = slots[(i << 1) | 1];
 					s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-					s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+					s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 					s.eg_dphase = s.calc_eg_dphase();
 				}
 			}
@@ -744,7 +711,7 @@ public class OPLL {
 			} else {
 				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
 			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 			s.sintbl = waveform[s.patch.WF];
 			s.eg_dphase = s.calc_eg_dphase();
 			
@@ -755,7 +722,7 @@ public class OPLL {
 			} else {
 				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
 			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 			s.sintbl = waveform[s.patch.WF];
 			s.eg_dphase = s.calc_eg_dphase();
 		}
@@ -782,7 +749,7 @@ public class OPLL {
 			} else {
 				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
 			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 			s.sintbl = waveform[s.patch.WF];
 			s.eg_dphase = s.calc_eg_dphase();
 			
@@ -793,7 +760,7 @@ public class OPLL {
 			} else {
 				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
 			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 			s.sintbl = waveform[s.patch.WF];
 			s.eg_dphase = s.calc_eg_dphase();
 		}
@@ -832,7 +799,7 @@ public class OPLL {
 			} else {
 				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
 			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 			s.sintbl = waveform[s.patch.WF];
 			s.eg_dphase = s.calc_eg_dphase();
 
@@ -843,7 +810,7 @@ public class OPLL {
 			} else {
 				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
 			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
+			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
 			s.sintbl = waveform[s.patch.WF];
 			s.eg_dphase = s.calc_eg_dphase();
 		}

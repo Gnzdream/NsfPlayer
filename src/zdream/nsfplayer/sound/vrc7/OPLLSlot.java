@@ -8,8 +8,7 @@ public class OPLLSlot {
 	
 	OPLL parent;
 	
-	
-	OPLLPatch patch;
+	final OPLLPatch patch = new OPLLPatch();
 
 	/** 0 : modulator 1 : carrier */
 	int type;
@@ -55,13 +54,6 @@ public class OPLLSlot {
 		super();
 		this.parent = parent;
 	}
-
-	/**
-	 * Change a rhythm voice
-	 */
-	void setPatch(OPLLPatch patch) {
-		this.patch = patch;
-	}
 	
 	/**
 	 * Slot key off
@@ -104,7 +96,7 @@ public class OPLLSlot {
 	 * PG
 	 */
 	void calc_phase(int lfo) {
-		if (patch.PM != 0)
+		if (patch.PM)
 			phase += ((dphase * lfo) >> PM_AMP_BITS);
 		else
 			phase += dphase;
@@ -141,7 +133,7 @@ public class OPLLSlot {
 			egout = (this.eg_phase) >> (EG_DP_BITS - EG_BITS);
 			this.eg_phase += this.eg_dphase;
 			if (this.eg_phase >= SL[this.patch.SL]) {
-				if (this.patch.EG != 0) {
+				if (this.patch.EG) {
 					this.eg_phase = SL[this.patch.SL];
 					this.eg_mode = SUSHOLD;
 					this.eg_dphase = this.calc_eg_dphase();
@@ -155,7 +147,7 @@ public class OPLLSlot {
 
 		case SUSHOLD:
 			egout = (this.eg_phase) >> (EG_DP_BITS - EG_BITS);
-			if (this.patch.EG == 0) {
+			if (!this.patch.EG) {
 				this.eg_mode = SUSTINE;
 				this.eg_dphase = this.calc_eg_dphase();
 			}
@@ -190,7 +182,7 @@ public class OPLLSlot {
 			break;
 		}
 
-		if (this.patch.AM != 0) {
+		if (this.patch.AM) {
 			egout = ((egout + this.tll) * (int) (EG_STEP / DB_STEP)) + lfo;
 		} else {
 			egout = ((egout + this.tll) * (int) (EG_STEP / DB_STEP));
@@ -223,7 +215,7 @@ public class OPLLSlot {
 		case RELEASE:
 			if (sustine != 0)
 				return parent.dphaseDRTable[5][rks];
-			else if (patch.EG != 0)
+			else if (patch.EG)
 				return parent.dphaseDRTable[patch.RR][rks];
 			else
 				return parent.dphaseDRTable[7][rks];
@@ -360,7 +352,7 @@ public class OPLLSlot {
 	 */
 	public void forceRefresh() {
 		this.dphase = parent.dphaseTable[this.fnum][this.block][this.patch.ML];
-		this.rks = parent.rksTable[(this.fnum) >> 8][this.block][this.patch.KR];
+		this.rks = parent.rksTable[(this.fnum) >> 8][this.block][this.patch.KR ? 1 : 0];
 
 		if (this.type == 0) {
 			this.tll = parent.tllTable[(this.fnum) >> 5][this.block][this.patch.TL][this.patch.KL];
@@ -394,7 +386,7 @@ public class OPLLSlot {
 		volume = 0;
 		pgout = 0;
 		egout = 0;
-		patch = new OPLLPatch();
+		patch.reset();
 	}
 
 	@Override
