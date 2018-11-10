@@ -36,10 +36,6 @@ public class OPLL {
 	/** unsigned */
 	int quality;
 
-	// Noise Generator
-	/** unsigned */
-	int noise_seed;
-
 	// Channel Data
 	int[] patch_number = new int[6];
 	int[] key_status = new int[6];
@@ -52,9 +48,6 @@ public class OPLL {
 	OPLLPatch[] patches = new OPLLPatch[38];
 	/** flag for check patch update */
 	int[] patch_update = new int[2];
-
-	/** unsigned */
-	int mask;
 	
 	// 上面是原工程 OPLL 的变量
 	
@@ -83,9 +76,6 @@ public class OPLL {
 	// Liner to Log curve conversion table (for Attack rate).
 	/** unsigned - 16bit */
 	int[] AR_ADJUST_TABLE = new int[1 << EG_BITS];
-
-	// Empty voice data
-//	OPLLPatch null_patch = new OPLLPatch();
 
 	// Basic voice Data
 	OPLLPatch[][] default_patch = new OPLLPatch[OPLL_TONE_NUM][(16 + 3) * 2];
@@ -300,72 +290,11 @@ public class OPLL {
 		slots[c << 1].block = block; // MOD(opll,c)
 	}
 	
-	/**
-	 * Change Rhythm Mode
-	 */
-/*	private void update_rhythm_mode() {
-		if ((patch_number[6] & 0x10) != 0) {
-			if ((slot_on_flag[SLOT_BD2] | (regs[0x0e] & 32)) == 0) {
-				slots[SLOT_BD1].eg_mode = FINISH;
-				slots[SLOT_BD2].eg_mode = FINISH;
-				setPatch(6, regs[0x36] >> 4);
-			}
-		} else if ((regs[0x0e] & 32) != 0) {
-			patch_number[6] = 16;
-			slots[SLOT_BD1].eg_mode = FINISH;
-			slots[SLOT_BD2].eg_mode = FINISH;
-			slots[SLOT_BD1].setPatch(patches[16 * 2 + 0]);
-			slots[SLOT_BD2].setPatch(patches[16 * 2 + 1]);
-		}
-
-		if ((patch_number[7] & 0x10) != 0) {
-			if (!((slot_on_flag[SLOT_HH] != 0 && slot_on_flag[SLOT_SD] != 0) || (regs[0x0e] & 32) != 0)) {
-				slots[SLOT_HH].type = 0;
-				slots[SLOT_HH].eg_mode = FINISH;
-				slots[SLOT_SD].eg_mode = FINISH;
-				setPatch(7, regs[0x37] >> 4);
-			}
-		} else if ((regs[0x0e] & 32) != 0) {
-			patch_number[7] = 17;
-			slots[SLOT_HH].type = 1;
-			slots[SLOT_HH].eg_mode = FINISH;
-			slots[SLOT_SD].eg_mode = FINISH;
-			slots[SLOT_HH].setPatch(patches[17 * 2 + 0]);
-			slots[SLOT_SD].setPatch(patches[17 * 2 + 1]);
-		}
-
-		if ((patch_number[8] & 0x10) != 0) {
-			if (!((slot_on_flag[SLOT_CYM] != 0 && slot_on_flag[SLOT_TOM] != 0)
-					|| (regs[0x0e] & 32) != 0)) {
-				slots[SLOT_TOM].type = 0;
-				slots[SLOT_TOM].eg_mode = FINISH;
-				slots[SLOT_CYM].eg_mode = FINISH;
-				setPatch(8, regs[0x38] >> 4);
-			}
-		} else if ((regs[0x0e] & 32) != 0) {
-			patch_number[8] = 18;
-			slots[SLOT_TOM].type = 1;
-			slots[SLOT_TOM].eg_mode = FINISH;
-			slots[SLOT_CYM].eg_mode = FINISH;
-			slots[SLOT_TOM].setPatch(patches[18 * 2 + 0]);
-			slots[SLOT_CYM].setPatch(patches[18 * 2 + 1]);
-		}
-	}*/
-	
 	private void update_key_status() {
 		int ch;
 
 		for (ch = 0; ch < 6; ch++)
 			slot_on_flag[ch * 2] = slot_on_flag[ch * 2 + 1] = (regs[0x20 + ch]) & 0x10;
-
-//		if ((regs[0x0e] & 32) != 0) {
-//			slot_on_flag[SLOT_BD1] |= (regs[0x0e] & 0x10);
-//			slot_on_flag[SLOT_BD2] |= (regs[0x0e] & 0x10);
-//			slot_on_flag[SLOT_SD] |= (regs[0x0e] & 0x08);
-//			slot_on_flag[SLOT_HH] |= (regs[0x0e] & 0x01);
-//			slot_on_flag[SLOT_TOM] |= (regs[0x0e] & 0x04);
-//			slot_on_flag[SLOT_CYM] |= (regs[0x0e] & 0x02);
-//		}
 	}
 	
 	private void copyPatch(int num, OPLLPatch patch) {
@@ -615,8 +544,6 @@ public class OPLL {
 		}
 		maketables(clk, rate);
 
-		mask = 0;
-
 		reset();
 		reset_patch (0);
 
@@ -643,9 +570,6 @@ public class OPLL {
 
 		pm_phase = 0;
 		am_phase = 0;
-
-		noise_seed = 0xffff;
-		mask = 0;
 
 		for (i = 0; i < slots.length; i++)
 			slots[i].reset(i % 2);
@@ -714,22 +638,11 @@ public class OPLL {
 		lfo_pm = pmtable[(pm_phase) >> (PM_DP_BITS - PM_PG_BITS)];
 	}
 	
-	/**
-	 * Update Noise unit
-	 * 每次渲染前需要调用
-	 */
-	private void update_noise() {
-		if ((noise_seed & 1) != 0)
-			noise_seed ^= 0x8003020;
-		noise_seed >>= 1;
-	}
-	
 	private int calc1() {
 		int inst = 0, perc = 0, out = 0;
 		int i;
 
 		update_ampm();
-		update_noise();
 
 		for (i = 0; i < slots.length; i++) {
 			slots[i].calc_phase(lfo_pm);
@@ -737,39 +650,8 @@ public class OPLL {
 		}
 
 		for (i = 0; i < 6; i++)
-			if ((mask & (1 << i)) == 0 && (slots[(i << 1) | 1].eg_mode != FINISH))
+			if (slots[(i << 1) | 1].eg_mode != FINISH)
 				inst += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
-		
-		/* CH6 */
-		/*if (patch_number[6] <= 15) {
-			if ((mask & (1 << 6)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				inst += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
-		} else {
-			if ((mask & 1 << 13) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				perc += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
-		}*/
-
-		/* CH7 */
-		/*if (patch_number[7] <= 15) {
-			if ((mask & (1 << 7)) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				inst += slots[(7 << 1) | 1].calc_slot_car(slots[7 << 1].calc_slot_mod());
-		} else {
-			if ((mask & 1 << 9) == 0 && (slots[7 << 1].eg_mode != FINISH))
-				perc += slots[7 << 1].calc_slot_hat(slots[(8 << 1) | 1].pgout, noise_seed & 1);
-			if ((mask & 1 << 12) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				perc -= slots[(7 << 1) | 1].calc_slot_snare(noise_seed & 1);
-		}*/
-
-		/* CH8 */
-		/*if (patch_number[8] <= 15) {
-			if ((mask & (1 << 8)) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				inst += slots[(8 << 1) | 1].calc_slot_car(slots[8 << 1].calc_slot_mod());
-		} else {
-			if ((mask & 1 << 11) == 0 && (slots[8 << 1].eg_mode != FINISH))
-				perc += slots[i << 1].calc_slot_tom();
-			if ((mask & 1 << 10) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				perc -= slots[(8 << 1) | 1].calc_slot_cym(slots[7 << 1].pgout);
-		}*/
 
 		out = inst + (perc << 1);
 		return out << 3;
@@ -790,30 +672,6 @@ public class OPLL {
 				/ opllstep);
 
 		return (int) out;
-	}
-	
-	/**
-	 * @param mask
-	 *   unsigned
-	 * @return
-	 *   unsigned
-	 */
-	public int setMask(int m) {
-		int ret = mask;
-		mask = m;
-		return ret;
-	}
-	
-	/**
-	 * @param mask
-	 *   unsigned
-	 * @return
-	 *   unsigned
-	 */
-	public int toggleMask(int mask) {
-		int ret = mask;
-		mask ^= mask;
-		return ret;
 	}
 	
 /* ***********************************************************
@@ -941,7 +799,6 @@ public class OPLL {
 			break;
 
 		case 0x0e:
-			//update_rhythm_mode();
 			if ((data & 32) != 0) {
 				if ((data & 0x10) != 0)
 					keyOn_BD();
@@ -965,44 +822,6 @@ public class OPLL {
 					keyOff_HH();
 			}
 			update_key_status();
-
-			/*for (int j = 0; j < 6; j++) {
-				OPLLSlot s;
-				switch (j) {
-				case 0:
-					s = slots[6 << 1];
-					break;
-				case 1:
-					s = slots[(6 << 1) | 1];
-					break;
-				case 2:
-					s = slots[7 << 1];
-					break;
-				case 3:
-					s = slots[(7 << 1) | 1];
-					break;
-				case 4:
-					s = slots[8 << 1];
-					break;
-				case 5:
-					s = slots[(8 << 1) | 1];
-					break;
-
-				default:
-					s = null;
-					break;
-				}
-
-				s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-				if (s.type == 0) {
-					s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-				} else {
-					s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-				}
-				s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
-				s.sintbl = waveform[s.patch.WF];
-				s.eg_dphase = s.calc_eg_dphase();
-			}*/
 			break;
 
 		case 0x0f:
@@ -1014,9 +833,6 @@ public class OPLL {
 		case 0x13:
 		case 0x14:
 		case 0x15:
-//		case 0x16:
-//		case 0x17:
-//		case 0x18:
 			ch = reg - 0x10;
 			setFnumber(ch, data + ((this.regs[0x20 + ch] & 1) << 8));
 
@@ -1051,9 +867,6 @@ public class OPLL {
 		case 0x23:
 		case 0x24:
 		case 0x25:
-//		case 0x26:
-//		case 0x27:
-//		case 0x28:
 			ch = reg - 0x20;
 			setFnumber(ch, ((data & 1) << 8) + this.regs[0x10 + ch]);
 			setBlock(ch, (data >> 1) & 7);
@@ -1085,7 +898,6 @@ public class OPLL {
 			s.eg_dphase = s.calc_eg_dphase();
 		}
 			update_key_status();
-//			update_rhythm_mode();
 			break;
 
 		case 0x30:
@@ -1094,9 +906,6 @@ public class OPLL {
 		case 0x33:
 		case 0x34:
 		case 0x35:
-//		case 0x36:
-//		case 0x37:
-//		case 0x38:
 			i = (data >> 4) & 15;
 			v = data & 15;
 			if ((this.regs[0x0e] & 32) != 0 && (reg >= 0x36)) {
