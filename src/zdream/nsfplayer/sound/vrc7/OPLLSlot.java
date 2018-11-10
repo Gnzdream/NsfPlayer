@@ -356,6 +356,22 @@ public class OPLLSlot {
 	}
 	
 	/**
+	 * Force Refresh (When external program changes some parameters).
+	 */
+	public void forceRefresh() {
+		this.dphase = parent.dphaseTable[this.fnum][this.block][this.patch.ML];
+		this.rks = parent.rksTable[(this.fnum) >> 8][this.block][this.patch.KR];
+
+		if (this.type == 0) {
+			this.tll = parent.tllTable[(this.fnum) >> 5][this.block][this.patch.TL][this.patch.KL];
+		} else {
+			this.tll = parent.tllTable[(this.fnum) >> 5][this.block][this.volume][this.patch.KL];
+		}
+		this.sintbl = parent.waveform[this.patch.WF];
+		this.eg_dphase = this.calc_eg_dphase();
+	}
+	
+	/**
 	 * 初始化
 	 * @param type
 	 */
@@ -378,7 +394,7 @@ public class OPLLSlot {
 		volume = 0;
 		pgout = 0;
 		egout = 0;
-		patch = parent.null_patch;
+		patch = new OPLLPatch();
 	}
 
 	@Override

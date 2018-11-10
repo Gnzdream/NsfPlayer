@@ -28,12 +28,12 @@ public class OPLL {
 
 	// Pitch Modulator
 	/** unsigned */
-	int pm_phase;
-	int lfo_pm;
+	private int pm_phase;
+	private int lfo_pm;
 
 	// Amp Modulator
-	int am_phase;
-	int lfo_am;
+	private int am_phase;
+	private int lfo_am;
 
 	/** unsigned */
 	int quality;
@@ -87,7 +87,7 @@ public class OPLL {
 	int[] AR_ADJUST_TABLE = new int[1 << EG_BITS];
 
 	// Empty voice data
-	OPLLPatch null_patch = new OPLLPatch();
+//	OPLLPatch null_patch = new OPLLPatch();
 
 	// Basic voice Data
 	OPLLPatch[][] default_patch = new OPLLPatch[OPLL_TONE_NUM][(16 + 3) * 2];
@@ -190,16 +190,6 @@ public class OPLL {
 *********************************************************** */
 	
 	/**
-	 * Slot key on without reseting the phase
-	 * @param slot
-	 */
-	private void slotOn2(OPLLSlot slot) {
-		slot.eg_mode = ATTACK;
-		slot.eg_phase = 0;
-		slot.eg_dphase = slot.calc_eg_dphase(); // UPDATE_EG(slot);
-	}
-	
-	/**
 	 * Channel key on
 	 */
 	private void keyOn(int i) {
@@ -238,12 +228,12 @@ public class OPLL {
 
 	private void keyOn_HH() {
 		if (slot_on_flag[SLOT_HH] == 0)
-			slotOn2(slots[(7) << 1]); // MOD(opll,7)
+			slots[(7) << 1].slotOn2(); // MOD(opll,7)
 	}
 	
 	private void keyOn_CYM() {
 		if (slot_on_flag[SLOT_CYM] == 0)
-			slotOn2((slots[((8) << 1) | 1])); // CAR(opll,8)
+			slots[((8) << 1) | 1].slotOn2(); // CAR(opll,8)
 	}
 	
 	// Drum key off
@@ -610,19 +600,22 @@ public class OPLL {
 	 * @return
 	 */
 	public OPLL (int clk, int rate) {
-		for (int i = 0; i < slots.length; i++) {
+		initSound();
+		
+		int i = 0;
+		for (; i < sounds.length; i++) {
+			RawSoundVRC7 sound = sounds[i];
+			slots[(i << 1)] = sound.carriorSlot;
+			slots[(i << 1) | 1] = sound.modulatorSlot;
+		}
+		for (; i < slots.length; i++) {
 			slots[i] = new OPLLSlot(this);
 		}
-		for (int i = 0; i < patches.length; i++) {
+		
+		for (i = 0; i < patches.length; i++) {
 			patches[i] = new OPLLPatch();
 		}
-		
-		initSound();
 		maketables(clk, rate);
-
-		for (int i = 0; i < 19 * 2; i++) {
-			patches[i] = null_patch.clone();
-		}
 
 		mask = 0;
 
@@ -690,17 +683,7 @@ public class OPLL {
 			setPatch(i, patch_number[i]);
 
 		for (i = 0; i < 18; i++) {
-			OPLLSlot s = slots[i];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR];
-
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
+			slots[i].forceRefresh();
 		}
 	}
 	
@@ -724,6 +707,7 @@ public class OPLL {
 	
 	/**
 	 * Update AM, PM unit
+	 * 每次渲染前需要调用
 	 * @param opll
 	 */
 	private void update_ampm() {
@@ -735,8 +719,9 @@ public class OPLL {
 	
 	/**
 	 * Update Noise unit
+	 * 每次渲染前需要调用
 	 */
-	private void update_noise () {
+	private void update_noise() {
 		if ((noise_seed & 1) != 0)
 			noise_seed ^= 0x8003020;
 		noise_seed >>= 1;

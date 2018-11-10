@@ -17,11 +17,16 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	RawSoundVRC7(OPLL opll, int index) {
 		this.opll = opll;
 		this.index = index;
+		
+		this.carriorSlot = new OPLLSlot(opll);
+		this.modulatorSlot = new OPLLSlot(opll);
 	}
 	
 	/* **********
 	 *   参数   *
 	 ********** */
+	
+	public final OPLLSlot carriorSlot, modulatorSlot;
 	
 	int divider;
 	
