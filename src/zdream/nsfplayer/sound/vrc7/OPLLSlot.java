@@ -4,54 +4,63 @@ import static zdream.nsfplayer.sound.vrc7.VRC7Static.*;
 
 import java.util.Arrays;
 
-public class OPLLSlot {
+import zdream.nsfplayer.core.IResetable;
+
+public class OPLLSlot implements IResetable {
 	
 	OPLL parent;
 	
-	final OPLLPatch patch = new OPLLPatch();
+	public final OPLLPatch patch = new OPLLPatch();
 
 	/** 0 : modulator 1 : carrier */
-	int type;
+	public final int type;
 
 	/** OUTPUT */
-	int feedback;
+	public int feedback;
 	/** Output value of slot */
 	public int[] output = new int[2];
 
 	// for Phase Generator (PG)
 	/** Wavetable, unsigned */
-	int[] sintbl;
+	public int[] sintbl;
 	/** Phase, unsigned */
-	int phase;
+	public int phase;
 	/** Phase increment amount, unsigned */
-	int dphase;
+	public int dphase;
 	/** output, unsigned */
-	int pgout;
+	public int pgout;
 
 	// for Envelope Generator (EG)
 	/** F-Number */
-	int fnum;
+	public int fnum;
 	/** Block */
-	int block;
+	public int block;
 	/** Current volume */
-	int volume;
+	public int volume;
 	/** Sustine 1 = ON, 0 = OFF */
-	int sustine;
+	public int sustine;
 	/** Total Level + Key scale level, unsigned */
-	int tll;
+	public int tll;
 	/** Key scale offset (Rks), unsigned */
-	int rks;
+	public int rks;
 	/** Current state */
-	int eg_mode;
+	public int eg_mode;
 	/** Phase, unsigned */
-	int eg_phase;
+	public int eg_phase;
 	/** Phase increment amount, unsigned */
-	int eg_dphase;
+	public int eg_dphase;
 	/** output, unsigned */
-	int egout;
+	public int egout;
 	
-	public OPLLSlot(OPLL parent) {
+	/**
+	 * @param parent
+	 *   OPLL 环境
+	 * @param type
+	 *   0 : modulator;  1 : carrier
+	 */
+	public OPLLSlot(OPLL parent, int type) {
 		super();
+		this.type = type;
 		this.parent = parent;
 	}
 	
@@ -365,10 +374,8 @@ public class OPLLSlot {
 	
 	/**
 	 * 初始化
-	 * @param type
 	 */
-	void reset(int type) {
-		this.type = type;
+	public void reset() {
 		sintbl = parent.waveform[0];
 		phase = 0;
 		dphase = 0;

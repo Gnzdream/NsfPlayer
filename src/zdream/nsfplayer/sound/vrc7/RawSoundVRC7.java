@@ -20,8 +20,8 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 		this.opll = opll;
 		this.index = index;
 		
-		this.modulatorSlot = new OPLLSlot(opll);
-		this.carriorSlot = new OPLLSlot(opll);
+		this.modulatorSlot = new OPLLSlot(opll, 0);
+		this.carriorSlot = new OPLLSlot(opll, 1);
 	}
 	
 	/* **********
@@ -40,6 +40,11 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	public boolean modOn, carOn;
 	
 	/**
+	 * 采用的 patch 号码. 0 为自定义
+	 */
+	public int patchNum;
+	
+	/**
 	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
 	 * 记录现在到下一个 step 触发点剩余的时钟数
 	 */
@@ -56,6 +61,9 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 		// OPLL 的
 		pm_phase = 0;
 		am_phase = 0;
+		
+		modulatorSlot.reset();
+		carriorSlot.reset();
 		
 		super.reset();
 	}
