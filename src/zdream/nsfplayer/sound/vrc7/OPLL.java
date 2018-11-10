@@ -18,8 +18,6 @@ public class OPLL {
 	int opllstep;
 	int prev, next;
 	int[] sprev = new int[2], snext = new int[2];
-	/** unsigned */
-	int[] pans = new int[16];
 
 	// Register
 	/** unsigned */
@@ -667,8 +665,6 @@ public class OPLL {
 		}
 		opllstep = (int) (factor / (clk / 72));
 		oplltime = 0;
-		for (i = 0; i < 14; i++)
-			pans[i] = 2;
 		sprev[0] = sprev[1] = 0;
 		snext[0] = snext[1] = 0;
 	}
@@ -742,7 +738,7 @@ public class OPLL {
 		for (i = 0; i < 6; i++)
 			if ((mask & (1 << i)) == 0 && (slots[(i << 1) | 1].eg_mode != FINISH))
 				inst += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
-
+		
 		/* CH6 */
 		if (patch_number[6] <= 15) {
 			if ((mask & (1 << 6)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
@@ -1146,96 +1142,6 @@ public class OPLL {
 		default:
 			break;
 		}
-	}
-	
-	/**
-	 * STEREO MODE (OPT)
-	 * @param ch
-	 *   unsigned
-	 * @param pan
-	 *   unsigned
-	 */
-	public void set_pan(int ch, int pan) {
-		this.pans[ch & 15] = pan & 3;
-	}
-	
-	/**
-	 * static calc_stereo
-	 * @param out
-	 *   len : 2
-	 */
-	public void calc_stereo0(int[] out) {
-		int b[] = { 0, 0, 0, 0 }; /* Ignore, Right, Left, Center */
-		int r[] = { 0, 0, 0, 0 }; /* Ignore, Right, Left, Center */
-		int i;
-
-		update_ampm();
-		update_noise();
-
-		for (i = 0; i < 18; i++) {
-			slots[i].calc_phase(lfo_pm);
-			slots[i].calc_envelope(lfo_am);
-		}
-
-		for (i = 0; i < 6; i++)
-			if ((mask & (1 << i)) == 0 && (slots[(i << 1) | 1].eg_mode != FINISH))
-				b[pans[i]] += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
-
-		if (patch_number[6] <= 15) {
-			if ((mask & (1 << 6)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				b[pans[6]] += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
-		} else {
-			if ((mask & (1 << 13)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				r[pans[9]] += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
-		}
-
-		if (patch_number[7] <= 15) {
-			if ((mask & (1 << 7)) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				b[pans[7]] += slots[(7 << 1) | 1].calc_slot_car(slots[7 << 1].calc_slot_mod());
-		} else {
-			if ((mask & (1 << 9)) == 0 && (slots[7 << 1].eg_mode != FINISH))
-				r[pans[10]] += slots[7 << 1].calc_slot_hat(slots[(8 << 1) | 1].pgout, noise_seed & 1);
-			if ((mask & (1 << 12)) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				r[pans[11]] -= slots[(7 << 1) | 1].calc_slot_snare(noise_seed & 1);
-		}
-
-		if (patch_number[8] <= 15) {
-			if ((mask & (1 << 8)) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				b[pans[8]] += slots[(8 << 1) | 1].calc_slot_car(slots[8 << 1].calc_slot_mod());
-		} else {
-			if ((mask & (1 << 11)) == 0 && (slots[8 << 1].eg_mode != FINISH))
-				r[pans[12]] += slots[8 << 1].calc_slot_tom();
-			if ((mask & (1 << 10)) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				r[pans[13]] -= slots[(8 << 1) | 1].calc_slot_cym(slots[7 << 1].pgout);
-		}
-
-		out[1] = (b[1] + b[3] + ((r[1] + r[3]) << 1)) << 3;
-		out[0] = (b[2] + b[3] + ((r[2] + r[3]) << 1)) << 3;
-	}
-	
-	/**
-	 * OPLL_calc_stereo
-	 * @param out
-	 *   len : 2
-	 */
-	public void calc_stereo1(int[] out) {
-		if (quality == 0) {
-			calc_stereo0(out);
-			return;
-		}
-
-		while (realstep > oplltime) {
-			oplltime += opllstep;
-			sprev[0] = snext[0];
-			sprev[1] = snext[1];
-			calc_stereo0(snext);
-		}
-
-		oplltime -= realstep;
-		out[0] = (int) (((double) snext[0] * (opllstep - oplltime)
-				+ (double) sprev[0] * oplltime) / opllstep);
-		out[1] = (int) (((double) snext[1] * (opllstep - oplltime)
-				+ (double) sprev[1] * oplltime) / opllstep);
 	}
 	
 	/* **********
