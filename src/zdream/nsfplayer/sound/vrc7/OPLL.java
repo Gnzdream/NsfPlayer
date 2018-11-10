@@ -741,94 +741,6 @@ public class OPLL {
 	}
 	
 	/**
-	 * EG
-	 */
-	private void calc_envelope(OPLLSlot slot, int lfo) {
-		int[] SL = new int[16];
-		for (int i = 0; i < SL.length; i++) {
-			SL[i] = (int) ((3.0 * i / SL_STEP) * (int) (SL_STEP / EG_STEP)) << (EG_DP_BITS - EG_BITS);
-		}
-
-		int egout; // unsigned
-
-		switch (slot.eg_mode) {
-		case ATTACK:
-			egout = AR_ADJUST_TABLE[(slot.eg_phase) >> (EG_DP_BITS - EG_BITS)];
-			slot.eg_phase += slot.eg_dphase;
-			if ((EG_DP_WIDTH & slot.eg_phase) != 0 || (slot.patch.AR == 15)) {
-				egout = 0;
-				slot.eg_phase = 0;
-				slot.eg_mode = DECAY;
-				slot.eg_dphase = slot.calc_eg_dphase();
-			}
-			break;
-
-		case DECAY:
-			egout = (slot.eg_phase) >> (EG_DP_BITS - EG_BITS);
-			slot.eg_phase += slot.eg_dphase;
-			if (slot.eg_phase >= SL[slot.patch.SL]) {
-				if (slot.patch.EG != 0) {
-					slot.eg_phase = SL[slot.patch.SL];
-					slot.eg_mode = SUSHOLD;
-					slot.eg_dphase = slot.calc_eg_dphase();
-				} else {
-					slot.eg_phase = SL[slot.patch.SL];
-					slot.eg_mode = SUSTINE;
-					slot.eg_dphase = slot.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case SUSHOLD:
-			egout = (slot.eg_phase) >> (EG_DP_BITS - EG_BITS);
-			if (slot.patch.EG == 0) {
-				slot.eg_mode = SUSTINE;
-				slot.eg_dphase = slot.calc_eg_dphase();
-			}
-			break;
-
-		case SUSTINE:
-		case RELEASE:
-			egout = (slot.eg_phase) >> (EG_DP_BITS - EG_BITS);
-			slot.eg_phase += slot.eg_dphase;
-			if (egout >= (1 << EG_BITS)) {
-				slot.eg_mode = FINISH;
-				egout = (1 << EG_BITS) - 1;
-			}
-			break;
-
-		case SETTLE:
-			egout = (slot.eg_phase) >> (EG_DP_BITS - EG_BITS);
-			slot.eg_phase += slot.eg_dphase;
-			if (egout >= (1 << EG_BITS)) {
-				slot.eg_mode = ATTACK;
-				egout = (1 << EG_BITS) - 1;
-				slot.eg_dphase = slot.calc_eg_dphase();
-			}
-			break;
-
-		case FINISH:
-			egout = (1 << EG_BITS) - 1;
-			break;
-
-		default:
-			egout = (1 << EG_BITS) - 1;
-			break;
-		}
-
-		if (slot.patch.AM != 0) {
-			egout = ((egout + slot.tll) * (int) (EG_STEP / DB_STEP)) + lfo;
-		} else {
-			egout = ((egout + slot.tll) * (int) (EG_STEP / DB_STEP));
-		}
-
-		if (egout >= DB_MUTE)
-			egout = DB_MUTE - 1;
-
-		slot.egout = egout | 3;
-	}
-	
-	/**
 	 * CARRIOR
 	 */
 	private int calc_slot_car(OPLLSlot slot, int fm) {
@@ -953,7 +865,7 @@ public class OPLL {
 
 		for (i = 0; i < 18; i++) {
 			slots[i].calc_phase(lfo_pm);
-			calc_envelope(slots[i], lfo_am);
+			slots[i].calc_envelope(lfo_am);
 		}
 
 		for (i = 0; i < 6; i++)
@@ -1391,7 +1303,7 @@ public class OPLL {
 
 		for (i = 0; i < 18; i++) {
 			slots[i].calc_phase(lfo_pm);
-			calc_envelope(slots[i], lfo_am);
+			slots[i].calc_envelope(lfo_am);
 		}
 
 		for (i = 0; i < 6; i++)
