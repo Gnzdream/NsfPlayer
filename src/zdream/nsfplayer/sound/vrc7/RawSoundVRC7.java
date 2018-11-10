@@ -34,7 +34,10 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	 */
 	public final OPLLSlot modulatorSlot, carriorSlot;
 	
-	int divider;
+	/**
+	 * modulatorSlot 与 carriorSlot 是否打开的标志
+	 */
+	public boolean modOn, carOn;
 	
 	/**
 	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
@@ -48,7 +51,6 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	
 	@Override
 	public void reset() {
-		divider = 0;
 		counter = 36;
 		
 		// OPLL 的

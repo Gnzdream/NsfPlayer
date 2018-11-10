@@ -12,16 +12,14 @@ public class OPLL {
 	int realstep;
 	/** unsigned */
 	int opllstep;
-	int[] sprev = new int[2], snext = new int[2];
 
 	// Register
 	/** unsigned */
 	public int[] regs = new int[0x40];
-	int[] slot_on_flag = new int[12];
 
 	// Channel Data
 	int[] patch_number = new int[6];
-	int[] key_status = new int[6];
+	boolean[] key_status = new boolean[6];
 
 	/** Slot */
 	public OPLLSlot[] slots = new OPLLSlot[12];
@@ -131,23 +129,27 @@ public class OPLL {
 	 * Channel key on
 	 */
 	private void keyOn(int i) {
-		if (slot_on_flag[i * 2] == 0) {
-			slots[(i) << 1].slotOn(); // MOD(opll,i)
+		RawSoundVRC7 sound = sounds[i];
+		
+		if (!sound.modOn) {
+			sound.modulatorSlot.slotOn();
 		}
-
-		if ((slot_on_flag[i * 2 + 1]) == 0) {
-			slots[((i) << 1) | 1].slotOn(); // CAR(opll,i)
+		if (!sound.carOn) {
+			sound.carriorSlot.slotOn();
 		}
-		key_status[i] = 1;
+		key_status[i] = true;
 	}
 	
 	/**
 	 * Channel key off
 	 */
 	private void keyOff(int i) {
-		if (slot_on_flag[i * 2 + 1] != 0)
-			slots[((i) << 1) | 1].slotOff(); // CAR(opll,i)
-		key_status[i] = 0;
+		RawSoundVRC7 sound = sounds[i];
+
+		if (sound.carOn) {
+			sound.carriorSlot.slotOff();
+		}
+		key_status[i] = false;
 	}
 	
 	private void keyOn_BD() {
@@ -155,48 +157,48 @@ public class OPLL {
 	}
 	
 	private void keyOn_SD() {
-		if (slot_on_flag[SLOT_SD] == 0)
-			slots[((7) << 1) | 1].slotOn(); // CAR(opll,7)
+//		if (slot_on_flag[SLOT_SD] == 0)
+//			slots[((7) << 1) | 1].slotOn(); // CAR(opll,7)
 	}
 
 	private void keyOn_TOM() {
-		if (slot_on_flag[SLOT_TOM] == 0)
-			slots[(8) << 1].slotOn(); // MOD(opll,8)
+//		if (slot_on_flag[SLOT_TOM] == 0)
+//			slots[(8) << 1].slotOn(); // MOD(opll,8)
 	}
 
 	private void keyOn_HH() {
-		if (slot_on_flag[SLOT_HH] == 0)
-			slots[(7) << 1].slotOn2(); // MOD(opll,7)
+//		if (slot_on_flag[SLOT_HH] == 0)
+//			slots[(7) << 1].slotOn2(); // MOD(opll,7)
 	}
 	
 	private void keyOn_CYM() {
-		if (slot_on_flag[SLOT_CYM] == 0)
-			slots[((8) << 1) | 1].slotOn2(); // CAR(opll,8)
+//		if (slot_on_flag[SLOT_CYM] == 0)
+//			slots[((8) << 1) | 1].slotOn2(); // CAR(opll,8)
 	}
 	
 	// Drum key off
 	private void keyOff_BD() {
-		keyOff(6);
+//		keyOff(6);
 	}
 	
 	private void keyOff_SD() {
-		if (slot_on_flag[SLOT_SD] != 0)
-			slots[((7) << 1) | 1].slotOff(); // CAR(opll,7)
+//		if (slot_on_flag[SLOT_SD] != 0)
+//			slots[((7) << 1) | 1].slotOff(); // CAR(opll,7)
 	}
 	
 	private void keyOff_TOM() {
-		if (slot_on_flag[SLOT_TOM] != 0)
-			slots[(8) << 1].slotOff(); // MOD(opll,8)
+//		if (slot_on_flag[SLOT_TOM] != 0)
+//			slots[(8) << 1].slotOff(); // MOD(opll,8)
 	}
 	
 	private void keyOff_HH() {
-		if (slot_on_flag[SLOT_HH] != 0)
-			slots[(7) << 1].slotOff(); // MOD(opll,7)
+//		if (slot_on_flag[SLOT_HH] != 0)
+//			slots[(7) << 1].slotOff(); // MOD(opll,7)
 	}
 	
 	private void keyOff_CYM() {
-		if (slot_on_flag[SLOT_CYM] != 0)
-			slots[((8) << 1) | 1].slotOff(); // CAR(opll,8)
+//		if (slot_on_flag[SLOT_CYM] != 0)
+//			slots[((8) << 1) | 1].slotOff(); // CAR(opll,8)
 	}
 	
 	/**
@@ -243,8 +245,10 @@ public class OPLL {
 	private void update_key_status() {
 		int ch;
 
-		for (ch = 0; ch < 6; ch++)
-			slot_on_flag[ch * 2] = slot_on_flag[ch * 2 + 1] = (regs[0x20 + ch]) & 0x10;
+		for (ch = 0; ch < 6; ch++) {
+			RawSoundVRC7 sound = sounds[ch];
+			sound.modOn = sound.carOn = ((regs[0x20 + ch]) & 0x10) != 0;
+		}
 	}
 	
 /* ***********************************************************
@@ -509,7 +513,7 @@ public class OPLL {
 			slots[i].reset(i % 2);
 
 		for (i = 0; i < key_status.length; i++) {
-			key_status[i] = 0;
+			key_status[i] = false;
 			setPatch(i, 0);
 		}
 
@@ -522,8 +526,6 @@ public class OPLL {
 			System.err.println("opll.realstep < 0");
 		}
 		opllstep = (int) (factor / (clk / 72));
-		sprev[0] = sprev[1] = 0;
-		snext[0] = snext[1] = 0;
 	}
 	
 	/**
