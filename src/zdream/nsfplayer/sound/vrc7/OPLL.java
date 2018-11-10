@@ -13,10 +13,7 @@ public class OPLL {
 	/** unsigned */
 	int realstep;
 	/** unsigned */
-	int oplltime;
-	/** unsigned */
 	int opllstep;
-	int prev, next;
 	int[] sprev = new int[2], snext = new int[2];
 
 	// Register
@@ -32,9 +29,6 @@ public class OPLL {
 	// Amp Modulator
 	private int am_phase;
 	private int lfo_am;
-
-	/** unsigned */
-	int quality;
 
 	// Channel Data
 	int[] patch_number = new int[6];
@@ -52,9 +46,9 @@ public class OPLL {
 	// 上面是原工程 OPLL 的变量
 	
 	/** Input clock, unsigned */
-	int clk = 844451141;
+	int clk = 0;
 	/** Sampling rate, unsigned */
-	int rate = 3354932;
+	int rate = 0;
 
 	// WaveTable for each envelope amp
 	/** unsigned */
@@ -147,8 +141,8 @@ public class OPLL {
 
 		for (i = 0; i < 19; i++) {
 			dump2patch(dump, i * 16, patch[0], patch[1]);
-			patch[i * 2] = patch[0].clone();
-			patch[i * 2 + 1] = patch[1].clone();
+			patch[i * 2].copyFrom(patch[0]);
+			patch[i * 2 + 1].copyFrom(patch[1]);
 		}
 	}
 
@@ -297,10 +291,6 @@ public class OPLL {
 			slot_on_flag[ch * 2] = slot_on_flag[ch * 2 + 1] = (regs[0x20 + ch]) & 0x10;
 	}
 	
-	private void copyPatch(int num, OPLLPatch patch) {
-		this.patches[num] = patch.clone();
-	}
-	
 /* ***********************************************************
     Initializing
 *********************************************************** */
@@ -388,130 +378,126 @@ public class OPLL {
 	 *   unsigned, 48000
 	 */
 	private void maketables(int c, int r) {
-		if (c != clk) {
-			clk = c;
-			
-			// makePmTable();
-			{
-				for (int i = 0; i < PM_PG_WIDTH; i++) {
-					double phase = 2.0 * Math.PI * i / PM_PG_WIDTH, d;
-					// saw begin - inline
-					if (phase <= Math.PI / 2)
-						d = phase * 2 / Math.PI;
-					else if (phase <= Math.PI * 3 / 2)
-						d = 2.0 - (phase * 2 / Math.PI);
-					else
-						d = -4.0 + phase * 2 / Math.PI;
-					// saw end - inline
-					pmtable[i] = (int) ((double) PM_AMP * Math.pow(2, (double) PM_DEPTH * d / 1200));
-				}
+		clk = c;
+		
+		// makePmTable();
+		{
+			for (int i = 0; i < PM_PG_WIDTH; i++) {
+				double phase = 2.0 * Math.PI * i / PM_PG_WIDTH, d;
+				// saw begin - inline
+				if (phase <= Math.PI / 2)
+					d = phase * 2 / Math.PI;
+				else if (phase <= Math.PI * 3 / 2)
+					d = 2.0 - (phase * 2 / Math.PI);
+				else
+					d = -4.0 + phase * 2 / Math.PI;
+				// saw end - inline
+				pmtable[i] = (int) ((double) PM_AMP * Math.pow(2, (double) PM_DEPTH * d / 1200));
 			}
-			// makeAmTable();
-			{
-				for (int i = 0; i < AM_PG_WIDTH; i++) {
-					double phase = 2.0 * Math.PI * i / PM_PG_WIDTH, d;
-					// saw begin - inline
-					if (phase <= Math.PI / 2)
-						d = phase * 2 / Math.PI;
-					else if (phase <= Math.PI * 3 / 2)
-						d = 2.0 - (phase * 2 / Math.PI);
-					else
-						d = -4.0 + phase * 2 / Math.PI;
-					// saw end - inline
-					amtable[i] = (int) ((double) AM_DEPTH / 2 / DB_STEP * (1.0 + d));
-				}
+		}
+		// makeAmTable();
+		{
+			for (int i = 0; i < AM_PG_WIDTH; i++) {
+				double phase = 2.0 * Math.PI * i / PM_PG_WIDTH, d;
+				// saw begin - inline
+				if (phase <= Math.PI / 2)
+					d = phase * 2 / Math.PI;
+				else if (phase <= Math.PI * 3 / 2)
+					d = 2.0 - (phase * 2 / Math.PI);
+				else
+					d = -4.0 + phase * 2 / Math.PI;
+				// saw end - inline
+				amtable[i] = (int) ((double) AM_DEPTH / 2 / DB_STEP * (1.0 + d));
 			}
-			// makeDB2LinTable();
-			{
-				for (int i = 0; i < DB_MUTE + DB_MUTE; i++) {
-					DB2LIN_TABLE[i] = (int) ((double) ((1 << DB2LIN_AMP_BITS) - 1)
-							* Math.pow(10, -(double) i * DB_STEP / 20));
-					if (i >= DB_MUTE)
-						DB2LIN_TABLE[i] = 0;
-					DB2LIN_TABLE[i + DB_MUTE + DB_MUTE] = (int) (-DB2LIN_TABLE[i]);
-				}
+		}
+		// makeDB2LinTable();
+		{
+			for (int i = 0; i < DB_MUTE + DB_MUTE; i++) {
+				DB2LIN_TABLE[i] = (int) ((double) ((1 << DB2LIN_AMP_BITS) - 1)
+						* Math.pow(10, -(double) i * DB_STEP / 20));
+				if (i >= DB_MUTE)
+					DB2LIN_TABLE[i] = 0;
+				DB2LIN_TABLE[i + DB_MUTE + DB_MUTE] = (int) (-DB2LIN_TABLE[i]);
 			}
-			// makeAdjustTable();
-			{
-				AR_ADJUST_TABLE[0] = (1 << EG_BITS) - 1;
-				for (int i = 1; i < (1 << EG_BITS); i++) {
-					AR_ADJUST_TABLE[i] = (int) ((double) (1 << EG_BITS) - 1
-							- ((1 << EG_BITS) - 1) * Math.log(i) / Math.log(127));
-				}
+		}
+		// makeAdjustTable();
+		{
+			AR_ADJUST_TABLE[0] = (1 << EG_BITS) - 1;
+			for (int i = 1; i < (1 << EG_BITS); i++) {
+				AR_ADJUST_TABLE[i] = (int) ((double) (1 << EG_BITS) - 1
+						- ((1 << EG_BITS) - 1) * Math.log(i) / Math.log(127));
 			}
-			// makeTllTable();
-			{
-				double kltable[] = { 
-						0.00, 18.00, 24.00, 27.75, 30.00, 32.25, 33.75, 35.25,
-						36.00, 37.50, 38.25, 39.00, 39.75, 40.50, 41.25, 42.00
-						};
+		}
+		// makeTllTable();
+		{
+			double kltable[] = { 
+					0.00, 18.00, 24.00, 27.75, 30.00, 32.25, 33.75, 35.25,
+					36.00, 37.50, 38.25, 39.00, 39.75, 40.50, 41.25, 42.00
+					};
 
-				int tmp;
-				for (int fnum = 0; fnum < 16; fnum++)
-					for (int block = 0; block < 8; block++)
-						for (int TL = 0; TL < 64; TL++)
-							for (int KL = 0; KL < 4; KL++) {
-								if (KL == 0) {
-									tllTable[fnum][block][TL][KL] = (TL * (int) (TL_STEP / EG_STEP));
-								} else {
-									tmp = (int) (kltable[fnum] - (6.00) * (7 - block));
-									if (tmp <= 0)
-										tllTable[fnum][block][TL][KL] = (TL) * (int) (TL_STEP / EG_STEP);
-									else
-										tllTable[fnum][block][TL][KL] = (int) ((tmp >> (3 - KL)) / EG_STEP)
-												+ (TL) * (int) (TL_STEP / EG_STEP);
-								}
+			int tmp;
+			for (int fnum = 0; fnum < 16; fnum++)
+				for (int block = 0; block < 8; block++)
+					for (int TL = 0; TL < 64; TL++)
+						for (int KL = 0; KL < 4; KL++) {
+							if (KL == 0) {
+								tllTable[fnum][block][TL][KL] = (TL * (int) (TL_STEP / EG_STEP));
+							} else {
+								tmp = (int) (kltable[fnum] - (6.00) * (7 - block));
+								if (tmp <= 0)
+									tllTable[fnum][block][TL][KL] = (TL) * (int) (TL_STEP / EG_STEP);
+								else
+									tllTable[fnum][block][TL][KL] = (int) ((tmp >> (3 - KL)) / EG_STEP)
+											+ (TL) * (int) (TL_STEP / EG_STEP);
 							}
-			}
-			// makeRksTable();
-			{
-				int fnum8, block, KR;
-
-				for (fnum8 = 0; fnum8 < 2; fnum8++)
-					for (block = 0; block < 8; block++)
-						for (KR = 0; KR < 2; KR++) {
-							if (KR != 0)
-								rksTable[fnum8][block][KR] = (block << 1) + fnum8;
-							else
-								rksTable[fnum8][block][KR] = block >> 1;
 						}
-			}
-			// makeSinTable();
-			{
-				int i;
-
-				for (i = 0; i < PG_WIDTH / 4; i++) {
-					double d = Math.sin(2.0 * Math.PI * i / PG_WIDTH), v;
-					// lin2db begin - inline
-					if (d == 0)
-						v = (DB_MUTE - 1);
-					else
-						v = Math.min(-(int) (20.0 * Math.log10(d) / DB_STEP), DB_MUTE - 1); /* 0 -- 127 */
-					// lin2db end
-					fullsintable[i] = (int) v;
-				}
-
-				for (i = 0; i < PG_WIDTH / 4; i++) {
-					fullsintable[PG_WIDTH / 2 - 1 - i] = fullsintable[i];
-				}
-
-				for (i = 0; i < PG_WIDTH / 2; i++) {
-					fullsintable[PG_WIDTH / 2 + i] = (int) (DB_MUTE + DB_MUTE + fullsintable[i]);
-				}
-
-				for (i = 0; i < PG_WIDTH / 2; i++)
-					halfsintable[i] = fullsintable[i];
-				for (i = PG_WIDTH / 2; i < PG_WIDTH; i++)
-					halfsintable[i] = fullsintable[0];
-			}
-			
-			makeDefaultPatch();
 		}
+		// makeRksTable();
+		{
+			int fnum8, block, KR;
 
-		if (r != rate) {
-			rate = r;
-			internal_refresh();
+			for (fnum8 = 0; fnum8 < 2; fnum8++)
+				for (block = 0; block < 8; block++)
+					for (KR = 0; KR < 2; KR++) {
+						if (KR != 0)
+							rksTable[fnum8][block][KR] = (block << 1) + fnum8;
+						else
+							rksTable[fnum8][block][KR] = block >> 1;
+					}
 		}
+		// makeSinTable();
+		{
+			int i;
+
+			for (i = 0; i < PG_WIDTH / 4; i++) {
+				double d = Math.sin(2.0 * Math.PI * i / PG_WIDTH), v;
+				// lin2db begin - inline
+				if (d == 0)
+					v = (DB_MUTE - 1);
+				else
+					v = Math.min(-(int) (20.0 * Math.log10(d) / DB_STEP), DB_MUTE - 1); /* 0 -- 127 */
+				// lin2db end
+				fullsintable[i] = (int) v;
+			}
+
+			for (i = 0; i < PG_WIDTH / 4; i++) {
+				fullsintable[PG_WIDTH / 2 - 1 - i] = fullsintable[i];
+			}
+
+			for (i = 0; i < PG_WIDTH / 2; i++) {
+				fullsintable[PG_WIDTH / 2 + i] = (int) (DB_MUTE + DB_MUTE + fullsintable[i]);
+			}
+
+			for (i = 0; i < PG_WIDTH / 2; i++)
+				halfsintable[i] = fullsintable[i];
+			for (i = PG_WIDTH / 2; i < PG_WIDTH; i++)
+				halfsintable[i] = fullsintable[0];
+		}
+		
+		makeDefaultPatch();
+
+		rate = r;
+		internal_refresh();
 	}
 
 	public OPLL() {
@@ -556,7 +542,7 @@ public class OPLL {
 		int i;
 
 		for (i = 0; i < this.patches.length; i++) {
-			copyPatch(i, default_patch[type % OPLL_TONE_NUM][i]);
+			this.patches[i].copyFrom(default_patch[type % OPLL_TONE_NUM][i]);
 		}
 	}
 	
@@ -588,7 +574,6 @@ public class OPLL {
 			System.out.println("opll.realstep < 0");
 		}
 		opllstep = (int) (factor / (clk / 72));
-		oplltime = 0;
 		sprev[0] = sprev[1] = 0;
 		snext[0] = snext[1] = 0;
 	}
@@ -608,20 +593,6 @@ public class OPLL {
 		}
 	}
 	
-	public void setRate(int r) {
-		if (quality != 0)
-			rate = 49716;
-		else
-			rate = r;
-		internal_refresh();
-		rate = r;
-	}
-	
-	public void setQuality(int q) {
-		quality = q;
-		setRate(rate);
-	}
-	
 /* ***********************************************************
     Generate wave data
 *********************************************************** */
@@ -638,8 +609,8 @@ public class OPLL {
 		lfo_pm = pmtable[(pm_phase) >> (PM_DP_BITS - PM_PG_BITS)];
 	}
 	
-	private int calc1() {
-		int inst = 0, perc = 0, out = 0;
+	public int calc0() {
+		int inst = 0;
 		int i;
 
 		update_ampm();
@@ -653,25 +624,7 @@ public class OPLL {
 			if (slots[(i << 1) | 1].eg_mode != FINISH)
 				inst += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
 
-		out = inst + (perc << 1);
-		return out << 3;
-	}
-	
-	public int calc0() {
-		if (quality == 0)
-			return calc1();
-
-		while (realstep > oplltime) {
-			oplltime += opllstep;
-			prev = next;
-			next = calc1();
-		}
-
-		oplltime -= realstep;
-		out = (int) (((double) next * (opllstep - oplltime) + (double) prev * oplltime)
-				/ opllstep);
-
-		return (int) out;
+		return inst << 3;
 	}
 	
 /* ***********************************************************

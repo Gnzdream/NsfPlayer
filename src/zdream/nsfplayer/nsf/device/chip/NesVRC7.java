@@ -5,7 +5,6 @@ import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.vrc7.OPLL;
-import zdream.nsfplayer.sound.vrc7.VRC7Static;
 
 /**
  * VRC7 音频芯片, 管理输出 1 到 6 个 VRC7 轨道的音频
@@ -24,8 +23,6 @@ public class NesVRC7 extends AbstractSoundChip {
 		for (int i = 0; i < 0x40; ++i) {
 			opll.writeReg(i, 0);
 		}
-		opll.reset_patch(VRC7Static.OPLL_VRC7_RW_TONE);
-		opll.setQuality(1);
 	}
 
 	@Override
@@ -52,7 +49,6 @@ public class NesVRC7 extends AbstractSoundChip {
 			opll.writeReg(i, 0);
 		}
 		
-		opll.reset_patch(VRC7Static.OPLL_VRC7_RW_TONE);
 		opll.reset();
 		address = 0;
 	}
