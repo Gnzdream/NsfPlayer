@@ -58,6 +58,8 @@ public class OPLL {
 	/** unsigned */
 	int mask;
 	
+	// 上面是原工程 OPLL 的变量
+	
 	/** Input clock, unsigned */
 	int clk = 844451141;
 	/** Sampling rate, unsigned */
@@ -740,122 +742,6 @@ public class OPLL {
 		noise_seed >>= 1;
 	}
 	
-	/**
-	 * CARRIOR
-	 */
-	private int calc_slot_car(OPLLSlot slot, int fm) {
-		if (slot.egout >= (DB_MUTE - 1)) {
-			slot.output[0] = 0;
-		} else { // #define wave2_8pi(e) ( (e) << ( 2 + PG_BITS - SLOT_AMP_BITS ))
-			slot.output[0] = DB2LIN_TABLE[slot.sintbl[(slot.pgout + ((fm) << (2 + PG_BITS - SLOT_AMP_BITS)))
-					& (PG_WIDTH - 1)] + slot.egout];
-		}
-
-		slot.output[1] = (slot.output[1] + slot.output[0]) >> 1;
-		return slot.output[1];
-	}
-	
-	/**
-	 * MODULATOR
-	 */
-	private int calc_slot_mod(OPLLSlot slot) {
-		int fm;
-
-		slot.output[1] = slot.output[0];
-
-		if (slot.egout >= (DB_MUTE - 1)) {
-			slot.output[0] = 0;
-		} else if (slot.patch.FB != 0) {
-			fm = ((slot.feedback) << (1 + PG_BITS - SLOT_AMP_BITS)) >> (7 - slot.patch.FB);
-			slot.output[0] = DB2LIN_TABLE[slot.sintbl[(slot.pgout + fm) & (PG_WIDTH - 1)] + slot.egout];
-		} else {
-			slot.output[0] = DB2LIN_TABLE[slot.sintbl[slot.pgout] + slot.egout];
-		}
-
-		slot.feedback = (slot.output[1] + slot.output[0]) >> 1;
-
-		return slot.feedback;
-
-	}
-	
-	/**
-	 * TOM
-	 */
-	private int calc_slot_tom(OPLLSlot slot) {
-		if (slot.egout >= (DB_MUTE - 1))
-			return 0;
-
-		return DB2LIN_TABLE[slot.sintbl[slot.pgout] + slot.egout];
-	}
-	
-	/**
-	 * SNARE
-	 * @param noise
-	 *   unsigned
-	 */
-	private int calc_slot_snare(OPLLSlot slot, int noise) {
-		if (slot.egout >= (DB_MUTE - 1))
-			return 0;
-
-		if (((slot.pgout >> 7) & 1) != 0)
-			return DB2LIN_TABLE[(noise != 0 ? 0 : (int) ((15.0) / DB_STEP)) + slot.egout];
-		else
-			return DB2LIN_TABLE[(noise != 0 ? DB_MUTE + DB_MUTE : DB_MUTE + DB_MUTE + (int) (15.0 / DB_STEP))
-					+ slot.egout];
-	}
-	
-	/**
-	 * TOP-CYM
-	 * @param pgout_hh
-	 *   unsigned
-	 */
-	private int calc_slot_cym(OPLLSlot slot, int pgout_hh) {
-		int dbout;
-
-		if (slot.egout >= (DB_MUTE - 1))
-			return 0;
-		else if
-		/* the same as fmopl.c */
-		((((pgout_hh >> (PG_BITS - 8)) & 1) ^ ((pgout_hh >> (PG_BITS - 1)) & 1) | ((pgout_hh >> (PG_BITS - 7)) & 1) ^
-		/* different from fmopl.c */
-				(((slot.pgout >> (PG_BITS - 7)) & 1) & (((slot.pgout >> (PG_BITS - 5)) & 1) == 0 ? 1 : 0))) != 0)
-			dbout = (int) (DB_MUTE + DB_MUTE + (3.0) / DB_STEP);
-		else
-			dbout = (int) ((3.0) / DB_STEP);
-
-		return DB2LIN_TABLE[dbout + slot.egout];
-	}
-	
-	/**
-	 * HI-HAT
-	 * @param noise
-	 *   unsigned
-	 */
-	private int calc_slot_hat(OPLLSlot slot, int pgout_cym, int noise) {
-		int dbout;
-
-		if (slot.egout >= (DB_MUTE - 1))
-			return 0;
-		else if ((
-		/* the same as fmopl.c */
-		((((slot.pgout >> (PG_BITS - 8)) & 1) ^ ((slot.pgout >> (PG_BITS - 1)) & 1))
-				| ((slot.pgout >> (PG_BITS - 7)) & 1)) ^
-		/* different from fmopl.c */
-				(((pgout_cym >> (PG_BITS - 7)) & 1) & (((pgout_cym >> (PG_BITS - 5)) & 1) == 1 ? 0 : 1))) != 0) {
-			if (noise != 0)
-				dbout = (int) (DB_MUTE + DB_MUTE + (12.0) / DB_STEP);
-			else
-				dbout = (int) (DB_MUTE + DB_MUTE + (24.0) / DB_STEP);
-		} else {
-			if (noise != 0)
-				dbout = (int) ((12.0) / DB_STEP);
-			else
-				dbout = (int) ((24.0) / DB_STEP);
-		}
-
-		return DB2LIN_TABLE[dbout + slot.egout];
-	}
-	
 	private int calc1() {
 		int inst = 0, perc = 0, out = 0;
 		int i;
@@ -870,37 +756,37 @@ public class OPLL {
 
 		for (i = 0; i < 6; i++)
 			if ((mask & (1 << i)) == 0 && (slots[(i << 1) | 1].eg_mode != FINISH))
-				inst += calc_slot_car(slots[(i << 1) | 1], calc_slot_mod((slots[i << 1])));
+				inst += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
 
 		/* CH6 */
 		if (patch_number[6] <= 15) {
 			if ((mask & (1 << 6)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				inst += calc_slot_car(slots[(6 << 1) | 1], calc_slot_mod(slots[6 << 1]));
+				inst += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
 		} else {
 			if ((mask & 1 << 13) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				perc += calc_slot_car(slots[(6 << 1) | 1], calc_slot_mod(slots[6 << 1]));
+				perc += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
 		}
 
 		/* CH7 */
 		if (patch_number[7] <= 15) {
 			if ((mask & (1 << 7)) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				inst += calc_slot_car(slots[(7 << 1) | 1], calc_slot_mod(slots[7 << 1]));
+				inst += slots[(7 << 1) | 1].calc_slot_car(slots[7 << 1].calc_slot_mod());
 		} else {
 			if ((mask & 1 << 9) == 0 && (slots[7 << 1].eg_mode != FINISH))
-				perc += calc_slot_hat(slots[7 << 1], slots[(8 << 1) | 1].pgout, noise_seed & 1);
+				perc += slots[7 << 1].calc_slot_hat(slots[(8 << 1) | 1].pgout, noise_seed & 1);
 			if ((mask & 1 << 12) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				perc -= calc_slot_snare(slots[(7 << 1) | 1], noise_seed & 1);
+				perc -= slots[(7 << 1) | 1].calc_slot_snare(noise_seed & 1);
 		}
 
 		/* CH8 */
 		if (patch_number[8] <= 15) {
 			if ((mask & (1 << 8)) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				inst += calc_slot_car(slots[(8 << 1) | 1], calc_slot_mod(slots[8 << 1]));
+				inst += slots[(8 << 1) | 1].calc_slot_car(slots[8 << 1].calc_slot_mod());
 		} else {
 			if ((mask & 1 << 11) == 0 && (slots[8 << 1].eg_mode != FINISH))
-				perc += calc_slot_tom(slots[i << 1]);
+				perc += slots[i << 1].calc_slot_tom();
 			if ((mask & 1 << 10) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				perc -= calc_slot_cym(slots[(8 << 1) | 1], slots[7 << 1].pgout);
+				perc -= slots[(8 << 1) | 1].calc_slot_cym(slots[7 << 1].pgout);
 		}
 
 		out = inst + (perc << 1);
@@ -1308,34 +1194,34 @@ public class OPLL {
 
 		for (i = 0; i < 6; i++)
 			if ((mask & (1 << i)) == 0 && (slots[(i << 1) | 1].eg_mode != FINISH))
-				b[pans[i]] += calc_slot_car(slots[(i << 1) | 1], calc_slot_mod(slots[i << 1]));
+				b[pans[i]] += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
 
 		if (patch_number[6] <= 15) {
 			if ((mask & (1 << 6)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				b[pans[6]] += calc_slot_car(slots[(6 << 1) | 1], calc_slot_mod(slots[6 << 1]));
+				b[pans[6]] += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
 		} else {
 			if ((mask & (1 << 13)) == 0 && (slots[(6 << 1) | 1].eg_mode != FINISH))
-				r[pans[9]] += calc_slot_car(slots[(6 << 1) | 1], calc_slot_mod(slots[6 << 1]));
+				r[pans[9]] += slots[(6 << 1) | 1].calc_slot_car(slots[6 << 1].calc_slot_mod());
 		}
 
 		if (patch_number[7] <= 15) {
 			if ((mask & (1 << 7)) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				b[pans[7]] += calc_slot_car(slots[(7 << 1) | 1], calc_slot_mod(slots[7 << 1]));
+				b[pans[7]] += slots[(7 << 1) | 1].calc_slot_car(slots[7 << 1].calc_slot_mod());
 		} else {
 			if ((mask & (1 << 9)) == 0 && (slots[7 << 1].eg_mode != FINISH))
-				r[pans[10]] += calc_slot_hat(slots[7 << 1], slots[(8 << 1) | 1].pgout, noise_seed & 1);
+				r[pans[10]] += slots[7 << 1].calc_slot_hat(slots[(8 << 1) | 1].pgout, noise_seed & 1);
 			if ((mask & (1 << 12)) == 0 && (slots[(7 << 1) | 1].eg_mode != FINISH))
-				r[pans[11]] -= calc_slot_snare(slots[(7 << 1) | 1], noise_seed & 1);
+				r[pans[11]] -= slots[(7 << 1) | 1].calc_slot_snare(noise_seed & 1);
 		}
 
 		if (patch_number[8] <= 15) {
 			if ((mask & (1 << 8)) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				b[pans[8]] += calc_slot_car(slots[(8 << 1) | 1], calc_slot_mod(slots[8 << 1]));
+				b[pans[8]] += slots[(8 << 1) | 1].calc_slot_car(slots[8 << 1].calc_slot_mod());
 		} else {
 			if ((mask & (1 << 11)) == 0 && (slots[8 << 1].eg_mode != FINISH))
-				r[pans[12]] += calc_slot_tom(slots[8 << 1]);
+				r[pans[12]] += slots[8 << 1].calc_slot_tom();
 			if ((mask & (1 << 10)) == 0 && (slots[(8 << 1) | 1].eg_mode != FINISH))
-				r[pans[13]] -= calc_slot_cym(slots[(8 << 1) | 1], slots[7 << 1].pgout);
+				r[pans[13]] -= slots[(8 << 1) | 1].calc_slot_cym(slots[7 << 1].pgout);
 		}
 
 		out[1] = (b[1] + b[3] + ((r[1] + r[3]) << 1)) << 3;
