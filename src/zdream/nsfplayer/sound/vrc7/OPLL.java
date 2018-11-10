@@ -7,8 +7,6 @@ import static zdream.nsfplayer.sound.vrc7.VRC7Static.*;
  * @author Zdream
  */
 public class OPLL {
-	
-	int out;
 
 	/** unsigned */
 	int realstep;
@@ -20,15 +18,6 @@ public class OPLL {
 	/** unsigned */
 	public int[] regs = new int[0x40];
 	int[] slot_on_flag = new int[12];
-
-	// Pitch Modulator
-	/** unsigned */
-	private int pm_phase;
-	private int lfo_pm;
-
-	// Amp Modulator
-	private int am_phase;
-	private int lfo_am;
 
 	// Channel Data
 	int[] patch_number = new int[6];
@@ -512,17 +501,14 @@ public class OPLL {
 	 *   unsigned
 	 * @return
 	 */
-	public OPLL (int clk, int rate) {
+	public OPLL(int clk, int rate) {
 		initSound();
 		
 		int i = 0;
 		for (; i < sounds.length; i++) {
 			RawSoundVRC7 sound = sounds[i];
-			slots[(i << 1)] = sound.carriorSlot;
-			slots[(i << 1) | 1] = sound.modulatorSlot;
-		}
-		for (; i < slots.length; i++) {
-			slots[i] = new OPLLSlot(this);
+			slots[(i << 1)] = sound.modulatorSlot;
+			slots[(i << 1) | 1] = sound.carriorSlot;
 		}
 		
 		for (i = 0; i < patches.length; i++) {
@@ -552,11 +538,6 @@ public class OPLL {
 	public void reset() {
 		int i;
 
-		out = 0;
-
-		pm_phase = 0;
-		am_phase = 0;
-
 		for (i = 0; i < slots.length; i++)
 			slots[i].reset(i % 2);
 
@@ -571,7 +552,7 @@ public class OPLL {
 		long factor = 1l << 31;
 		realstep = (int) (factor / rate);
 		if (realstep < 0) {
-			System.out.println("opll.realstep < 0");
+			System.err.println("opll.realstep < 0");
 		}
 		opllstep = (int) (factor / (clk / 72));
 		sprev[0] = sprev[1] = 0;
@@ -591,40 +572,6 @@ public class OPLL {
 		for (i = 0; i < slots.length; i++) {
 			slots[i].forceRefresh();
 		}
-	}
-	
-/* ***********************************************************
-    Generate wave data
-*********************************************************** */
-	
-	/**
-	 * Update AM, PM unit
-	 * 每次渲染前需要调用
-	 * @param opll
-	 */
-	private void update_ampm() {
-		pm_phase = (pm_phase + pm_dphase) & (PM_DP_WIDTH - 1);
-		am_phase = (am_phase + am_dphase) & (AM_DP_WIDTH - 1);
-		lfo_am = amtable[(am_phase) >> (AM_DP_BITS - AM_PG_BITS)];
-		lfo_pm = pmtable[(pm_phase) >> (PM_DP_BITS - PM_PG_BITS)];
-	}
-	
-	public int calc0() {
-		int inst = 0;
-		int i;
-
-		update_ampm();
-
-		for (i = 0; i < slots.length; i++) {
-			slots[i].calc_phase(lfo_pm);
-			slots[i].calc_envelope(lfo_am);
-		}
-
-		for (i = 0; i < 6; i++)
-			if (slots[(i << 1) | 1].eg_mode != FINISH)
-				inst += slots[(i << 1) | 1].calc_slot_car(slots[i << 1].calc_slot_mod());
-
-		return inst << 3;
 	}
 	
 /* ***********************************************************

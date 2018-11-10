@@ -1,11 +1,6 @@
 package zdream.nsfplayer.sound.vrc7;
 
-import static zdream.nsfplayer.sound.vrc7.VRC7Static.AM_DP_BITS;
-import static zdream.nsfplayer.sound.vrc7.VRC7Static.AM_DP_WIDTH;
-import static zdream.nsfplayer.sound.vrc7.VRC7Static.AM_PG_BITS;
-import static zdream.nsfplayer.sound.vrc7.VRC7Static.PM_DP_BITS;
-import static zdream.nsfplayer.sound.vrc7.VRC7Static.PM_DP_WIDTH;
-import static zdream.nsfplayer.sound.vrc7.VRC7Static.PM_PG_BITS;
+import static zdream.nsfplayer.sound.vrc7.VRC7Static.*;
 
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -25,8 +20,8 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 		this.opll = opll;
 		this.index = index;
 		
-		this.carriorSlot = new OPLLSlot(opll);
 		this.modulatorSlot = new OPLLSlot(opll);
+		this.carriorSlot = new OPLLSlot(opll);
 	}
 	
 	/* **********
@@ -34,12 +29,18 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	 ********** */
 	
 	/**
-	 * carriorSlot, 0 号
-	 * modulatorSlot, 1 号
+	 * modulatorSlot, 0 号
+	 * carriorSlot, 1 号
 	 */
-	public final OPLLSlot carriorSlot, modulatorSlot;
+	public final OPLLSlot modulatorSlot, carriorSlot;
 	
 	int divider;
+	
+	/**
+	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
+	 * 记录现在到下一个 step 触发点剩余的时钟数
+	 */
+	private int counter = 36;
 	
 	/* **********
 	 * 公共方法 *
@@ -48,6 +49,7 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	@Override
 	public void reset() {
 		divider = 0;
+		counter = 36;
 		
 		// OPLL 的
 		pm_phase = 0;
@@ -58,17 +60,19 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 
 	@Override
 	protected void onProcess(int time) {
-		// TODO 下面是过渡, 需要修改
-		if (index == 0) {
-			divider += time;
-			while (divider >= 36) {
-				divider -= 36;
-				opll.calc0();
-			}
+		int value;
+		
+		while (time >= counter) {
+			time -= counter;
+			this.time += counter;
+			counter	= 36;
+			
+			value = this.renderStep();
+			mix(value);
 		}
 		
 		this.time += time;
-		mix(opll.slots[(index << 1) | 1].output[1]);
+		counter -= time;
 	}
 	
 /* ***********************************************************
@@ -76,41 +80,29 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 *********************************************************** */
 	
 	// Pitch Modulator
-	/** unsigned */
 	private int pm_phase;
-	private int lfo_pm;
 
 	// Amp Modulator
 	private int am_phase;
-	private int lfo_am;
-	
-	/**
-	 * Update AM, PM unit
-	 * 每次渲染前需要调用
-	 * @param opll
-	 */
-	private void update_ampm() {
-		pm_phase = (pm_phase + opll.pm_dphase) & (PM_DP_WIDTH - 1);
-		am_phase = (am_phase + opll.am_dphase) & (AM_DP_WIDTH - 1);
-		lfo_am = opll.amtable[(am_phase) >> (AM_DP_BITS - AM_PG_BITS)];
-		lfo_pm = opll.pmtable[(pm_phase) >> (PM_DP_BITS - PM_PG_BITS)];
-	}
 	
 	private int renderStep() {
-		int inst = 0;
-
-		update_ampm();
+		// 原工程的 opll.update_ampm();
+		// Update AM, PM unit
+		pm_phase = (pm_phase + opll.pm_dphase) & (PM_DP_WIDTH - 1);
+		am_phase = (am_phase + opll.am_dphase) & (AM_DP_WIDTH - 1);
+		int lfo_am = opll.amtable[(am_phase) >> (AM_DP_BITS - AM_PG_BITS)];
+		int lfo_pm = opll.pmtable[(pm_phase) >> (PM_DP_BITS - PM_PG_BITS)];
 		
 		carriorSlot.calc_phase(lfo_pm);
 		carriorSlot.calc_envelope(lfo_am);
 		modulatorSlot.calc_phase(lfo_pm);
 		modulatorSlot.calc_envelope(lfo_am);
 		
-		if (carriorSlot.eg_mode != VRC7Static.FINISH) {
-			inst += modulatorSlot.calc_slot_car(carriorSlot.calc_slot_mod());
+		if (carriorSlot.eg_mode != FINISH) {
+			carriorSlot.calc_slot_car(modulatorSlot.calc_slot_mod());
 		}
 
-		return inst << 3;
+		return carriorSlot.output[1];
 	}
 
 }
