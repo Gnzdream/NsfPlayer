@@ -49,6 +49,71 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	 * 记录现在到下一个 step 触发点剩余的时钟数
 	 */
 	private int counter = 36;
+
+	/* **********
+	 * 处理写入 *
+	 ********** */
+	
+	/**
+	 * 询问当前发声器是否使用的是自定义的 patch
+	 */
+	public boolean useCustomPatch() {
+		return patchNum == 0;
+	}
+	
+	/**
+	 * <p>在 NES 流程中, 如果 VRC7 芯片的 [0x10, 0x40) 位置被写入数据之后,
+	 * 相应的 slot 需要进行一次数据的重置. 该函数就要完成这个任务
+	 * <p>重新读取自定义 patch 的数据, 并用该 patch 数据重置自己的 slot.
+	 * <p>如果该发声器使用的是自定义的 patch, 即 <code>patchNum == 0</code>,
+	 * 则当外部修改了自定义 patch 的数据, 当前发声器就需要进行数据的同步
+	 * </p>
+	 */
+	public void rebuildAll() {
+		rebuildModDphase();
+		rebuildModTll();
+		rebuildModSintbl();
+		recalcModDphase();
+		
+		rebuildCarDphase();
+		rebuildCarTll();
+		rebuildCarSintbl();
+		recalcCarDphase();
+	}
+	
+	public void rebuildModDphase() {
+		modulatorSlot.dphase = opll.dphaseTable[modulatorSlot.fnum][modulatorSlot.block][modulatorSlot.patch.ML];
+		modulatorSlot.rks = opll.rksTable[(modulatorSlot.fnum) >> 8][modulatorSlot.block][modulatorSlot.patch.KR ? 1 : 0];
+	}
+	
+	public void rebuildCarDphase() {
+		carriorSlot.dphase = opll.dphaseTable[carriorSlot.fnum][carriorSlot.block][carriorSlot.patch.ML];
+		carriorSlot.rks = opll.rksTable[(carriorSlot.fnum) >> 8][carriorSlot.block][carriorSlot.patch.KR ? 1 : 0];
+	}
+	
+	public void rebuildModTll() {
+		modulatorSlot.tll = opll.tllTable[(modulatorSlot.fnum) >> 5][modulatorSlot.block][modulatorSlot.patch.TL][modulatorSlot.patch.KL];
+	}
+	
+	public void rebuildCarTll() {
+		carriorSlot.tll = opll.tllTable[(carriorSlot.fnum) >> 5][carriorSlot.block][carriorSlot.volume][carriorSlot.patch.KL];
+	}
+	
+	public void rebuildModSintbl() {
+		modulatorSlot.sintbl = opll.waveform[modulatorSlot.patch.WF];
+	}
+	
+	public void rebuildCarSintbl() {
+		carriorSlot.sintbl = opll.waveform[carriorSlot.patch.WF];
+	}
+	
+	public void recalcModDphase() {
+		modulatorSlot.eg_dphase = modulatorSlot.calc_eg_dphase();
+	}
+	
+	public void recalcCarDphase() {
+		carriorSlot.eg_dphase = carriorSlot.calc_eg_dphase();
+	}
 	
 	/* **********
 	 * 公共方法 *

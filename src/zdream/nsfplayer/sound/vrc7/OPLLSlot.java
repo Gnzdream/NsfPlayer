@@ -37,8 +37,8 @@ public class OPLLSlot implements IResetable {
 	public int block;
 	/** Current volume */
 	public int volume;
-	/** Sustine 1 = ON, 0 = OFF */
-	public int sustine;
+	/** Sustine true = ON, false = OFF */
+	public boolean sustine;
 	/** Total Level + Key scale level, unsigned */
 	public int tll;
 	/** Key scale offset (Rks), unsigned */
@@ -222,7 +222,7 @@ public class OPLLSlot implements IResetable {
 			return parent.dphaseDRTable[patch.RR][rks];
 
 		case RELEASE:
-			if (sustine != 0)
+			if (sustine)
 				return parent.dphaseDRTable[5][rks];
 			else if (patch.EG)
 				return parent.dphaseDRTable[patch.RR][rks];
@@ -387,7 +387,7 @@ public class OPLLSlot implements IResetable {
 		eg_dphase = 0;
 		rks = 0;
 		tll = 0;
-		sustine = 0;
+		sustine = false;
 		fnum = 0;
 		block = 0;
 		volume = 0;

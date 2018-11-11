@@ -128,7 +128,7 @@ public class OPLL {
 	/**
 	 * Channel key on
 	 */
-	private void keyOn(int i) {
+	public void keyOn(int i) {
 		RawSoundVRC7 sound = sounds[i];
 		
 		if (!sound.modOn) {
@@ -142,7 +142,7 @@ public class OPLL {
 	/**
 	 * Channel key off
 	 */
-	private void keyOff(int i) {
+	public void keyOff(int i) {
 		RawSoundVRC7 sound = sounds[i];
 
 		if (sound.carOn) {
@@ -202,7 +202,7 @@ public class OPLL {
 	/**
 	 *  Change a voice
 	 */
-	private void setPatch(int i, int num) {
+	public void setPatch(int i, int num) {
 		RawSoundVRC7 sound = sounds[i];
 		sound.patchNum = num;
 		sound.modulatorSlot.patch.copyFrom(patches[num * 2]);
@@ -212,14 +212,14 @@ public class OPLL {
 	/**
 	 * Set sustine parameter
 	 */
-	private void setSustine(int i, int sustine) {
+	private void setSustine(int i, boolean sustine) {
 		sounds[i].carriorSlot.sustine = sustine;
 	}
 	
 	/**
 	 * Volume : 6bit ( Volume register << 2 )
 	 */
-	private void setVolume(int i, int volume) {
+	public void setVolume(int i, int volume) {
 		sounds[i].carriorSlot.volume = volume;
 	}
 	
@@ -519,9 +519,6 @@ public class OPLL {
 			sounds[i].reset();
 		}
 
-		for (i = 0; i < 0x40; i++)
-			writeReg(i, 0);
-
 		long factor = 1l << 31;
 		realstep = (int) (factor / rate);
 		if (realstep < 0) {
@@ -551,11 +548,24 @@ public class OPLL {
 *********************************************************** */
 	
 	/**
+	 * 获取 0 号 patch
+	 * @return
+	 */
+	public OPLLPatch getCustomModPatch() {
+		return patches[0];
+	}
+	
+	public OPLLPatch getCustomCarPatch() {
+		return patches[1];
+	}
+	
+	/**
 	 * @param reg
 	 *   unsigned
 	 * @param data
 	 *   unsigned
 	 */
+	@Deprecated
 	public void writeReg(int reg, int data) {
 		int i, v, ch;
 
@@ -750,11 +760,12 @@ public class OPLL {
 			ch = reg - 0x20;
 			setFnumber(ch, ((data & 1) << 8) + this.regs[0x10 + ch]);
 			setBlock(ch, (data >> 1) & 7);
-			setSustine(ch, (data >> 5) & 1);
+			setSustine(ch, ((data >> 5) & 1) != 0);
 			if ((data & 0x10) != 0)
 				keyOn(ch);
 			else
-				keyOff(ch); {
+				keyOff(ch);
+		{
 			OPLLSlot s = slots[ch << 1];
 			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
 			if (s.type == 0) {
