@@ -6,7 +6,7 @@ import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.vrc7.OPLL;
 import zdream.nsfplayer.sound.vrc7.OPLLPatch;
-import zdream.nsfplayer.sound.vrc7.RawSoundVRC7;
+import zdream.nsfplayer.sound.vrc7.SoundVRC7;
 
 /**
  * VRC7 音频芯片, 管理输出 1 到 6 个 VRC7 轨道的音频
@@ -52,7 +52,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.KR = (data & 0x10) != 0;
 			p.ML = (data) & 15;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.rebuildModDphase();
 					sound.recalcModDphase();
@@ -68,7 +68,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.KR = (data & 0x10) != 0;
 			p.ML = (data) & 15;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.rebuildCarDphase();
 					sound.recalcCarDphase();
@@ -81,7 +81,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.KL = (data >> 6) & 3;
 			p.TL = (data) & 63;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.rebuildModTll();
 				}
@@ -95,7 +95,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			pmod.WF = (data >> 3) & 1;
 			pmod.FB = (data) & 7;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.rebuildModSintbl();
 					sound.rebuildCarSintbl();
@@ -108,7 +108,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.AR = (data >> 4) & 15;
 			p.DR = (data) & 15;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.recalcModDphase();
 				}
@@ -120,7 +120,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.AR = (data >> 4) & 15;
 			p.DR = (data) & 15;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.recalcCarDphase();
 				}
@@ -132,7 +132,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.SL = (data >> 4) & 15;
 			p.RR = (data) & 15;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.recalcModDphase();
 				}
@@ -144,7 +144,7 @@ public class NesVRC7 extends AbstractSoundChip {
 			p.SL = (data >> 4) & 15;
 			p.RR = (data) & 15;
 			for (int i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = opll.getSound(i);
+				SoundVRC7 sound = opll.getSound(i);
 				if (sound.useCustomPatch()) {
 					sound.recalcCarDphase();
 				}
@@ -159,7 +159,7 @@ public class NesVRC7 extends AbstractSoundChip {
 		case 0x15:
 		{
 			int num = reg - 0x10;
-			RawSoundVRC7 sound = opll.getSound(num);
+			SoundVRC7 sound = opll.getSound(num);
 			
 			int fnum = data + ((this.regs[0x20 + num] & 1) << 8);
 			sound.modulatorSlot.fnum = fnum;
@@ -176,7 +176,7 @@ public class NesVRC7 extends AbstractSoundChip {
 		case 0x25:
 		{
 			int num = reg - 0x20;
-			RawSoundVRC7 sound = opll.getSound(num);
+			SoundVRC7 sound = opll.getSound(num);
 			
 			int fnum = ((data & 1) << 8) + this.regs[0x10 + num];
 			int block = (data >> 1) & 7;
@@ -189,14 +189,11 @@ public class NesVRC7 extends AbstractSoundChip {
 			sound.carriorSlot.sustine = sustine;
 			
 			if ((data & 0x10) != 0)
-				opll.keyOn(num);
+				sound.keyOn();
 			else
-				opll.keyOff(num);
+				sound.keyOff();
 
 			sound.rebuildAll();
-			
-			// update_key_status()
-			sound.modOn = sound.carOn = ((regs[0x20 + num]) & 0x10) != 0;
 		} break;
 
 		case 0x30:
@@ -207,11 +204,11 @@ public class NesVRC7 extends AbstractSoundChip {
 		case 0x35:
 		{
 			int num = reg - 0x30;
-			RawSoundVRC7 sound = opll.getSound(num);
+			SoundVRC7 sound = opll.getSound(num);
 			
 			int i = (data >> 4) & 15, v = data & 15;
-			opll.setPatch(reg - 0x30, i);
-			opll.setVolume(reg - 0x30, v << 2);
+			sound.setPatch(i);
+			sound.carriorSlot.volume = v << 2;
 
 			sound.rebuildAll();
 			
@@ -230,7 +227,7 @@ public class NesVRC7 extends AbstractSoundChip {
 
 	@Override
 	public void reset() {
-		for (int i = 0; i < 0x40; ++i) {
+		for (int i = 0; i < 0x40; i++) {
 			this.address = 0;
 			writeReg(0);
 		}

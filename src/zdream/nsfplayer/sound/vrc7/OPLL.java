@@ -3,8 +3,10 @@ package zdream.nsfplayer.sound.vrc7;
 import static zdream.nsfplayer.sound.vrc7.VRC7Static.*;
 
 /**
- * 只在 VRC7 中使用
+ * 只在 VRC7 中使用. 保留所有 VRC7 使用的环境数据
+ * 
  * @author Zdream
+ * @since v0.2.7
  */
 public class OPLL {
 
@@ -12,15 +14,6 @@ public class OPLL {
 	int realstep;
 	/** unsigned */
 	int opllstep;
-
-	// Register
-	/** unsigned */
-	public int[] regs = new int[0x40];
-
-	// Channel Data
-
-	/** Slot */
-	public OPLLSlot[] slots = new OPLLSlot[12];
 
 	// Voice Data
 	/** 19 x 2 = 38 */
@@ -118,135 +111,6 @@ public class OPLL {
 				dump2patch(default_inst[i], j * 16,
 						default_patch[i][j * 2], default_patch[i][j * 2 + 1]);
 			}
-		}
-	}
-	
-/* ***********************************************************
-    OPLL internal interfaces
-*********************************************************** */
-	
-	/**
-	 * Channel key on
-	 */
-	public void keyOn(int i) {
-		RawSoundVRC7 sound = sounds[i];
-		
-		if (!sound.modOn) {
-			sound.modulatorSlot.slotOn();
-		}
-		if (!sound.carOn) {
-			sound.carriorSlot.slotOn();
-		}
-	}
-	
-	/**
-	 * Channel key off
-	 */
-	public void keyOff(int i) {
-		RawSoundVRC7 sound = sounds[i];
-
-		if (sound.carOn) {
-			sound.carriorSlot.slotOff();
-		}
-	}
-	
-	private void keyOn_BD() {
-//		keyOn(6);
-	}
-	
-	private void keyOn_SD() {
-//		if (slot_on_flag[SLOT_SD] == 0)
-//			slots[((7) << 1) | 1].slotOn(); // CAR(opll,7)
-	}
-
-	private void keyOn_TOM() {
-//		if (slot_on_flag[SLOT_TOM] == 0)
-//			slots[(8) << 1].slotOn(); // MOD(opll,8)
-	}
-
-	private void keyOn_HH() {
-//		if (slot_on_flag[SLOT_HH] == 0)
-//			slots[(7) << 1].slotOn2(); // MOD(opll,7)
-	}
-	
-	private void keyOn_CYM() {
-//		if (slot_on_flag[SLOT_CYM] == 0)
-//			slots[((8) << 1) | 1].slotOn2(); // CAR(opll,8)
-	}
-	
-	// Drum key off
-	private void keyOff_BD() {
-//		keyOff(6);
-	}
-	
-	private void keyOff_SD() {
-//		if (slot_on_flag[SLOT_SD] != 0)
-//			slots[((7) << 1) | 1].slotOff(); // CAR(opll,7)
-	}
-	
-	private void keyOff_TOM() {
-//		if (slot_on_flag[SLOT_TOM] != 0)
-//			slots[(8) << 1].slotOff(); // MOD(opll,8)
-	}
-	
-	private void keyOff_HH() {
-//		if (slot_on_flag[SLOT_HH] != 0)
-//			slots[(7) << 1].slotOff(); // MOD(opll,7)
-	}
-	
-	private void keyOff_CYM() {
-//		if (slot_on_flag[SLOT_CYM] != 0)
-//			slots[((8) << 1) | 1].slotOff(); // CAR(opll,8)
-	}
-	
-	/**
-	 *  Change a voice
-	 */
-	public void setPatch(int i, int num) {
-		RawSoundVRC7 sound = sounds[i];
-		sound.patchNum = num;
-		sound.modulatorSlot.patch.copyFrom(patches[num * 2]);
-		sound.carriorSlot.patch.copyFrom(patches[num * 2 + 1]);
-	}
-	
-	/**
-	 * Set sustine parameter
-	 */
-	private void setSustine(int i, boolean sustine) {
-		sounds[i].carriorSlot.sustine = sustine;
-	}
-	
-	/**
-	 * Volume : 6bit ( Volume register << 2 )
-	 */
-	public void setVolume(int i, int volume) {
-		sounds[i].carriorSlot.volume = volume;
-	}
-	
-	/**
-	 * Set F-Number ( fnum : 9bit ) 
-	 */
-	private void setFnumber(int i, int fnum) {
-		RawSoundVRC7 sound = sounds[i];
-		sound.modulatorSlot.fnum = fnum;
-		sound.carriorSlot.fnum = fnum;
-	}
-	
-	/**
-	 * Set Block data (block : 3bit )
-	 */
-	private void setBlock(int i, int block) {
-		RawSoundVRC7 sound = sounds[i];
-		sound.modulatorSlot.block = block;
-		sound.carriorSlot.block = block;
-	}
-	
-	private void update_key_status() {
-		int ch;
-
-		for (ch = 0; ch < 6; ch++) {
-			RawSoundVRC7 sound = sounds[ch];
-			sound.modOn = sound.carOn = ((regs[0x20 + ch]) & 0x10) != 0;
 		}
 	}
 	
@@ -480,11 +344,6 @@ public class OPLL {
 		initSound();
 		
 		int i = 0;
-		for (; i < sounds.length; i++) {
-			RawSoundVRC7 sound = sounds[i];
-			slots[(i << 1)] = sound.modulatorSlot;
-			slots[(i << 1) | 1] = sound.carriorSlot;
-		}
 		
 		for (i = 0; i < patches.length; i++) {
 			patches[i] = new OPLLPatch();
@@ -515,7 +374,7 @@ public class OPLL {
 		int i;
 
 		for (i = 0; i < sounds.length; i++) {
-			setPatch(i, 0);
+			sounds[i].setPatch(0);
 			sounds[i].reset();
 		}
 
@@ -525,22 +384,6 @@ public class OPLL {
 			System.err.println("opll.realstep < 0");
 		}
 		opllstep = (int) (factor / (clk / 72));
-	}
-	
-	/**
-	 * Force Refresh (When external program changes some parameters).
-	 */
-	public void forceRefresh() {
-		int i;
-
-		int length = slots.length / 2;
-		for (i = 0; i < length; i++) {
-			setPatch(i, sounds[i].patchNum);
-		}
-
-		for (i = 0; i < slots.length; i++) {
-			slots[i].forceRefresh();
-		}
 	}
 	
 /* ***********************************************************
@@ -559,301 +402,15 @@ public class OPLL {
 		return patches[1];
 	}
 	
-	/**
-	 * @param reg
-	 *   unsigned
-	 * @param data
-	 *   unsigned
-	 */
-	@Deprecated
-	public void writeReg(int reg, int data) {
-		int i, v, ch;
-
-		data = data & 0xff;
-		reg = reg & 0x3f;
-		this.regs[reg] = data;
-
-		switch (reg) {
-		case 0x00:
-			patches[0].AM = (data & 0x80) != 0;
-			patches[0].PM = (data & 0x40) != 0;
-			patches[0].EG = (data & 0x20) != 0;
-			patches[0].KR = (data & 0x10) != 0;
-			patches[0].ML = (data) & 15;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.modulatorSlot;
-					s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-					s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-					s.eg_dphase = s.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case 0x01:
-			patches[1].AM = (data & 0x80) != 0;
-			patches[1].PM = (data & 0x40) != 0;
-			patches[1].EG = (data & 0x20) != 0;
-			patches[1].KR = (data & 0x10) != 0;
-			patches[1].ML = (data) & 15;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.carriorSlot;
-					s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-					s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-					s.eg_dphase = s.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case 0x02:
-			patches[0].KL = (data >> 6) & 3;
-			patches[0].TL = (data) & 63;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.modulatorSlot;
-					if (s.type == 0) {
-						s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-					} else {
-						s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-					}
-				}
-			}
-			break;
-
-		case 0x03:
-			patches[1].KL = (data >> 6) & 3;
-			patches[1].WF = (data >> 4) & 1;
-			patches[0].WF = (data >> 3) & 1;
-			patches[0].FB = (data) & 7;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.modulatorSlot;
-					s.sintbl = waveform[s.patch.WF];
-					s = sound.carriorSlot;
-					s.sintbl = waveform[s.patch.WF];
-				}
-			}
-			break;
-
-		case 0x04:
-			patches[0].AR = (data >> 4) & 15;
-			patches[0].DR = (data) & 15;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.modulatorSlot;
-					s.eg_dphase = s.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case 0x05:
-			patches[1].AR = (data >> 4) & 15;
-			patches[1].DR = (data) & 15;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.carriorSlot;
-					s.eg_dphase = s.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case 0x06:
-			patches[0].SL = (data >> 4) & 15;
-			patches[0].RR = (data) & 15;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.modulatorSlot;
-					s.eg_dphase = s.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case 0x07:
-			patches[1].SL = (data >> 4) & 15;
-			patches[1].RR = (data) & 15;
-			for (i = 0; i < 6; i++) {
-				RawSoundVRC7 sound = sounds[i];
-				if (sound.patchNum == 0) {
-					OPLLSlot s = sound.carriorSlot;
-					s.eg_dphase = s.calc_eg_dphase();
-				}
-			}
-			break;
-
-		case 0x0e:
-			if ((data & 32) != 0) {
-				if ((data & 0x10) != 0)
-					keyOn_BD();
-				else
-					keyOff_BD();
-				if ((data & 0x8) != 0)
-					keyOn_SD();
-				else
-					keyOff_SD();
-				if ((data & 0x4) != 0)
-					keyOn_TOM();
-				else
-					keyOff_TOM();
-				if ((data & 0x2) != 0)
-					keyOn_CYM();
-				else
-					keyOff_CYM();
-				if ((data & 0x1) != 0)
-					keyOn_HH();
-				else
-					keyOff_HH();
-			}
-			update_key_status();
-			break;
-
-		case 0x0f:
-			break;
-
-		case 0x10:
-		case 0x11:
-		case 0x12:
-		case 0x13:
-		case 0x14:
-		case 0x15:
-			ch = reg - 0x10;
-			setFnumber(ch, data + ((this.regs[0x20 + ch] & 1) << 8));
-
-		{
-			OPLLSlot s = slots[ch << 1];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
-			
-			s = slots[(ch << 1) | 1];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
-		}
-			break;
-
-		case 0x20:
-		case 0x21:
-		case 0x22:
-		case 0x23:
-		case 0x24:
-		case 0x25:
-			ch = reg - 0x20;
-			setFnumber(ch, ((data & 1) << 8) + this.regs[0x10 + ch]);
-			setBlock(ch, (data >> 1) & 7);
-			setSustine(ch, ((data >> 5) & 1) != 0);
-			if ((data & 0x10) != 0)
-				keyOn(ch);
-			else
-				keyOff(ch);
-		{
-			OPLLSlot s = slots[ch << 1];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
-			
-			s = slots[(ch << 1) | 1];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
-		}
-			update_key_status();
-			break;
-
-		case 0x30:
-		case 0x31:
-		case 0x32:
-		case 0x33:
-		case 0x34:
-		case 0x35:
-			i = (data >> 4) & 15;
-			v = data & 15;
-			if ((this.regs[0x0e] & 32) != 0 && (reg >= 0x36)) {
-				switch (reg) {
-				case 0x37:
-					slots[7 << 1].setVolume(i << 2);
-					break;
-				case 0x38:
-					slots[8 << 1].setVolume(i << 2);
-					break;
-				default:
-					break;
-				}
-			} else {
-				setPatch(reg - 0x30, i);
-			}
-			setVolume(reg - 0x30, v << 2);
-
-		{
-			OPLLSlot s = slots[(reg - 0x30) << 1];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
-
-			s = slots[((reg - 0x30) << 1) | 1];
-			s.dphase = dphaseTable[s.fnum][s.block][s.patch.ML];
-			if (s.type == 0) {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.patch.TL][s.patch.KL];
-			} else {
-				s.tll = tllTable[(s.fnum) >> 5][s.block][s.volume][s.patch.KL];
-			}
-			s.rks = rksTable[(s.fnum) >> 8][s.block][s.patch.KR ? 1 : 0];
-			s.sintbl = waveform[s.patch.WF];
-			s.eg_dphase = s.calc_eg_dphase();
-		}
-			break;
-
-		default:
-			break;
-		}
-	}
-	
 	/* **********
 	 *  发声器  *
 	 ********** */
 	
-	final RawSoundVRC7[] sounds = new RawSoundVRC7[6];
+	final SoundVRC7[] sounds = new SoundVRC7[6];
 	
 	private void initSound() {
 		for (int i = 0; i < sounds.length; i++) {
-			sounds[i] = new RawSoundVRC7(this, i);
+			sounds[i] = new SoundVRC7(this, i);
 		}
 	}
 	
@@ -863,7 +420,7 @@ public class OPLL {
 	 *   范围 [0, 5]
 	 * @return
 	 */
-	public RawSoundVRC7 getSound(int index) {
+	public SoundVRC7 getSound(int index) {
 		return sounds[index];
 	}
 

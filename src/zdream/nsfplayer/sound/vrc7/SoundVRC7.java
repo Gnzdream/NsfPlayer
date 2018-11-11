@@ -6,17 +6,16 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
  * VRC7 轨道的发声器. 共存在六个这类轨道
- * (非正式版)
  * 
  * @author Zdream
  * @since v0.2.7
  */
-public class RawSoundVRC7 extends AbstractNsfSound {
+public class SoundVRC7 extends AbstractNsfSound {
 	
 	OPLL opll;
 	int index;
 
-	RawSoundVRC7(OPLL opll, int index) {
+	SoundVRC7(OPLL opll, int index) {
 		this.opll = opll;
 		this.index = index;
 		
@@ -27,6 +26,12 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	/* **********
 	 *   参数   *
 	 ********** */
+	
+	/*
+	 * (间接) 原始记录参数
+	 * 
+	 * 大部分数据放在 modulatorSlot 和 carriorSlot 中
+	 */
 	
 	/**
 	 * modulatorSlot, 0 号
@@ -44,11 +49,25 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 	 */
 	public int patchNum;
 	
+	/*
+	 * 辅助参数
+	 */
+	
 	/**
 	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
 	 * 记录现在到下一个 step 触发点剩余的时钟数
 	 */
 	private int counter = 36;
+
+	/**
+	 * AM 单元 (Amp Modulator) 的相位参数
+	 */
+	private int am_phase;
+	
+	/**
+	 * PM 单元 (Pitch Modulator) 的相位参数
+	 */
+	private int pm_phase;
 
 	/* **********
 	 * 处理写入 *
@@ -115,6 +134,45 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 		carriorSlot.eg_dphase = carriorSlot.calc_eg_dphase();
 	}
 	
+	/**
+	 * 修改音色
+	 * Change a voice
+	 */
+	public void setPatch(int num) {
+		patchNum = num;
+		modulatorSlot.patch.copyFrom(opll.patches[num * 2]);
+		carriorSlot.patch.copyFrom(opll.patches[num * 2 + 1]);
+	}
+	
+	/**
+	 * 将轨道打开.
+	 * Channel key on
+	 */
+	public void keyOn() {
+		if (!modOn) {
+			modulatorSlot.slotOn();
+			modOn = true;
+		}
+		if (!carOn) {
+			carriorSlot.slotOn();
+			carOn = true;
+		}
+	}
+	
+	/**
+	 * <p>将轨道关闭.
+	 * <p>与 enable 还不一样, enable 是完全关闭, keyOff 是进入结束状态, 与 seq 的 RELEASE 状态很像
+	 * <p>Channel key off
+	 * </p>
+	 */
+	public void keyOff() {
+		if (carOn) {
+			carriorSlot.slotOff();
+			carOn = false;
+		}
+		modOn = false;
+	}
+	
 	/* **********
 	 * 公共方法 *
 	 ********** */
@@ -149,16 +207,6 @@ public class RawSoundVRC7 extends AbstractNsfSound {
 		this.time += time;
 		counter -= time;
 	}
-	
-/* ***********************************************************
-    从 OPLL 移过来的运算相关的方法, 还没有分类, 先放这里
-*********************************************************** */
-	
-	// Pitch Modulator
-	private int pm_phase;
-
-	// Amp Modulator
-	private int am_phase;
 	
 	private int renderStep() {
 		// 原工程的 opll.update_ampm();
