@@ -5,7 +5,10 @@ import static zdream.nsfplayer.sound.vrc7.VRC7Static.*;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
- * VRC7 轨道的发声器. 共存在六个这类轨道
+ * <p>VRC7 轨道的发声器. 共存在六个这类轨道
+ * <p>该发声器依赖 OPLL 环境, 创建该发声器需要先创建 {@link OPLL} 实例.
+ * 请通过 {@link OPLL#getSound(int)} 来获取该发声器
+ * </p>
  * 
  * @author Zdream
  * @since v0.2.7

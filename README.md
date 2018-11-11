@@ -223,7 +223,7 @@ while (true) {
 	<tr>
 		<td width=10%>VRC7</td>
 		<td width=40% align="left">
-			未完成 Unfinished
+			支持 Supported
 		</td>
 		<td width=40% align="left">
 			未完成 Unfinished
