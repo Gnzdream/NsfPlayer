@@ -1,14 +1,7 @@
 package zdream.nsfplayer.ftm.audio;
 
-import static zdream.nsfplayer.core.FtmChipType.FDS;
-import static zdream.nsfplayer.core.FtmChipType.N163;
-import static zdream.nsfplayer.core.FtmChipType.VRC6;
-import static zdream.nsfplayer.core.FtmChipType._2A03;
-import static zdream.nsfplayer.ftm.format.FtmSequenceType.ARPEGGIO;
-import static zdream.nsfplayer.ftm.format.FtmSequenceType.DUTY;
-import static zdream.nsfplayer.ftm.format.FtmSequenceType.HI_PITCH;
-import static zdream.nsfplayer.ftm.format.FtmSequenceType.PITCH;
-import static zdream.nsfplayer.ftm.format.FtmSequenceType.VOLUME;
+import static zdream.nsfplayer.core.FtmChipType.*;
+import static zdream.nsfplayer.ftm.format.FtmSequenceType.*;
 
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
@@ -17,6 +10,7 @@ import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
+import zdream.nsfplayer.ftm.format.FtmInstrumentVRC7;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
@@ -163,6 +157,24 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 			return null;
 		}
 		return (FtmInstrumentN163) inst;
+	}
+	
+	/**
+	 * 返回 N163 乐器. 如果指定位置的乐器为空, 或者不是 N163 类型的, 返回 null
+	 * @param instrument
+	 *   乐器号码
+	 * @return
+	 * @since v0.2.6
+	 */
+	public FtmInstrumentVRC7 getVRC7Instrument(int instrument) {
+		AbstractFtmInstrument inst = getInstrument(instrument);
+		if (inst == null) {
+			return null;
+		}
+		if (inst.instType() != VRC7) {
+			return null;
+		}
+		return (FtmInstrumentVRC7) inst;
 	}
 	
 	public FtmSequence[] getSequences(int instrument) {

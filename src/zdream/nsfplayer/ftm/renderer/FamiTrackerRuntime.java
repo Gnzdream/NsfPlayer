@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
+import zdream.nsfplayer.ftm.renderer.context.ChannalDeviceSelector;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
@@ -44,6 +45,7 @@ public class FamiTrackerRuntime {
 	public SoundMixer mixer;
 	
 	void init() {
+		selector = new ChannalDeviceSelector();
 		initMixer();
 	}
 	
@@ -83,6 +85,11 @@ public class FamiTrackerRuntime {
 	 * <br>由 Fetcher 生成, 管理
 	 */
 	public FamiTrackerQuerier querier;
+	
+	/**
+	 * 环境存储器
+	 */
+	public ChannalDeviceSelector selector;
 	
 	/* **********
 	 *   数据   *

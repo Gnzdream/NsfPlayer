@@ -17,7 +17,6 @@ import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
-import zdream.nsfplayer.ftm.renderer.tools.ChannalDeviceSelector;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
@@ -333,6 +332,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	private void initChannels() {
 		runtime.channels.clear();
 		runtime.effects.clear();
+		runtime.selector.reset();
 		
 		final FamiTrackerQuerier querier = runtime.querier;
 		
@@ -340,7 +340,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		for (int i = 0; i < len; i++) {
 			byte code = querier.channelCode(i);
 			
-			AbstractFtmChannel ch = ChannalDeviceSelector.selectFtmChannel(code);
+			AbstractFtmChannel ch = runtime.selector.selectFtmChannel(code);
 			ch.setRuntime(runtime);
 			runtime.channels.put(code, ch);
 			runtime.effects.put(code, new HashMap<>());
