@@ -222,7 +222,6 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 		// 自定义 pitch
 		if (patchNum == 0 && (state == STATE_NOTE_TRIGGER)) {
 			writeCustomPitch();
-			sound.rebuildAll();
 		}
 		
 		sound.modulatorSlot.block = block;
@@ -237,19 +236,14 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 		
 		if (state != STATE_NOTE_HALT) {
 			// Select volume & patch
-			sound.carriorSlot.volume = curVolume / 2;
+			sound.carriorSlot.volume = 63 - curVolume / 2;
 			sound.setPatch(patchNum);
-			sound.rebuildAll();
 		}
 		
 		sound.rebuildAll();
 		if (state == STATE_NOTE_TRIGGER) {
 			state = STATE_NOTE_ON;
 		}
-		
-//		if (!sound.isMask())
-//		System.out.println(String.format("[%d] %d, %d%d",
-//				index, sound.carriorSlot.volume, (noteOn) ? 1 : 0, (sustainOn) ? 1 : 0));
 	}
 	
 	private void writeCustomPitch() {
