@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.format;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_INSTRUMENTS;
+import static zdream.nsfplayer.ftm.format.FtmStatic.MAX_EFFECT_COLUMNS;
 
 /**
  * <p>FTM 每一个有效 note 数据.
@@ -38,11 +39,6 @@ public class FtmNote implements Cloneable {
 	public final byte[] effNumber = new byte[MAX_EFFECT_COLUMNS];
 	
 	public final short[] effParam = new short[MAX_EFFECT_COLUMNS];
-
-	/**
-	 * 效果列最大值
-	 */
-	public static final int MAX_EFFECT_COLUMNS = 4;
 
 	/**
 	 * Note 类型. NOTE_HALT 为停止符, NOTE_RELEASE 为休止符

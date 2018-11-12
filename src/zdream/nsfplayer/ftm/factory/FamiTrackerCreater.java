@@ -4,7 +4,7 @@ import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.*;
 import static zdream.nsfplayer.core.FtmChipType.*;
-import static zdream.nsfplayer.ftm.format.FtmNote.EF_PITCH;
+import static zdream.nsfplayer.ftm.format.FtmNote.*;
 
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
@@ -16,6 +16,7 @@ import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
+import zdream.nsfplayer.ftm.format.FtmInstrumentVRC7;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
@@ -934,8 +935,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				}
 
 				if (version == 3) {
-					// Fix for VRC7 portamento TODO VRC7 相关
-					/*if (expansionEnabled(SNDCHIP_VRC7) && channel > 4) {
+					// Fix for VRC7 portamento
+					// 在 FamiTracker 版本 3 时, VRC7 轨道的 1xx 和 2xx 效果是相反的. 这个 BUG 在后面的版本被修复
+					if (doc.audio.isUseVcr7() && doc.channelChip(channelIdx) == INsfChannelCode.CHIP_VRC7) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
 							switch (note.effNumber[n]) {
 								case EF_PORTA_DOWN:
@@ -946,10 +948,9 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 									break;
 							}
 						}
-					}*/
-					
+					}
 					// 如果该轨道是 FDS 轨道
-					/* else */ if (doc.audio.isUseFds()
+					else if (doc.audio.isUseFds()
 							&& doc.channelCode(channelIdx) == INsfChannelCode.CHANNEL_FDS) {
 						for (int n = 0; n < MAX_EFFECT_COLUMNS; ++n) {
 							if (note.effNumber[n] == EF_PITCH) {
@@ -1034,13 +1035,16 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		case VRC6:
 			return createVRC6Instrument(doc, block);
 			
+		case VRC7:
+			return createVRC7Instrument(doc, block);
+			
 		case FDS:
 			return createFDSInstrument(doc, block);
 			
 		case N163:
 			return createN163Instrument(doc, block);
 
-		// TODO 其它芯片 VRC7 S5B
+		// TODO 其它芯片 S5B
 			
 		default:
 			break;
@@ -1158,6 +1162,26 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	}
 	
 	/**
+	 * <p>创建 VRC7 乐器
+	 * </p>
+	 * @return
+	 *   VRC7 乐器
+	 * @since v0.2.7
+	 */
+	private FtmInstrumentVRC7 createVRC7Instrument(FamiTrackerHandler doc, Block block) {
+		FtmInstrumentVRC7 inst = new FtmInstrumentVRC7();
+		
+		inst.patchNum = block.readAsCInt();
+	
+		int length = inst.regs.length;
+		for (int i = 0; i < length; i++) {
+			inst.regs[i] = (short) block.readUnsignedByte();
+		}
+		
+		return inst;
+	}
+
+	/**
 	 * <p>创建 N163 乐器
 	 * </p>
 	 * @return
@@ -1236,7 +1260,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		
 		return inst;
 	}
-
+	
 	private FtmInstrumentFDS createFDSInstrument(FamiTrackerHandler doc, Block block) {
 		FtmInstrumentFDS inst = new FtmInstrumentFDS();
 		

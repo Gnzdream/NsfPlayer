@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.core.NsfChannelCode;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
@@ -380,6 +381,18 @@ public class FamiTrackerHandler implements INsfChannelCode {
 		}
 		
 		return channelCode[channel];
+	}
+	
+	/**
+	 * 查看第 {@code channel} 个轨道的轨道号所属的芯片号
+	 * @return
+	 *   轨道所属的芯片号. 如果不存在该轨道, 返回 -1
+	 * @see NsfChannelCode#chipOfChannel(byte)
+	 * @since v0.2.7
+	 */
+	public byte channelChip(int channel) {
+		byte code = channelCode(channel);
+		return NsfChannelCode.chipOfChannel(code);
 	}
 	
 	/**
