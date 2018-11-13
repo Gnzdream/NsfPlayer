@@ -148,7 +148,7 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 	}
 	
 	private int calcFnum(int note) {
-		return FREQ_TABLE[(note - 1) % 12] << 2;
+		return FREQ_TABLE[(note - 1) % 12] << 1;
 	}
 	
 	@Override
@@ -173,7 +173,7 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 	private int calcCurrentFnum(int period) {
 		int span = calcFnum(1); // 差 12 半音的 table 值差多少
 		lastOctave = (period) / span - 1; // [0, 9]
-		int fnum = period % span + span; // [688, 688*2=1376]
+		int fnum = period % span + span; // [344, 344*2=688]
 		
 		if (lastOctave < 0) {
 			while (lastOctave < 0) {
@@ -185,12 +185,12 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 				fnum *= 2;
 				lastOctave--;
 			}
-			if (fnum > 1375) {
-				fnum = 1375;
+			if (fnum > 686) {
+				fnum = 686;
 			}
 		}
 		
-		return fnum >> 2;
+		return fnum >> 1;
 	}
 	
 	/* **********
