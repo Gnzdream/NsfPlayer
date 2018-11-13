@@ -84,24 +84,9 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 		
 		hold = true;
 		int note = masterNote + curNote;
-		lastOctave = (note - 1) / 12 - 2;
-		int fnum = calcFnum(note);
-		int period = fnum - masterPitch/* + curPeriod*/;
-		
-		// 下面的循环就相当于数学里的向下借位
-		if (period < 0) {
-			while (period < 0) {
-				lastOctave --;
-				fnum *= 2;
-				period = fnum - masterPitch/* + curPeriod*/;
-			}
-		} else if (period >= 512) {
-			while (period >= 512) {
-				lastOctave ++;
-				fnum /= 2;
-				period = fnum - masterPitch/* + curPeriod*/;
-			}
-		}
+		lastOctave = (note - 1) / 12;
+		int period = periodTable(note) - masterPitch + curPeriod;
+		curPeriod = this.calcCurrentFnum(period);
 		
 		if (note <= 1) {
 			note = 1;
@@ -110,7 +95,6 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 		}
 		
 		curNote = note;
-		curPeriod = period;
 	}
 	
 	public void doHalt() {
@@ -138,6 +122,11 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 			STATE_NOTE_HALT = 4,
 			STATE_NOTE_RELEASE = 5;
 	
+	/*
+	 * [172, 344)
+	 */
+	final static int FREQ_TABLE[] = {172, 183, 194, 205, 217, 230, 244, 258, 274, 290, 307, 326};
+	
 	final OPLL opll;
 	
 	int patchNum;
@@ -159,14 +148,49 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 	}
 	
 	private int calcFnum(int note) {
-		final int FREQ_TABLE[] = {172, 183, 194, 205, 217, 230, 244, 258, 274, 290, 307, 326};
 		return FREQ_TABLE[(note - 1) % 12] << 2;
 	}
 	
 	@Override
 	public int periodTable(int note) {
-		// TODO
-		return 0;
+		int baseFreq = calcFnum(note);
+		int octave = (note - 1) / 12;
+		int span = calcFnum(1); // 差 12 半音的 table 值差多少
+		
+		int ret = baseFreq + (octave * span);
+		if (ret < 2) {
+			ret = 1;
+		}
+		return ret;
+	}
+	
+	/**
+	 * 按照现在的 curPeriod, 计算出现在使用的 fnum 和 octave.
+	 * octave 值将写入到 {@link #lastOctave} 中
+	 * @return
+	 *   fnum
+	 */
+	private int calcCurrentFnum(int period) {
+		int span = calcFnum(1); // 差 12 半音的 table 值差多少
+		lastOctave = (period) / span - 1; // [0, 9]
+		int fnum = period % span + span; // [688, 688*2=1376]
+		
+		if (lastOctave < 0) {
+			while (lastOctave < 0) {
+				fnum /= 2;
+				lastOctave++;
+			}
+		} else if (lastOctave > 7) {
+			while (lastOctave > 7) {
+				fnum *= 2;
+				lastOctave--;
+			}
+			if (fnum > 1375) {
+				fnum = 1375;
+			}
+		}
+		
+		return fnum >> 2;
 	}
 	
 	/* **********
