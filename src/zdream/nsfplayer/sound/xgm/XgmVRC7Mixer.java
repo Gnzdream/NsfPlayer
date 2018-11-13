@@ -70,7 +70,7 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 			}
 		}
 		
-		final int MASTER = 102; // 0.8 * 256.0 = 102.4
+		final int MASTER = 205; // 0.8 * 256.0 = 204.8
 		int value = (sum * MASTER) >> 4;
 		
 		return (intercept(value, time));
