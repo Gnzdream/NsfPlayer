@@ -252,6 +252,20 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 			return CHANNEL_N163_7;
 		case "namco8": case "n163_8": case "58":
 			return CHANNEL_N163_8;
+			
+		// VRC7
+		case "fmchannel1": case "fm1": case "vrc7_1": case "21":
+			return CHANNEL_VRC7_FM1;
+		case "fmchannel2": case "fm2": case "vrc7_2": case "22":
+			return CHANNEL_VRC7_FM2;
+		case "fmchannel3": case "fm3": case "vrc7_3": case "23":
+			return CHANNEL_VRC7_FM3;
+		case "fmchannel4": case "fm4": case "vrc7_4": case "24":
+			return CHANNEL_VRC7_FM4;
+		case "fmchannel5": case "fm5": case "vrc7_5": case "25":
+			return CHANNEL_VRC7_FM5;
+		case "fmchannel6": case "fm6": case "vrc7_6": case "26":
+			return CHANNEL_VRC7_FM6;
 		}
 		
 		throw new IllegalArgumentException("无法解析轨道号: " + c);
@@ -287,6 +301,14 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		case CHANNEL_N163_6: return "Namco6";
 		case CHANNEL_N163_7: return "Namco7";
 		case CHANNEL_N163_8: return "Namco8";
+		
+		// VRC7
+		case CHANNEL_VRC7_FM1: return "FMChannel1";
+		case CHANNEL_VRC7_FM2: return "FMChannel2";
+		case CHANNEL_VRC7_FM3: return "FMChannel3";
+		case CHANNEL_VRC7_FM4: return "FMChannel4";
+		case CHANNEL_VRC7_FM5: return "FMChannel5";
+		case CHANNEL_VRC7_FM6: return "FMChannel6";
 		}
 		
 		return "";
