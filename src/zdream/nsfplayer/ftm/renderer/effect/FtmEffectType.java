@@ -176,6 +176,7 @@ public enum FtmEffectType {
 	 * <p>Triangle, DPCM 无效
 	 * </p>
 	 * @see VolumnSlideEffect
+	 * @see VRC7VolumeSlideEffect
 	 */
 	VOLUME_SLIDE,
 	

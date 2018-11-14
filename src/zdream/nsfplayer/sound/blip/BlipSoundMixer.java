@@ -127,10 +127,17 @@ public class BlipSoundMixer extends SoundMixer {
 		} break;
 		
 		case CHANNEL_N163_1: case CHANNEL_N163_2: case CHANNEL_N163_3: case CHANNEL_N163_4:
-		 case CHANNEL_N163_5: case CHANNEL_N163_6: case CHANNEL_N163_7: case CHANNEL_N163_8:
+		case CHANNEL_N163_5: case CHANNEL_N163_6: case CHANNEL_N163_7: case CHANNEL_N163_8:
 		{
 			mixer.updateSetting(12, -800);
 			mixer.setExpression((x) -> (int) (x / 2.4)); // 数值可正可负
+		} break;
+		
+		case CHANNEL_VRC7_FM1: case CHANNEL_VRC7_FM2: case CHANNEL_VRC7_FM3:
+		case CHANNEL_VRC7_FM4: case CHANNEL_VRC7_FM5: case CHANNEL_VRC7_FM6:
+		{
+			mixer.updateSetting(12, -800);
+			mixer.setExpression((x) -> (int) (x / 2.0)); // 数值可正可负
 		} break;
 		
 		default:

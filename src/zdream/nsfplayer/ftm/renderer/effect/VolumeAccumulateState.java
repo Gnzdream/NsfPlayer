@@ -26,7 +26,8 @@ public class VolumeAccumulateState implements IFtmState {
 	public static final String NAME = "Volume Accumulated";
 	
 	/**
-	 * 每帧的变化量
+	 * 每帧的变化量.
+	 * 除了 VRC7 轨道外, 变化量大于零的, 轨道音量会增大. VRC7 轨道相反
 	 */
 	public int delta;
 	

@@ -264,12 +264,24 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				break;
 				
 			case EF_VOLUME_SLIDE: // Axx
-				if (channelCode != CHANNEL_2A03_DPCM && channelCode != CHANNEL_2A03_TRIANGLE) {
+				if (channelCode == CHANNEL_2A03_DPCM || channelCode == CHANNEL_2A03_TRIANGLE) {
+					break;
+				}
+				
+				{
 					int param = note.effParam[i];
-					if ((param & 0xF) != 0) { // down 或 0
-						putEffect(channelCode, effects, VolumeSlideEffect.of((param & 0xF) * -2));
-					} else { // up
-						putEffect(channelCode, effects, VolumeSlideEffect.of((param >> 4) * 2));
+					if (NsfChannelCode.chipOfChannel(channelCode) == CHIP_VRC7) {
+						if ((param & 0xF) != 0) { // up 或 0
+							putEffect(channelCode, effects, VRC7VolumeSlideEffect.of((param & 0xF) * 2));
+						} else { // down
+							putEffect(channelCode, effects, VRC7VolumeSlideEffect.of((param >> 4) * -2));
+						}
+					} else {
+						if ((param & 0xF) != 0) { // down 或 0
+							putEffect(channelCode, effects, VolumeSlideEffect.of((param & 0xF) * -2));
+						} else { // up
+							putEffect(channelCode, effects, VolumeSlideEffect.of((param >> 4) * 2));
+						}
 					}
 				}
 				break;
