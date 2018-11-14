@@ -21,6 +21,7 @@ import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmInstrumentN163;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC6;
+import zdream.nsfplayer.ftm.format.FtmInstrumentVRC7;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmPattern;
 import zdream.nsfplayer.ftm.format.FtmSequence;
@@ -238,6 +239,10 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		case "N163WAVE": {
 			parseN163Wave(reader, doc, strs);
+		} break;
+		
+		case "INSTVRC7": {
+			parseInstVRC7(reader, doc, strs);
 		} break;
 		
 		// Tracks
@@ -756,6 +761,38 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 	}
 
+	/**
+	 * <p>解析 INSTVRC7 部分, 即 VRC7 乐器数据部分
+	 * <p>示例:
+	 * <blockquote><pre>
+     *     INSTVRC7   5     0 01 00 70 1A 12 20 8F F0 "intro"
+     * </pre></blockquote>
+	 * 各个参数的意义是:
+	 * <blockquote><pre>
+     *     INSTVRC7 &lt;乐器序号&gt; &lt;patch 号&gt; &lt;8 个乐器参数&gt; &lt;乐器名称&gt; 
+     * </pre></blockquote>
+     * 乐器参数共有 8 个, 以 16 进制格式写明
+	 * </p>
+	 * 
+	 * @since v0.2.7
+	 */
+	private void parseInstVRC7(TextReader reader2, FamiTrackerHandler doc, String[] strs) {
+		if (strs.length != 12) {
+			handleException(reader, EX_INSTVRC7_WRONG_ITEMS, strs.length);
+		}
+		
+		FtmInstrumentVRC7 inst = new FtmInstrumentVRC7();
+		inst.seq = Integer.parseInt(strs[1]);
+		inst.name = strs[11];
+		inst.patchNum = Integer.parseInt(strs[2]);
+		
+		for (int i = 0; i < 8; i++) {
+			inst.regs[i] = Short.parseShort(strs[3 + i], 16);
+		}
+
+		doc.registerInstrument(inst);
+	}
+
 	private void parseTrack(TextReader reader, FamiTrackerHandler doc, String[] strs) {
 		if (strs.length != 5) {
 			handleException(reader, EX_TRACK_WRONG_ITEMS, strs.length);
@@ -964,9 +1001,6 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		}
 		
 		// 效果部分
-		if (column == 9) {
-			System.out.println();
-		}
 		byte channelCode = doc.channelCode(column);
 		for (int idx = 4; idx < length; idx++) {
 			t = strs[offset + idx];
@@ -1300,6 +1334,7 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	static final String EX_INSTN163_WRONG_ITEMS = "乐器部分解析错误, N163 乐器格式规定项数为 11, 但是这里只有 %d";
 	static final String EX_N163WAVE_WRONG_ITEMS = "乐器部分解析错误, N163 波形数据格式规定项数至少为 5, 但是这里只有 %d";
 	static final String EX_N163WAVE_WRONG_TOKEN = " N163WAVE 波形数据解析错误";
+	static final String EX_INSTVRC7_WRONG_ITEMS = "乐器部分解析错误, VRC7 乐器格式规定项数为 12, 但是这里只有 %d";
 	static final String EX_DPCMDEF_WRONG_ITEMS = "曲目部分解析错误, DPCMDEF 格式规定项数为 4, 但是这里只有 %d";
 	static final String EX_DPCM_WRONG_TOKEN = "MACRO 部分解析错误";
 	static final String EX_MACRO_WRONG_ITEMS = "曲目部分解析错误, MACRO 格式规定项数至少为 8, 但是这里只有 %d";
