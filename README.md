@@ -226,7 +226,7 @@ while (true) {
 			支持 Supported
 		</td>
 		<td width=40% align="left">
-			未完成 Unfinished
+			支持 Supported
 		</td>
 	</tr>
 	<tr>
@@ -242,7 +242,7 @@ while (true) {
 
 *	版本(Version)
 
-当前版本为 v0.2.6，工作有:
-*	【FTM】【NSF】【Mixer】 补充 N163 芯片的支持
+当前版本为 v0.2.7，工作有:
+*	【FTM】【NSF】【Mixer】 补充 VRC7 芯片的支持
 
 [版本更新历史](doc/version.md)
