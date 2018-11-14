@@ -2,6 +2,8 @@ package zdream.nsfplayer.sound.blip;
 
 import java.util.HashMap;
 
+import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
+
 import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
@@ -87,54 +89,55 @@ public class BlipSoundMixer extends SoundMixer {
 	 *   轨道号
 	 */
 	private static void configMixChannel(byte code, BlipMixerChannel mixer) {
-		switch (code) {
-		case CHANNEL_2A03_PULSE1: case CHANNEL_2A03_PULSE2:
+		byte type = typeOfChannel(code);
+		
+		
+		switch (type) {
+		case CHANNEL_TYPE_PULSE:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);
 		} break;
 		
-		case CHANNEL_2A03_TRIANGLE:
+		case CHANNEL_TYPE_TRIANGLE:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 8227.0) + 30.0)) : 0);
 		} break;
 		
-		case CHANNEL_2A03_NOISE:
+		case CHANNEL_TYPE_NOISE:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (41543.36 / (1 / (x / 12241.0) + 30.0)) : 0);
 		} break;
 		
-		case CHANNEL_2A03_DPCM:
+		case CHANNEL_TYPE_DPCM:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (41543.36 / (1 / (x / 22638.0) + 30.0)) : 0);
 		} break;
 		
-		case CHANNEL_MMC5_PULSE1: case CHANNEL_MMC5_PULSE2:
-		case CHANNEL_VRC6_PULSE1: case CHANNEL_VRC6_PULSE2:
-		case CHANNEL_VRC6_SAWTOOTH:
+		case CHANNEL_TYPE_MMC5_PULSE:
+		case CHANNEL_TYPE_VRC6_PULSE:
+		case CHANNEL_TYPE_SAWTOOTH:
 		{
 			mixer.updateSetting(12, -500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (96 * 360 / ((8000.0 / x) + 180)) : 0);
 		} break;
 		
-		case CHANNEL_FDS:
+		case CHANNEL_TYPE_FDS:
 		{
 			mixer.updateSetting(12, -3500);
 			mixer.setExpression((x) -> (x > 0) ? (int) (x / 1.9) : 0);
 		} break;
 		
-		case CHANNEL_N163_1: case CHANNEL_N163_2: case CHANNEL_N163_3: case CHANNEL_N163_4:
-		case CHANNEL_N163_5: case CHANNEL_N163_6: case CHANNEL_N163_7: case CHANNEL_N163_8:
+		case CHANNEL_TYPE_N163:
 		{
 			mixer.updateSetting(12, -800);
 			mixer.setExpression((x) -> (int) (x / 2.4)); // 数值可正可负
 		} break;
 		
-		case CHANNEL_VRC7_FM1: case CHANNEL_VRC7_FM2: case CHANNEL_VRC7_FM3:
-		case CHANNEL_VRC7_FM4: case CHANNEL_VRC7_FM5: case CHANNEL_VRC7_FM6:
+		case CHANNEL_TYPE_VRC7:
 		{
 			mixer.updateSetting(12, -800);
 			mixer.setExpression((x) -> (int) (x / 2.0)); // 数值可正可负

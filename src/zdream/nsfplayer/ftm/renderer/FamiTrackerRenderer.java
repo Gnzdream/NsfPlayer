@@ -169,6 +169,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	protected int renderFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
+		mixerReady();
 		
 		fetcher.runFrame();
 		updateChannels();
@@ -315,7 +316,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 ********** */
 	
 	/**
-	 * 初始化 / 重置音频合成器
+	 * 初始化 / 重置音频合成器 (混音器)
 	 */
 	private void initMixer() {
 		runtime.mixer.detachAll();
@@ -429,6 +430,17 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		for (IFtmEffect eff : runtime.geffect.values()) {
 			eff.execute((byte) 0, runtime);
 		}
+	}
+	
+	/**
+	 * <p>通知混音器, 当前帧的渲染开始了.
+	 * <p>这个方法原本用于通知混音器, 如果本帧的渲染速度需要变化,
+	 * 可以通过该方法, 让混音器提前对此做好准备, 修改存储的采样数容量, 从而调节播放速度.
+	 * </p>
+	 * @since v0.2.7
+	 */
+	private void mixerReady() {
+		
 	}
 	
 	/**

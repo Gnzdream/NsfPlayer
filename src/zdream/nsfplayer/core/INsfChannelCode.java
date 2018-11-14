@@ -10,6 +10,9 @@ package zdream.nsfplayer.core;
  * 
  * @version v0.2.5
  *   补充 S5B 相关的参数
+ *   
+ * @version v0.2.7
+ *   补充轨道类型编号相关的参数
  * 
  * @author Zdream
  * @since v0.2.1
@@ -67,5 +70,26 @@ public interface INsfChannelCode {
 			CHIP_MMC5 = 0x40,
 			CHIP_N163 = 0x50,
 			CHIP_S5B = 0x60;
-
+	
+	/**
+	 * <p>轨道类型编号
+	 * <p>例如 2A03 的两个矩形脉冲轨道, 可以看做一类, 为一个类型;
+	 * </p>
+	 * 
+	 * @since v0.2.7
+	 */
+	public static final byte
+			CHANNEL_TYPE_PULSE = CHANNEL_2A03_PULSE1,
+			CHANNEL_TYPE_TRIANGLE = CHANNEL_2A03_TRIANGLE,
+			CHANNEL_TYPE_NOISE = CHANNEL_2A03_NOISE,
+			CHANNEL_TYPE_DPCM = CHANNEL_2A03_DPCM,
+			CHANNEL_TYPE_VRC6_PULSE = CHANNEL_VRC6_PULSE1,
+			CHANNEL_TYPE_SAWTOOTH = CHANNEL_VRC6_SAWTOOTH,
+			CHANNEL_TYPE_VRC7 = CHANNEL_VRC7_FM1,
+			CHANNEL_TYPE_FDS = CHANNEL_FDS,
+			CHANNEL_TYPE_MMC5_PULSE = CHANNEL_MMC5_PULSE1,
+			CHANNEL_TYPE_N163 = CHANNEL_N163_1,
+			CHANNEL_TYPE_S5B = CHANNEL_S5B_SQUARE1,
+			CHANNEL_TYPE_CUSTOM = 0x70;
+	
 }
