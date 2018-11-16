@@ -392,6 +392,17 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		case CHANNEL_N163_7: level = runtime.config.channelLevels.levelN163Namco7; break;
 		case CHANNEL_N163_8: level = runtime.config.channelLevels.levelN163Namco8; break;
 		
+		case CHANNEL_VRC7_FM1: level = runtime.config.channelLevels.levelVRC7FM1; break;
+		case CHANNEL_VRC7_FM2: level = runtime.config.channelLevels.levelVRC7FM2; break;
+		case CHANNEL_VRC7_FM3: level = runtime.config.channelLevels.levelVRC7FM3; break;
+		case CHANNEL_VRC7_FM4: level = runtime.config.channelLevels.levelVRC7FM4; break;
+		case CHANNEL_VRC7_FM5: level = runtime.config.channelLevels.levelVRC7FM5; break;
+		case CHANNEL_VRC7_FM6: level = runtime.config.channelLevels.levelVRC7FM6; break;
+		
+		case CHANNEL_S5B_SQUARE1: level = runtime.config.channelLevels.levelS5BSquare1; break;
+		case CHANNEL_S5B_SQUARE2: level = runtime.config.channelLevels.levelS5BSquare2; break;
+		case CHANNEL_S5B_SQUARE3: level = runtime.config.channelLevels.levelS5BSquare3; break;
+		
 		default: level = 1.0f; break;
 		}
 		

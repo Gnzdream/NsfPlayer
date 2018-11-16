@@ -68,9 +68,16 @@ public class FamiTrackerConfig implements Cloneable {
 		public float levelN163Namco7 = 1.0f;
 		public float levelN163Namco8 = 1.0f;
 		
-//		public float levelVRC7 = 1.0f;
-//		public float levelN163 = 1.0f;
-//		public float levelS5B = 1.0f;
+		public float levelVRC7FM1 = 1.0f;
+		public float levelVRC7FM2 = 1.0f;
+		public float levelVRC7FM3 = 1.0f;
+		public float levelVRC7FM4 = 1.0f;
+		public float levelVRC7FM5 = 1.0f;
+		public float levelVRC7FM6 = 1.0f;
+		
+		public float levelS5BSquare1 = 1.0f;
+		public float levelS5BSquare2 = 1.0f;
+		public float levelS5BSquare3 = 1.0f;
 	}
 	
 	public final ChannelLevels channelLevels = new ChannelLevels();
