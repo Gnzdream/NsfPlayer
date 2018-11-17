@@ -63,3 +63,9 @@
 *	（FTM）支持加载含 VRC7 的 TXT 文件；
 
 #### v0.2.8
+
+（2018-11-17）
+
+*	（NSF）支持 S5B 芯片音轨；
+*	（Mixer）支持 S5B 芯片类型的音频播放；
+*	（BUG 修复）（NSF）（Mixer）修复了含 Envelope 部分 Noise 轨道无法发出声音的 BUG；
