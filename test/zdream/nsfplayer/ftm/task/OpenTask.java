@@ -1,16 +1,22 @@
 package zdream.nsfplayer.ftm.task;
 
+import static zdream.nsfplayer.ftm.task.OpenType.*;
+
 import java.io.IOException;
 
 import zdream.nsfplayer.ftm.FamiTrackerApplication;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.nsf.audio.NsfAudio;
+import zdream.nsfplayer.nsf.audio.NsfAudioFactory;
 
 /**
  * 打开文件任务
  * @author Zdream
  */
 public class OpenTask implements IFtmTask {
+	
+	static NsfAudioFactory nsfFactory = new NsfAudioFactory();
 	
 	String filename;
 	int beginSong = -1;
@@ -19,7 +25,7 @@ public class OpenTask implements IFtmTask {
 	 * 是否按照 txt 形式打开文件
 	 * @since v0.2.5-test
 	 */
-	boolean isTxt;
+	OpenType type = FTM;
 	
 	public OpenTask() {}
 
@@ -41,10 +47,13 @@ public class OpenTask implements IFtmTask {
 		} else if ("format".equals(key)) {
 			switch (arg.toString().toLowerCase()) {
 			case "txt":
-				isTxt = true;
+				type = TXT;
+				break;
+			case "nsf":
+				type = NSF;
 				break;
 			default:
-				isTxt = false;
+				type = FTM;
 				break;
 			}
 		}
@@ -53,10 +62,29 @@ public class OpenTask implements IFtmTask {
 	@Override
 	public void execute(FtmPlayerConsole env) {
 		try {
-			FtmAudio audio = (isTxt) ? FamiTrackerApplication.app.openWithTxt(filename) :
-				FamiTrackerApplication.app.open(filename);
-			env.setAudio(audio);
-			env.getRenderer().ready(audio);
+			switch (type) {
+			case FTM: {
+				FtmAudio audio = FamiTrackerApplication.app.open(filename);
+				env.setFtmAudio(audio);
+				env.getFamiTrackerRenderer().ready(audio);
+			} break;
+			
+			case TXT: {
+				FtmAudio audio = FamiTrackerApplication.app.openWithTxt(filename);
+				env.setFtmAudio(audio);
+				env.getFamiTrackerRenderer().ready(audio);
+			} break;
+			
+			case NSF: {
+				NsfAudio audio = nsfFactory.createFromFile(filename);
+				env.setNsfAudio(audio);
+				env.getNsfRenderer().ready(audio);
+			} break;
+
+			default:
+				break;
+			}
+			
 		} catch (IOException | RuntimeException e) {
 			e.printStackTrace();
 			env.printOut("[OPEN] 读取文件: %s 失败. 继续播放原音频", filename);

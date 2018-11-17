@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.task;
 
+import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 
 /**
  * 播放任务
@@ -35,8 +35,7 @@ public class PlayTask implements IFtmTask {
 
 	@Override
 	public void execute(FtmPlayerConsole env) {
-		
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		
 		byte[] bs = env.getLastSampleBytes();
 		int size = renderer.render(bs, 0, bs.length);

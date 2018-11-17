@@ -84,6 +84,15 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	}
 	
 	/**
+	 * @return
+	 *   正在播放的曲目号
+	 * @since v0.2.8
+	 */
+	public int getSong() {
+		return song;
+	}
+	
+	/**
 	 * 获得当前播放采用的制式
 	 * @since v0.2.8
 	 */

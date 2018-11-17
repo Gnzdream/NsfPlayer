@@ -5,18 +5,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
+import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.cmd.BaseHandler;
 import zdream.nsfplayer.ftm.cmd.ChannelHandler;
 import zdream.nsfplayer.ftm.cmd.ICommandHandler;
 import zdream.nsfplayer.ftm.cmd.SongHandler;
-import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 import zdream.nsfplayer.ftm.task.ChooseSongTask;
 import zdream.nsfplayer.ftm.task.IFtmTask;
 import zdream.nsfplayer.ftm.task.OpenTask;
+import zdream.nsfplayer.ftm.task.OpenType;
 import zdream.nsfplayer.ftm.task.PauseTask;
 import zdream.nsfplayer.ftm.task.PlayTask;
+import zdream.nsfplayer.nsf.audio.NsfAudio;
+import zdream.nsfplayer.nsf.renderer.NsfRenderer;
 import zdream.utils.common.BytesPlayer;
 import zdream.utils.common.CodeSpliter;
 
@@ -25,16 +29,24 @@ import zdream.utils.common.CodeSpliter;
  * <p>虽然用的是命令行 / 类似 Shell
  * </p>
  * 
+ * @version v0.2.8-test
+ *   补充对 NSF 部分的支持
+ * 
  * @author Zdream
  * @since v0.2.3-test
  */
 public class FtmPlayerConsole {
+	// FTM
+	final FamiTrackerRenderer ftmRenderer;
+	FtmAudio ftm;
+	// NSF
+	final NsfRenderer nsfRenderer;
+	NsfAudio nsf;
 	
-	FamiTrackerRenderer renderer;
-	FtmAudio audio;
-	BytesPlayer player;
+	// Player
+	OpenType type = OpenType.FTM;
+	final BytesPlayer player;
 	
-	FtmAudioFactory factroy;
 	PlayThreadForFtm thread;
 	
 	// 缓存
@@ -44,30 +56,65 @@ public class FtmPlayerConsole {
 	Map<String, ICommandHandler> handlers = new HashMap<String, ICommandHandler>();
 
 	public FtmPlayerConsole() {
-		init();
+		ftmRenderer = new FamiTrackerRenderer();
+		nsfRenderer = new NsfRenderer();
+		player = new BytesPlayer();
 		
 		attachHandler(new BaseHandler());
 		attachHandler(new SongHandler());
 		attachHandler(new ChannelHandler());
 	}
 	
-	private void init() {
-		renderer = new FamiTrackerRenderer();
-		player = new BytesPlayer();
+	public FamiTrackerRenderer getFamiTrackerRenderer() {
+		return ftmRenderer;
 	}
 	
-	public FamiTrackerRenderer getRenderer() {
-		return renderer;
+	public NsfRenderer getNsfRenderer() {
+		return nsfRenderer;
 	}
 	
-	public FtmAudio getAudio() {
-		return audio;
+	public AbstractNsfRenderer<?> getRenderer() {
+		return (type == OpenType.FTM) ? ftmRenderer : nsfRenderer;
 	}
 	
-	public void setAudio(FtmAudio audio) {
-		this.audio = audio;
+	public FtmAudio getFtmAudio() {
+		return ftm;
 	}
 	
+	public NsfAudio getNsfAudio() {
+		return nsf;
+	}
+	
+	public AbstractNsfAudio getAudio() {
+		return (type == OpenType.FTM) ? ftm : nsf;
+	}
+	
+	public void setFtmAudio(FtmAudio audio) {
+		this.ftm = audio;
+		this.type = OpenType.FTM;
+	}
+	
+	public void setNsfAudio(NsfAudio audio) {
+		this.nsf = audio;
+		this.type = OpenType.NSF;
+	}
+	
+	public void setAudio(AbstractNsfAudio audio) {
+		if (audio instanceof FtmAudio) {
+			setFtmAudio((FtmAudio) audio);
+		} else if (audio instanceof NsfAudio) {
+			setNsfAudio((NsfAudio) audio);
+		}
+	}
+	
+	public OpenType getType() {
+		return type;
+	}
+
+	public void setType(OpenType type) {
+		this.type = type;
+	}
+
 	public void attachHandler(ICommandHandler h) {
 		String[] cmds = h.canHandle();
 		for (int i = 0; i < cmds.length; i++) {
@@ -148,18 +195,6 @@ public class FtmPlayerConsole {
 		putTask(t);
 	}
 
-//	public NsfPlayer getPlayer() {
-//		return player;
-//	}
-//
-//	public NsfAudio getNsf() {
-//		return nsf;
-//	}
-//
-//	public NsfPlayerConfig getConfig() {
-//		return config;
-//	}
-	
 	public byte[] getLastSampleBytes() {
 		if (samples == null) {
 			samples = new byte[2400];

@@ -195,6 +195,14 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	public boolean isFinished() {
 		return fetcher.isFinished();
 	}
+
+	/* **********
+	 * 仪表盘区 *
+	 ********** */
+	/*
+	 * 用于控制实际播放数据的部分.
+	 * 其中有: 控制音量、控制是否播放
+	 */
 	
 	/**
 	 * 获取正在播放的曲目号
@@ -242,14 +250,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	public Set<Byte> allChannelSet() {
 		return new HashSet<>(runtime.effects.keySet());
 	}
-
-	/* **********
-	 * 仪表盘区 *
-	 ********** */
-	/*
-	 * 用于控制实际播放数据的部分.
-	 * 其中有: 控制音量、控制是否播放
-	 */
 	
 	/**
 	 * 设置某个轨道的音量

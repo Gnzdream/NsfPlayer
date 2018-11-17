@@ -7,5 +7,12 @@ package zdream.nsfplayer.core;
  * @since v0.2.4
  */
 public abstract class AbstractNsfAudio {
+	
+	/**
+	 * @return
+	 *   曲目总数
+	 * @since 0.2.8
+	 */
+	public abstract int getTrackCount();
 
 }

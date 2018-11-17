@@ -1,5 +1,8 @@
 package zdream.nsfplayer.nsf.renderer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -47,10 +50,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		if (audio == null) {
 			throw new NullPointerException("audio = null");
 		}
-		
-		runtime.audio = audio;
-		runtime.manager.setSong(audio.start);
-		runtime.reset();
+		ready(audio, audio.start);
 	}
 
 	/**
@@ -96,6 +96,13 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
 	 */
 	public void ready(int track) throws NullPointerException {
+		NsfAudio audio = runtime.audio;
+		
+		if (track < 0 || track >= audio.total_songs) {
+			throw new IllegalArgumentException(
+					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
+		}
+		
 		runtime.manager.setSong(track);
 		runtime.reset();
 	}
@@ -228,6 +235,23 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * 用于控制实际播放数据的部分.
 	 * 其中有: 控制音量、控制是否播放
 	 */
+	
+	/**
+	 * @return
+	 *   当前正在播放的曲目号
+	 * @since v0.2.8
+	 */
+	public int getCurrentTrack() {
+		return runtime.manager.getSong();
+	}
+	
+	/**
+	 * @since v0.2.8
+	 */
+	@Override
+	public Set<Byte> allChannelSet() {
+		return new HashSet<>(runtime.chips.keySet());
+	}
 	
 	/**
 	 * 设置某个轨道的音量

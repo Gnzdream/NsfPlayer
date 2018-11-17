@@ -43,7 +43,7 @@ public class SongHandler implements ICommandHandler {
 	private void handleChoose(String[] args, FtmPlayerConsole env) {
 		if (args.length != 2) {
 			env.printOut("[SONG] 使用 \"song <曲目号>\". 切换曲目。 [ 0 - %d ]\n[SONG] 现在播放曲目 %d。",
-					env.getAudio().getTrackCount() - 1, env.getRenderer().getCurrentTrack());
+					env.getFtmAudio().getTrackCount() - 1, env.getRenderer().getCurrentTrack());
 			return;
 		}
 		
@@ -57,7 +57,7 @@ public class SongHandler implements ICommandHandler {
 	private void handlePrev(String[] args, FtmPlayerConsole env) {
 		int song = env.getRenderer().getCurrentTrack() - 1;
 		if (song < 0) {
-			song = env.getAudio().getTrackCount() - 1;
+			song = env.getFtmAudio().getTrackCount() - 1;
 		}
 		chooseSong(song, env);
 	}

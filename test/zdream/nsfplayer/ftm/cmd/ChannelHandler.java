@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 
+import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 
 /**
  * <p>轨道相关命令处理器
@@ -103,7 +103,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 打开全部轨道
 	 */
 	private void muteClearAll(FtmPlayerConsole env) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> renderer.setChannelMask(code, false));
@@ -113,7 +113,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 打开单个轨道
 	 */
 	private void muteClear(FtmPlayerConsole env, byte channelCode) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		renderer.setChannelMask(channelCode, false);
 	}
 	
@@ -121,7 +121,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 关闭单个轨道
 	 */
 	private void mute(FtmPlayerConsole env, byte channelCode) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		renderer.setChannelMask(channelCode, true);
 	}
 
@@ -130,8 +130,8 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 */
 	private void volumePrintAll(FtmPlayerConsole env) {
 		env.printOut("[VOLUME] 下面罗列所有轨道的音量\n     ---------- ---- ---");
-		
-		FamiTrackerRenderer renderer = env.getRenderer();
+
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		ArrayList<Byte> bs = new ArrayList<>(renderer.allChannelSet());
 		bs.sort(null);
 		
@@ -155,7 +155,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 重置全部轨道音量
 	 */
 	private void volumeResetAll(FtmPlayerConsole env) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> {
@@ -168,7 +168,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 设置全部轨道音量
 	 */
 	private void volumeSetAll(FtmPlayerConsole env, float vol) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> {
@@ -181,7 +181,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 查看单个轨道的音量
 	 */
 	private void volumePrint(FtmPlayerConsole env, byte channelCode) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		float vol = renderer.getLevel(channelCode);
 		if (renderer.isChannelMask(channelCode)) {
 			vol = 0;
@@ -197,7 +197,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 * 设置单个轨道音量
 	 */
 	private void volumeSet(FtmPlayerConsole env, byte channelCode, float vol) {
-		FamiTrackerRenderer renderer = env.getRenderer();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		
 		renderer.setChannelMask(channelCode, false);
 		renderer.setLevel(channelCode, vol);

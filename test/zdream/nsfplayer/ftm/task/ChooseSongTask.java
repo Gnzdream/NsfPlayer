@@ -1,8 +1,8 @@
 package zdream.nsfplayer.ftm.task;
 
+import zdream.nsfplayer.core.AbstractNsfAudio;
+import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
-import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 
 /**
  * 发起切歌动作的任务
@@ -38,8 +38,8 @@ public class ChooseSongTask implements IFtmTask {
 
 	@Override
 	public void execute(FtmPlayerConsole env) {
-		FamiTrackerRenderer renderer = env.getRenderer();
-		FtmAudio audio = env.getAudio();
+		AbstractNsfRenderer<?> renderer = env.getRenderer();
+		AbstractNsfAudio audio = env.getAudio();
 		
 		if (song < 0) {
 			song = 0;

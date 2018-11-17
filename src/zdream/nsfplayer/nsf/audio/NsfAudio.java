@@ -144,6 +144,11 @@ public class NsfAudio extends AbstractNsfAudio {
 		return (soundchip & 32) != 0;
 	}
 	
+	@Override
+	public int getTrackCount() {
+		return total_songs;
+	}
+	
 	NsfAudio() {
 		
 	}
