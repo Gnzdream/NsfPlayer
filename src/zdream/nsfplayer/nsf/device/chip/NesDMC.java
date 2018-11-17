@@ -100,7 +100,7 @@ public class NesDMC extends AbstractSoundChip {
 		switch (adr) {
 		case 0:
 			noise.envelopeLoop = (value & 0x20) != 0;
-			noise.envelopeFix = (value & 0x10) != 0;
+			noise.envelopeDisable = (value & 0x10) != 0;
 			noise.fixedVolume = (value & 0xF);
 			break;
 			

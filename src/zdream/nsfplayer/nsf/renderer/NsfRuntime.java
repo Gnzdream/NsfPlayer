@@ -57,13 +57,17 @@ public class NsfRuntime implements IResetable {
 	 *  初始化  *
 	 ********** */
 	
-	{
-		config = new NsfRendererConfig();
+	NsfRuntime(NsfRendererConfig config) {
+		this.config = config;
 		manager = new DeviceManager(this);
 		
 		mem = new NesMem();
 		bank = new NesBank();
 		cpu = new NesCPU();
+	}
+	
+	NsfRuntime() {
+		this(new NsfRendererConfig());
 	}
 	
 	void init() {

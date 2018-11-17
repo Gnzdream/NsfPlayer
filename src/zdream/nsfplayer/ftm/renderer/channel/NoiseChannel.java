@@ -130,7 +130,7 @@ public class NoiseChannel extends ChannelTone {
 	 */
 	public void writeToSound() {
 //		sound.envelopeLoop = true;
-//		sound.envelopeFix = true;
+//		sound.envelopeDisable = true;
 		
 		sound.fixedVolume = curVolume / 16;
 		if (curVolume == 0 || !playing || masterNote == 0) {

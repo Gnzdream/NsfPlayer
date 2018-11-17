@@ -159,11 +159,6 @@ public class XgmSoundMixer extends SoundMixer {
 	@Override
 	public void reset() {
 		multis.forEach((b, multi) -> multi.reset());
-		
-		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
-			AbstractXgmMultiMixer multi = it.next().getValue();
-			multi.reset();
-		}
 	}
 	
 	/* **********

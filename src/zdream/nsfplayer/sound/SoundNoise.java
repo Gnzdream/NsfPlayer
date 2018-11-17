@@ -51,10 +51,10 @@ public class SoundNoise extends Sound2A03 {
 	 */
 	
 	/*
-	 * 0 号位的 envelopeLoop 和 envelopeFix 两个和 Envelope 包络相关的参数
+	 * 0 号位的 envelopeLoop 和 envelopeDisable 两个和 Envelope 包络相关的参数
 	 * 已经移动到 EnvelopeSoundNoise 子类中.
 	 * 
-	 * 在该类默认认为 envelopeLoop = true, envelopeFix = true 且不会改变
+	 * 在该类默认认为 envelopeLoop = true, envelopeDisable = true 且不会改变
 	 */
 
 	/**
@@ -85,8 +85,8 @@ public class SoundNoise extends Sound2A03 {
 	public int dutySampleRate;
 	
 	/**
-	 * <p>3 号位: xxxxx000
-	 * <p>查找索引
+	 * <p>3 号位: xxxxx000 的加工数据
+	 * <p>不是查找索引. lengthCounter = PulseSound.LENGTH_TABLE[v]
 	 * </p>
 	 */
 	public int lengthCounter;
@@ -134,20 +134,25 @@ public class SoundNoise extends Sound2A03 {
 		while (time >= counter) {
 			time -= counter;
 			this.time += counter;
-			counter = period;
 			
-			int value = processStep(period);
+			int value = processStep(counter);
 			mix(value);
+			counter = period;
 		}
 
 		counter -= time;
 		this.time += time;
+		processRemainTime(time);
 	}
 	
 	protected int processStep(int period) {
-		int ret = (shiftReg & 1) != 0 ? fixedVolume : 0;
+		int ret = ((shiftReg & 1) != 0) ? fixedVolume : 0;
 		shiftReg = (((shiftReg << 14) ^ (shiftReg << dutySampleRate)) & 0x4000) | (shiftReg >> 1);
 		return ret;
+	}
+	
+	protected void processRemainTime(int period) {
+		// do nothing
 	}
 
 }

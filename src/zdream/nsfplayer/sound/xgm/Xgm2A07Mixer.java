@@ -92,14 +92,40 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 		
 		// volume adjusted by 0.75 based on empirical measurements
 		// 音量乘上 0.75 是经验测量的结果 ——原 NsfPlayer 工程里面的注释
-		// 8192.0 * 0.75 = 6144
-		final double MASTER = 6144.0;
+		// 8192.0 * 0.75 * 159.79 = 981749.76
+		final double MASTER = 981750;
+		/*
+		 * ((MASTER) / (100.0 + 1.0 / ((double) t / 8227 + (double) n / 12241 + (double) d / 22638)));
+		 */
+		int value = (int) ((MASTER) / (100.0 + 1.0 / 
+				(tri.buffer[idx] * tri.getLevel() / 8227
+				+ calcNoise(fromIdx, toIdx) * noise.getLevel() / 12241
+				+ dpcm.buffer[idx] * dpcm.getLevel() / 22638)));
 		
-		int value = (int) (MASTER *
-				(3.0 * tri.buffer[idx] * tri.getLevel()
-						+ 2.0 * noise.buffer[idx] * noise.getLevel()
-						+ dpcm.buffer[idx] * dpcm.getLevel()) / 208.0);
+//		int value = (int) (8192.0 * 0.75 *
+//				(3.0 * tri.buffer[idx] * tri.getLevel()
+//						+ 2.0 * noise.buffer[idx] * noise.getLevel()
+//						+ dpcm.buffer[idx] * dpcm.getLevel()) / 208.0);
 		return (intercept(value, time));
+	}
+	
+	/**
+	 * 噪音轨和别的轨不同, 它是计算平均值
+	 * @param fromIdx
+	 * @param toIdx
+	 */
+	private float calcNoise(int fromIdx, int toIdx) {
+		if (toIdx <= fromIdx) {
+			return 0;
+		}
+		
+		int count = 0, sum = 0;
+		for (int i = fromIdx; i < toIdx; i++) {
+			count++;
+			sum += noise.buffer[i];
+		}
+		
+		return (float) sum / count;
 	}
 
 }

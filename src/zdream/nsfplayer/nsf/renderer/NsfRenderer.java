@@ -22,6 +22,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.init();
 	}
 	
+	public NsfRenderer(NsfRendererConfig config) {
+		this.runtime = new NsfRuntime(config);
+		runtime.init();
+	}
+	
 	/* **********
 	 * 准备部分 *
 	 ********** */
