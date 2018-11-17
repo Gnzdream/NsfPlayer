@@ -69,3 +69,5 @@
 *	（NSF）支持 S5B 芯片音轨；
 *	（Mixer）支持 S5B 芯片类型的音频播放；
 *	（BUG 修复）（NSF）（Mixer）修复了含 Envelope 部分 Noise 轨道无法发出声音的 BUG；
+*	（BUG 修复）（Mixer）修复了 Noise 轨道由于采样错误导致轨道音偏大的 BUG；
+	该问题只在 Xgm 混音器中出现；

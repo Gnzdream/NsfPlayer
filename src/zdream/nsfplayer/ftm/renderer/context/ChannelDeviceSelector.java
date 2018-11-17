@@ -32,7 +32,7 @@ import zdream.nsfplayer.sound.vrc7.OPLL;
  * @author Zdream
  * @since 0.2.1
  */
-public class ChannalDeviceSelector implements INsfChannelCode, IResetable {
+public class ChannelDeviceSelector implements INsfChannelCode, IResetable {
 
 	/**
 	 * 建立各个轨道
