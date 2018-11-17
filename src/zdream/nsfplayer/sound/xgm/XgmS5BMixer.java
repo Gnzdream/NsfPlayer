@@ -9,7 +9,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	
 	XgmAudioChannel ch1, ch2, ch3;
-	private final int MASTER = 6; // 8 * 0.64 = 5.12
+	private final int MASTER = 15; // 8 * 0.64 * 3 = 15.36
 
 	public XgmS5BMixer() {
 		

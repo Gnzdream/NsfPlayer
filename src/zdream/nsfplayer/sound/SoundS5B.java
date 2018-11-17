@@ -1,18 +1,16 @@
-package zdream.nsfplayer.sound.s5b;
+package zdream.nsfplayer.sound;
 
 import zdream.nsfplayer.core.NsfStatic;
-import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
  * S5B 轨道的发声器. 共存在三个这类轨道
- * (非正式版)
  * 
  * @author Zdream
  * @since v0.2.8
  */
-public class RawSoundS5B extends AbstractNsfSound {
+public class SoundS5B extends AbstractNsfSound {
 
-	public RawSoundS5B() {
+	public SoundS5B() {
 		reset();
 		internalRefresh();
 	}
@@ -269,10 +267,12 @@ public class RawSoundS5B extends AbstractNsfSound {
 			return 0;
 
 		if ((waveEnable || waveEdge) && (noiseEnable || noise != 0)) {
-			if ((volume & 32) == 0)
+			if ((volume & 32) == 0) {
 				out = VOLT_BL[volume & 31];
-			else
+			} else {
+				System.out.println(Integer.toHexString(volume));
 				out = VOLT_BL[envPtr];
+			}
 		}
 		
 		return out;

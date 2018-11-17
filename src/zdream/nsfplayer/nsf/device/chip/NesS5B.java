@@ -4,7 +4,7 @@ import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.s5b.RawSoundS5B;
+import zdream.nsfplayer.sound.SoundS5B;
 
 /**
  * S5B 音频芯片, 管理输出 1 到 3 号共 3 个 Sunsoft 5B 轨道的音频
@@ -14,14 +14,14 @@ import zdream.nsfplayer.sound.s5b.RawSoundS5B;
  */
 public class NesS5B extends AbstractSoundChip {
 	
-	private final RawSoundS5B s1, s2, s3;
+	private final SoundS5B s1, s2, s3;
 	int address;
 
 	public NesS5B(NsfRuntime runtime) {
 		super(runtime);
-		s1 = new RawSoundS5B();
-		s2 = new RawSoundS5B();
-		s3 = new RawSoundS5B();
+		s1 = new SoundS5B();
+		s2 = new SoundS5B();
+		s3 = new SoundS5B();
 	}
 
 	@Override

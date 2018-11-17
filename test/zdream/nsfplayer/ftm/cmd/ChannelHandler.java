@@ -266,7 +266,16 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 			return CHANNEL_VRC7_FM5;
 		case "fmchannel6": case "fm6": case "vrc7_6": case "26":
 			return CHANNEL_VRC7_FM6;
+			
+		// S5B
+		case "s5bsquare1": case "s5b1": case "61":
+			return CHANNEL_S5B_SQUARE1;
+		case "s5bsquare2": case "s5b2": case "62":
+			return CHANNEL_S5B_SQUARE2;
+		case "s5bsquare3": case "s5b3": case "63":
+			return CHANNEL_S5B_SQUARE3;
 		}
+		
 		
 		throw new IllegalArgumentException("无法解析轨道号: " + c);
 	}
@@ -309,6 +318,11 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		case CHANNEL_VRC7_FM4: return "FMChannel4";
 		case CHANNEL_VRC7_FM5: return "FMChannel5";
 		case CHANNEL_VRC7_FM6: return "FMChannel6";
+		
+		// S5B
+		case CHANNEL_S5B_SQUARE1: return "S5BSquare1";
+		case CHANNEL_S5B_SQUARE2: return "S5BSquare2";
+		case CHANNEL_S5B_SQUARE3: return "S5BSquare3";
 		}
 		
 		return "";

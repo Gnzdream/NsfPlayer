@@ -50,7 +50,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		if (audio == null) {
 			throw new NullPointerException("audio = null");
 		}
-		ready(audio, audio.start);
+		ready0(audio, audio.start);
 	}
 
 	/**
@@ -70,17 +70,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		}
 		if (track < 0 || track >= audio.total_songs) {
 			throw new IllegalArgumentException(
-					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
+					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内, " + track + " 是非法值");
 		}
 		
-		runtime.param.sampleRate = this.runtime.config.sampleRate;
-		runtime.param.calcFreq(frameRate);
-		
-		runtime.audio = audio;
-		runtime.manager.setSong(track);
-		runtime.reset();
-		
-		super.resetCounterParam(frameRate, runtime.config.sampleRate);
+		this.ready0(audio, track);
 	}
 	
 	/**
@@ -105,6 +98,21 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		
 		runtime.manager.setSong(track);
 		runtime.reset();
+	}
+	
+	private void ready0(NsfAudio audio, int track) {
+		if (track < 0 || track >= audio.total_songs) {
+			track = 0;
+		}
+		
+		runtime.param.sampleRate = this.runtime.config.sampleRate;
+		runtime.param.calcFreq(frameRate);
+		
+		runtime.audio = audio;
+		runtime.manager.setSong(track);
+		runtime.reset();
+		
+		super.resetCounterParam(frameRate, runtime.config.sampleRate);
 	}
 	
 	/* **********
