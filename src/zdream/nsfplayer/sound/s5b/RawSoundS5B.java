@@ -1,5 +1,6 @@
 package zdream.nsfplayer.sound.s5b;
 
+import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
@@ -13,6 +14,7 @@ public class RawSoundS5B extends AbstractNsfSound {
 
 	public RawSoundS5B() {
 		reset();
+		internalRefresh();
 	}
 	
 	/**
@@ -66,7 +68,7 @@ public class RawSoundS5B extends AbstractNsfSound {
 	/**
 	 * <p>噪音启用参数
 	 * <p>07 号位: 0000x000 (1 号轨道), 000x0000 (2 号轨道), 00x00000 (3 号轨道)
-	 * <p>如果是 1 则 <code>tmask = true</code>, 表示启用噪音, 否则为 false; 表示禁用
+	 * <p>如果是 1 则为 true, 表示启用噪音, 否则为 false; 表示禁用
 	 * </p>
 	 */
 	public boolean noiseEnable;
@@ -91,7 +93,83 @@ public class RawSoundS5B extends AbstractNsfSound {
 	 */
 	public int envelopeSpeed;
 	
-	// TODO
+	/**
+	 * <p>包络继续标识
+	 * <p>13 号位: 0000x000
+	 * <p>如果是 1 则为 true, 表示包络继续播放, 否则为 false; 表示包络暂停播放
+	 * </p>
+	 */
+	public boolean envelopeContinue;
+	
+	/**
+	 * <p>包络击打标识
+	 * <p>13 号位: 00000x00
+	 * <p>如果是 1 则为 true, 否则为 false
+	 */
+	public boolean envelopeAttack;
+	
+	/**
+	 * <p>包络修正标识
+	 * <p>13 号位: 000000x0
+	 * <p>如果是 1 则为 true, 否则为 false
+	 */
+	public boolean envelopeAlternate;
+	
+	/**
+	 * <p>包络 HOLD 标识
+	 * <p>13 号位: 0000000x
+	 * <p>如果是 1 则为 true, 否则为 false
+	 */
+	public boolean envelopeHold;
+	
+	/*
+	 * 辅助参数
+	 */
+	
+	private boolean envFace;
+	private boolean envPause;
+	private int envCount;
+	private int envPtr;
+	
+	private int noiseCount;
+	private int noiseSeed;
+	private int waveCount;
+	private boolean waveEdge;
+	
+	/**
+	 * 音频的状态每 {@link #step} 个时钟变化一次, 需要向外部输出音频数值.
+	 * 记录现在到下一个 step 触发点剩余的时钟数
+	 */
+	private int counter = 8;
+	
+	/* **********
+	 * 输入方法 *
+	 ********** */
+	
+	public void envelopeReset() {
+		envFace = envelopeAttack;
+		envPause = false;
+		envCount = 0x10000 - envelopeSpeed;
+		envPtr = (envFace) ? 0 : 0x1f;
+	}
+	
+	/* **********
+	 * 私有方法 *
+	 ********** */
+	
+	private static final int GETA_BITS = 24;
+	
+	/**
+	 * 每 8 个时钟 baseCount 的增量
+	 */
+	private int baseDelta;
+	private int baseCount;
+	
+	private void internalRefresh() {
+		int clk = NsfStatic.BASE_FREQ_NTSC;
+		int rate = clk / 8;
+		baseDelta = (int) ((double) clk * (1 << GETA_BITS) / (16 * rate));
+	}
 	
 	
 	/* **********
@@ -100,13 +178,104 @@ public class RawSoundS5B extends AbstractNsfSound {
 	
 	@Override
 	public void reset() {
+		
+		
+		
+		
+		noiseSeed = 0xffff;
+		
 		super.reset();
 	}
 
 	@Override
 	protected void onProcess(int time) {
-		// TODO Auto-generated method stub
+		int value;
+		
+		while (time >= counter) {
+			time -= counter;
+			this.time += counter;
+			counter	= 8;
+			
+			value = this.renderStep();
+			mix(value);
+		}
+		
+		this.time += time;
+		counter -= time;
+	}
+	
+	private int renderStep() {
+		int noise;
+		int delta; // unsigned
 
+		baseCount += baseDelta;
+		delta = (baseCount >> GETA_BITS);
+		baseCount &= (1 << GETA_BITS) - 1;
+		
+		/* Envelope */
+		envCount += delta;
+		if (envelopeSpeed > 0) {
+			while (envCount >= 0x10000) {
+				if (!envPause) {
+					if (envFace)
+						envPtr = (envPtr + 1) & 0x3f;
+					else
+						envPtr = (envPtr + 0x3f) & 0x3f;
+				}
+
+				if ((envPtr & 0x20) != 0) /* if carry or borrow */
+				{
+					if (envelopeContinue) {
+						if (envelopeAlternate && envelopeHold)
+							envFace &= true;
+						if (envelopeHold)
+							envPause = true;
+						envPtr = (envFace) ? 0 : 0x1f;
+					} else {
+						envPause = true;
+						envPtr = 0;
+					}
+				}
+
+				envCount -= envelopeSpeed;
+			}
+		}
+		
+		/* Noise */
+		noiseCount += delta;
+		if ((noiseCount & 0x40) != 0) {
+			if ((noiseSeed & 1) != 0)
+				noiseSeed ^= 0x24000;
+			noiseSeed >>= 1;
+			noiseCount -= noiseFreq;
+		}
+		noise = noiseSeed & 1;
+		
+		/* Tone / Wave */
+		waveCount += delta;
+		if ((waveCount & 0x1000) != 0) {
+			if (freq > 1) {
+				waveEdge = !waveEdge; // ?
+				waveCount -= freq;
+			} else {
+				waveEdge = true;
+			}
+		}
+		
+		/* Out */
+		int out = 0; // maintaining cout for stereo mix
+
+		if (!isEnable())
+			return 0;
+
+		if ((waveEnable || waveEdge) && (noiseEnable || noise != 0)) {
+			if ((volume & 32) == 0)
+				out = VOLT_BL[volume & 31];
+			else
+				out = VOLT_BL[envPtr];
+		}
+		
+		return out;
 	}
 
 }

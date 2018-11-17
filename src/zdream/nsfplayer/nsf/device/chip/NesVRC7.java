@@ -9,7 +9,7 @@ import zdream.nsfplayer.sound.vrc7.OPLLPatch;
 import zdream.nsfplayer.sound.vrc7.SoundVRC7;
 
 /**
- * VRC7 音频芯片, 管理输出 1 到 6 个 VRC7 轨道的音频
+ * VRC7 音频芯片, 管理输出 1 到 6 号共 6 个 VRC7 轨道的音频
  * 
  * @author Zdream
  * @since v0.2.7

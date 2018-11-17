@@ -110,8 +110,6 @@ public class NsfAudio extends AbstractNsfAudio {
 	 */
 	public byte[] body;
 	
-	// useVrc6, useVrc7, useFds, useMmc5, useN106, useFme7;
-	
 	public boolean useVrc6() {
 		return (soundchip & 1) != 0;
 	}
@@ -137,7 +135,12 @@ public class NsfAudio extends AbstractNsfAudio {
 		return (soundchip & 16) != 0;
 	}
 	
-	public boolean useFme7() {
+	/**
+	 * <p>是否使用了 S5B 芯片.
+	 * <p>S5B 又称为 FME7.
+	 * @return
+	 */
+	public boolean useS5b() {
 		return (soundchip & 32) != 0;
 	}
 	
