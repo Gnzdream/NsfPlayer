@@ -39,7 +39,7 @@ public class DPCM_DACSettingEffect implements IFtmEffect {
 	 */
 	public static DPCM_DACSettingEffect of(int dac) throws IllegalArgumentException {
 		if (dac > 127 || dac < 0) {
-			throw new IllegalArgumentException("DAC 必须是 0 - 127 之间的整数数值");
+			throw new IllegalArgumentException("错误值: " + dac + ", DAC 必须是 0 - 127 之间的整数数值");
 		}
 		return new DPCM_DACSettingEffect(dac);
 	}

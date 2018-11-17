@@ -388,7 +388,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter, INsfChann
 				
 			case EF_DAC: // Zxx
 				if (channelCode == CHANNEL_2A03_DPCM) {
-					putEffect(channelCode, effects, DPCM_DACSettingEffect.of(note.effParam[i]));
+					putEffect(channelCode, effects, DPCM_DACSettingEffect.of(note.effParam[i] & 0x7F));
 				}
 				break;
 				
