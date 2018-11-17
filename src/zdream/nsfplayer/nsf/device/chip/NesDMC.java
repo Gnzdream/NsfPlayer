@@ -2,13 +2,14 @@ package zdream.nsfplayer.nsf.device.chip;
 
 import java.util.Arrays;
 
+import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.DPCMSound;
-import zdream.nsfplayer.sound.NoiseSound;
+import zdream.nsfplayer.sound.EnvelopeSoundNoise;
 import zdream.nsfplayer.sound.PulseSound;
 import zdream.nsfplayer.sound.TriangleSound;
 
@@ -21,7 +22,7 @@ import zdream.nsfplayer.sound.TriangleSound;
 public class NesDMC extends AbstractSoundChip {
 	
 	private TriangleSound triangle;
-	private NoiseSound noise;
+	private EnvelopeSoundNoise noise;
 	private DPCMSound dpcm;
 	
 	/**
@@ -33,7 +34,7 @@ public class NesDMC extends AbstractSoundChip {
 	public NesDMC(NsfRuntime runtime) {
 		super(runtime);
 		triangle = new TriangleSound();
-		noise = new NoiseSound();
+		noise = new EnvelopeSoundNoise();
 		dpcm = new DPCMSound();
 	}
 
@@ -98,7 +99,7 @@ public class NesDMC extends AbstractSoundChip {
 	private void writeToNoise(int adr, int value) {
 		switch (adr) {
 		case 0:
-			noise.looping = (value & 0x20) != 0;
+			noise.envelopeLoop = (value & 0x20) != 0;
 			noise.envelopeFix = (value & 0x10) != 0;
 			noise.fixedVolume = (value & 0xF);
 			break;
@@ -107,11 +108,13 @@ public class NesDMC extends AbstractSoundChip {
 			
 		case 2: {
 			noise.periodIndex = (value & 0xF);
-			noise.dutyType = (value & 0x80) != 0;
+			noise.dutySampleRate = ((value & 0x80) != 0) ?
+					EnvelopeSoundNoise.DUTY_SAMPLE_RATE1 : EnvelopeSoundNoise.DUTY_SAMPLE_RATE0;
 		} break;
 			
 		case 3: {
 			noise.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			noise.onEnvelopeWrite();
 		} break;
 		
 		}
@@ -175,6 +178,9 @@ public class NesDMC extends AbstractSoundChip {
 	public void reset() {
 		triangle.reset();
 		noise.reset();
+		noise.setSequenceStep(
+				getRuntime().manager.getRegion() == ERegion.PAL ?
+						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
 		dpcm.reset();
 		
 		Arrays.fill(mem, (byte) 0);

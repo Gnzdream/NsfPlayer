@@ -138,8 +138,8 @@ public class NsfPlayerControll implements INsfPlayerEnv {
 	 */
 	public void go() {
 		this.thread = new PlayThread(this);
-		OpenTask t = new OpenTask("test\\assets\\test\\mm10nsf.nsf");
-		t.setOption("s", 8);
+		OpenTask t = new OpenTask("D:\\fami\\Nsf Player\\songs\\星际魂斗罗（Raf世界）.nsf");
+		t.setOption("s", 0);
 		putTask(t);
 		
 		Thread thread = new Thread(this.thread, "player");

@@ -67,7 +67,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	/**
 	 * 实际采用的制式
 	 */
-	ERegion region;
+	ERegion region = NTSC;
 	/**
 	 * 正在播放的曲目号
 	 */
@@ -81,6 +81,14 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		} else {
 			this.song = song;
 		}
+	}
+	
+	/**
+	 * 获得当前播放采用的制式
+	 * @since v0.2.8
+	 */
+	public ERegion getRegion() {
+		return region;
 	}
 
 	/* **********

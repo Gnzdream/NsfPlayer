@@ -1,12 +1,15 @@
 package zdream.nsfplayer.sound;
 
 /**
- * 噪音发声器
+ * <p>噪音发声器
+ * <p>该发声器不处理 Envelope 包络相关的参数. 如果确实需要使用这类数据,
+ * 你需要使用 {@link EnvelopeSoundNoise}.
+ * </p>
  * 
  * @author Zdream
  * @since v0.2.2
  */
-public class NoiseSound extends Sound2A03 {
+public class SoundNoise extends Sound2A03 {
 	
 	public static final short[] NOISE_PERIODS_NTSC = {
 		4, 8, 16, 32, 64, 96, 128, 160, 202, 254, 380, 508, 762, 1016, 2034, 4068
@@ -18,7 +21,7 @@ public class NoiseSound extends Sound2A03 {
 	
 	public short[] PERIOD_TABLE;
 
-	public NoiseSound() {
+	public SoundNoise() {
 		PERIOD_TABLE = NOISE_PERIODS_NTSC;
 		reset();
 	}
@@ -26,6 +29,19 @@ public class NoiseSound extends Sound2A03 {
 	/* **********
 	 *   参数   *
 	 ********** */
+	
+	/**
+	 * {@link #dutySampleRate} 的合理取值.
+	 * 满足:
+	 * <li>duty == 0 时 dutySampleRate = DUTY_SAMPLE_RATE0;
+	 * <li>duty == 1 时 dutySampleRate = DUTY_SAMPLE_RATE1;
+	 * </li>
+	 * @see #dutySampleRate
+	 */
+	public static final int
+			DUTY_SAMPLE_RATE0 = 13,
+			DUTY_SAMPLE_RATE1 = 8;
+	
 	/*
 	 * 原始记录参数
 	 * 0 号位: (0x400C)
@@ -33,20 +49,13 @@ public class NoiseSound extends Sound2A03 {
 	 * 2 号位: (0x400E)
 	 * 3 号位: (0x400F)
 	 */
-
-	/**
-	 * <p>0 号位: 00x00000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
-	 */
-	public boolean looping;
 	
-	/**
-	 * <p>0 号位: 000x0000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
+	/*
+	 * 0 号位的 envelopeLoop 和 envelopeFix 两个和 Envelope 包络相关的参数
+	 * 已经移动到 EnvelopeSoundNoise 子类中.
+	 * 
+	 * 在该类默认认为 envelopeLoop = true, envelopeFix = true 且不会改变
 	 */
-	public boolean envelopeFix;
 
 	/**
 	 * <p>0 号位: 0000xxxx
@@ -66,13 +75,14 @@ public class NoiseSound extends Sound2A03 {
 	public int periodIndex;
 	
 	/**
-	 * <p>2 号位: x0000000
-	 * <p>为 1 时为 true, 为 0 时为 false
+	 * <p>2 号位: x0000000 的加工数据
+	 * <p>为 1 时为 true, dutySampleRate = 8; 为 0 时为 false, dutySampleRate = 13
 	 * <p>该值为 duty 值
-	 * <p><code>sampleRate = (dutyType) ? 8 : 13;</code>
 	 * </p>
+	 * @see #DUTY_SAMPLE_RATE0
+	 * @see #DUTY_SAMPLE_RATE1
 	 */
-	public boolean dutyType;
+	public int dutySampleRate;
 	
 	/**
 	 * <p>3 号位: xxxxx000
@@ -96,7 +106,7 @@ public class NoiseSound extends Sound2A03 {
 	/**
 	 * 在 onProcess() 方法中使用的
 	 */
-	private int shiftReg;
+	protected int shiftReg;
 	
 	/* **********
 	 * 公共方法 *
@@ -105,11 +115,9 @@ public class NoiseSound extends Sound2A03 {
 	@Override
 	public void reset() {
 		// 原始记录参数
-		looping = false;
-		envelopeFix = false;
 		fixedVolume = 0;
 		periodIndex = 0;
-		dutyType = false;
+		dutySampleRate = DUTY_SAMPLE_RATE0;
 		lengthCounter = 0;
 		
 		// 辅助参数
@@ -122,19 +130,24 @@ public class NoiseSound extends Sound2A03 {
 	@Override
 	protected void onProcess(int time) {
 		final int period = PERIOD_TABLE[periodIndex];
-		final int sampleRate = (dutyType) ? 8 : 13;
 		
 		while (time >= counter) {
 			time -= counter;
 			this.time += counter;
 			counter = period;
-			//int volume = m_iEnvelopeFix != 0 ? m_iFixedVolume : m_iEnvelopeVolume;
-			mix((shiftReg & 1) != 0 ? fixedVolume : 0);
-			shiftReg = (((shiftReg << 14) ^ (shiftReg << sampleRate)) & 0x4000) | (shiftReg >> 1);
+			
+			int value = processStep(period);
+			mix(value);
 		}
 
 		counter -= time;
 		this.time += time;
+	}
+	
+	protected int processStep(int period) {
+		int ret = (shiftReg & 1) != 0 ? fixedVolume : 0;
+		shiftReg = (((shiftReg << 14) ^ (shiftReg << dutySampleRate)) & 0x4000) | (shiftReg >> 1);
+		return ret;
 	}
 
 }

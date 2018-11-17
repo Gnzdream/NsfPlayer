@@ -3,7 +3,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
-import zdream.nsfplayer.sound.NoiseSound;
+import zdream.nsfplayer.sound.SoundNoise;
 
 /**
  * 2A03 噪音轨道
@@ -36,8 +36,6 @@ public class NoiseChannel extends ChannelTone {
 		seq.reset();
 		
 		sound.reset();
-		sound.looping = true;
-		sound.envelopeFix = true;
 	}
 	
 	@Override
@@ -118,10 +116,10 @@ public class NoiseChannel extends ChannelTone {
 	 *  发声器  *
 	 ********** */
 	
-	NoiseSound sound = new NoiseSound();
+	SoundNoise sound = new SoundNoise();
 
 	@Override
-	public NoiseSound getSound() {
+	public SoundNoise getSound() {
 		return sound;
 	}
 	
@@ -131,8 +129,8 @@ public class NoiseChannel extends ChannelTone {
 	 * </p>
 	 */
 	public void writeToSound() {
-		sound.looping = true;
-		sound.envelopeFix = true;
+//		sound.envelopeLoop = true;
+//		sound.envelopeFix = true;
 		
 		sound.fixedVolume = curVolume / 16;
 		if (curVolume == 0 || !playing || masterNote == 0) {
@@ -142,7 +140,8 @@ public class NoiseChannel extends ChannelTone {
 		
 		int period = (curNote - 1) ^ 0x0F;
 		
-		sound.dutyType = (curDuty & 1) == 1;
+		sound.dutySampleRate = ((curDuty & 1) == 1) ?
+				SoundNoise.DUTY_SAMPLE_RATE1 : SoundNoise.DUTY_SAMPLE_RATE0;
 		sound.periodIndex = period;
 		sound.lengthCounter = 0;
 	}
