@@ -71,3 +71,5 @@
 *	（BUG 修复）（NSF）（Mixer）修复了含 Envelope 部分 Noise 轨道无法发出声音的 BUG；
 *	（BUG 修复）（Mixer）修复了 Noise 轨道由于采样错误导致轨道音偏大的 BUG；
 	该问题只在 Xgm 混音器中出现；
+*	（BUG 修复）（NSF）修复了 NsfRenderer 在 ready(NsfAudio) 方法启动时无法渲染的 BUG；
+*	（BUG 修复）（NSF）修复了如果使用 Bank 扩充 ROM，DPCM 轨道无法获取采样数据的 BUG；

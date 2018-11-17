@@ -152,10 +152,14 @@ public class NesDMC extends AbstractSoundChip {
 			// 需要准备读取
 			FtmDPCMSample sample = new FtmDPCMSample();
 			int address = (0xC000 | (dpcm.offsetAddress));
+			if (dpcm.length == 0) {
+				return;
+			}
+			
 			int length = (dpcm.length + 1);
 			sample.data = new byte[length];
 			
-			getRuntime().mem.read(sample.data, 0, length, address);
+			getRuntime().manager.stack.read(sample.data, 0, length, address);
 			dpcm.sample = sample;
 			dpcm.offsetAddress = 0; // TODO 这个地方我用来强制重置
 			dpcm.reload();
