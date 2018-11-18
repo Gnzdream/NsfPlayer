@@ -110,9 +110,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		
 		runtime.audio = audio;
 		runtime.manager.setSong(track);
-		runtime.reset();
 		
 		initMixer();
+		runtime.reset();
+		
 		super.resetCounterParam(frameRate, runtime.config.sampleRate);
 	}
 	
