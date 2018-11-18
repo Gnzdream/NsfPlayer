@@ -110,8 +110,8 @@ public class BlipSynth {
 		final int rev = fwd + quality - 2;
 		
 		{
-			if (bufptr + fwd < 0) {
-				System.out.println();
+			if (bufptr + fwd == 32769) {
+				System.out.println(buf.buffer_.length);
 			}
 			
 			long t0 = i0 * delta + buf.buffer_ [bufptr + fwd];

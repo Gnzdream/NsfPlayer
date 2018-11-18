@@ -143,6 +143,12 @@ public class BlipSoundMixer extends SoundMixer {
 			mixer.setExpression((x) -> (int) (x / 2.0)); // 数值可正可负
 		} break;
 		
+		case CHANNEL_TYPE_S5B:
+		{
+			mixer.updateSetting(12, -1200);
+			mixer.setExpression((x) -> (int) (x * 1.1708)); // 数值可正可负
+		} break;
+		
 		default:
 			break;
 		}

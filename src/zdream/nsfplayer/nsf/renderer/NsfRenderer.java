@@ -112,6 +112,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.manager.setSong(track);
 		runtime.reset();
 		
+		initMixer();
 		super.resetCounterParam(frameRate, runtime.config.sampleRate);
 	}
 	
@@ -319,6 +320,20 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 */
 	public boolean isChannelMask(byte channelCode) throws NullPointerException {
 		return runtime.chips.get(channelCode).getSound(channelCode).isMask();
+	}
+	
+	/* **********
+	 *  初始化  *
+	 ********** */
+	
+	/**
+	 * 初始化 / 重置音频合成器 (混音器)
+	 */
+	private void initMixer() {
+		runtime.mixer.detachAll();
+		runtime.mixer.reset();
+		
+		// TODO
 	}
 
 }
