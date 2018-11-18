@@ -73,3 +73,9 @@
 	该问题只在 Xgm 混音器中出现；
 *	（BUG 修复）（NSF）修复了 NsfRenderer 在 ready(NsfAudio) 方法启动时无法渲染的 BUG；
 *	（BUG 修复）（NSF）修复了如果使用 Bank 扩充 ROM，DPCM 轨道无法获取采样数据的 BUG；
+
+（2018-11-18）
+
+*	（NSF）现在 NSF 部分也支持 Blip 混音器了；
+*	（Mixer）Blip 混音器支持播放 S5B 轨道；
+
