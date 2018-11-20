@@ -3,7 +3,6 @@ package zdream.nsfplayer.nsf.renderer;
 import java.util.HashMap;
 
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.DeviceManager;
@@ -31,7 +30,7 @@ public class NsfRuntime implements IResetable {
 	
 	public NsfAudio audio;
 	public NsfRendererConfig config;
-	public FamiTrackerParameter param = new FamiTrackerParameter();
+	public NsfParameter param = new NsfParameter();
 	public DeviceManager manager;
 	
 	// 存储部件

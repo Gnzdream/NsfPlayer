@@ -29,7 +29,7 @@ public class StopEffect implements IFtmEffect {
 	
 	@Override
 	public void execute(byte channelCode, FamiTrackerRuntime runtime) {
-		runtime.fetcher.setFinished(true);
+		runtime.param.finished = true;
 	}
 	
 	@Override

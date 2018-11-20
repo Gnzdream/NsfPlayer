@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.renderer;
+package zdream.nsfplayer.nsf.renderer;
 
 import zdream.nsfplayer.core.NsfCommonParameter;
 
@@ -9,17 +9,13 @@ import zdream.nsfplayer.core.NsfCommonParameter;
  * @author Zdream
  * @since v0.2.1
  */
-public class FamiTrackerParameter extends NsfCommonParameter {
+public class NsfParameter extends NsfCommonParameter {
 	
 	/**
 	 * 现在仅允许包内进行实例化
 	 */
-	FamiTrackerParameter() {
+	NsfParameter() {
 		super();
 	}
-	
-	/* **********
-	 * 播放参数 *
-	 ********** */
 
 }

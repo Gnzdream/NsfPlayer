@@ -35,8 +35,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
 	
-	final FtmRowFetcher fetcher = new FtmRowFetcher(runtime);
-	
 	final IFtmEffectConverter converter = new DefaultFtmEffectConverter(runtime);
 	
 	/**
@@ -99,10 +97,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			int track,
 			int section)
 			throws FamiTrackerException {
-		fetcher.ready(audio, track, section);
+		runtime.ready(audio, track, section);
 		
 		// 重置播放相关的数据
-		int frameRate = fetcher.getFrameRate();
+		int frameRate = runtime.fetcher.getFrameRate();
 		resetCounterParam(frameRate, runtime.config.sampleRate);
 		runtime.param.calcFreq(frameRate);
 		
@@ -119,7 +117,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready() throws FamiTrackerException {
-		ready(fetcher.trackIdx, fetcher.curSection);
+		ready(runtime.param.trackIdx, runtime.fetcher.curSection);
 	}
 	
 	/**
@@ -148,11 +146,11 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready(int track, int section) throws FamiTrackerException {
-		if (fetcher.querier == null) {
+		if (runtime.fetcher.querier == null) {
 			throw new NullPointerException("FtmAudio = null");
 		}
 		
-		fetcher.ready(track, section);
+		runtime.ready(track, section);
 		runtime.resetAllChannels();
 	}
 	
@@ -171,10 +169,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		runtime.param.sampleInCurFrame = ret;
 		mixerReady();
 		
-		fetcher.runFrame();
+		runtime.runFrame();
 		updateChannels();
 		
-		fetcher.updateState();
+		runtime.fetcher.updateState();
 		
 		// 从 mixer 中读取数据
 		readMixer();
@@ -193,7 +191,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @return
 	 */
 	public boolean isFinished() {
-		return fetcher.isFinished();
+		return runtime.param.finished;
 	}
 
 	/* **********
@@ -210,7 +208,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   {@link FtmRowFetcher#trackIdx}
 	 */
 	public int getCurrentTrack() {
-		return fetcher.trackIdx;
+		return runtime.param.trackIdx;
 	}
 
 	/**
@@ -219,7 +217,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   {@link FtmRowFetcher#getCurrentSection()}
 	 */
 	public int getCurrentSection() {
-		return fetcher.getCurrentSection();
+		return runtime.fetcher.getCurrentSection();
 	}
 	
 	/**
@@ -228,7 +226,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   {@link FtmRowFetcher#getCurrentRow()}
 	 */
 	public int getCurrentRow() {
-		return fetcher.getCurrentRow();
+		return runtime.fetcher.getCurrentRow();
 	}
 	
 	/**
@@ -238,7 +236,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.2
 	 */
 	public boolean currentRowRunOut() {
-		return fetcher.needRowUpdate();
+		return runtime.fetcher.needRowUpdate();
 	}
 	
 	/**
@@ -485,7 +483,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	private void logEffect() {
 		StringBuilder b = new StringBuilder(128);
-		b.append(String.format("%02d:%03d", fetcher.curSection, fetcher.curRow));
+		b.append(String.format("%02d:%03d", runtime.fetcher.curSection, runtime.fetcher.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
 			if (entry.getValue().isEmpty()) {
@@ -504,7 +502,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	private void logVolume() {
 		final StringBuilder b = new StringBuilder(64);
-		b.append(String.format("%02d:%03d ", fetcher.curSection, fetcher.curRow));
+		b.append(String.format("%02d:%03d ", runtime.fetcher.curSection, runtime.fetcher.curRow));
 		
 		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());
 		bs.sort(null);

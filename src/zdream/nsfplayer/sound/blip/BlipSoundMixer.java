@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
 
-import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
+import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
@@ -18,7 +18,7 @@ public class BlipSoundMixer extends SoundMixer {
 	public int frameRate;
 	public int bassFilter, trebleDamping, trebleFilter;
 	
-	public FamiTrackerParameter param;
+	public NsfCommonParameter param;
 
 	@Override
 	public void init() {

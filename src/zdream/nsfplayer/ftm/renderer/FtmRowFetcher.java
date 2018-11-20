@@ -1,15 +1,9 @@
 package zdream.nsfplayer.ftm.renderer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
-import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 
 /**
  * 确定 {@link FtmAudio} 已经播放的位置, 并能够获取 {@link FtmAudio} 正在播放的段和行.
@@ -17,28 +11,18 @@ import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
  * @author Zdream
  * @since v0.2.1
  */
-public class FtmRowFetcher implements IFtmRuntimeHolder {
+public class FtmRowFetcher {
 	
-	FamiTrackerRuntime runtime;
+	FamiTrackerParameter param;
 	
 	/**
 	 * 查询器, 封装了当前播放的曲目 {@link FtmAudio}
 	 */
 	FamiTrackerQuerier querier;
 
-	@Override
-	public FamiTrackerRuntime getRuntime() {
-		return runtime;
-	}
-	
 	/* **********
 	 * 播放参数 *
 	 ********** */
-	
-	/**
-	 * 正播放的曲目号
-	 */
-	int trackIdx;
 	
 	/**
 	 * 正在播放的节奏值, 计数单位为拍 / 分钟
@@ -80,11 +64,6 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	int nextSection;
 	
 	/**
-	 * 是否结束的标志
-	 */
-	boolean finished;
-	
-	/**
 	 * <p>重设速度值
 	 * <p>原方法在 SoundGen.evaluateGlobalEffects() 中, 处理 EF_SPEED 部分的地方.
 	 * </p>
@@ -118,22 +97,6 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 */
 	public int getCurrentSection() {
 		return curSection;
-	}
-	
-	/**
-	 * 是否结束
-	 * @return
-	 */
-	public boolean isFinished() {
-		return finished;
-	}
-	
-	/**
-	 * 设置是否结束标志
-	 * @param finished
-	 */
-	public void setFinished(boolean finished) {
-		this.finished = finished;
 	}
 	
 	/* **********
@@ -211,23 +174,12 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * 其它方法 *
 	 ********** */
 	
-	public FtmRowFetcher(FamiTrackerRuntime runtime) {
-		this.runtime = runtime;
-		runtime.fetcher = this;
+	public FtmRowFetcher(FamiTrackerParameter param) {
+		this.param = param;
 	}
 	
-	public void ready(FtmAudio audio, int track, int section) {
-		this.querier = new FamiTrackerQuerier(audio);
-		runtime.querier = querier;
-		
-		// 向 runtime.effects 中添加 map
-		runtime.effects.clear();
-		final int len = querier.channelCount();
-		for (int i = 0; i < len; i++) {
-			byte code = querier.channelCode(i);
-			runtime.effects.put(code, new HashMap<>());
-		}
-		
+	public void ready(FamiTrackerQuerier querier, int track, int section) {
+		this.querier = querier;
 		ready(track, section);
 	}
 	
@@ -237,14 +189,11 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * @param section
 	 */
 	public void ready(int track, int section) {
-		this.trackIdx = track;
+		param.trackIdx = track;
 		this.nextSection = section;
 		this.nextRow = 0;
 		
 		resetSpeed();
-		for (Map<FtmEffectType, IFtmEffect> map : runtime.effects.values()) {
-			map.clear();
-		}
 	}
 	
 	/**
@@ -253,8 +202,8 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * </p>
 	 */
 	void resetSpeed() {
-		speed = querier.audio.getTrack(trackIdx).speed;
-		tempo = querier.audio.getTrack(trackIdx).tempo;
+		speed = querier.audio.getTrack(param.trackIdx).speed;
+		tempo = querier.audio.getTrack(param.trackIdx).tempo;
 		
 		setupSpeed();
 		tempoAccum = 0;
@@ -281,27 +230,6 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	}
 	
 	/**
-	 * 音乐向前跑一帧. 看看现在跑到 Ftm 的哪一行上
-	 */
-	public void runFrame() {
-		// 重置
-		finished = false;
-		updateRow = false;
-		
-		// (SoundGen.runFrame)
-		if (needRowUpdate()) {
-			// 表示上一行已经播放完毕, 开始查找要播放的下一行的位置
-			// Enable this to skip rows on high tempos
-			updateRow = true;
-			handleJump();
-			storeRow();
-			nextRow();
-		} else {
-			runtime.converter.clear();
-		}
-	}
-	
-	/**
 	 * <p>更新播放状态
 	 * <p>这个调用是在 {@link FtmNote} 的效果处理完之后调用的.
 	 * 这样可以确保改变 speed 的效果可以被计算进去.
@@ -323,7 +251,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * 则 {@link #jumpSection} 或 {@link #skipRow} 不等于 -1. 这时就直接进行跳转;
 	 * </p>
 	 */
-	private void handleJump() {
+	void handleJump() {
 		if (skipRow >= 0) {
 			if (jumpSection >= 0) {
 				nextSection = jumpSection;
@@ -340,20 +268,8 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		}
 		
 		// 再多一次 section 段号的检查
-		if (nextSection >= querier.trackCount(trackIdx)) {
+		if (nextSection >= querier.trackCount(param.trackIdx)) {
 			nextSection = 0;
-		}
-	}
-	
-	/**
-	 * 确定现在正在播放的行, 让 {@link IFtmEffectConverter} 获取并处理
-	 */
-	public void storeRow() {
-		final int len = querier.channelCount();
-		runtime.converter.beforeConvert();
-		
-		for (int i = 0; i < len; i++) {
-			runtime.converter.convert(querier.channelCode(i), querier.getNote(trackIdx, nextSection, i, nextRow));
 		}
 	}
 	
@@ -363,14 +279,14 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 	 * <p>当到某段的结尾, 会跳转到下一段的首行;
 	 * </p>
 	 */
-	private void nextRow() {
+	void nextRow() {
 		curRow = nextRow;
 		curSection = nextSection;
 		
 		nextRow++;
 		
 		// 是否到段尾
-		int len = querier.maxRow(trackIdx); // 段长
+		int len = querier.maxRow(param.trackIdx); // 段长
 		if (nextRow >= len) {
 			// 跳到下一段的第 0 行
 			toNextRowBegin();
@@ -385,7 +301,7 @@ public class FtmRowFetcher implements IFtmRuntimeHolder {
 		nextSection++;
 		
 		// Loop
-		if (nextSection >= querier.trackCount(trackIdx)) {
+		if (nextSection >= querier.trackCount(param.trackIdx)) {
 			nextSection = 0;
 		}
 	}

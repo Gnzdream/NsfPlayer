@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import zdream.nsfplayer.core.NsfChannelCode;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
+import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.sound.interceptor.Amplifier;
 import zdream.nsfplayer.sound.interceptor.Compressor;
 import zdream.nsfplayer.sound.interceptor.DCFilter;
@@ -24,7 +24,7 @@ import zdream.nsfplayer.sound.mixer.SoundMixer;
  */
 public class XgmSoundMixer extends SoundMixer {
 	
-	public FamiTrackerParameter param;
+	public NsfCommonParameter param;
 
 	public XgmSoundMixer() {
 		

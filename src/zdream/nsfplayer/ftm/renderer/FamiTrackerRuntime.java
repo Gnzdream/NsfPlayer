@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
@@ -26,7 +27,6 @@ public class FamiTrackerRuntime {
 	/* **********
 	 *   成员   *
 	 ********** */
-	public FtmRowFetcher fetcher;
 	public IFtmEffectConverter converter;
 	
 	public FamiTrackerConfig config;
@@ -44,8 +44,13 @@ public class FamiTrackerRuntime {
 	 */
 	public SoundMixer mixer;
 	
+	/* **********
+	 *  初始化  *
+	 ********** */
+	
 	void init() {
 		selector = new ChannelDeviceSelector();
+		fetcher = new FtmRowFetcher(param);
 		initMixer();
 	}
 	
@@ -76,9 +81,33 @@ public class FamiTrackerRuntime {
 		this.mixer.init();
 	}
 	
+	void ready(FtmAudio audio, int track, int section) {
+		fetcher.querier = querier = new FamiTrackerQuerier(audio);
+		fetcher.ready(querier, track, section);
+		
+		// 向 runtime.effects 中添加 map
+		effects.clear();
+		final int len = querier.channelCount();
+		for (int i = 0; i < len; i++) {
+			byte code = querier.channelCode(i);
+			effects.put(code, new HashMap<>());
+		}
+	}
+	
+	void ready(int track, int section) {
+		fetcher.ready(track, section);
+		for (Map<FtmEffectType, IFtmEffect> map : effects.values()) {
+			map.clear();
+		}
+	}
+	
 	/* **********
 	 *   工具   *
 	 ********** */
+	/**
+	 * 行数据获取与播放位置解析工具
+	 */
+	public FtmRowFetcher fetcher;
 
 	/**
 	 * 查询器.
@@ -108,6 +137,48 @@ public class FamiTrackerRuntime {
 	
 	public void resetAllChannels() {
 		channels.forEach((channelCode, ch) -> ch.reset());
+	}
+	
+	/* **********
+	 *   操作   *
+	 ********** */
+	
+	/**
+	 * 音乐向前跑一帧. 看看现在跑到 Ftm 的哪一行上
+	 */
+	void runFrame() {
+		// 重置
+		param.finished = false;
+		fetcher.updateRow = false;
+		
+		// (SoundGen.runFrame)
+		if (fetcher.needRowUpdate()) {
+			// 表示上一行已经播放完毕, 开始查找要播放的下一行的位置
+			// Enable this to skip rows on high tempos
+			fetcher.updateRow = true;
+			fetcher.handleJump();
+			storeRow();
+			fetcher.nextRow();
+		} else {
+			converter.clear();
+		}
+	}
+	
+	/**
+	 * 确定现在正在播放的行, 让 {@link IFtmEffectConverter} 获取并处理
+	 */
+	void storeRow() {
+		final int len = querier.channelCount();
+		converter.beforeConvert();
+		
+		int trackIdx = param.trackIdx;
+		int nextSection = fetcher.nextSection;
+		int nextRow = fetcher.nextRow;
+		
+		for (int i = 0; i < len; i++) {
+			converter.convert(querier.channelCode(i), querier.getNote(
+					trackIdx, nextSection, i, nextRow));
+		}
 	}
 	
 }
