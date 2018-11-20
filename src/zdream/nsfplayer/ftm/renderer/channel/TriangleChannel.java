@@ -111,7 +111,7 @@ public class TriangleChannel extends ChannelTone {
 	 */
 	public void processSound() {
 		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame;
+		int freq = getRuntime().param.freqPerFrame - getDelay();
 		
 		// TODO 暂时没有考虑 sweep 和 envelope 部分, 还有 4017 参数
 		sound.process(freq);

@@ -343,6 +343,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			
 			AbstractFtmChannel ch = runtime.selector.selectFtmChannel(code);
 			ch.setRuntime(runtime);
+			ch.setDelay(i * 100);
 			runtime.channels.put(code, ch);
 			runtime.effects.put(code, new HashMap<>());
 			

@@ -95,11 +95,15 @@ public abstract class AbstractNsfSound implements IResetable, IEnable {
 	 * @param time
 	 */
 	public final void process(int time) {
+		if (time < 1) {
+			return;
+		}
+		
+		int destTime = this.time + time;
 		if (enable) {
 			onProcess(time);
-		} else {
-			this.time += time;
 		}
+		this.time = destTime;
 	}
 	
 	/**
@@ -111,6 +115,19 @@ public abstract class AbstractNsfSound implements IResetable, IEnable {
 	protected void mix(int value) {
 		if (!mask)
 			out.mix(value, time);
+	}
+	
+	/**
+	 * 向混音器传递某个时间点的音频值.
+	 * @param value
+	 *   音频值
+	 * @param offset
+	 *   时间为 this.time + offset
+	 * @since v0.2.9
+	 */
+	protected void mix(int value, int offset) {
+		if (!mask)
+			out.mix(value, time + offset);
 	}
 
 }

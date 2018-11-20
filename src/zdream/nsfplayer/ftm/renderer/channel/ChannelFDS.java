@@ -289,7 +289,7 @@ public class ChannelFDS extends AbstractFtmChannel {
 	 */
 	public void processSound() {
 		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame;
+		int freq = getRuntime().param.freqPerFrame - getDelay();
 		
 		sound.process(freq);
 		

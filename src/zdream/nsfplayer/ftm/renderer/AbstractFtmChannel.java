@@ -72,6 +72,9 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 *   <br>如果 note = null, 则说明保持原来的 note 不变
 	 */
 	public void playNote() {
+		// 延迟触发（不是延迟效果）
+		getSound().process(delay);
+		
 		// 初始化
 		startFrame();
 		
@@ -349,6 +352,34 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 		return playing;
 	}
 	
+	/**
+	 * <p>延迟触发时钟数.
+	 * <p>由于轨道与轨道之间可能会有共振效果,
+	 * 因此让某些轨道延迟触发可以很大程度上避免共振情况的发生
+	 * </p>
+	 * @since v0.2.9
+	 */
+	protected int delay;
+	
+	/**
+	 * @return
+	 *   延迟触发时钟数
+	 * @since v0.2.9
+	 */
+	public int getDelay() {
+		return delay;
+	}
+
+	/**
+	 * 设置延迟. 该方法应该由上层 (Renderer) 来调用
+	 * @param delay
+	 *   延迟触发时钟数
+	 * @since v0.2.9
+	 */
+	public void setDelay(int delay) {
+		this.delay = delay;
+	}
+
 	@Override
 	public void reset() {
 		playing = true;

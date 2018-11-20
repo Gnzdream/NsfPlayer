@@ -242,7 +242,6 @@ while (true) {
 
 *	版本(Version)
 
-当前版本为 v0.2.8，工作有:
-*	【NSF】【Mixer】 补充 S5B 芯片的支持
+当前版本为 v0.2.9
 
 [版本更新历史](doc/version.md)

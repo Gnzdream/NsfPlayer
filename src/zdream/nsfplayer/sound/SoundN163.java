@@ -118,7 +118,7 @@ public class SoundN163 extends AbstractNsfSound {
 	public void reset() {
 		// 原始记录参数
 		period = 0;
-		phase = (int) (Math.random() * 0xFFFF); // TODO 这个不是长久之计. 现在处理共振暂时用该方法
+		phase = 0;
 		length = 0;
 		volume = 0;
 		Arrays.fill(wave, (byte) 0);
