@@ -100,6 +100,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		// 重置播放相关的数据
 		int frameRate = runtime.fetcher.getFrameRate();
 		resetCounterParam(frameRate, runtime.config.sampleRate);
+		clearBuffer();
 		runtime.rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
 		
 		initMixer();
@@ -303,6 +304,26 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	public boolean isChannelMask(byte channelCode) throws NullPointerException {
 		return runtime.channels.get(channelCode).getSound().isMask();
+	}
+	
+	@Override
+	public void setSpeed(float speed) {
+		if (speed > 10) {
+			speed = 10;
+		} else if (speed < 0.1f) {
+			speed = 0.1f;
+		}
+		
+		runtime.param.speed = speed;
+		
+		int frameRate = runtime.querier.getFrameRate();
+		resetCounterParam(frameRate, runtime.config.sampleRate);
+		runtime.rate.onParamUpdate();
+	}
+	
+	@Override
+	public float getSpeed() {
+		return runtime.param.speed;
 	}
 	
 	/* **********

@@ -115,6 +115,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.reset();
 		
 		super.resetCounterParam(frameRate, runtime.config.sampleRate);
+		clearBuffer();
 	}
 	
 	/* **********
@@ -322,6 +323,17 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 */
 	public boolean isChannelMask(byte channelCode) throws NullPointerException {
 		return runtime.chips.get(channelCode).getSound(channelCode).isMask();
+	}
+	
+	@Override
+	public void setSpeed(float speed) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public float getSpeed() {
+		return runtime.param.speed;
 	}
 	
 	/* **********

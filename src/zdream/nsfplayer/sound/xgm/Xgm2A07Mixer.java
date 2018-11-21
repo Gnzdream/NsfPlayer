@@ -131,6 +131,9 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 		if (toIdx <= fromIdx) {
 			return 0;
 		}
+		if (toIdx > noise.buffer.length) {
+			toIdx = noise.buffer.length;
+		}
 		
 		int count = 0, sum = 0;
 		for (int i = fromIdx; i < toIdx; i++) {

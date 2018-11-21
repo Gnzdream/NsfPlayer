@@ -192,7 +192,7 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 		int ret = counter.tick();
 		
 		if (data == null || data.length < ret || data.length - ret > 16) {
-			data = new short[ret];
+			data = new short[ret + 8];
 		} else {
 			Arrays.fill(data, (byte) 0);
 		}
@@ -207,13 +207,25 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 * @param maxFrameCount
 	 *   帧率, 一般为 60
 	 * @param maxSampleCount
-	 *   采样率, 一般为 48000
+	 *   采样率, 一般为 48000. 该值不受播放速度影响
 	 * @since v0.2.5
 	 */
 	protected void resetCounterParam(int maxFrameCount, int maxSampleCount) {
-		// 重置计数器
-		counter.setParam(maxSampleCount, maxFrameCount);
+		float speed = getSpeed();
+		int cycle = maxSampleCount;
+		if (speed != 1) {
+			cycle = (int) (cycle / speed);
+		}
 		
+		// 重置计数器
+		counter.setParam(cycle, maxFrameCount);
+	}
+	
+	/**
+	 * 重置音频部分, 包括 buffer 数组
+	 * @since v0.2.9
+	 */
+	protected void clearBuffer() {
 		// 重置音频部分, 包括 buffer 数组
 		offset = 0;
 		length = 0;
@@ -291,5 +303,31 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 * @since v0.2.8
 	 */
 	public abstract boolean isChannelMask(byte channelCode) throws NullPointerException;
+	
+	/**
+	 * <p>设置播放速度.
+	 * <p>如果当前帧的音频数据没有取完, 这部分的音频数据不再做变速处理, 变速效果从下一帧开始.
+	 * </p>
+	 * @param speed
+	 *   播放速度. 有效值范围: [0.1f, 10f]
+	 * @since v0.2.9
+	 */
+	public abstract void setSpeed(float speed);
+	
+	/**
+	 * 获取当前的播放速度.
+	 * @return
+	 *   播放速度. 有效值范围: [0.1f, 10f]
+	 * @since v0.2.9
+	 */
+	public abstract float getSpeed();
+	
+	/**
+	 * 重置播放速度
+	 * @since v0.2.9
+	 */
+	public void resetSpeed() {
+		setSpeed(1.0f);
+	}
 
 }
