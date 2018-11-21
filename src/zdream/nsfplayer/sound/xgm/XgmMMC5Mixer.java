@@ -56,7 +56,7 @@ public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 			pulse1.checkCapacity(size);
 		}
 		if (pulse2 != null) {
-			pulse1.checkCapacity(size);
+			pulse2.checkCapacity(size);
 		}
 	}
 	
