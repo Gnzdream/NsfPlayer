@@ -231,8 +231,15 @@ public class XgmSoundMixer extends SoundMixer {
 		/*
 		 * fromIdx 和 toIdx 是时钟数
 		 */
-		int fromIdx = (clockPerFrame * (i) / length);
-		int toIdx = (clockPerFrame * (i + 1) / length);
+		int fromIdx;
+		int toIdx;
+		if (param.speed < 1) {
+			fromIdx = (int) ((long) clockPerFrame * (i) / length);
+			toIdx = (int) ((long) clockPerFrame * (i + 1) / length);
+		} else {
+			fromIdx = (clockPerFrame * (i) / length);
+			toIdx = (clockPerFrame * (i + 1) / length);
+		}
 		int value = 0;
 		
 		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
