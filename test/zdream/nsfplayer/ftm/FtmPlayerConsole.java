@@ -11,6 +11,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.cmd.BaseHandler;
 import zdream.nsfplayer.ftm.cmd.ChannelHandler;
 import zdream.nsfplayer.ftm.cmd.ICommandHandler;
+import zdream.nsfplayer.ftm.cmd.PlayHandler;
 import zdream.nsfplayer.ftm.cmd.SongHandler;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 import zdream.nsfplayer.ftm.task.ChooseSongTask;
@@ -63,6 +64,7 @@ public class FtmPlayerConsole {
 		attachHandler(new BaseHandler());
 		attachHandler(new SongHandler());
 		attachHandler(new ChannelHandler());
+		attachHandler(new PlayHandler());
 	}
 	
 	public FamiTrackerRenderer getFamiTrackerRenderer() {
