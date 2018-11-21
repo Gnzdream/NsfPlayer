@@ -1,15 +1,16 @@
-package zdream.nsfplayer.ftm.renderer;
+package zdream.nsfplayer.ftm.renderer.channel;
 
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
- * 测试使用
+ * 测试使用的空轨道
  * @author Zdream
- *
+ * @since 0.2.1
  */
-public class TestFtmChannel extends AbstractFtmChannel {
+public class EmptyFtmChannel extends AbstractFtmChannel {
 
-	public TestFtmChannel(byte channelCode) {
+	public EmptyFtmChannel(byte channelCode) {
 		super(channelCode);
 	}
 

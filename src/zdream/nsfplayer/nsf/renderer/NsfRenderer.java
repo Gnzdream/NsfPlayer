@@ -125,6 +125,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	protected int renderFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
+		runtime.mixerReady();
 		
 		runtime.manager.tickCPU();
 

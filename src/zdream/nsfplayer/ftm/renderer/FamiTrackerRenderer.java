@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,7 +100,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		// 重置播放相关的数据
 		int frameRate = runtime.fetcher.getFrameRate();
 		resetCounterParam(frameRate, runtime.config.sampleRate);
-		runtime.param.calcFreq(frameRate);
+		runtime.rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
 		
 		initMixer();
 		initChannels();
@@ -163,7 +165,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	protected int renderFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
-		mixerReady();
+		runtime.rate.doConvert();
+		runtime.mixerReady();
 		
 		runtime.runFrame();
 		updateChannels();
@@ -433,17 +436,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		for (IFtmEffect eff : runtime.geffect.values()) {
 			eff.execute((byte) 0, runtime);
 		}
-	}
-	
-	/**
-	 * <p>通知混音器, 当前帧的渲染开始了.
-	 * <p>这个方法原本用于通知混音器, 如果本帧的渲染速度需要变化,
-	 * 可以通过该方法, 让混音器提前对此做好准备, 修改存储的采样数容量, 从而调节播放速度.
-	 * </p>
-	 * @since v0.2.7
-	 */
-	private void mixerReady() {
-		
 	}
 	
 	/**

@@ -87,6 +87,11 @@ public abstract class SoundMixer implements IResetable, INsfChannelCode {
 	}
 	
 	/**
+	 * 每帧启用混音器前调用
+	 */
+	public abstract void readyBuffer();
+	
+	/**
 	 * 结束该帧. 在 {@link #readBuffer(short[], int, int)} 之前调用
 	 * @return
 	 *   返回有多少音频采样数

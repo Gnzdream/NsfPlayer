@@ -3,7 +3,6 @@ package zdream.nsfplayer.ftm.renderer.context;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
-import zdream.nsfplayer.ftm.renderer.TestFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Channel2A03Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelFDS;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;
@@ -13,6 +12,7 @@ import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC6Sawtooth;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelVRC7;
 import zdream.nsfplayer.ftm.renderer.channel.DPCMChannel;
 import zdream.nsfplayer.ftm.renderer.channel.NoiseChannel;
+import zdream.nsfplayer.ftm.renderer.channel.EmptyFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.TriangleChannel;
 import zdream.nsfplayer.sound.vrc7.OPLL;
 
@@ -137,7 +137,7 @@ public class ChannelDeviceSelector implements INsfChannelCode, IResetable {
 			break;
 		}
 		
-		return new TestFtmChannel(code);
+		return new EmptyFtmChannel(code);
 	}
 	
 	/* **********

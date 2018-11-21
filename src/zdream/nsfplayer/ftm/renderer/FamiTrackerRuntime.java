@@ -10,6 +10,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
 import zdream.nsfplayer.ftm.renderer.context.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.context.IFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.context.RateConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
@@ -52,6 +53,7 @@ public class FamiTrackerRuntime {
 	 ********** */
 	
 	void init() {
+		rate = new RateConverter(param);
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);
 		converter = new DefaultFtmEffectConverter();
@@ -127,13 +129,17 @@ public class FamiTrackerRuntime {
 	 *   工具   *
 	 ********** */
 	/**
+	 * 速率转换器
+	 */
+	public RateConverter rate;
+	
+	/**
 	 * 行数据获取与播放位置解析工具
 	 */
 	public FtmRowFetcher fetcher;
 
 	/**
-	 * 查询器.
-	 * <br>由 Fetcher 生成, 管理
+	 * 查询器
 	 */
 	public FamiTrackerQuerier querier;
 	
@@ -175,6 +181,17 @@ public class FamiTrackerRuntime {
 	/* **********
 	 *   操作   *
 	 ********** */
+	
+	/**
+	 * <p>通知混音器, 当前帧的渲染开始了.
+	 * <p>这个方法原本用于通知混音器, 如果本帧的渲染速度需要变化,
+	 * 可以通过该方法, 让混音器提前对此做好准备, 修改存储的采样数容量, 从而调节播放速度.
+	 * </p>
+	 * @since v0.2.9
+	 */
+	void mixerReady() {
+		mixer.readyBuffer();
+	}
 	
 	/**
 	 * 音乐向前跑一帧. 看看现在跑到 Ftm 的哪一行上

@@ -86,6 +86,19 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
+	public void checkCapacity(int size) {
+		if (tri != null) {
+			tri.checkCapacity(size);
+		}
+		if (noise != null) {
+			noise.checkCapacity(size);
+		}
+		if (dpcm != null) {
+			dpcm.checkCapacity(size);
+		}
+	}
+	
+	@Override
 	public int render(int index, int fromIdx, int toIdx) {
 		int time = toIdx - fromIdx;
 		int idx = (fromIdx + toIdx) / 2;

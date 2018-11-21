@@ -36,6 +36,13 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	public void beforeRender() {
 		fds.beforeSubmit();
 	}
+	
+	@Override
+	public void checkCapacity(int size) {
+		if (fds != null) {
+			fds.checkCapacity(size);
+		}
+	}
 
 	@Override
 	public int render(int index, int fromIdx, int toIdx) {

@@ -51,6 +51,17 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 		}
 		return null;
 	}
+	
+	@Override
+	public void checkCapacity(int size) {
+		for (int i = 0; i < n163s.length; i++) {
+			XgmAudioChannel ch = n163s[i];
+			if (ch == null) {
+				continue;
+			}
+			ch.checkCapacity(size);
+		}
+	}
 
 	@Override
 	public void beforeRender() {

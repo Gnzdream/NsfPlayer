@@ -20,7 +20,7 @@ public class NsfCommonParameter {
 	 ********** */
 	
 	/**
-	 * 每帧的时钟周期数, 非精确值
+	 * 每帧的时钟周期数, 现 FTM 为精确值, NSF 为模糊值
 	 */
 	public int freqPerFrame;
 	
@@ -49,6 +49,7 @@ public class NsfCommonParameter {
 	 * 计算时钟周期数等相关数据
 	 * TODO 现在全部使用 NTSC 制式
 	 */
+	@Deprecated
 	public void calcFreq(int frameRate) {
 		this.frameRate = frameRate;
 		freqPerSec = BASE_FREQ_NTSC;
@@ -106,5 +107,11 @@ public class NsfCommonParameter {
 	 * 是否结束的标志
 	 */
 	public boolean finished;
+	
+	/**
+	 * 播放速度. 默认 1.0f, 有效范围为正数
+	 * @since v0.2.9
+	 */
+	public float speed = 1.0f;
 
 }

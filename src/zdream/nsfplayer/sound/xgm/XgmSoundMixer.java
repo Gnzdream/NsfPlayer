@@ -64,8 +64,6 @@ public class XgmSoundMixer extends SoundMixer {
 	public XgmAudioChannel allocateChannel(byte channelCode) {
 		XgmAudioChannel ch = new XgmAudioChannel();
 		
-		ch.buffer = new short[param.freqPerFrame + 16];
-		ch.reset();
 		ch.setEnable(true);
 		
 		byte chip = chipOfChannel(channelCode);
@@ -198,12 +196,19 @@ public class XgmSoundMixer extends SoundMixer {
 			interceptors.add(interceptor);
 		}
 	}
+	
+	@Override
+	public void readyBuffer() {
+		allocateSampleArray();
+		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
+			AbstractXgmMultiMixer multi = it.next().getValue();
+			multi.checkCapacity(param.freqPerFrame);
+		}
+	}
 
 	@Override
 	public int finishBuffer() {
-		allocateSampleArray();
 		beforeRender();
-		
 		final int length = param.sampleInCurFrame;
 		for (int i = 0; i < length; i++) {
 			samples[i] = (short) renderOneSample(i);

@@ -48,6 +48,15 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 		}
 		return null;
 	}
+	
+	@Override
+	public void checkCapacity(int size) {
+		for (int i = 0; i < chs.length; i++) {
+			if (chs[i] != null) {
+				chs[i].checkCapacity(size);
+			}
+		}
+	}
 
 	@Override
 	public void beforeRender() {

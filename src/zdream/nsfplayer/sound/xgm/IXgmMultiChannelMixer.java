@@ -28,6 +28,14 @@ public interface IXgmMultiChannelMixer extends INsfChannelCode, IResetable {
 	public XgmAudioChannel getAudioChannel(byte channelCode);
 	
 	/**
+	 * 通知所有音频轨道, 需要重设容量大小
+	 * @param size
+	 *   需要的容量大小, 时钟数
+	 * @since v0.2.9
+	 */
+	public void checkCapacity(int size);
+	
+	/**
 	 * 渲染前调用的方法
 	 */
 	public void beforeRender();

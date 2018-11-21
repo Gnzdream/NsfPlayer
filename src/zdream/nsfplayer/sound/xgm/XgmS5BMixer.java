@@ -57,6 +57,19 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
+	public void checkCapacity(int size) {
+		if (ch1 != null) {
+			ch1.checkCapacity(size);
+		}
+		if (ch2 != null) {
+			ch2.checkCapacity(size);
+		}
+		if (ch3 != null) {
+			ch3.checkCapacity(size);
+		}
+	}
+	
+	@Override
 	public void beforeRender() {
 		ch1.beforeSubmit();
 		ch2.beforeSubmit();

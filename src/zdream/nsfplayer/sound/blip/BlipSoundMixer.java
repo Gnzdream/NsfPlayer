@@ -163,6 +163,11 @@ public class BlipSoundMixer extends SoundMixer {
 	 * 音频缓存
 	 */
 	BlipBuffer buffer = new BlipBuffer();
+	
+	@Override
+	public void readyBuffer() {
+		// TODO Auto-generated method stub
+	}
 
 	@Override
 	public int finishBuffer() {

@@ -74,6 +74,17 @@ public class XgmAudioChannel implements IMixerChannel {
 		Arrays.fill(buffer, lastTime, buffer.length, lastValue);
 		this.lastTime = 0;
 	}
+	
+	void checkCapacity(int size) {
+		if (this.buffer != null) {
+			int length = this.buffer.length;
+			if (length < size || length > size + 32) {
+				this.buffer = new short[size + 16];
+			}
+		} else {
+			this.buffer = new short[size + 16];
+		}
+	}
 
 	@Override
 	public void setEnable(boolean enable) {
