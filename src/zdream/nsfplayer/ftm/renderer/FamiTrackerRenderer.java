@@ -13,10 +13,8 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
@@ -34,8 +32,6 @@ import zdream.nsfplayer.sound.mixer.IMixerChannel;
 public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
-	
-	final IFtmEffectConverter converter = new DefaultFtmEffectConverter(runtime);
 	
 	/**
 	 * 利用默认配置产生一个音频渲染器
@@ -117,7 +113,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready() throws FamiTrackerException {
-		ready(runtime.param.trackIdx, runtime.fetcher.curSection);
+		ready(runtime.param.trackIdx, runtime.param.curSection);
 	}
 	
 	/**
@@ -203,30 +199,27 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	
 	/**
-	 * 获取正在播放的曲目号
 	 * @return
-	 *   {@link FtmRowFetcher#trackIdx}
+	 *   获取正在播放的曲目号
 	 */
 	public int getCurrentTrack() {
 		return runtime.param.trackIdx;
 	}
 
 	/**
-	 * 获取正在播放的段号
 	 * @return
-	 *   {@link FtmRowFetcher#getCurrentSection()}
+	 *   获取正在播放的段号
 	 */
 	public int getCurrentSection() {
-		return runtime.fetcher.getCurrentSection();
+		return runtime.param.curSection;
 	}
 	
 	/**
-	 * 获取正在播放的行号
 	 * @return
-	 *   {@link FtmRowFetcher#getCurrentRow()}
+	 *   获取正在播放的行号
 	 */
 	public int getCurrentRow() {
-		return runtime.fetcher.getCurrentRow();
+		return runtime.param.curRow;
 	}
 	
 	/**
@@ -483,7 +476,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	private void logEffect() {
 		StringBuilder b = new StringBuilder(128);
-		b.append(String.format("%02d:%03d", runtime.fetcher.curSection, runtime.fetcher.curRow));
+		b.append(String.format("%02d:%03d", runtime.param.curSection, runtime.param.curRow));
 		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
 			if (entry.getValue().isEmpty()) {
@@ -502,7 +495,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	private void logVolume() {
 		final StringBuilder b = new StringBuilder(64);
-		b.append(String.format("%02d:%03d ", runtime.fetcher.curSection, runtime.fetcher.curRow));
+		b.append(String.format("%02d:%03d ", runtime.param.curSection, runtime.param.curRow));
 		
 		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());
 		bs.sort(null);

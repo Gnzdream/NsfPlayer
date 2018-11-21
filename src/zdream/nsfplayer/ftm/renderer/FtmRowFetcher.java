@@ -37,16 +37,6 @@ public class FtmRowFetcher {
 	int speed;
 	
 	/**
-	 * 记录正在播放的行号
-	 */
-	int curRow;
-	
-	/**
-	 * 正在播放的段号
-	 */
-	int curSection;
-	
-	/**
 	 * <p>下一个播放的行号, 从 0 开始.
 	 * <p>当播放器播放第 0 行的音键时, 其实 row = 1, 即已经指向播放行的下一行. 因为 Famitracker 就是这样设计的.
 	 * 这样做的话, 碰到跳行、跳段的效果时, 就不会出现连跳的 BUG 情况.
@@ -85,18 +75,28 @@ public class FtmRowFetcher {
 	
 	/**
 	 * @return
-	 *   获取正在播放的行号
+	 *   获取下一次播放位置移动之后的行号
+	 * @since v0.2.9
 	 */
-	public int getCurrentRow() {
-		return curRow;
+	public int getNextRow() {
+		if (skipRow == -1) {
+			return nextRow;
+		}
+		
+		return skipRow;
 	}
 	
 	/**
 	 * @return
-	 *   获取正在播放的段号
+	 *   获取下一次播放位置移动之后的段号
+	 * @since v0.2.9
 	 */
-	public int getCurrentSection() {
-		return curSection;
+	public int getNextSection() {
+		if (jumpSection == -1) {
+			return nextSection;
+		}
+		
+		return jumpSection;
 	}
 	
 	/* **********
@@ -280,8 +280,8 @@ public class FtmRowFetcher {
 	 * </p>
 	 */
 	void nextRow() {
-		curRow = nextRow;
-		curSection = nextSection;
+		param.curRow = nextRow;
+		param.curSection = nextSection;
 		
 		nextRow++;
 		

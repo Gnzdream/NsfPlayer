@@ -6,6 +6,7 @@ import java.util.Map;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
+import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
@@ -51,6 +52,7 @@ public class FamiTrackerRuntime {
 	void init() {
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);
+		converter = new DefaultFtmEffectConverter(this);
 		initMixer();
 	}
 	
@@ -81,6 +83,16 @@ public class FamiTrackerRuntime {
 		this.mixer.init();
 	}
 	
+	/**
+	 * 重置播放曲目、位置
+	 * @param audio
+	 *   播放的曲目
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @since v0.2.9
+	 */
 	void ready(FtmAudio audio, int track, int section) {
 		fetcher.querier = querier = new FamiTrackerQuerier(audio);
 		fetcher.ready(querier, track, section);
@@ -94,6 +106,14 @@ public class FamiTrackerRuntime {
 		}
 	}
 	
+	/**
+	 * 重置播放位置, 不重置曲目
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @since v0.2.9
+	 */
 	void ready(int track, int section) {
 		fetcher.ready(track, section);
 		for (Map<FtmEffectType, IFtmEffect> map : effects.values()) {

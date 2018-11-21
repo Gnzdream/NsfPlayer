@@ -21,5 +21,15 @@ public class FamiTrackerParameter extends NsfCommonParameter {
 	/* **********
 	 * 播放参数 *
 	 ********** */
+	
+	/**
+	 * 记录正在播放的行号
+	 */
+	int curRow;
+	
+	/**
+	 * 正在播放的段号
+	 */
+	int curSection;
 
 }
