@@ -11,7 +11,7 @@ public class NsfChannelCode implements INsfChannelCode {
 	/**
 	 * 查看轨道号对应的芯片号码. 如果不存在 channelCode 对应的轨道, 返回 -1
 	 * @param channelCode
-	 *   轨道号. 静态变量 CHANNEL_*
+	 *   轨道号 / 轨道类型号. 静态变量 CHANNEL_*
 	 * @return
 	 */
 	public static byte chipOfChannel(byte channelCode) {

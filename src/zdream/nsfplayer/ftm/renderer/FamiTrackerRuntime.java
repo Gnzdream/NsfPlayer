@@ -1,15 +1,17 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
-import zdream.nsfplayer.ftm.renderer.effect.DefaultFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.context.DefaultFtmEffectConverter;
+import zdream.nsfplayer.ftm.renderer.context.IFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffectConverter;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
 import zdream.nsfplayer.sound.blip.BlipSoundMixer;
 import zdream.nsfplayer.sound.mixer.IMixerConfig;
@@ -52,7 +54,7 @@ public class FamiTrackerRuntime {
 	void init() {
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);
-		converter = new DefaultFtmEffectConverter(this);
+		converter = new DefaultFtmEffectConverter();
 		initMixer();
 	}
 	
@@ -159,6 +161,17 @@ public class FamiTrackerRuntime {
 		channels.forEach((channelCode, ch) -> ch.reset());
 	}
 	
+	/**
+	 * 清空效果集
+	 * @since v0.2.9
+	 */
+	public void clearEffects() {
+		for (Map<FtmEffectType, IFtmEffect> effect : effects.values()) {
+			effect.clear();
+		}
+		geffect.clear();
+	}
+	
 	/* **********
 	 *   操作   *
 	 ********** */
@@ -170,6 +183,7 @@ public class FamiTrackerRuntime {
 		// 重置
 		param.finished = false;
 		fetcher.updateRow = false;
+		this.clearEffects();
 		
 		// (SoundGen.runFrame)
 		if (fetcher.needRowUpdate()) {
@@ -179,8 +193,6 @@ public class FamiTrackerRuntime {
 			fetcher.handleJump();
 			storeRow();
 			fetcher.nextRow();
-		} else {
-			converter.clear();
 		}
 	}
 	
@@ -189,15 +201,17 @@ public class FamiTrackerRuntime {
 	 */
 	void storeRow() {
 		final int len = querier.channelCount();
-		converter.beforeConvert();
 		
 		int trackIdx = param.trackIdx;
 		int nextSection = fetcher.nextSection;
 		int nextRow = fetcher.nextRow;
 		
 		for (int i = 0; i < len; i++) {
-			converter.convert(querier.channelCode(i), querier.getNote(
-					trackIdx, nextSection, i, nextRow));
+			byte channel = querier.channelCode(i);
+			byte channelType = typeOfChannel(channel);
+			
+			converter.convert(querier.getNote(trackIdx, nextSection, i, nextRow),
+					channelType, effects.get(channel), geffect, querier);
 		}
 	}
 	
