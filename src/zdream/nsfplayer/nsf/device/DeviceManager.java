@@ -9,6 +9,7 @@ import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -236,6 +237,8 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		
 		// 忽略 mask 部分
 		// vrc7.setPatchSet(this.config.get("VRC7_PATCH").toInt());
+		
+		cycle.setParam(runtime.param.sampleRate, runtime.param.frameRate);
 	}
 
 	/**
@@ -508,6 +511,11 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	//int sampleConsumed;
 	
 	/**
+	 * 不计播放速度影响, 计算每帧采样数
+	 */
+	private final CycleCounter cycle = new CycleCounter();
+	
+	/**
 	 * CPU 剩余没有用完的时钟数.
 	 * NsfPlayer.cpu_clock_rest
 	 */
@@ -524,7 +532,10 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 * (虽然说是一帧, 但是实际上是看当前帧的采样数决定的)
 	 */
 	public void tickCPU() {
-		int sampleInCurFrame = runtime.param.sampleInCurFrame;
+		// 这个值是, 不计播放速度时的每帧采样数
+		// runtime.param.sampleInCurFrame 是将播放速度计算进去的值
+		// 所以两者并不相等
+		int sampleInCurFrame = cycle.tick();
 		
 		NesCPU cpu = runtime.cpu;
 		for (int i = 0; i < sampleInCurFrame; i++) {

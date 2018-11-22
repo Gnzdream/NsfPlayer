@@ -53,7 +53,7 @@ public class NsfAudioFactory {
 		
 		audio.version = (short) (image[ptr++] & 0xFF);
 		audio.total_songs = (short) (image[ptr++] & 0xFF);
-		audio.start = (short) (image[ptr++] & 0xFF);
+		audio.start = (short) ((image[ptr++] & 0xFF) - 1);
 		
 		audio.load_address = (image[ptr] & 0xFF) | ((image[ptr + 1] & 0xFF) << 8);
 		ptr += 2;
