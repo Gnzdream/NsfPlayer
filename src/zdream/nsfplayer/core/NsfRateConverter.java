@@ -1,25 +1,21 @@
-package zdream.nsfplayer.ftm.renderer.context;
-
-import zdream.nsfplayer.core.CycleCounter;
-import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerParameter;
+package zdream.nsfplayer.core;
 
 /**
  * <p>速率转换器
  * <p>用于计算与时钟相关的数据, 像每帧需要走多少时钟数这类数据.
  * 它会在每帧开始时, 通过每秒时钟数、播放速率等情况,
- * 最终计算出该帧的时钟数总量, 并将其写到 {@link FamiTrackerParameter} 中.
- * <p>它是 FamiTracker 工作环境下的一个工具.
+ * 最终计算出该帧的时钟数总量, 并将其写到 {@link NsfCommonParameter} 中.
+ * <p>它是 NSF 和 FamiTracker 工作环境下的一个工具.
  * </p>
  * 
  * @author Zdream
  * @since v0.2.9
  */
-public class RateConverter implements IResetable {
+public class NsfRateConverter implements IResetable {
 	
-	final FamiTrackerParameter param;
+	final NsfCommonParameter param;
 	
-	public RateConverter(FamiTrackerParameter param) {
+	public NsfRateConverter(NsfCommonParameter param) {
 		this.param = param;
 		this.counter = new CycleCounter();
 	}
@@ -81,7 +77,7 @@ public class RateConverter implements IResetable {
 	}
 	
 	/**
-	 * 计算本帧的与时钟相关的数据, 并写入 {@link FamiTrackerParameter} 中.
+	 * 计算本帧的与时钟相关的数据, 并写入 {@link NsfCommonParameter} 中.
 	 */
 	public void doConvert() {
 		int freqPerFrame = counter.tick();

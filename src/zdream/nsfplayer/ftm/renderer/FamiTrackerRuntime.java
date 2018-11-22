@@ -5,12 +5,12 @@ import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
 import java.util.HashMap;
 import java.util.Map;
 
+import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
 import zdream.nsfplayer.ftm.renderer.context.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.context.IFtmEffectConverter;
-import zdream.nsfplayer.ftm.renderer.context.RateConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
@@ -53,7 +53,7 @@ public class FamiTrackerRuntime {
 	 ********** */
 	
 	void init() {
-		rate = new RateConverter(param);
+		rate = new NsfRateConverter(param);
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);
 		converter = new DefaultFtmEffectConverter();
@@ -131,7 +131,7 @@ public class FamiTrackerRuntime {
 	/**
 	 * 速率转换器
 	 */
-	public RateConverter rate;
+	public NsfRateConverter rate;
 	
 	/**
 	 * 行数据获取与播放位置解析工具

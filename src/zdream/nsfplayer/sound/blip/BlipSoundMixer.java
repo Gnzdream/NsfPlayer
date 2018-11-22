@@ -19,12 +19,18 @@ public class BlipSoundMixer extends SoundMixer {
 	public int bassFilter, trebleDamping, trebleFilter;
 	
 	public NsfCommonParameter param;
+	
+	/**
+	 * 上一帧 buffer 的大小
+	 */
+	private int oldSize;
 
 	@Override
 	public void init() {
 		int size = sampleRate / frameRate;
+		oldSize = (size * 1000 * 2) / sampleRate;
 		
-		buffer.setSampleRate(sampleRate, (size * 1000 * 2) / sampleRate);
+		buffer.setSampleRate(sampleRate, oldSize);
 		buffer.bassFreq(bassFilter);
 	}
 	
@@ -166,7 +172,19 @@ public class BlipSoundMixer extends SoundMixer {
 	
 	@Override
 	public void readyBuffer() {
-		// TODO Auto-generated method stub
+		int size = sampleRate / frameRate;
+		int newSize = (size * 1000 * 2) / sampleRate;
+		
+		float speed = param.speed;
+		if (speed != 1) {
+			newSize = (int) (newSize / speed);
+		}
+		
+		// 合理的振幅为 4
+		if (newSize > oldSize + 4 || newSize < oldSize - 4) {
+			buffer.setSampleRate(sampleRate, newSize);
+			oldSize = newSize;
+		}
 	}
 
 	@Override

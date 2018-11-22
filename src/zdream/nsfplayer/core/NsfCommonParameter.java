@@ -1,7 +1,5 @@
 package zdream.nsfplayer.core;
 
-import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
-
 /**
  * <p>NSF 以及常量及常量计算相关, 存储更多与 NSF 结构运行时需要依赖的参数、常量数值.
  * </p>
@@ -41,20 +39,8 @@ public class NsfCommonParameter {
 	
 	/**
 	 * 帧率, 每秒多少帧.
-	 * 现阶段只有 NsfPlayer 使用这个参数, FamiTracker 不从这里拿帧率
 	 */
 	public int frameRate;
-	
-	/**
-	 * 计算时钟周期数等相关数据
-	 * TODO 现在全部使用 NTSC 制式
-	 */
-	@Deprecated
-	public void calcFreq(int frameRate) {
-		this.frameRate = frameRate;
-		freqPerSec = BASE_FREQ_NTSC;
-		freqPerFrame = freqPerSec / /*runtime.querier.getFrameRate()*/frameRate;
-	}
 	
 	/* **********
 	 *   音量   *

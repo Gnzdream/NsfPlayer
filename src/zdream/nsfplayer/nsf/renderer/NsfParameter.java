@@ -17,5 +17,23 @@ public class NsfParameter extends NsfCommonParameter {
 	NsfParameter() {
 		super();
 	}
-
+	
+	/* **********
+	 * 时钟周期 *
+	 ********** */
+	
+	/**
+	 * CPU 在当前采样时间内需要工作的时钟数.
+	 * 不考虑播放速度变化的影响
+	 * @since v0.2.9
+	 */
+	public int cpuClockInCurSample;
+	
+	/**
+	 * APU 在当前采样时间内需要工作的时钟数.
+	 * 它需要考虑播放速度变化的影响
+	 * @since v0.2.9
+	 */
+	public int apuClockInCurSample;
+	
 }

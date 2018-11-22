@@ -213,6 +213,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			runtime.cpu.NES_BASECYCLES = BASE_FREQ_DENDY;
 			break;
 		}
+		runtime.param.freqPerSec = runtime.cpu.NES_BASECYCLES;
 		
 		// 由于RAM空间可能在播放后被修改, 因此需要重新加载
 		reload();
@@ -499,12 +500,12 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 * 在当前这一秒内, 已经执行的时钟数.
 	 * 范围 [0, CPU 每秒的时钟数)
 	 */
-	int freqConsumed;
+	//int freqConsumed;
 	/**
 	 * 在当前这一秒内, 已经输出的采样数.
 	 * 范围 [0, 采样率)
 	 */
-	int sampleConsumed;
+	//int sampleConsumed;
 	
 	/**
 	 * CPU 剩余没有用完的时钟数.
@@ -513,8 +514,8 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	int cpuFreqRemain;
 	
 	private void resetCPUCounter() {
-		freqConsumed = 0;
-		sampleConsumed = 0;
+//		freqConsumed = 0;
+//		sampleConsumed = 0;
 		cpuFreqRemain = 0; // apuFreqRemain = 0
 	}
 	
@@ -527,7 +528,8 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		
 		NesCPU cpu = runtime.cpu;
 		for (int i = 0; i < sampleInCurFrame; i++) {
-			int freqInCurSample = countFreqInCurSample();
+			runtime.clockCounter.doConvert();
+			int freqInCurSample = runtime.param.cpuClockInCurSample;
 			
 			cpuFreqRemain += freqInCurSample;
 			if (cpuFreqRemain > 0) {
@@ -540,7 +542,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 					mmc5.tickFrameSequence(real_cpu_clocks);*/
 			}
 			
-			processSounds(freqInCurSample);
+			processSounds(runtime.param.apuClockInCurSample);
 		}
 		
 		endFrame();
@@ -549,7 +551,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	/**
 	 * 计算输出当前采样, 需要的时钟周期数, 并返回
 	 */
-	private int countFreqInCurSample() {
+	/*private int countFreqInCurSample() {
 		int sampleRate = runtime.param.sampleRate; // 默认 48000
 		int freqPerSec = runtime.param.freqPerSec; // 每秒时钟周期数
 		
@@ -571,6 +573,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		}
 		
 		return ret;
-	}
+	}*/
 
 }
