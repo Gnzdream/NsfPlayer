@@ -158,7 +158,13 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.mixer.readBuffer(data, 0, data.length);
 	}
 	
-	@Override
+	/**
+	 * <p>询问是否整个乐曲已经渲染完成. 由于 NSF 没有明确的结束播放的结点, 该方法永远返回 false.
+	 * <p>如果要设置结束播放结点的触发器, 需要对 {@link #render(short[], int, int)} 返回的采样数据
+	 * 进行扫描, 通过查看所有采样数据是否相同判断该时段 NSF 没有发出声音.
+	 * <p>当 NSF 已经连续多帧出现该情况（推荐 3 秒, 大约 180 帧）即可判断乐曲渲染结束.
+	 * </p>
+	 */
 	public boolean isFinished() {
 		return false;
 	}
@@ -193,7 +199,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @param channelCode
 	 *   轨道号
 	 * @param level
-	 *   音量. 范围 [0, 1]
+	 *   音量. 范围 [0, 1] 
 	 * @since v0.2.4
 	 */
 	public void setLevel(byte channelCode, float level) {

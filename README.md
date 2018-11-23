@@ -11,6 +11,8 @@ NsfPlayer (NSF 解析/播放器)，是一个基于 Java 的播放 NSF 文件的�
 
 #### 安装 Installation
 
+*	基础环境：JRE 1.8
+
 *	没有任何安装包. 你的 Java 工程只需要导入 Jar 包即可。
 	<br>Jar 包将发布到[这里](https://github.com/Gnzdream/NsfPlayer/releases)。
 
@@ -65,10 +67,6 @@ short[] bs = new short[2400];
 while (true) {
 	int size = renderer.render(bs, 0, bs.length);
 	player.writeSamples(bs, 0, size);
-	
-	if (renderer.isFinished()) {
-		break;
-	}
 }
 ```
 
@@ -82,6 +80,35 @@ while (true) {
 如果选择输出 byte 数组格式，``NsfRenderer`` 默认渲染的音频流格式如下：
 
 *	48000 Hz, 16 bit signed | little-endian, mono (单声道)
+
+由于 NSF 没有明确可以判断乐曲播放结束的方法，可以这样做来保证乐曲自动停止：
+
+``` Java
+BytesPlayer player = new BytesPlayer();
+short[] array = new short[2400];
+int silentLen = 0;
+
+while (true) {
+	int len = renderer.renderOneFrame(array, 0, array.length);
+	player.writeSamples(array, 0, len);
+	
+	int last = array[0];
+	for (int i = 1; i < array.length; i++) {
+		if (array[i] != last) {
+			silentLen = 0;
+			continue;
+		}
+	}
+	silentLen += len;
+	
+	if (silentLen >= 144000) {
+		break;
+	}
+}
+```
+
+上面的示例在每帧渲染完成后，对采样数组进行扫描。当连续多帧发现采样数据不再变化时，判断乐曲已经播放结束。
+``silentLen`` 就记录了不变采样的个数。当 ``silentLen >= 144000``，即 3 秒采样数据均无变化之后，判断乐曲播放结束。
 
 ---
 

@@ -143,26 +143,42 @@ public class NesDMC extends AbstractSoundChip {
 	}
 	
 	/**
-	 * 这里主要处理 DPCM 读取采样的问题
+	 * <p>这里主要处理 DPCM 读取采样的问题
+	 * <p>以及其它发声器的 enable 开关
+	 * </p>
 	 */
 	private void handleEnable() {
 		if ((mem4015 & 16) == 0) {
+			dpcm.setEnable(false);
 			dpcm.sample = null; // not active, 禁用
-		} else if (dpcm.sample == null) {
-			// 需要准备读取
-			FtmDPCMSample sample = new FtmDPCMSample();
-			int address = (0xC000 | (dpcm.offsetAddress));
-			if (dpcm.length == 0) {
-				return;
+		} else {
+			dpcm.setEnable(true);
+			if (dpcm.sample == null) {
+				// 需要准备读取
+				FtmDPCMSample sample = new FtmDPCMSample();
+				int address = (0xC000 | (dpcm.offsetAddress));
+				if (dpcm.length == 0) {
+					return;
+				}
+				
+				int length = (dpcm.length + 1);
+				sample.data = new byte[length];
+				
+				getRuntime().manager.stack.read(sample.data, 0, length, address);
+				dpcm.sample = sample;
+				dpcm.offsetAddress = 0; // TODO 这个地方我用来强制重置
+				dpcm.reload();
 			}
-			
-			int length = (dpcm.length + 1);
-			sample.data = new byte[length];
-			
-			getRuntime().manager.stack.read(sample.data, 0, length, address);
-			dpcm.sample = sample;
-			dpcm.offsetAddress = 0; // TODO 这个地方我用来强制重置
-			dpcm.reload();
+		}
+		
+		triangle.setEnable((mem4015 & 4) != 0);
+		noise.setEnable((mem4015 & 8) != 0);
+
+		if (!triangle.isEnable()) {
+			triangle.lengthCounter = 0;
+		}
+		if (!noise.isEnable()) {
+			noise.lengthCounter = 0;
 		}
 	}
 

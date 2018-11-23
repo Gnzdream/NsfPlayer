@@ -48,6 +48,7 @@ public class NesAPU extends AbstractSoundChip {
 		case 0x4015: {
 			// enable
 			mem4015 = (byte) val;
+			handleEnable();
 		} break;
 		case 0x4017: {
 			// 未知
@@ -116,6 +117,22 @@ public class NesAPU extends AbstractSoundChip {
 			pulse2.period = period;
 			pulse2.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
 		} break;
+		}
+	}
+	
+	/**
+	 * <p>这里主要处理发声器的 enable 开关
+	 * </p>
+	 */
+	private void handleEnable() {
+		pulse1.setEnable((mem4015 & 1) != 0);
+		pulse2.setEnable((mem4015 & 2) != 0);
+
+		if (!pulse1.isEnable()) {
+			pulse1.lengthCounter = 0;
+		}
+		if (!pulse2.isEnable()) {
+			pulse2.lengthCounter = 0;
 		}
 	}
 
