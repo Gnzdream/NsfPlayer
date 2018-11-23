@@ -32,13 +32,16 @@ public class TestNsfAutoStop {
 		BytesPlayer player = new BytesPlayer();
 		short[] array = new short[1600];
 		int silentLen = 0;
+		int last = 0;
 		
 		while (true) {
 			int len = renderer.renderOneFrame(array, 0, array.length);
 			player.writeSamples(array, 0, len);
 			
 			// 通过检查采样判断乐曲是否播放完成
-			int last = array[0];
+			if (silentLen == 0) {
+				last = array[0];
+			}
 			for (int i = 1; i < array.length; i++) {
 				if (array[i] != last) {
 					silentLen = 0;

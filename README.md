@@ -87,12 +87,15 @@ while (true) {
 BytesPlayer player = new BytesPlayer();
 short[] array = new short[2400];
 int silentLen = 0;
+int last = 0;
 
 while (true) {
 	int len = renderer.renderOneFrame(array, 0, array.length);
 	player.writeSamples(array, 0, len);
 	
-	int last = array[0];
+	if (silentLen == 0) {
+		last = array[0];
+	}
 	for (int i = 1; i < array.length; i++) {
 		if (array[i] != last) {
 			silentLen = 0;
