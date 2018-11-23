@@ -163,6 +163,21 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 		return ret; // (现单位 byte)
 	}
 	
+	/**
+	 * 跳过指定帧数
+	 * @param frame
+	 *   帧数. 必须为正数
+	 * @since v0.2.9
+	 */
+	public void skip(final int frame) {
+		// 如果前面渲染剩余的采样、还没有被返回的, 直接清空
+		this.offset = this.length;
+		
+		for (int i = 0; i < frame; i++) {
+			this.skipFrame();
+		}
+	}
+	
 	/*
 	 * 渲染参数 
 	 */
@@ -317,6 +332,14 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 *  本函数已渲染的采样数 (按单声道计算)
 	 */
 	protected abstract int renderFrame();
+	
+	/**
+	 * 跳过一帧
+	 * @return
+	 *   本函数跳过的采样数 (按单声道计算)
+	 * @since v0.2.9
+	 */
+	protected abstract int skipFrame();
 	
 	/* **********
 	 * 仪表盘区 *

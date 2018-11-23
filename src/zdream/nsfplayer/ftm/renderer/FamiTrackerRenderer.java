@@ -161,7 +161,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 渲染一帧
 	 * <br>SoundGen.playFrame
 	 * @return
-	 *  本函数已渲染的采样数 (按单声道计算)
+	 *   本函数已渲染的采样数 (按单声道计算)
 	 */
 	protected int renderFrame() {
 		int ret = countNextFrame();
@@ -170,7 +170,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		runtime.mixerReady();
 		
 		runtime.runFrame();
-		updateChannels();
+		updateChannels(true);
 		
 		runtime.fetcher.updateState();
 		
@@ -178,6 +178,20 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		readMixer();
 		
 		log();
+		
+		return ret;
+	}
+	
+	@Override
+	protected int skipFrame() {
+		int ret = countNextFrame();
+		runtime.param.sampleInCurFrame = ret;
+		runtime.rate.doConvert();
+		
+		runtime.runFrame();
+		updateChannels(false);
+		
+		runtime.fetcher.updateState();
 		
 		return ret;
 	}
@@ -433,8 +447,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	/**
 	 * 让每个 channel 进行播放操作
+	 * @param needTriggleSound
+	 *   是否需要让发声器工作
 	 */
-	private void updateChannels() {
+	private void updateChannels(boolean needTriggleSound) {
 		final FamiTrackerQuerier querier = runtime.querier;
 		
 		// 全局效果
@@ -447,7 +463,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			AbstractFtmChannel channel = runtime.channels.get(code);
 			
 			channel.playNote();
-			channel.triggerSound(true);
+			channel.triggerSound(needTriggleSound);
 		}
 	}
 	

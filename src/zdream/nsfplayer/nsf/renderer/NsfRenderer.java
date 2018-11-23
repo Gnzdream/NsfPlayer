@@ -139,6 +139,12 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		return ret;
 	}
 	
+	@Override
+	protected int skipFrame() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
 	/**
 	 * 从 Mixer 中读取音频数据
 	 */

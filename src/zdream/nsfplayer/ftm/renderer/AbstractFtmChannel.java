@@ -130,7 +130,7 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 * 最终使用的值是 curVolume, 但存在这样一个规定: 在 effect 和 state 进行修改时,
 	 * masterVolume 表示主音量, 而 curVolume 表示偏移量, 即 curVolume 在 0 的周围浮动;
 	 * 最终计算总的 curVolume 时, 会将主音量和偏移量共同进入计算, 得出的 curVolume
-	 * 重写 curVolume 的值. 到这时, curVolume 的意义会从偏移量编程当前音量.
+	 * 重写 curVolume 的值. 到这时, curVolume 的意义会从偏移量变成当前音量.
 	 * 
 	 * 音高 period, 音键 note 也遵循这个规则.
 	 */
