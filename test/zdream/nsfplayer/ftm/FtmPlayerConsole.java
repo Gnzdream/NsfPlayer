@@ -51,7 +51,7 @@ public class FtmPlayerConsole {
 	PlayThreadForFtm thread;
 	
 	// 缓存
-	private byte[] samples;
+	private short[] samples;
 
 	// 指令解析
 	Map<String, ICommandHandler> handlers = new HashMap<String, ICommandHandler>();
@@ -197,9 +197,9 @@ public class FtmPlayerConsole {
 		putTask(t);
 	}
 
-	public byte[] getLastSampleBytes() {
+	public short[] getLastSampleBytes() {
 		if (samples == null) {
-			samples = new byte[2400];
+			samples = new short[1200];
 		}
 		return samples;
 	}

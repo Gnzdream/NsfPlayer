@@ -33,5 +33,39 @@ public class BytesPlayer {
 		}
 		return dateline.write(bs, off, len);
 	}
+	
+	byte[] bytes;
+	
+	/**
+	 * 写入 short 采样数组
+	 * @param bs
+	 * @param off
+	 * @param len
+	 * @return
+	 *   实际读取的采样数
+	 * @since v0.2.9
+	 */
+	public int writeSamples(short[] bs, final int off, final int len) {
+		if (bytes == null) {
+			bytes = new byte[len * 2];
+		} else {
+			if (len > bytes.length * 2) {
+				bytes = new byte[len * 2];
+			}
+		}
+		
+		convert(bs, off, len);
+		return writeSamples(bytes, 0, len * 2) / 2;
+	}
+	
+	private void convert(short[] src, int soff, int slen) {
+		int sptr = soff;
+		int dptr = 0;
+		for (int i = 0; i < slen; i++) {
+			short sample = src[sptr++];
+			bytes[dptr++] = (byte) sample; // 低位
+			bytes[dptr++] = (byte) ((sample & 0xFF00) >> 8); // 高位
+		}
+	}
 
 }

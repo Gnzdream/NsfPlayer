@@ -37,7 +37,7 @@ public class PlayTask implements IFtmTask {
 	public void execute(FtmPlayerConsole env) {
 		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		
-		byte[] bs = env.getLastSampleBytes();
+		short[] bs = env.getLastSampleBytes();
 		int size = renderer.render(bs, 0, bs.length);
 		env.writeSamples(0, size);
 		

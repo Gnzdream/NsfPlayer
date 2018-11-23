@@ -94,6 +94,47 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	}
 	
 	/**
+	 * 渲染, 以 short 数组的方式获取采样数据
+	 * <br>线程不安全的方法
+	 * @param bs
+	 *   获取采样数据的数组
+	 * @param offset
+	 *   bs 存放数据的起始位置
+	 * @param length
+	 *   bs 存放的数据总量.
+	 * @return
+	 *   真正填充的数组元素个数
+	 * @since v0.2.9
+	 */
+	public int render(short[] bs, int offset, int length) {
+		int bOffset = offset; // bs 的 offset
+		int bLength = length; // bs 能获取的采样数
+		int ret = 0; // 已完成的采样数
+		
+		// 前面渲染剩余的采样、还没有被返回的
+		int v = fillSample(bs, bOffset, bLength);
+		ret += v;
+		bOffset += v;
+		bLength -= v;
+		
+		while (ret < length) {
+			renderFrame();
+			// data 数据已经就绪
+			
+			v = fillSample(bs, bOffset, bLength);
+			ret += v;
+			bOffset += v;
+			bLength -= v;
+			
+			if (isFinished()) {
+				break;
+			}
+		}
+		
+		return ret;
+	}
+	
+	/**
 	 * <p>仅渲染一帧. 如果之前有没有渲染完的、上一帧采样数据,
 	 * 只将上一帧剩余的采样数据写进数组.
 	 * <br>线程不安全的方法
@@ -140,7 +181,9 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	protected int length = 0;
 	
 	/**
-	 * 
+	 * <p>填充采样数据. byte[] 数组.
+	 * <p>按照 48000 Hz, 16 bit signed | little-endian, mono (单声道) 的方式填充
+	 * </p>
 	 * @param bs
 	 * @param bOffset
 	 * @param bLength
@@ -165,6 +208,40 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 				// data 用完了
 				
 				ret += dRemain;
+			}
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * 填充采样数据. short[] 数组
+	 * @param bs
+	 *   short 数组
+	 * @param bOffset
+	 * @param bLength
+	 * @return
+	 *   实际填充的采样数
+	 * @since v0.2.9
+	 */
+	protected int fillSample(short[] bs, int bOffset, int bLength) {
+		int bRemain = bLength;
+		int dRemain = this.length - this.offset; // data 中剩下的 (单位 采样)
+		int ret = 0;
+		
+		if (dRemain != 0) {
+			if (bRemain <= dRemain) {
+				// 将 data 的数据填充到 bs 中
+				System.arraycopy(this.data, this.offset, bs, bOffset, bRemain);
+				this.offset += bRemain;
+				// bs 填满了
+				ret = bRemain;
+			} else {
+				// 将 data 的数据填充到 bs 中
+				System.arraycopy(this.data, this.offset, bs, bOffset, dRemain);
+				// data 用完了
+				ret = dRemain;
+				this.offset += dRemain;
 			}
 		}
 		
