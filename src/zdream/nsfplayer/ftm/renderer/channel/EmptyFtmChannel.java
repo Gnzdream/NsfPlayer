@@ -29,4 +29,9 @@ public class EmptyFtmChannel extends AbstractFtmChannel {
 		return 0;
 	}
 
+	@Override
+	protected void writeToSound() {
+		
+	}
+
 }

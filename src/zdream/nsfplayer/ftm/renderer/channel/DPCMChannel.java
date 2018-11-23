@@ -26,10 +26,20 @@ public class DPCMChannel extends AbstractFtmChannel {
 	@Override
 	public void playNote() {
 		super.playNote();
+	}
+	
+	@Override
+	public void triggerSound(boolean needProcess) {
+		/*
+		 * 向外部宣布, 这个发声器是否在工作. 没有实际作用.
+		 * 因为外部想知道是否在发声, 只能通过 isplaying 和音量两个方式来感知
+		 * 这里修改 curVolume 只是为了让外界了解情况, 便于 debug.
+		 */
+		if (!sound.isFinish()) {
+			curVolume = 1;
+		}
 		
-		// 发声器
-		writeToSound();
-		processSound();
+		super.triggerSound(needProcess);
 	}
 	
 	/* **********
@@ -188,12 +198,8 @@ public class DPCMChannel extends AbstractFtmChannel {
 	public DPCMSound getSound() {
 		return sound;
 	}
-	
-	/**
-	 * <p>将轨道中的数据写到发声器中.
-	 * <p>参照原工程 DPCMChan.refreshChannel()
-	 * </p>
-	 */
+
+	@Override
 	public void writeToSound() {
 		if (deltaCounter != -1) {
 			sound.deltaCounter = deltaCounter;
@@ -238,28 +244,4 @@ public class DPCMChannel extends AbstractFtmChannel {
 		}
 	}
 	
-	/**
-	 * 指导发声器工作一帧
-	 */
-	public void processSound() {
-		
-		/*
-		 * 向外部宣布, 这个发声器是否在工作. 没有实际作用.
-		 * 因为外部想知道是否在发声, 只能通过 isplaying 和音量两个方式来感知
-		 * 这里修改 curVolume 只是为了让外界了解情况, 便于 debug.
-		 */
-		if (!sound.isFinish()) {
-			curVolume = 1;
-		}
-		
-		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame - getDelay();
-		
-		// TODO 暂时没有考虑 sweep 和 envelope 部分, 还有 4017 参数
-		sound.process(freq);
-		
-		// 结束
-		sound.endFrame();
-	}
-
 }

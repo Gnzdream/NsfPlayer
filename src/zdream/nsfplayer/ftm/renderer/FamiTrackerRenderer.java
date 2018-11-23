@@ -447,6 +447,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			AbstractFtmChannel channel = runtime.channels.get(code);
 			
 			channel.playNote();
+			channel.triggerSound(true);
 		}
 	}
 	

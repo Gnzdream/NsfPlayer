@@ -39,10 +39,6 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 		}
 		calculateVolume();
 		calculatePeriod();
-		
-		// 发声器
-		writeToSound();
-		processSound();
 	}
 	
 	@Override
@@ -203,11 +199,8 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 	public SoundVRC7 getSound() {
 		return sound;
 	}
-	
-	/**
-	 * <p>将轨道中的数据写到发声器中.
-	 * </p>
-	 */
+
+	@Override
 	public void writeToSound() {
 		int block = lastOctave; // bnum
 		int fnum = curPeriod;
@@ -302,17 +295,4 @@ public class ChannelVRC7 extends AbstractFtmChannel {
 		p.RR = (regs[7]) & 15;
 	}
 	
-	/**
-	 * 指导发声器工作一帧
-	 */
-	public void processSound() {
-		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame - getDelay();
-		
-		sound.process(freq);
-		
-		// 结束
-		sound.endFrame();
-	}
-
 }

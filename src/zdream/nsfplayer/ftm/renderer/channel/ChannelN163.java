@@ -28,12 +28,8 @@ public class ChannelN163 extends ChannelTone {
 		
 		// sequence
 		updateSequence();
-		
-		// 发声器
-		writeToSound();
-		processSound();
 	}
-
+	
 	@Override
 	public void reset() {
 		super.reset();
@@ -112,10 +108,7 @@ public class ChannelN163 extends ChannelTone {
 		return sound;
 	}
 	
-	/**
-	 * <p>将轨道中的数据写到发声器中.
-	 * </p>
-	 */
+	@Override
 	public void writeToSound() {
 		if (!playing || masterNote == 0) {
 			haltSound();
@@ -145,17 +138,4 @@ public class ChannelN163 extends ChannelTone {
 		sound.setEnable(true);
 	}
 	
-	/**
-	 * 指导发声器工作一帧
-	 */
-	public void processSound() {
-		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame - getDelay();
-		
-		sound.process(freq);
-		
-		// 结束
-		sound.endFrame();
-	}
-
 }

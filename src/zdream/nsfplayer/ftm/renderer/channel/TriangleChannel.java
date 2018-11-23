@@ -23,10 +23,6 @@ public class TriangleChannel extends ChannelTone {
 		
 		// sequence
 		updateSequence();
-		
-		// 发声器
-		writeToSound();
-		processSound();
 	}
 
 	@Override
@@ -88,12 +84,8 @@ public class TriangleChannel extends ChannelTone {
 	public TriangleSound getSound() {
 		return sound;
 	}
-	
-	/**
-	 * <p>将轨道中的数据写到发声器中.
-	 * <p>参照原工程 TriangleChan.refreshChannel()
-	 * </p>
-	 */
+
+	@Override
 	public void writeToSound() {
 		if (this.curVolume > 0 && playing && masterNote > 0) {
 			sound.looping = true;
@@ -104,20 +96,6 @@ public class TriangleChannel extends ChannelTone {
 			sound.looping = false;
 			sound.linearLoad = 0;
 		}
-	}
-	
-	/**
-	 * 指导发声器工作一帧
-	 */
-	public void processSound() {
-		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame - getDelay();
-		
-		// TODO 暂时没有考虑 sweep 和 envelope 部分, 还有 4017 参数
-		sound.process(freq);
-		
-		// 结束
-		sound.endFrame();
 	}
 	
 	/* **********

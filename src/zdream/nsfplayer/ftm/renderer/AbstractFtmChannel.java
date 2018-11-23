@@ -55,26 +55,33 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 */
 	public abstract AbstractNsfSound getSound();
 	
+	/**
+	 * <p>将轨道上的数据写到发声器中
+	 * <p>原本子类都有类似的函数, 从版本 v0.2.9 开始, 将其挪到父类中
+	 * </p>
+	 * @since v0.2.9
+	 */
+	protected abstract void writeToSound();
+	
 	/* **********
 	 * 外部接口 *
 	 ********** */
 	
 	/**
-	 * <p>播放 note
-	 * <p>由于 FtmNote 改成 IFtmEffect, 因此这里较原程序有了大幅度修改.
-	 * 该方法要做的, 就是处理效果和状态的触发.
-	 * <p>子类在这个基础上, 完成将数据写到发声器中, 指导发声器工作, 将数据写到音频管道中
+	 * <p>执行 note
+	 * <p>执行部分与播放部分从 v0.2.9 开始, 拆分成了两个函数.
+	 * 该函数为执行部分, 该方法要做的, 就是处理效果和状态的触发.
+	 * 该函数的结果就是修改本 channel 实例中的各项参数, 但是并不对 sound 作任何修改.
 	 * <p>原程序: ChannelHandler.playNote
 	 * </p>
 	 * 
-	 * @param noise
-	 *   键, 音符.
-	 *   <br>如果 note = null, 则说明保持原来的 note 不变
+	 * @version v0.2.9
+	 *   <br>从原来的完成【执行】和【播放】两个任务, 修改为只完成【执行】任务.
+	 *   播放任务挪到函数 {@link #triggerSound()} 中.
+	 *   
+	 * @see #triggerSound()
 	 */
 	public void playNote() {
-		// 延迟触发（不是延迟效果）
-		getSound().process(delay);
-		
 		// 初始化
 		startFrame();
 		
@@ -83,6 +90,36 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 		
 		// 状态
 		triggleState();
+	}
+	
+	/**
+	 * <p>播放 note
+	 * <p>子类在这个基础上, 完成将数据写到发声器中, 指导发声器工作, 将数据写到音频管道中.
+	 * </p>
+	 * @param needProcess
+	 *   是否需要让发声器工作.
+	 *   <br>如果为 true, 发声器将工作; 如果为 false, 该函数仅需要将数据写入发声器, 但不会让发声器工作
+	 * 
+	 * @see #playNote()
+	 * @since v0.2.9
+	 */
+	public void triggerSound(boolean needProcess) {
+		if (needProcess) {
+			// 延迟触发（不是延迟效果）
+			getSound().process(delay);
+		}
+		
+		writeToSound();
+		
+		if (needProcess) {
+			// 拿到一帧对应的时钟周期数, 减去延迟的时间
+			int freq = getRuntime().param.freqPerFrame - delay;
+			
+			getSound().process(freq);
+			
+			// 结束
+			getSound().endFrame();
+		}
 	}
 	
 	/* **********

@@ -23,12 +23,8 @@ public class ChannelVRC6Sawtooth extends ChannelVRC6 {
 		
 		// sequence
 		updateSequence();
-		
-		// 发声器
-		writeToSound();
-		processSound();
 	}
-
+	
 	@Override
 	public void reset() {
 		super.reset();
@@ -107,11 +103,8 @@ public class ChannelVRC6Sawtooth extends ChannelVRC6 {
 	public SoundVRC6Sawtooth getSound() {
 		return sound;
 	}
-	
-	/**
-	 * <p>将轨道中的数据写到发声器中.
-	 * </p>
-	 */
+
+	@Override
 	public void writeToSound() {
 		if (!playing || masterNote == 0) {
 			sound.period = 0;
@@ -122,17 +115,4 @@ public class ChannelVRC6Sawtooth extends ChannelVRC6 {
 		}
 	}
 	
-	/**
-	 * 指导发声器工作一帧
-	 */
-	public void processSound() {
-		// 拿到一帧对应的时钟周期数
-		int freq = getRuntime().param.freqPerFrame - getDelay();
-		
-		sound.process(freq);
-		
-		// 结束
-		sound.endFrame();
-	}
-
 }
