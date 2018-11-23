@@ -530,8 +530,10 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	/**
 	 * 让 CPU 往下走一帧
 	 * (虽然说是一帧, 但是实际上是看当前帧的采样数决定的)
+	 * @param needTriggleSound
+	 *   是否需要让发声器工作
 	 */
-	public void tickCPU() {
+	public void tickCPU(boolean needTriggleSound) {
 		// 这个值是, 不计播放速度时的每帧采样数
 		// runtime.param.sampleInCurFrame 是将播放速度计算进去的值
 		// 所以两者并不相等
@@ -553,7 +555,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 					mmc5.tickFrameSequence(real_cpu_clocks);*/
 			}
 			
-			processSounds(runtime.param.apuClockInCurSample);
+			if (needTriggleSound) {
+				processSounds(runtime.param.apuClockInCurSample);
+			}
 		}
 		
 		endFrame();

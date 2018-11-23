@@ -131,7 +131,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.rate.doConvert();
 		runtime.mixerReady();
 		
-		runtime.manager.tickCPU();
+		runtime.manager.tickCPU(true);
 
 		// 从 mixer 中读取数据
 		readMixer();
@@ -141,8 +141,13 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	
 	@Override
 	protected int skipFrame() {
-		// TODO Auto-generated method stub
-		return 0;
+		int ret = countNextFrame();
+		runtime.param.sampleInCurFrame = ret;
+		runtime.rate.doConvert();
+		
+		runtime.manager.tickCPU(false);
+
+		return ret;
 	}
 	
 	/**

@@ -66,8 +66,9 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 *   真正填充的数组元素个数
 	 */
 	public int render(byte[] bs, int offset, int length) {
+		length = length / 2 * 2; // 化成 2 的倍数
 		int bOffset = offset; // bs 的 offset
-		int bLength = length / 2 * 2; // 化成 2 的倍数
+		int bLength = length;
 		int ret = 0; // 已完成的采样数
 		
 		// 前面渲染剩余的采样、还没有被返回的
@@ -97,7 +98,7 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 * 渲染, 以 short 数组的方式获取采样数据
 	 * <br>线程不安全的方法
 	 * @param bs
-	 *   获取采样数据的数组
+	 *   获取采样数据的数组, short 格式
 	 * @param offset
 	 *   bs 存放数据的起始位置
 	 * @param length
@@ -135,7 +136,8 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	}
 	
 	/**
-	 * <p>仅渲染一帧. 如果之前有没有渲染完的、上一帧采样数据,
+	 * <p>仅渲染一帧, 以 short 数组的方式获取采样数据.
+	 * 如果之前有没有渲染完的、上一帧采样数据,
 	 * 只将上一帧剩余的采样数据写进数组.
 	 * <br>线程不安全的方法
 	 * </p>
@@ -164,18 +166,60 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	}
 	
 	/**
-	 * 跳过指定帧数
+	 * <p>仅渲染一帧. 如果之前有没有渲染完的、上一帧采样数据,
+	 * 只将上一帧剩余的采样数据写进数组.
+	 * <br>线程不安全的方法
+	 * </p>
+	 * @param bs
+	 *   获取采样数据的数组, short 格式
+	 * @param offset
+	 *   bs 存放数据的起始位置
+	 * @param length
+	 *   bs 存放的数据总量, 以 short 为单位.
+	 * @return
+	 *   真正填充的数组元素个数
+	 * @since v0.2.9
+	 */
+	public int renderOneFrame(short[] bs, int offset, int length) {
+		// 前面渲染剩余的采样、还没有被返回的
+		int ret = fillSample(bs, offset, length);
+		if (ret == 0) {
+			renderFrame();
+			// data 数据已经就绪
+			ret = fillSample(bs, offset, length);
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * <p>跳过指定帧数.
+	 * <p>如果之前有没有渲染完的、上一帧采样数据, 该帧数据将被丢弃, 且不计入跳过的帧数;
+	 * <p><code>skip(0)</code> 表示丢弃上一帧没有渲染完的采样数据, 从下一帧开头开始渲染.
+	 * </p>
 	 * @param frame
 	 *   帧数. 必须为正数
 	 * @since v0.2.9
 	 */
 	public void skip(final int frame) {
-		// 如果前面渲染剩余的采样、还没有被返回的, 直接清空
-		this.offset = this.length;
-		
 		for (int i = 0; i < frame; i++) {
 			this.skipFrame();
 		}
+		
+		// 如果前面渲染剩余的采样、还没有被返回的, 直接清空
+		this.offset = this.length = 0;
+	}
+	
+	/**
+	 * <p>剩余采样数.
+	 * <p>返回上一帧没有渲染完的、采样数据. 如果没有, 返回 0.
+	 * </p>
+	 * @return
+	 *   上一帧未渲染完的采样数
+	 * @since v0.2.9
+	 */
+	public int remain() {
+		return this.length - this.offset;
 	}
 	
 	/*
