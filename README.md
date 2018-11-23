@@ -1,7 +1,7 @@
 # NsfPlayer
 
 NsfPlayer (NSF 解析/播放器)，是一个基于 Java 的播放 NSF 文件的开源工程。
-主要支持将 .nsf (NSF 文件)、 .ftm (FamiTracker 编辑文件) 这类 8-bit 音频文件转成音频采样流 (PCM byte 数组)
+主要支持将 .nsf (NSF 文件)、 .ftm (FamiTracker 编辑文件) 这类 8-bit 音频文件转成音频采样流 (PCM 数组)
 以便后面使用其它的软件、工具进行加工。
 
 *	ftm 目标支持版本：
@@ -12,11 +12,11 @@ NsfPlayer (NSF 解析/播放器)，是一个基于 Java 的播放 NSF 文件的�
 #### 安装 Installation
 
 *	没有任何安装包. 你的 Java 工程只需要导入 Jar 包即可。
-	<br>(当完成到一定程度, 我想也需要发布一些 Jar 包)。
+	<br>Jar 包将发布到[这里](https://github.com/Gnzdream/NsfPlayer/releases)。
 
 #### 如何渲染 NSF 格式的文件
 
-首先需要声明的是，这个工程的目标是输出 PCM 格式的 byte 数组 / 音频流，而不是播放声音，尽管它内置了默认的播放音频的组件。
+首先需要声明的是，这个工程的目标是输出 PCM 格式的数组 / 音频流，而不是播放声音，尽管它内置了默认的播放音频的组件。
 
 ##### 第一步：首先需要创建 ``NsfAudio`` 实例，封装 NSF 音频文件。
 
@@ -42,7 +42,7 @@ try {
 
 ##### 第二步：创建 ``NsfRenderer`` 实例，它是将 NSF 文件数据转化为音频流的渲染器。
 
-Step 2: Create ``NsfRenderer`` instance which convents NSF file data to PCM bytes array.
+Step 2: Create ``NsfRenderer`` instance which convents NSF file data to PCM array.
 
 ``` Java
 NsfRenderer renderer = new NsfRenderer();
@@ -60,7 +60,7 @@ Step 3: Render it using a loop block.
 
 ``` Java
 BytesPlayer player = new BytesPlayer();
-byte[] bs = new byte[2400];
+short[] bs = new short[2400];
 
 while (true) {
 	int size = renderer.render(bs, 0, bs.length);
@@ -74,11 +74,12 @@ while (true) {
 
 因为使用循环的方式进行渲染，这里推荐新建一个新的线程 ``(new Thread(...))`` 来单独进行渲染工作。
 
-类 ``BytesPlayer`` 其实就是一个单纯的播放 byte 数组的类。它就是我前面提到的内置了默认的播放音频的组件中的一个。
+类 ``BytesPlayer`` 其实就是一个单纯的播放 byte / short 数组的类。它就是我前面提到的内置了默认的播放音频的组件中的一个。
 说句实在话，你如果会使用 javax 底层的音频组件，实际上并不需要使用这个类进行音频播放，我使用它单纯为了方便而已。
 
-上面使用 2400 bytes 作为缓冲区的长度，但实际上你可以改变它。如何确定这个值视你主机的情况而定。
-``NsfRenderer`` 默认渲染的音频流格式如下：
+上面使用 2400 单位作为缓冲区的长度，但实际上你可以改变它。如何确定这个值视你主机的情况而定。
+我曾经使用的例子中是用 byte 数组的。这两种格式现在均能够完成目标，但是我比较推荐输出 short 数组格式的。
+如果选择输出 byte 数组格式，``NsfRenderer`` 默认渲染的音频流格式如下：
 
 *	48000 Hz, 16 bit signed | little-endian, mono (单声道)
 
@@ -102,7 +103,7 @@ FtmAudio audio = FamiTrackerApplication.app.open(path);
 
 ##### 第二步：创建 ``FamiTrackerRenderer`` 实例，它是将 FTM 文件数据转化为音频流的渲染器。
 
-Step 2: Create ``FamiTrackerRenderer`` instance which convents FTM file data to PCM bytes array.
+Step 2: Create ``FamiTrackerRenderer`` instance which convents FTM file data to PCM array.
 
 ``` Java
 FamiTrackerRenderer renderer = new FamiTrackerRenderer();
@@ -122,7 +123,7 @@ Step 3: Render it using a loop block.
 
 ``` Java
 BytesPlayer player = new BytesPlayer();
-byte[] bs = new byte[2400];
+short[] bs = new short[2400];
 
 while (true) {
 	int size = renderer.render(bs, 0, bs.length);
@@ -137,13 +138,8 @@ while (true) {
 你可能发现了，这个部分，NSF 与 FTM 格式的渲染是一模一样的。
 因为使用循环的方式进行渲染，这里推荐新建一个新的线程 ``(new Thread(...))`` 来单独进行渲染工作。
 
-类 ``BytesPlayer`` 其实就是一个单纯的播放 byte 数组的类。它就是我前面提到的内置了默认的播放音频的组件中的一个。
+类 ``BytesPlayer`` 其实就是一个单纯的播放 byte / short 数组的类。它就是我前面提到的内置了默认的播放音频的组件中的一个。
 说句实在话，你如果会使用 javax 底层的音频组件，实际上并不需要使用这个类进行音频播放，我使用它单纯为了方便而已。
-
-上面使用 2400 bytes 作为缓冲区的长度，但实际上你可以改变它。如何确定这个值视你主机的情况而定。
-``FamiTrackerRenderer`` 默认渲染的音频流格式如下：
-
-*	48000 Hz, 16 bit signed | little-endian, mono (单声道)
 
 好了，到了这里，你就已经可以播放这个音频了。不过要注意的是，选取的 JtS Stage 3.ftm 音频文件
 使用的是 FC (NES) 游戏 Raf 的世界 / 星际魂斗罗 (RAF world / Journey to Silius) 第三关的背景音乐，
