@@ -39,6 +39,7 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void reset() {
+		super.reset();
 		if (tri != null) {
 			tri.reset();
 		}

@@ -12,6 +12,7 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 
 	@Override
 	public void reset() {
+		super.reset();
 		if (fds != null) {
 			fds.reset();
 		}

@@ -13,7 +13,7 @@ import zdream.nsfplayer.sound.interceptor.ISoundInterceptor;
  */
 public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 
-	protected ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
+	protected final ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
 	
 	/**
 	 * @param value
@@ -39,6 +39,13 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 	public void attachIntercept(ISoundInterceptor interceptor) {
 		if (interceptor != null) {
 			interceptors.add(interceptor);
+		}
+	}
+	
+	@Override
+	public void reset() {
+		for (ISoundInterceptor i : interceptors) {
+			i.reset();
 		}
 	}
 	

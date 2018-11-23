@@ -151,6 +151,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		runtime.ready(track, section);
 		runtime.resetAllChannels();
+		resetMixer();
 	}
 	
 	/* **********
@@ -350,8 +351,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	private void initMixer() {
 		runtime.mixer.detachAll();
 		runtime.mixer.reset();
-		
-		// TODO
 	}
 	
 	/**
@@ -465,6 +464,13 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			channel.playNote();
 			channel.triggerSound(needTriggleSound);
 		}
+	}
+	
+	/**
+	 * 重置 Mixer
+	 */
+	private void resetMixer() {
+		runtime.mixer.reset();
 	}
 	
 	/**

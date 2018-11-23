@@ -115,6 +115,7 @@ public class NsfRuntime implements IResetable {
 	@Override
 	public void reset() {
 		manager.reset();
+		mixer.reset();
 	}
 	
 	/* **********

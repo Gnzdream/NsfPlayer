@@ -157,6 +157,7 @@ public class XgmSoundMixer extends SoundMixer {
 	@Override
 	public void reset() {
 		multis.forEach((b, multi) -> multi.reset());
+		interceptors.forEach(i -> i.reset());
 	}
 	
 	/* **********

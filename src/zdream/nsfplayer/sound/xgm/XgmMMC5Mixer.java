@@ -19,6 +19,7 @@ public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void reset() {
+		super.reset();
 		if (pulse1 != null) {
 			pulse1.reset();
 		}

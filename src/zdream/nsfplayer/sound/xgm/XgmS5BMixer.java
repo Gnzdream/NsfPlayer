@@ -17,6 +17,7 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void reset() {
+		super.reset();
 		if (ch1 != null) {
 			ch1.reset();
 		}

@@ -17,6 +17,7 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void reset() {
+		super.reset();
 		if (pulse1 != null) {
 			pulse1.reset();
 		}

@@ -44,7 +44,9 @@ public class XgmAudioChannel implements IMixerChannel {
 
 	@Override
 	public void reset() {
-		Arrays.fill(buffer, (short) 0);
+		if (buffer != null) {
+			Arrays.fill(buffer, (short) 0);
+		}
 		lastValue = 0;
 		lastTime = 0;
 	}

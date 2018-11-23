@@ -12,6 +12,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 
 	@Override
 	public void reset() {
+		super.reset();
 		for (int i = 0; i < n163s.length; i++) {
 			XgmAudioChannel ch = n163s[i];
 			if (ch == null) {
