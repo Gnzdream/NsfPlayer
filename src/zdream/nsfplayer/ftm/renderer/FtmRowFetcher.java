@@ -81,6 +81,8 @@ public class FtmRowFetcher {
 	public int getNextRow() {
 		if (skipRow == -1) {
 			return nextRow;
+		} else if (jumpSection == -1) {
+			return 0;
 		}
 		
 		return skipRow;

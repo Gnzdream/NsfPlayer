@@ -137,6 +137,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号
 	 * <p>第一次播放时需要指定 Ftm 音频数据.
 	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * </p>
 	 * @param track
 	 *   曲目号, 从 0 开始
 	 * @param section
@@ -152,6 +153,35 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		runtime.ready(track, section);
 		runtime.resetAllChannels();
 		resetMixer();
+	}
+	
+	/**
+	 * <p>不改变各个轨道参数的情况下, 切换到指定播放位置.
+	 * 切换时, 各轨道的播放音高、音量、效果等均不改变, 这也包括延迟效果 Gxx.
+	 * 混音器不会重置, 这也意味着上一帧播放的音可能继续延长播放下去.
+	 * 而 FTM 文档的播放速度（不是播放速度 speed）会重新根据 tempo 等数值重置.
+	 * <p>请谨慎使用该方法. 如果前面使用了颤音 4xy 或者其它效果, 而没有消除时,
+	 * 切换位置后, 这些效果会仍然保留下来, 导致后面播放会很奇怪.
+	 * 如果想使用更加稳健的方式切换播放位置, 而不会使播放效果发生较大变化,
+	 * 请使用 {@link #ready(int, int)} 或 {@link #skip(int)} 方法.
+	 * <p>需要在调用前确定该渲染器已经成功加载了 {@link FtmAudio} 音频.
+	 * </p>
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当调用该方法前未成功加载 {@link FtmAudio} 音频时
+	 * @see #ready(int, int)
+	 * @see #skip(int)
+	 * @since v0.2.9
+	 */
+	public void switchTo(int track, int section) {
+		if (runtime.fetcher.querier == null) {
+			throw new NullPointerException("FtmAudio = null");
+		}
+		
+		runtime.ready(track, section);
 	}
 	
 	/* **********
@@ -249,6 +279,30 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	public boolean currentRowRunOut() {
 		return runtime.fetcher.needRowUpdate();
+	}
+
+	/**
+	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置所对应的段号.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @return
+	 *   下一行对应的段号
+	 * @since v0.2.9
+	 */
+	public int getNextSection() {
+		return runtime.fetcher.getNextSection();
+	}
+	
+	/**
+	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置所对应的行号.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @return
+	 *   下一行对应的段号
+	 * @since v0.2.9
+	 */
+	public int getNextRow() {
+		return runtime.fetcher.getNextRow();
 	}
 	
 	/**

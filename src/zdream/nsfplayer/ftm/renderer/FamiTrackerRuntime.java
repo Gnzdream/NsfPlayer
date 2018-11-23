@@ -123,6 +123,7 @@ public class FamiTrackerRuntime {
 		for (Map<FtmEffectType, IFtmEffect> map : effects.values()) {
 			map.clear();
 		}
+		geffect.clear();
 	}
 	
 	/* **********
