@@ -5,7 +5,7 @@ package zdream.nsfplayer.sound;
  * @author Zdream
  * @since v0.2.2
  */
-public class TriangleSound extends Sound2A03 {
+public class SoundTriangle extends Sound2A03 {
 	
 	/**
 	 * 一个周期内音波的高低. 实际上就是等腰三角形
@@ -13,7 +13,7 @@ public class TriangleSound extends Sound2A03 {
 	private static final byte[] TRIANGLE_WAVE = {
 			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 
 			0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-		};
+	};
 	
 	/* **********
 	 *   参数   *
@@ -24,21 +24,13 @@ public class TriangleSound extends Sound2A03 {
 	 * 2 号位: (0x400A)
 	 * 3 号位: (0x400B)
 	 */
-
-	/**
-	 * <p>0 号位: x0000000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * <p>这个标志说明该帧这个发声器是否应该发声. 但是实际是否发声请见下面方法 {@link #onProcess(int)}.
-	 * </p>
-	 */
-	public boolean looping;
 	
-	/**
-	 * <p>0 号位: 0xxxxxxx
-	 * <p>unsigned, 值域 [0, 127]
-	 * </p>
+	/*
+	 * 0 号位的 looping 和 linearLoad,
+	 * 已经移动到 LinearSoundTriangle 子类中.
+	 * 
+	 * 在该类默认认为 looping = true 且不会改变
 	 */
-	public int linearLoad;
 	
 	// 1 号位忽略
 	
@@ -83,10 +75,8 @@ public class TriangleSound extends Sound2A03 {
 	@Override
 	public void reset() {
 		// 原始记录参数
-		looping = false;
-		linearLoad = 0;
 		period = 0;
-		lengthCounter = 0;
+		lengthCounter = LENGTH_TABLE[0];
 		
 		// 辅助参数
 		counter = 0;
@@ -103,16 +93,7 @@ public class TriangleSound extends Sound2A03 {
 	 * </p>
 	 */
 	protected void onProcess(int time) {
-		if (!looping) {
-			onProcessMute(time);
-			return;
-		}
-		
-		if (period <= 1) {
-			// 频率太高根本听不见. 这里就直接不播放了
-			this.time += time;
-			// dutyCycle = 7; 原程序有, 我把它注释了
-			mix(TRIANGLE_WAVE[dutyCycle]);
+		if (!isEnable()) {
 			return;
 		}
 
@@ -120,47 +101,32 @@ public class TriangleSound extends Sound2A03 {
 			time -= counter;
 			this.time += counter;
 			counter = period + 1;
-			mix(TRIANGLE_WAVE[dutyCycle]);
-			dutyCycle = (dutyCycle + 1) & 0x1F;
+			
+			int value = processStep(counter);
+			mix(value);
 		}
 		
 		counter -= time;
 		this.time += time;
 	}
 	
-	/**
-	 * 该轨道需要停止发出声音, 这里需要结束上一整个三角波周期之后, 才能完全进入静音状态
-	 * @param time
-	 */
-	private void onProcessMute(int time) {
-		if (dutyCycle == 0) {
-			// 上一个三角波周期已经结束
-			this.time += time;
-			return;
-		}
-		
-		if (period <= 1) {
-			// 频率太高根本听不见. 这里就直接过掉该周期
-			dutyCycle = 0;
-			mix(TRIANGLE_WAVE[dutyCycle]);
-			this.time += time;
-			return;
-		}
-		
-		while (time >= counter) {
-			time -= counter;
-			this.time += counter;
-			counter = period + 1;
-			mix(TRIANGLE_WAVE[dutyCycle]);
+	protected int processStep(int period) {
+		if (isStatusValid()) {
+			int ret = TRIANGLE_WAVE[dutyCycle];
 			dutyCycle = (dutyCycle + 1) & 0x1F;
-			
+			return ret;
+		} else {
 			if (dutyCycle == 0) {
-				// 一整个周期结束
-				break;
+				return 0;
 			}
+			int ret = TRIANGLE_WAVE[dutyCycle];
+			dutyCycle = (dutyCycle + 1) & 0x1F;
+			return ret;
 		}
-
-		this.time += time;
+	}
+	
+	protected boolean isStatusValid() {
+		return isEnable() && lengthCounter > 0 && period > 1;
 	}
 
 }

@@ -142,7 +142,7 @@ public class SweepSoundPulse extends PulseSound implements IFrameSequence {
 	}
 	
 	/**
-	 * 如果刚刚更新了 envelope 部分, 请调用该方法
+	 * 如果刚刚更新了 envelope 部分 (3 号位) 请调用该方法
 	 */
 	public void onEnvelopeUpdated() {
 		envelopeUpdated = true;

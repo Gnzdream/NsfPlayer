@@ -10,8 +10,8 @@ import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.DPCMSound;
 import zdream.nsfplayer.sound.EnvelopeSoundNoise;
+import zdream.nsfplayer.sound.LinearSoundTriangle;
 import zdream.nsfplayer.sound.PulseSound;
-import zdream.nsfplayer.sound.TriangleSound;
 
 /**
  * 一种 2A03 音频设备, 管理输出 Triangle, Noise 和 DPCM 轨道的音频
@@ -21,7 +21,7 @@ import zdream.nsfplayer.sound.TriangleSound;
  */
 public class NesDMC extends AbstractSoundChip {
 	
-	private TriangleSound triangle;
+	private LinearSoundTriangle triangle;
 	private EnvelopeSoundNoise noise;
 	private DPCMSound dpcm;
 	
@@ -33,7 +33,7 @@ public class NesDMC extends AbstractSoundChip {
 
 	public NesDMC(NsfRuntime runtime) {
 		super(runtime);
-		triangle = new TriangleSound();
+		triangle = new LinearSoundTriangle();
 		noise = new EnvelopeSoundNoise();
 		dpcm = new DPCMSound();
 	}
@@ -91,6 +91,7 @@ public class NesDMC extends AbstractSoundChip {
 			int period = (triangle.period & 0xFF) + ((value & 7) << 8);
 			triangle.period = period;
 			triangle.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			triangle.onEnvelopeUpdated();
 		} break;
 		
 		}
@@ -198,6 +199,9 @@ public class NesDMC extends AbstractSoundChip {
 	public void reset() {
 		triangle.reset();
 		noise.reset();
+		triangle.setSequenceStep(
+				getRuntime().manager.getRegion() == ERegion.PAL ?
+						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
 		noise.setSequenceStep(
 				getRuntime().manager.getRegion() == ERegion.PAL ?
 						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);

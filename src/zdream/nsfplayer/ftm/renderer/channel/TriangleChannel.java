@@ -3,7 +3,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
-import zdream.nsfplayer.sound.TriangleSound;
+import zdream.nsfplayer.sound.SoundTriangle;
 
 /**
  * 2A03 三角轨道
@@ -78,23 +78,20 @@ public class TriangleChannel extends ChannelTone {
 	/**
 	 * 2A03 Triangle 音频发声器
 	 */
-	TriangleSound sound = new TriangleSound();
+	SoundTriangle sound = new SoundTriangle();
 
 	@Override
-	public TriangleSound getSound() {
+	public SoundTriangle getSound() {
 		return sound;
 	}
 
 	@Override
 	public void writeToSound() {
 		if (this.curVolume > 0 && playing && masterNote > 0) {
-			sound.looping = true;
-			sound.linearLoad = 1;
+			sound.setEnable(true);
 			sound.period = this.curPeriod;
-			sound.lengthCounter = 0;
 		} else {
-			sound.looping = false;
-			sound.linearLoad = 0;
+			sound.setEnable(false);
 		}
 	}
 	

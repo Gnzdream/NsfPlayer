@@ -146,6 +146,10 @@ public class SoundNoise extends Sound2A03 {
 	}
 	
 	protected int processStep(int period) {
+		if (!isEnable()) {
+			return 0;
+		}
+		
 		int ret = ((shiftReg & 1) != 0) ? fixedVolume : 0;
 		shiftReg = (((shiftReg << 14) ^ (shiftReg << dutySampleRate)) & 0x4000) | (shiftReg >> 1);
 		return ret;
