@@ -133,7 +133,7 @@ public class LinearSoundTriangle extends SoundTriangle implements IFrameSequence
 	protected int processStep(int period) {
 		// Frame Sequence 更新部分
 		sequenceRemain -= period;
-		if (sequenceRemain < 0) {
+		while (sequenceRemain < 0) {
 			sequenceRemain += sequenceStep;
 			sequenceUpdate();
 		}

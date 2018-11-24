@@ -72,6 +72,20 @@ public class SoundTriangle extends Sound2A03 {
 	 */
 	private int dutyCycle;
 	
+	/**
+	 * <p>记录上一个 period 的值.
+	 * <p>NSF 播放中, 部分曲目会将 period 设置为 0, 表示立刻停止播放.
+	 * 此时如果三角波在周期 (16 / 32) 附近时, 它的音量很大, 由于 period 重置,
+	 * 它将快速降到 0, 导致发出很大的干扰音.
+	 * <p>这个问题的解决方法是, 缓存上一个 period 的值.
+	 * 如果 period 被意外重置到 0, 则在渲染时用 lastPeriod 作为替代值,
+	 * 等到三角波完成一个周期之后再关闭播放. 我称这个方法为“软着陆”.
+	 * </p>
+	 * 
+	 * @since v0.2.10
+	 */
+	protected int lastPeriod;
+	
 	/* **********
 	 * 公共方法 *
 	 ********** */
@@ -85,6 +99,7 @@ public class SoundTriangle extends Sound2A03 {
 		// 辅助参数
 		counter = 0;
 		dutyCycle = 0;
+		lastPeriod = 0;
 		
 		super.reset();
 	}
@@ -97,17 +112,28 @@ public class SoundTriangle extends Sound2A03 {
 	 * </p>
 	 */
 	protected void onProcess(int time) {
+		if (period >= 8) {
+			lastPeriod = period;
+		}
+		if (lastPeriod < 7) {
+			lastPeriod = 7;
+		}
+		
 		while (time >= counter) {
 			time -= counter;
 			this.time += counter;
-			counter = period + 1;
+			
+			if (period < 8) {
+				counter = lastPeriod + 1;
+			} else {
+				counter = period + 1;
+			}
 			
 			int value = processStep(counter);
 			mix(value);
 		}
 		
 		counter -= time;
-		this.time += time;
 	}
 	
 	protected int processStep(int period) {
@@ -117,6 +143,9 @@ public class SoundTriangle extends Sound2A03 {
 			return ret;
 		} else {
 			if (dutyCycle == 0) {
+				if (this.period == 0) {
+					lastPeriod = 7;
+				}
 				return 0;
 			}
 			int ret = TRIANGLE_WAVE[dutyCycle];
