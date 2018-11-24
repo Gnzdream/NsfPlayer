@@ -167,7 +167,9 @@ public class NesDMC extends AbstractSoundChip {
 				getRuntime().manager.stack.read(sample.data, 0, length, address);
 				dpcm.sample = sample;
 				dpcm.offsetAddress = 0; // TODO 这个地方我用来强制重置
-				dpcm.reload();
+				if (isStartRender()) {
+					dpcm.reload(); // 在 reset 阶段不应该调用这个
+				}
 			}
 		}
 		

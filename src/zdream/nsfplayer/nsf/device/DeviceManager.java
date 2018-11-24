@@ -176,10 +176,34 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			s5b.beforeRender();
 		}
 		
+		// 执行部分
 		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
 			Entry<Byte, AbstractSoundChip> entry = it.next();
 			byte channelCode = entry.getKey();
 			entry.getValue().getSound(channelCode).process(freq);
+		}
+		
+		// 结束部分
+		apu.afterRender();
+		dmc.afterRender();
+		
+		if (runtime.audio.useVrc6()) {
+			vrc6.afterRender();
+		}
+		if (runtime.audio.useMmc5()) {
+			mmc5.afterRender();
+		}
+		if (runtime.audio.useFds()) {
+			fds.afterRender();
+		}
+		if (runtime.audio.useN163()) {
+			n163.afterRender();
+		}
+		if (runtime.audio.useVrc7()) {
+			vrc7.afterRender();
+		}
+		if (runtime.audio.useS5b()) {
+			s5b.afterRender();
 		}
 	}
 	

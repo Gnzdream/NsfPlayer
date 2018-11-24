@@ -19,11 +19,26 @@ public abstract class AbstractSoundChip implements IDevice, INsfChannelCode, INs
 	
 	NsfRuntime runtime;
 	
+	/**
+	 * 是否开始渲染的标识.
+	 * 如果为 true, 说明准备开始进行渲染工作
+	 */
+	boolean startRender;
+	
 	@Override
 	public NsfRuntime getRuntime() {
 		return runtime;
 	}
 	
+	/**
+	 * @return
+	 * @see #startRender
+	 * @since v0.2.9
+	 */
+	public boolean isStartRender() {
+		return startRender;
+	}
+
 	/**
 	 * 获得指定轨道的音频发声器
 	 * @param channelCode
@@ -39,10 +54,17 @@ public abstract class AbstractSoundChip implements IDevice, INsfChannelCode, INs
 	
 	/**
 	 * 在 sound 进行播放之前, 还会调用一个方法, 就是这个.
-	 * 子类可以重写、覆盖
 	 */
 	public void beforeRender() {
-		
+		startRender = true;
+	}
+	
+	/**
+	 * 在 sound 进行播放之后调用
+	 * @since v0.2.9
+	 */
+	public void afterRender() {
+		startRender = false;
 	}
 	
 }

@@ -95,3 +95,7 @@
 *	（FTM）（NSF）补充了跳帧 Skip 功能；
 *	（FTM）补充了重置播放位置 switchTo 功能，以及获取播放下一行位置等功能；
 *	（BUG 修复）（NSF）修复 2A03 芯片轨道在设置 enable=false 时，仍然在播放的 BUG；
+
+（2018-11-24）
+
+*	（BUG 修复）（NSF）修复 DPCM 轨道在 reset 时非法调用 mix 方法导致轨道重置错误的 BUG；
