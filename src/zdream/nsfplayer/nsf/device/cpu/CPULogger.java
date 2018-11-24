@@ -1,4 +1,4 @@
-package zdream.nsfplayer.xgm.device.misc;
+package zdream.nsfplayer.nsf.device.cpu;
 
 import java.io.FileWriter;
 import java.io.IOException;

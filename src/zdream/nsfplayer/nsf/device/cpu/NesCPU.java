@@ -3,7 +3,6 @@ package zdream.nsfplayer.nsf.device.cpu;
 import zdream.nsfplayer.nsf.device.IDevice;
 import zdream.nsfplayer.nsf.device.cpu.K6502Context.ReadHandler;
 import zdream.nsfplayer.nsf.device.cpu.K6502Context.WriteHandler;
-import zdream.nsfplayer.xgm.device.misc.CPULogger;
 
 /**
  * 模拟 NES 的 CPU
