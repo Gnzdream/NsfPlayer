@@ -63,6 +63,11 @@ public class XgmAudioChannel implements IMixerChannel {
 
 	@Override
 	public void mix(int value, int time) {
+		if (buffer == null) {
+			this.lastValue = (short) value;
+			return;
+		}
+		
 		if (time > buffer.length) {
 			time = buffer.length;
 		}
