@@ -14,6 +14,10 @@ public class PulseSound extends Sound2A03 {
 			{  true,  true, false, false, false, false,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true }
 	};
 	
+	public PulseSound() {
+		reset();
+	}
+	
 	/* **********
 	 *   参数   *
 	 ********** */

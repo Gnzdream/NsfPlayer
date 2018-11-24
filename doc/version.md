@@ -92,10 +92,13 @@
 （2018-11-23）
 
 *	（FTM）（NSF）补充了渲染器的输出 short 采样数组的接口；
-*	（FTM）（NSF）补充了跳帧 Skip 功能；
+*	（FTM）（NSF）补充了跳帧 skip 功能；
 *	（FTM）补充了重置播放位置 switchTo 功能，以及获取播放下一行位置等功能；
 *	（BUG 修复）（NSF）修复 2A03 芯片轨道在设置 enable=false 时，仍然在播放的 BUG；
 
 （2018-11-24）
 
 *	（BUG 修复）（NSF）修复 DPCM 轨道在 reset 时非法调用 mix 方法导致轨道重置错误的 BUG；
+*	（NSF）补充了 2A03 矩形轨道的 sweep 效果；
+*	（FTM）补充了 2A03 矩形轨道的 sweep 效果；
+*	（BUG 修复）（NSF）修复 2A03 三角轨道在 linear 效果触发时轨道无法正常关闭的 BUG；
