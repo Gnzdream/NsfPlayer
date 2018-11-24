@@ -22,6 +22,8 @@ import static zdream.nsfplayer.ftm.format.FtmNote.EF_SKIP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_DOWN;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SLIDE_UP;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_SPEED;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SWEEPUP;
+import static zdream.nsfplayer.ftm.format.FtmNote.EF_SWEEPDOWN;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_TREMOLO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VIBRATO;
 import static zdream.nsfplayer.ftm.format.FtmNote.EF_VOLUME_SLIDE;
@@ -64,6 +66,7 @@ import zdream.nsfplayer.ftm.renderer.effect.NoteSlideEffect;
 import zdream.nsfplayer.ftm.renderer.effect.PitchEffect;
 import zdream.nsfplayer.ftm.renderer.effect.PortamentoEffect;
 import zdream.nsfplayer.ftm.renderer.effect.PortamentoOnEffect;
+import zdream.nsfplayer.ftm.renderer.effect.PulseSweepEffect;
 import zdream.nsfplayer.ftm.renderer.effect.SkipEffect;
 import zdream.nsfplayer.ftm.renderer.effect.SpeedEffect;
 import zdream.nsfplayer.ftm.renderer.effect.StopEffect;
@@ -410,6 +413,22 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter {
 						speed = note.effParam[i];
 					}
 					putEffect(effects, PortamentoOnEffect.of(speed));
+				}
+				break;
+				
+				// 2A03 Pulse 轨道
+				
+			case EF_SWEEPUP:
+				if (channelType == CHANNEL_TYPE_PULSE) {
+					short param = note.effParam[i];
+					putEffect(effects, PulseSweepEffect.of((param >> 4) & 7, param & 7, true));
+				}
+				break;
+				
+			case EF_SWEEPDOWN:
+				if (channelType == CHANNEL_TYPE_PULSE) {
+					short param = note.effParam[i];
+					putEffect(effects, PulseSweepEffect.of((param >> 4) & 7, param & 7, false));
 				}
 				break;
 				

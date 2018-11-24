@@ -141,9 +141,16 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	protected int instrument;
 	
 	/**
-	 * 当前帧中, 乐器是否更新过
+	 * 当前帧中, 乐器是否更新过.
+	 * 当该帧音键、乐器变化时, 该值为 true
 	 */
 	protected boolean instrumentUpdated;
+	
+	/**
+	 * 当前帧中, 音键是否更新过.
+	 * 当该帧音键变化时, 该值为 true
+	 */
+	protected boolean noteUpdated;
 	
 	/**
 	 * 音键, 含音符和音高
@@ -295,6 +302,7 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 */
 	public void setMasterNote(int note) {
 		instrumentUpdated = true;
+		noteUpdated = true;
 		this.masterNote = note;
 	}
 
@@ -370,6 +378,24 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	}
 	
 	/**
+	 * @return
+	 *   {@link #instrumentUpdated}
+	 * @since v0.2.9
+	 */
+	public boolean isInstrumentUpdated() {
+		return instrumentUpdated;
+	}
+	
+	/**
+	 * @return
+	 *   {@link #noteUpdated}
+	 * @since v0.2.9
+	 */
+	public boolean isNoteUpdated() {
+		return noteUpdated;
+	}
+
+	/**
 	 * 打开, 让轨道播放.
 	 * 调用它的情况是, 当这个轨道接收一个新的 note 后, 它就要开始播放新的 note.
 	 */
@@ -439,6 +465,7 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 		curPeriod = 0;
 		curVolume = 0;
 		instrumentUpdated = false;
+		noteUpdated = false;
 		
 		for (IFtmSchedule s : schedules) {
 			s.trigger(channelCode, runtime);

@@ -61,7 +61,8 @@ public class SweepSoundPulse extends PulseSound implements IFrameSequence {
 	public boolean sweepEnabled;
 
 	/**
-	 * <p>1 号位: 0xxx0000, 取得数值之后加 1
+	 * <p>1 号位: 0xxx0000, 取得数值之后加 1,
+	 * 表示每隔多少单位时间段扫音频率变化
 	 * <p>unsigned, 值域 [1, 8]
 	 * </p>
 	 */
@@ -69,13 +70,14 @@ public class SweepSoundPulse extends PulseSound implements IFrameSequence {
 
 	/**
 	 * <p>1 号位: 0000x000
-	 * <p>为 1 时为 true, 为 0 时为 false
+	 * <p>为 1 时为 true 升音, 为 0 时为 false 降音
 	 * </p>
 	 */
 	public boolean sweepMode;
 
 	/**
-	 * <p>1 号位: 00000xxx, 偏移位
+	 * <p>1 号位: 00000xxx, 偏移位,
+	 * 表示每个时间段扫音频率的变化量参数
 	 * <p>unsigned, 值域 [0, 7]
 	 * </p>
 	 */

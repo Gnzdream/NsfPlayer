@@ -31,6 +31,9 @@ public final class Channel2A03Pulse extends ChannelTone {
 
 	@Override
 	public void playNote() {
+		// 每帧开始时重置 sweep 参数
+		this.sweepUpdated = false;
+		
 		super.playNote();
 		
 		// sequence
@@ -39,6 +42,12 @@ public final class Channel2A03Pulse extends ChannelTone {
 	
 	@Override
 	public void reset() {
+		sweepPeriod = 0;
+		sweepMode = false;
+		sweepShift = 0;
+		sweepEnable = false;
+		this.sweepUpdated = false;
+		
 		super.reset();
 		seq.reset();
 		sound.reset();
@@ -50,9 +59,54 @@ public final class Channel2A03Pulse extends ChannelTone {
 	
 	/**
 	 * <p>范围 [0, 0xFF]
-	 * <p>暂时没有使用
+	 * </p>
+	 * @since v0.2.9
 	 */
-	protected int sweep;
+	protected int sweepPeriod;
+	protected boolean sweepMode;
+	protected int sweepShift;
+	protected boolean sweepUpdated;
+	private boolean sweepEnable;
+	
+	/**
+	 * 设置扫音 sweep 的参数
+	 * @param sweepPeriod
+	 *   范围 [0, 7]
+	 * @param sweepMode
+	 *   true 表示音高向上滑, false 表示音高向下滑
+	 * @param sweepShift
+	 *   范围 [0, 7]
+	 * @since v0.2.9
+	 */
+	public void setSweep(int sweepPeriod, boolean sweepMode, int sweepShift) {
+		this.sweepPeriod = sweepPeriod;
+		this.sweepMode = sweepMode;
+		this.sweepShift = sweepShift;
+		this.sweepUpdated = true;
+		
+		sweepEnable = (sweepShift > 0);
+	}
+	
+	/**
+	 * 清除扫音 sweep 的参数
+	 * @since v0.2.9
+	 */
+	public void clearSweep() {
+		this.sweepPeriod = 0;
+		this.sweepMode = false;
+		this.sweepShift = 0;
+		this.sweepUpdated = true;
+		
+		sweepEnable = false;
+	}
+	
+	/**
+	 * 查询该轨道是否正在运行 sweep 效果
+	 * @return
+	 */
+	public boolean isSweepEnable() {
+		return sweepEnable;
+	}
 	
 	/* **********
 	 *   序列   *
@@ -117,15 +171,14 @@ public final class Channel2A03Pulse extends ChannelTone {
 		sound.dutyLength = curDuty;
 		sound.fixedVolume = curVolume / 16;
 		
-		if (sweep > 0) {
-			if ((sweep & 0x80) != 0) {
+		if (sweepEnable) {
+			if (sweepUpdated) {
 				// 0x4001
-				int s = sweep & 0x7F;
 				sound.sweepEnabled = true;
-				sound.sweepPeriod = ((s >> 4) & 0x07) + 1;
-				sound.sweepMode = (s & 0x08) != 0;		
-				sound.sweepShift = s & 0x07;
-				sound.sweepUpdated = true;
+				sound.sweepPeriod = (sweepPeriod) + 1;
+				sound.sweepMode = sweepMode;		
+				sound.sweepShift = sweepShift;
+				sound.onSweepUpdated();
 				
 				// TODO Clear sweep unit 不清楚如何清除 Sweep 部分
 //				writeRegister(0x4017, (byte) 0x80);	// Clear sweep unit
@@ -141,7 +194,7 @@ public final class Channel2A03Pulse extends ChannelTone {
 			sound.sweepPeriod = 1;
 			sound.sweepMode = true;
 			sound.sweepShift = 0;
-			sound.sweepUpdated = true;
+			sound.onSweepUpdated();
 			
 			// TODO 不清楚如何操作
 //			writeRegister(0x4017, (byte) 0x80);	// Manually execute one APU frame sequence to kill the sweep unit
@@ -151,7 +204,8 @@ public final class Channel2A03Pulse extends ChannelTone {
 			sound.period = curPeriod;
 			sound.lengthCounter = LENGTH_TABLE[0];
 		}
-		// sound.
+		
+		sound.onEnvelopeUpdated();
 	}
 	
 	/* **********

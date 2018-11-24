@@ -60,7 +60,8 @@ public class NoteSlideState implements IFtmState {
 	public void trigger(byte channelCode, FamiTrackerRuntime runtime) {
 		AbstractFtmChannel ch = runtime.channels.get(channelCode);
 		
-		if (!startFrame && runtime.effects.get(channelCode).get(FtmEffectType.NOTE) != null) {
+		// 如果该帧的主音键发生变化, 且不是首帧
+		if (!startFrame && ch.isNoteUpdated()) {
 			// 删除该状态
 			ch.removeState(this);
 			return;

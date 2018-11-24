@@ -95,16 +95,12 @@ public enum FtmEffectType {
 	PORTAMENTO,
 	
 	/**
-	 * Hxx, FDS 无效
-	 * TODO
+	 * <p>Hxy (升音), Ixy (降音), 扫音
+	 * <p>2A03 Pulse 特有
+	 * </p>
+	 * @see PulseSweepEffect
 	 */
-	SWEEPUP,
-	
-	/**
-	 * Ixx, FDS 无效
-	 * TODO
-	 */
-	SWEEPDOWN,
+	SWEEP,
 	
 	/**
 	 * <p>0xx 琶音

@@ -4,8 +4,8 @@ package zdream.nsfplayer.core;
  * <p>Frame Sequence 接口.
  * <p>2A03 (+ 2A07) 相关轨道需要实现部分时间步长少于 1 帧的工作.
  * 比如:
- * <li>TODO Pulse 轨道的 Envelope 包络更新, 大约每 0.25 帧 (240 Hz) 触发一次;
- * <li>TODO Pulse 轨道的 Sweep 扫音, 大约每 0.5 帧 (120 Hz) 触发一次;
+ * <li>Pulse 轨道的 Envelope 包络更新, 大约每 0.25 帧 (240 Hz) 触发一次;
+ * <li>Pulse 轨道的 Sweep 扫音, 大约每 0.5 帧 (120 Hz) 触发一次;
  * <li>Triangle 轨道的 Length Counter 计数器更新, 大约每 0.25 帧 (240 Hz) 触发一次 (不实现);
  * <li>Noise 轨道的 Envelope 包络更新, 大约每 0.25 帧 (240 Hz) 触发一次;
  * <li>Noise 轨道的 Length Counter 计数器更新, 大约每 0.5 帧 (120 Hz) 触发一次;

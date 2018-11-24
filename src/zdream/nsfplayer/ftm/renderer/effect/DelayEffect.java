@@ -70,7 +70,7 @@ public class DelayEffect implements IFtmEffect {
 		HashSet<IFtmState> set = channel.filterStates(state.name());
 		if (!set.isEmpty()) {
 			for (IFtmState s : set) {
-				// 立即触发
+				// 立即触发: 将效果放入环境的 effects 中
 				((DelayState) s).triggerNow(channelCode, runtime);
 			}
 		}
@@ -135,7 +135,7 @@ public class DelayEffect implements IFtmEffect {
 		}
 		
 		/**
-		 * 现在立即将状态中的键触发掉, 并该状态删除
+		 * 现在立即将状态中的键触发掉, 并删除该状态
 		 * @since v0.2.5
 		 */
 		public void triggerNow(byte channelCode, FamiTrackerRuntime runtime) {
