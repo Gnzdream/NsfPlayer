@@ -26,8 +26,7 @@ public class NesCPU implements IDevice {
 	protected int frame_quarter;
 	protected int breakpoint;
 	protected IDevice bus;
-
-	protected CPULogger log_cpu;
+	
 	protected int pc_count = 0;
 	
 	public int NES_BASECYCLES;
@@ -42,7 +41,6 @@ public class NesCPU implements IDevice {
 	public NesCPU(int clock) {
 		NES_BASECYCLES = clock;
 		bus = null;
-		log_cpu = null;
 		
 		context.readByte = readByte;
 		context.writeByte = writeByte;
@@ -99,9 +97,7 @@ public class NesCPU implements IDevice {
 			// wait for interrupt
 			if ((clock_of_frame >> FRAME_FIXED) < context.clock) {
 				if (breaked) {
-					if (log_cpu != null)
-						log_cpu.play();
-
+					beforeStartUp();
 					startup(int_address);
 				}
 				clock_of_frame += clock_per_frame;
@@ -179,8 +175,7 @@ public class NesCPU implements IDevice {
 		// count clock quarters
 		frame_quarter = 3;
 
-		if (log_cpu != null)
-			log_cpu.init(a, x);
+		onInit(a, x, y);
 
 		context.a = a;
 		context.x = x;
@@ -208,10 +203,6 @@ public class NesCPU implements IDevice {
 		clock_of_frame = 0;
 	}
 	
-	public final void setLogger(CPULogger logger) {
-		this.log_cpu = logger;
-	}
-	
 	public final int getPC() {
 		return context.pc;
 	}
@@ -233,4 +224,16 @@ public class NesCPU implements IDevice {
 			write(adr, value, 0);
 		}
 	};
+	
+	/**
+	 * 用于子类继承
+	 * @since v0.2.9
+	 */
+	protected void beforeStartUp() {}
+	
+	/**
+	 * 用于子类继承
+	 * @since v0.2.9
+	 */
+	protected void onInit(int a, int x, int y) {}
 }

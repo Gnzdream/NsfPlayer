@@ -1,8 +1,8 @@
 package zdream.nsfplayer.nsf.device.memory;
 
+import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.IDevice;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
-import zdream.nsfplayer.xgm.player.nsf.NsfAudio;
 
 /**
  * 模拟 NES 的虚拟内存.

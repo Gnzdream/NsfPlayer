@@ -1,7 +1,5 @@
 package zdream.nsfplayer.sound.interceptor;
 
-import zdream.nsfplayer.xgm.device.audio.FilterTools;
-
 /**
  * 音频的过滤器.
  * 
@@ -20,7 +18,7 @@ public class Filter implements ISoundInterceptor {
 	protected final int GETA_BITS = 20;
 	
 	public Filter() {
-		rate = FilterTools.DEFAULT_RATE;
+		rate = 48000;
 		R = 4700;
 		C = 10.0E-9;
 		disable = false;
