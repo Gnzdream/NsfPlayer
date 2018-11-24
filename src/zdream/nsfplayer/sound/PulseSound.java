@@ -7,7 +7,7 @@ package zdream.nsfplayer.sound;
  */
 public class PulseSound extends Sound2A03 {
 	
-	private static final boolean[][] DUTY_TABLE = {
+	protected static final boolean[][] DUTY_TABLE = {
 			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },
 			{ false, false,  true,  true,  true,  true, false, false, false, false, false, false, false, false, false, false },
 			{ false, false,  true,  true,  true,  true,  true,  true,  true,  true, false, false, false, false, false, false },
@@ -29,53 +29,18 @@ public class PulseSound extends Sound2A03 {
 	public int dutyLength;
 
 	/**
-	 * <p>0 号位: 00x00000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
-	 */
-	public boolean looping;
-	
-	/**
-	 * <p>0 号位: 000x0000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
-	 */
-	public boolean envelopeFix;
-
-	/**
 	 * <p>0 号位: 0000xxxx
 	 * <p>unsigned, 值域 [0, 15]
 	 * </p>
 	 */
 	public int fixedVolume;
 	
-	/**
-	 * <p>1 号位: x0000000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
+	/*
+	 * 1 号位的和 sweep 扫音相关的参数, 以及 0 号位的 envelopeFix,
+	 * 已经移动到 SweepSoundPulse 子类中.
+	 * 
+	 * 在该类默认认为 envelopeFix = true 且不会改变
 	 */
-	public boolean sweepEnabled;
-
-	/**
-	 * <p>1 号位: 0xxx0000, 取得数值之后加 1
-	 * <p>unsigned, 值域 [1, 8]
-	 * </p>
-	 */
-	public int sweepPeriod;
-
-	/**
-	 * <p>1 号位: 0000x000
-	 * <p>为 1 时为 true, 为 0 时为 false
-	 * </p>
-	 */
-	public boolean sweepMode;
-
-	/**
-	 * <p>1 号位: 00000xxx, 偏移位
-	 * <p>unsigned, 值域 [0, 7]
-	 * </p>
-	 */
-	public int sweepShift;
 	
 	/**
 	 * <p>2 号位: xxxxxxxx (低八位), 3 号位: 00000xxx (高三位) 共 11 位
@@ -97,20 +62,6 @@ public class PulseSound extends Sound2A03 {
 	 * 
 	 * 注意, 0x4015 位: (Pulse 1) 0000000x, (Pulse 2) 000000x0 是 enable, 在超类中
 	 */
-	/**
-	 * 记录 sweep 相关参数是否被修改
-	 */
-	public boolean sweepUpdated;
-	
-	/**
-	 * Sweep 部分计算的波长修正值
-	 */
-	private int sweepResult;
-	
-	/**
-	 * envelope 部分计算的音量修正值
-	 */
-	private int envelopeVolume;
 	
 	/**
 	 * 记录当前周期（时钟周期数为 period, 16 分之一的真实波长数）
@@ -123,7 +74,7 @@ public class PulseSound extends Sound2A03 {
 	 * 该参数记录当前正在播放的周期是这 16 个中的第几个.
 	 * 值域 [0, 15]
 	 */
-	private int dutyCycle; // m_iStepGen
+	protected int dutyCycle; // m_iStepGen
 	
 	/* **********
 	 * 公共方法 *
@@ -137,14 +88,10 @@ public class PulseSound extends Sound2A03 {
 		
 		dutyLength = 0;
 		fixedVolume = 0;
-		looping = false;
-		envelopeFix = false;
+//		looping = false;
+//		envelopeFix = false;
 		// envelopeSpeed = fixedVolume + 1;
 		
-		sweepEnabled = false;
-		sweepPeriod = 1;
-		sweepMode = false;		
-		sweepShift = 0;
 		// sweepWritten = true;
 		
 		period = 0;
@@ -155,14 +102,8 @@ public class PulseSound extends Sound2A03 {
 //		if (m_iControlReg != 0)
 //			m_iEnabled = 1;
 		
-		// 辅助参数
-		sweepUpdated = false;
-		sweepResult = 0;
-		envelopeVolume = 0;
 		counter = 0;
 		dutyCycle = 0;
-		
-		// TODO envelop 和 sweep 相关的
 		
 		super.reset();
 	}
@@ -174,28 +115,34 @@ public class PulseSound extends Sound2A03 {
 			return;
 		}
 		
-		boolean valid = (period > 7) && isEnable() && (lengthCounter > 0) && (sweepResult < 0x800);
+		boolean valid = isStatusValid();
 		
 		while (time >= counter) {
 			time -= counter;
 			this.time += counter;
 			counter	 = period + 1;
-			int volume = envelopeFix ? fixedVolume : envelopeVolume;
 			
-			// mix (valid && DUTY_TABLE[m_iDutyLength][m_iDutyCycle] != 0 ? volume : 0);
-			if (valid) {
-				if (DUTY_TABLE[dutyLength][dutyCycle]) {
-					mix(volume);
-				} else {
-					mix(0);
-				}
-			}
+			int value = processStep(counter);
+			mix(valid ? value : 0);
 			
 			dutyCycle = (dutyCycle + 1) & 0x0F;
 		}
 
 		counter -= time;
 		this.time += time;
+	}
+	
+	protected int processStep(int period) {
+		int volume = fixedVolume;
+		if (DUTY_TABLE[dutyLength][dutyCycle]) {
+			return volume;
+		} else {
+			return 0;
+		}
+	}
+	
+	protected boolean isStatusValid() {
+		return (period > 7) && isEnable() && (lengthCounter > 0)/* && (sweepResult < 0x800)*/;
 	}
 
 }

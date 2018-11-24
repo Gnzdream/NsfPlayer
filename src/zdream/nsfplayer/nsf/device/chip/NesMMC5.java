@@ -65,8 +65,8 @@ public class NesMMC5 extends AbstractSoundChip {
 		switch (adr) {
 		case 0:
 			pulse.dutyLength = (value >> 6);
-			pulse.looping = (value & 0x20) != 0;
-			pulse.envelopeFix = (value & 0x10) != 0;
+//			pulse.looping = (value & 0x20) != 0; // 恒为 true
+//			pulse.envelopeFix = (value & 0x10) != 0; // 恒为 true
 			pulse.fixedVolume = (value & 0xF);
 			break;
 			

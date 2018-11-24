@@ -2,11 +2,14 @@ package zdream.nsfplayer.nsf.device.chip;
 
 import java.util.Arrays;
 
+import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.EnvelopeSoundNoise;
 import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.SweepSoundPulse;
 
 /**
  * APU 音频设备, 管理输出 Pulse1 和 Pulse2 轨道的音频
@@ -16,7 +19,7 @@ import zdream.nsfplayer.sound.PulseSound;
  */
 public class NesAPU extends AbstractSoundChip {
 	
-	private PulseSound pulse1, pulse2;
+	private SweepSoundPulse pulse1, pulse2;
 	
 	/**
 	 * 记录放置的参数
@@ -26,8 +29,8 @@ public class NesAPU extends AbstractSoundChip {
 	
 	public NesAPU(NsfRuntime runtime) {
 		super(runtime);
-		pulse1 = new PulseSound();
-		pulse2 = new PulseSound();
+		pulse1 = new SweepSoundPulse(true);
+		pulse2 = new SweepSoundPulse(false);
 	}
 
 	@Override
@@ -38,11 +41,11 @@ public class NesAPU extends AbstractSoundChip {
 		 */
 		switch (adr) {
 		case 0x4000: case 0x4001: case 0x4002: case 0x4003: {
-			writeToPulse1(adr & 3, val);
+			writeToPulse(adr & 3, val, pulse1);
 			mem[adr & 3] = (byte) val;
 		} break;
 		case 0x4004: case 0x4005: case 0x4006: case 0x4007: {
-			writeToPulse2(adr & 3, val);
+			writeToPulse(adr & 3, val, pulse2);
 			mem[(adr & 3) + 4] = (byte) val;
 		} break;
 		case 0x4015: {
@@ -62,60 +65,35 @@ public class NesAPU extends AbstractSoundChip {
 		return true;
 	}
 	
-	public void writeToPulse1(int adr, int value) {
+	public void writeToPulse(int adr, int value, SweepSoundPulse pulse) {
 		switch (adr) {
 		case 0:
-			pulse1.dutyLength = (value >> 6);
-			pulse1.looping = (value & 0x20) != 0;
-			pulse1.envelopeFix = (value & 0x10) != 0;
-			pulse1.fixedVolume = (value & 0xF);
+			pulse.dutyLength = (value >> 6);
+			pulse.envelopeLoop = (value & 0x20) != 0;
+			pulse.envelopeFix = (value & 0x10) != 0;
+			pulse.fixedVolume = (value & 0xF);
 			break;
 			
 		case 1:
-			pulse1.sweepEnabled = (value >> 7) != 0;
-			pulse1.sweepPeriod = (value & 0x70) >> 4;
-			pulse1.sweepMode = (value & 8) != 0;
-			pulse1.sweepShift = value & 7;
+			pulse.sweepEnabled = (value >> 7) != 0;
+			pulse.sweepPeriod = (value & 0x70) >> 4;
+			pulse.sweepMode = (value & 8) != 0;
+			pulse.sweepShift = value & 7;
+			pulse.onSweepUpdated();
 			break;
 			
 		case 2: {
-			int period = (pulse1.period & 0xFF00) + value;
-			pulse1.period = period;
+			int period = (pulse.period & 0xFF00) + value;
+			pulse.period = period;
+			pulse.onSweepUpdated();
 		} break;
 		
 		case 3: {
-			int period = (pulse1.period & 0xFF) + ((value & 7) << 8);
-			pulse1.period = period;
-			pulse1.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
-		} break;
-		}
-	}
-	
-	public void writeToPulse2(int adr, int value) {
-		switch (adr) {
-		case 0:
-			pulse2.dutyLength = (value >> 6);
-			pulse2.looping = (value & 0x20) != 0;
-			pulse2.envelopeFix = (value & 0x10) != 0;
-			pulse2.fixedVolume = (value & 0xF);
-			break;
-			
-		case 1:
-			pulse2.sweepEnabled = (value >> 7) != 0;
-			pulse2.sweepPeriod = (value & 0x70) >> 4;
-			pulse2.sweepMode = (value & 8) != 0;
-			pulse2.sweepShift = value & 7;
-			break;
-			
-		case 2: {
-			int period = (pulse2.period & 0xFF00) + value;
-			pulse2.period = period;
-		} break;
-		
-		case 3: {
-			int period = (pulse2.period & 0xFF) + ((value & 7) << 8);
-			pulse2.period = period;
-			pulse2.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			int period = (pulse.period & 0xFF) + ((value & 7) << 8);
+			pulse.period = period;
+			pulse.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			pulse.onEnvelopeUpdated();
+			pulse.onSweepUpdated();
 		} break;
 		}
 	}
@@ -155,6 +133,12 @@ public class NesAPU extends AbstractSoundChip {
 	public void reset() {
 		pulse1.reset();
 		pulse2.reset();
+		pulse1.setSequenceStep(
+				getRuntime().manager.getRegion() == ERegion.PAL ?
+						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
+		pulse2.setSequenceStep(
+				getRuntime().manager.getRegion() == ERegion.PAL ?
+						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
 
 		Arrays.fill(mem, (byte) 0);
 		mem4015 = 0x7F;

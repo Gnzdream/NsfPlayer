@@ -90,8 +90,8 @@ public class ChannelMMC5Pulse extends ChannelMMC5 {
 	
 	@Override
 	public void writeToSound() {
-		sound.looping = true;
-		sound.envelopeFix = true;
+//		sound.looping = true; // 恒定
+//		sound.envelopeFix = true; // 恒定
 		
 		if (this.curVolume == 0 || !playing || masterNote == 0) {
 			sound.fixedVolume = 0;

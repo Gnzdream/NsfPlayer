@@ -114,7 +114,7 @@ public class NesDMC extends AbstractSoundChip {
 			
 		case 3: {
 			noise.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
-			noise.onEnvelopeWrite();
+			noise.onEnvelopeUpdated();
 		} break;
 		
 		}

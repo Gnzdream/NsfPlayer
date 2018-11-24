@@ -55,7 +55,7 @@ public class EnvelopeSoundNoise extends SoundNoise implements IFrameSequence {
 	 */
 	private int envelopeCounter;
 	private int envelopeDiv;
-	private boolean envelopeWrite;
+	private boolean envelopeUpdated;
 	
 	/* **********
 	 *   设置   *
@@ -69,8 +69,8 @@ public class EnvelopeSoundNoise extends SoundNoise implements IFrameSequence {
 	/**
 	 * 如果刚刚更新了 envelope 部分, 请调用该方法
 	 */
-	public void onEnvelopeWrite() {
-		envelopeWrite = true;
+	public void onEnvelopeUpdated() {
+		envelopeUpdated = true;
 	}
 	
 	/* **********
@@ -89,6 +89,10 @@ public class EnvelopeSoundNoise extends SoundNoise implements IFrameSequence {
 		envelopeLoop = false;
 		envelopeDisable = false;
 		
+		envelopeCounter = 0;
+		envelopeDiv = 0;
+		envelopeUpdated = false;
+		
 		super.reset();
 	}
 	
@@ -106,8 +110,8 @@ public class EnvelopeSoundNoise extends SoundNoise implements IFrameSequence {
 		// 240hz clock
 		{
 			boolean divider = false;
-			if (envelopeWrite) {
-				envelopeWrite = false;
+			if (envelopeUpdated) {
+				envelopeUpdated = false;
 				envelopeCounter = 15;
 				envelopeDiv = 0;
 			} else {
