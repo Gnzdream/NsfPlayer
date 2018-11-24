@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.factory;
 
+import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
+
 import static zdream.nsfplayer.core.INsfChannelCode.*;
 import static zdream.nsfplayer.ftm.format.FtmNote.*;
 import static zdream.nsfplayer.ftm.format.FtmStatic.*;
@@ -1215,6 +1217,8 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 	 * @since v0.2.5
 	 */
 	private byte conventEffectToCode(char ch, byte channelCode) {
+		byte channelType = typeOfChannel(channelCode);
+		
 		switch (ch) {
 		// 全局效果
 		case 'F': return EF_SPEED;
@@ -1250,44 +1254,34 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		// 特殊轨道专用效果
 		case 'H': {
-			// 2A03 sweep, 未实现
+			// 2A03 sweep
 			// FDS modulation depth
 			// Sunsoft envelope low
 			// TODO VRC7 modulator, 未实现 'H' 效果
-			switch (channelCode) {
-			case CHANNEL_FDS:
+			switch (channelType) {
+			case CHANNEL_TYPE_PULSE:
+				return EF_SWEEPUP;
+			case CHANNEL_TYPE_FDS:
 				return EF_FDS_MOD_DEPTH;
-			case CHANNEL_S5B_SQUARE1:
-			case CHANNEL_S5B_SQUARE2:
-			case CHANNEL_S5B_SQUARE3:
+			case CHANNEL_TYPE_S5B:
 				return EF_SUNSOFT_ENV_LO;
-//			case CHANNEL_VRC7_FM1:
-//			case CHANNEL_VRC7_FM2:
-//			case CHANNEL_VRC7_FM3:
-//			case CHANNEL_VRC7_FM4:
-//			case CHANNEL_VRC7_FM5:
-//			case CHANNEL_VRC7_FM6:
+//			case CHANNEL_TYPE_VRC7:
 //				return ?;
 			}
 		} break;
 		case 'I': {
-			// 2A03 sweep, 未实现
+			// 2A03 sweep
 			// FDS modulation speed hi
 			// Sunsoft envelope high
 			// TODO VRC7 carrier, 未实现 'I' 效果
-			switch (channelCode) {
-			case CHANNEL_FDS:
+			switch (channelType) {
+			case CHANNEL_TYPE_PULSE:
+				return EF_SWEEPDOWN;
+			case CHANNEL_TYPE_FDS:
 				return EF_FDS_MOD_SPEED_HI;
-			case CHANNEL_S5B_SQUARE1:
-			case CHANNEL_S5B_SQUARE2:
-			case CHANNEL_S5B_SQUARE3:
+			case CHANNEL_TYPE_S5B:
 				return EF_SUNSOFT_ENV_HI;
-//			case CHANNEL_VRC7_FM1:
-//			case CHANNEL_VRC7_FM2:
-//			case CHANNEL_VRC7_FM3:
-//			case CHANNEL_VRC7_FM4:
-//			case CHANNEL_VRC7_FM5:
-//			case CHANNEL_VRC7_FM6:
+//			case CHANNEL_TYPE_VRC7:
 //				return ?;
 			}
 		} break;
@@ -1295,19 +1289,12 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 			// FDS modulation speed lo
 			// Sunsoft envelope type
 			// TODO VRC7 modulator/feedback level, 未实现 'I' 效果
-			switch (channelCode) {
-			case CHANNEL_FDS:
+			switch (channelType) {
+			case CHANNEL_TYPE_FDS:
 				return EF_FDS_MOD_SPEED_LO;
-			case CHANNEL_S5B_SQUARE1:
-			case CHANNEL_S5B_SQUARE2:
-			case CHANNEL_S5B_SQUARE3:
+			case CHANNEL_TYPE_S5B:
 				return EF_SUNSOFT_ENV_TYPE;
-//			case CHANNEL_VRC7_FM1:
-//			case CHANNEL_VRC7_FM2:
-//			case CHANNEL_VRC7_FM3:
-//			case CHANNEL_VRC7_FM4:
-//			case CHANNEL_VRC7_FM5:
-//			case CHANNEL_VRC7_FM6:
+//			case CHANNEL_TYPE_VRC7:
 //				return ?;
 			}
 		} break;

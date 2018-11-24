@@ -173,16 +173,14 @@ public final class Channel2A03Pulse extends ChannelTone {
 		
 		if (sweepEnable) {
 			if (sweepUpdated) {
+				// 仅 sweep 触发的第一帧, 可以向发声器内写入数据
+				// 否则 period 会被轨道重写, 那么 sweep 的效果会消失
 				// 0x4001
 				sound.sweepEnabled = true;
 				sound.sweepPeriod = (sweepPeriod) + 1;
 				sound.sweepMode = sweepMode;		
 				sound.sweepShift = sweepShift;
 				sound.onSweepUpdated();
-				
-				// TODO Clear sweep unit 不清楚如何清除 Sweep 部分
-//				writeRegister(0x4017, (byte) 0x80);	// Clear sweep unit
-//				writeRegister(0x4017, (byte) 0x00);
 				
 				// 0x4002 and 0x4003
 				sound.period = curPeriod;
@@ -196,10 +194,6 @@ public final class Channel2A03Pulse extends ChannelTone {
 			sound.sweepShift = 0;
 			sound.onSweepUpdated();
 			
-			// TODO 不清楚如何操作
-//			writeRegister(0x4017, (byte) 0x80);	// Manually execute one APU frame sequence to kill the sweep unit
-//			writeRegister(0x4017, (byte) 0x00);
-
 			// 0x4002 and 0x4003
 			sound.period = curPeriod;
 			sound.lengthCounter = LENGTH_TABLE[0];

@@ -284,8 +284,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	private void initMixer() {
 		runtime.mixer.detachAll();
 		runtime.mixer.reset();
-		
-		// TODO
 	}
 
 }

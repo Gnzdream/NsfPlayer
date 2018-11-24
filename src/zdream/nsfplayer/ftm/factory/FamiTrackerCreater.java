@@ -1617,7 +1617,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	}
 	
 	/**
-	 * 用所给的 (TODO) 类型号确定它是 Nsf 的什么芯片
+	 * 用 FTM 文件中所给的原生的类型号确定它是 Nsf 的什么芯片
 	 * @param type
 	 * @return
 	 */
