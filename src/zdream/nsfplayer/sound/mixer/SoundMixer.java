@@ -58,6 +58,41 @@ public abstract class SoundMixer implements IResetable, INsfChannelCode {
 	public abstract IMixerChannel getMixerChannel(byte code);
 	
 	/**
+	 * 每帧启用混音器前调用
+	 */
+	public abstract void readyBuffer();
+	
+	/**
+	 * 结束该帧. 在 {@link #readBuffer(short[], int, int)} 之前调用
+	 * @return
+	 *   返回有多少音频采样数
+	 */
+	public abstract int finishBuffer();
+	
+	/**
+	 * 外界得到音频数据的接口. 音频数据将填充 buf 数组.
+	 * @param buf
+	 *   用于盛放音频数据的数组
+	 * @param offset
+	 * @param length
+	 * @return
+	 */
+	public abstract int readBuffer(short[] buf, int offset, int length);
+	
+	/* **********
+	 * 用户操作 *
+	 ********** */
+	
+	/**
+	 * @return
+	 *   混音器的操作类
+	 * @since v0.2.10
+	 */
+	public IMixerHandler getHandler() {
+		return null;
+	}
+	
+	/**
 	 * 设置某个轨道的音量
 	 * @param code
 	 *   轨道号
@@ -85,27 +120,5 @@ public abstract class SoundMixer implements IResetable, INsfChannelCode {
 	public float getLevel(byte code) throws NullPointerException {
 		return getMixerChannel(code).getLevel();
 	}
-	
-	/**
-	 * 每帧启用混音器前调用
-	 */
-	public abstract void readyBuffer();
-	
-	/**
-	 * 结束该帧. 在 {@link #readBuffer(short[], int, int)} 之前调用
-	 * @return
-	 *   返回有多少音频采样数
-	 */
-	public abstract int finishBuffer();
-	
-	/**
-	 * 外界得到音频数据的接口. 音频数据将填充 buf 数组.
-	 * @param buf
-	 *   用于盛放音频数据的数组
-	 * @param offset
-	 * @param length
-	 * @return
-	 */
-	public abstract int readBuffer(short[] buf, int offset, int length);
 
 }

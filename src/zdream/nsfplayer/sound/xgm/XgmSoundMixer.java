@@ -307,5 +307,19 @@ public class XgmSoundMixer extends SoundMixer {
 		
 		this.samples = new short[param.sampleInCurFrame + 16];
 	}
+	
+	/* **********
+	 * 用户操作 *
+	 ********** */
+	
+	XgmMixerHandler handler;
+	
+	@Override
+	public XgmMixerHandler getHandler() {
+		if (handler == null) {
+			handler = new XgmMixerHandler(this);
+		}
+		return handler;
+	}
 
 }

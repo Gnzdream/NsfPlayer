@@ -19,6 +19,7 @@ import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.sound.mixer.IMixerHandler;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -393,6 +394,16 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	@Override
 	public float getSpeed() {
 		return runtime.param.speed;
+	}
+	
+	/**
+	 * 获得混音器的操作者（工具类）. 通过它可以对所使用的混音器进行简单的操作.
+	 * @return
+	 *   混音器的操作者
+	 * @since v0.2.10
+	 */
+	public IMixerHandler getMixerHandler() {
+		return runtime.mixer.getHandler();
 	}
 	
 	/* **********

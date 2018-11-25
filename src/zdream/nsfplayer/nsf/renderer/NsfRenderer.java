@@ -7,6 +7,7 @@ import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
+import zdream.nsfplayer.sound.mixer.IMixerHandler;
 
 /**
  * <p>NSF 渲染器.
@@ -271,6 +272,16 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	@Override
 	public float getSpeed() {
 		return runtime.param.speed;
+	}
+	
+	/**
+	 * 获得混音器的操作者（工具类）. 通过它可以对所使用的混音器进行简单的操作.
+	 * @return
+	 *   混音器的操作者
+	 * @since v0.2.10
+	 */
+	public IMixerHandler getMixerHandler() {
+		return runtime.mixer.getHandler();
 	}
 
 }

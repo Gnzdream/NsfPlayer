@@ -1,14 +1,18 @@
 package zdream.nsfplayer.sound.blip;
 
-import java.util.HashMap;
-
 import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
+
+import java.util.HashMap;
 
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
- * Blip 的音频合成器, FamiTracker 专用
+ * <p>Blip 的音频合成器, 原 FamiTracker 专用
+ * <p>没有很多的功能, 但是处理速度非常快.
+ * 如果在实时场景, 且不需要其它混音效果需求时, 推荐使用该混音器
+ * </p>
+ * 
  * @author Zdream
  * @since 0.2.1
  */
@@ -24,7 +28,7 @@ public class BlipSoundMixer extends SoundMixer {
 	 * 上一帧 buffer 的大小
 	 */
 	private int oldSize;
-
+	
 	@Override
 	public void init() {
 		int size = sampleRate / frameRate;
@@ -203,6 +207,20 @@ public class BlipSoundMixer extends SoundMixer {
 		buffer.removeSamples(buffer.samplesAvail());
 		
 		return ret;
+	}
+	
+	/* **********
+	 * 用户操作 *
+	 ********** */
+	
+	BlipMixerHandler handler;
+	
+	@Override
+	public BlipMixerHandler getHandler() {
+		if (handler == null) {
+			handler = new BlipMixerHandler(this);
+		}
+		return handler;
 	}
 
 }
