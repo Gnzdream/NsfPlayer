@@ -202,12 +202,10 @@ while (true) {
 	<tr>
 		<td width=10%>2A03 + 2A07</td>
 		<td width=40% align="left">
-			大部分效果已经支持, 除了以下几个方面(Supported except follow)：
-			<br>sweep 与 envelope 效果：不支持 Unsupported
+			支持 Supported
 		</td>
 		<td width=40% align="left">
-			大部分效果已经支持, 除了以下几个方面 (Supported except follow):
-			<br>Hxx, Ixx 的 sweep 效果 (Hardware Sweep Effect)：不支持 Unsupported
+			支持 Supported
 		</td>
 	</tr>
 	<tr>
