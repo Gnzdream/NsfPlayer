@@ -91,6 +91,53 @@ public class ChannelN163 extends ChannelTone {
 		sound.volume = 0;
 	}
 	
+	/**
+	 * 计算波长, 将序列所得出的波长、音高、音键, 还有其它效果得出的音高、音键值
+	 * 最后综合出波长值
+	 */
+	protected void calculatePeriod() {
+		if (masterNote == 0) {
+			// 不播放
+			curNote = 0;
+			curPeriod = 0;
+			return;
+		}
+		
+		int ch = getRuntime().querier.audio.getNamcoChannels();
+		int note = masterNote + curNote + seq.deltaNote;
+		int period = masterPitch * ch + curPeriod + seq.period;
+		
+		if (seq.arp != 0) {
+			switch (seq.arpSetting) {
+			case FtmSequence.ARP_SETTING_ABSOLUTE:
+				note += seq.arp;
+				break;
+			case FtmSequence.ARP_SETTING_FIXED: // 重置
+				this.masterNote = note = seq.arp;
+				break;
+			case FtmSequence.ARP_SETTING_RELATIVE:
+				this.masterNote += seq.arp;
+				note += seq.arp;
+			default:
+				break;
+			}
+		}
+		
+		if (note <= 1) {
+			note = 1;
+		} else if (note > 96) {
+			note = 96;
+		}
+		
+		period += periodTable(note);
+		if (period < 1) {
+			period = 1;
+		}
+		
+		curNote = note;
+		curPeriod = period;
+	}
+	
 	@Override
 	public int periodTable(int note) {
 		int ch = getRuntime().querier.audio.getNamcoChannels();
