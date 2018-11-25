@@ -278,7 +278,7 @@ public class XgmSoundMixer extends SoundMixer {
 			value += multi.render(i, fromIdx, toIdx);
 		}
 		
-		return intercept(value, delta);
+		return intercept(value, delta) >> 1;
 	}
 
 	@Override
