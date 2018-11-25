@@ -3,8 +3,8 @@ package zdream.nsfplayer.sound.xgm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 
+import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.NsfChannelCode;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.sound.interceptor.Amplifier;
@@ -32,7 +32,7 @@ public class XgmSoundMixer extends SoundMixer {
 	
 	@Override
 	public void init() {
-		
+		initInterceptors();
 	}
 
 	/**
@@ -58,7 +58,8 @@ public class XgmSoundMixer extends SoundMixer {
 	 * XgmSoundMixer 只有一个
 	 */
 	
-	HashMap<Byte, AbstractXgmMultiMixer> multis = new HashMap<>();
+	final HashMap<Byte, AbstractXgmMultiMixer> multis = new HashMap<>();
+	final ArrayList<AbstractXgmMultiMixer> multiList = new ArrayList<>();
 	
 	@Override
 	public AbstractXgmAudioChannel allocateChannel(byte channelCode) {
@@ -67,6 +68,7 @@ public class XgmSoundMixer extends SoundMixer {
 		if (multi == null) {
 			multi = createMultiChannelMixer(chip);
 			multis.put(chip, multi);
+			multiList.add(multi);
 		}
 		
 		AbstractXgmAudioChannel ch = multi.getAudioChannel(channelCode);
@@ -137,6 +139,7 @@ public class XgmSoundMixer extends SoundMixer {
 	@Override
 	public void detachAll() {
 		multis.clear();
+		multiList.clear();
 	}
 
 	@Override
@@ -153,7 +156,7 @@ public class XgmSoundMixer extends SoundMixer {
 	
 	@Override
 	public void reset() {
-		multis.forEach((b, multi) -> multi.reset());
+		multiList.forEach(multi -> multi.reset());
 		interceptors.forEach(i -> i.reset());
 	}
 	
@@ -166,7 +169,33 @@ public class XgmSoundMixer extends SoundMixer {
 	/**
 	 * 拦截器组
 	 */
-	ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
+	final ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
+	
+	/**
+	 * 用于计算周期和采样关系的模型
+	 */
+	private final CycleCounter counter = new CycleCounter();
+	
+	private void initInterceptors() {
+		// 构造拦截器组
+		EchoUnit echo = new EchoUnit();
+		echo.setRate(param.sampleRate);
+		attachIntercept(echo); // 注意, 回音是这里产生的. 如果想去掉回音, 修改这里
+
+		DCFilter dcf = new DCFilter();
+		dcf.setRate(param.sampleRate);
+		dcf.setParam(270, 164);
+		attachIntercept(dcf);
+
+		Filter f = new Filter();
+		f.setRate(param.sampleRate);
+		f.setParam(4700, 112);
+		attachIntercept(f);
+
+		Compressor cmp = new Compressor();
+		cmp.setParam(1, 1, 1);
+		attachIntercept(cmp);
+	}
 	
 	/**
 	 * @param value
@@ -175,14 +204,15 @@ public class XgmSoundMixer extends SoundMixer {
 	 * @return
 	 */
 	int intercept(int value, int time) {
-		int i = value;
-		for (Iterator<ISoundInterceptor> it = interceptors.iterator(); it.hasNext();) {
-			ISoundInterceptor interceptor = it.next();
+		int ret = value;
+		final int length = interceptors.size();
+		for (int i = 0; i < length; i++) {
+			ISoundInterceptor interceptor = interceptors.get(i);
 			if (interceptor.isEnable()) {
-				i = interceptor.execute(i, time);
+				ret = interceptor.execute(ret, time);
 			}
 		}
-		return i;
+		return ret;
 	}
 	
 	/**
@@ -198,8 +228,9 @@ public class XgmSoundMixer extends SoundMixer {
 	@Override
 	public void readyBuffer() {
 		allocateSampleArray();
-		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
-			AbstractXgmMultiMixer multi = it.next().getValue();
+		final int len = multiList.size();
+		for (int i = 0; i < len; i++) {
+			AbstractXgmMultiMixer multi = multiList.get(i);
 			multi.checkCapacity(param.freqPerFrame);
 		}
 	}
@@ -208,45 +239,46 @@ public class XgmSoundMixer extends SoundMixer {
 	public int finishBuffer() {
 		beforeRender();
 		final int length = param.sampleInCurFrame;
+		int v;
 		for (int i = 0; i < length; i++) {
-			samples[i] = (short) renderOneSample(i);
+			v = renderOneSample(i);
+			if (v > Short.MAX_VALUE) {
+				v = Short.MAX_VALUE;
+			} else if (v < Short.MIN_VALUE) {
+				v = Short.MIN_VALUE;
+			}
+			samples[i] = (short) v;
 		}
 		
 		return length;
 	}
 	
 	private void beforeRender() {
-		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
-			AbstractXgmMultiMixer multi = it.next().getValue();
+		final int len = multiList.size();
+		for (int i = 0; i < len; i++) {
+			AbstractXgmMultiMixer multi = multiList.get(i);
 			multi.beforeRender();
 		}
+		
+		counter.setParam(param.freqPerFrame, param.sampleInCurFrame);
 	}
 	
 	private int renderOneSample(int i) {
-		final int length = param.sampleInCurFrame;
-		final int clockPerFrame = param.freqPerFrame;
-		
+		int fromIdx = counter.getCycleCount();
+		int delta = counter.tick();
+		int toIdx = counter.getCycleCount();
 		/*
 		 * fromIdx 和 toIdx 是时钟数
 		 */
-		int fromIdx;
-		int toIdx;
-		if (param.speed < 1) {
-			fromIdx = (int) ((long) clockPerFrame * (i) / length);
-			toIdx = (int) ((long) clockPerFrame * (i + 1) / length);
-		} else {
-			fromIdx = (clockPerFrame * (i) / length);
-			toIdx = (clockPerFrame * (i + 1) / length);
-		}
 		int value = 0;
 		
-		for (Iterator<HashMap.Entry<Byte, AbstractXgmMultiMixer>> it = multis.entrySet().iterator(); it.hasNext();) {
-			AbstractXgmMultiMixer multi = it.next().getValue();
+		final int mlen = multiList.size();
+		for (int midx = 0; midx < mlen; midx++) {
+			AbstractXgmMultiMixer multi = multiList.get(midx);
 			value += multi.render(i, fromIdx, toIdx);
 		}
 		
-		int time = toIdx - fromIdx;
-		return intercept(value, time) >> 1;
+		return intercept(value, delta);
 	}
 
 	@Override
@@ -274,25 +306,6 @@ public class XgmSoundMixer extends SoundMixer {
 		}
 		
 		this.samples = new short[param.sampleInCurFrame + 16];
-
-		// 构造拦截器组
-		EchoUnit echo = new EchoUnit();
-		echo.setRate(param.sampleRate);
-		attachIntercept(echo); // 注意, 回音是这里产生的. 如果想去掉回音, 修改这里
-
-		DCFilter dcf = new DCFilter();
-		dcf.setRate(param.sampleRate);
-		dcf.setParam(270, 164);
-		attachIntercept(dcf);
-
-		Filter f = new Filter();
-		f.setRate(param.sampleRate);
-		f.setParam(4700, 112);
-		attachIntercept(f);
-
-		Compressor cmp = new Compressor();
-		cmp.setParam(1, 1, 1);
-		attachIntercept(cmp);
 	}
 
 }

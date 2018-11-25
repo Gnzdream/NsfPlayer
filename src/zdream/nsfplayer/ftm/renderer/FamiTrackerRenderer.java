@@ -49,9 +49,9 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			this.runtime.config = config.clone();
 		}
 		
-		this.runtime.init();
-		
 		runtime.param.sampleRate = this.runtime.config.sampleRate;
+		
+		this.runtime.init();
 	}
 	
 	/* **********

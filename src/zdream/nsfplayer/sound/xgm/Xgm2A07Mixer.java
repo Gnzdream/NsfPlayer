@@ -116,8 +116,10 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 			toIdx = noise.buffer.length;
 		}
 		
+		int offset = (toIdx - fromIdx) / 4;
+		int end = toIdx - offset;
 		int count = 0, sum = 0;
-		for (int i = fromIdx; i < toIdx; i++) {
+		for (int i = fromIdx + offset; i < end; i++) {
 			count++;
 			sum += noise.buffer[i];
 		}

@@ -77,7 +77,7 @@ public class CycleCounter implements IResetable {
 		
 		frameCount++;
 		int oldCycleCount = cycleCount;
-		cycleCount = cycle * frameCount / maxFrame;
+		cycleCount = (int) ((double) cycle * frameCount / maxFrame);
 		
 		return last = cycleCount - oldCycleCount;
 	}
