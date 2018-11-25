@@ -176,7 +176,7 @@ public class SoundS5B extends AbstractNsfSound {
 	
 	@Override
 	public void reset() {
-		
+		// TODO S5B 参数重置
 		
 		
 		

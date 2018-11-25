@@ -61,19 +61,16 @@ public class XgmSoundMixer extends SoundMixer {
 	HashMap<Byte, AbstractXgmMultiMixer> multis = new HashMap<>();
 	
 	@Override
-	public XgmAudioChannel allocateChannel(byte channelCode) {
-		XgmAudioChannel ch = new XgmAudioChannel();
-		
-		ch.setEnable(true);
-		
+	public AbstractXgmAudioChannel allocateChannel(byte channelCode) {
 		byte chip = chipOfChannel(channelCode);
 		AbstractXgmMultiMixer multi = multis.get(chip);
 		if (multi == null) {
 			multi = createMultiChannelMixer(chip);
 			multis.put(chip, multi);
 		}
-		multi.setAudioChannel(channelCode, ch);
 		
+		AbstractXgmAudioChannel ch = multi.getAudioChannel(channelCode);
+		ch.setEnable(true);
 		return ch;
 	}
 	

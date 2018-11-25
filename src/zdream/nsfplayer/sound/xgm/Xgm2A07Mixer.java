@@ -8,7 +8,14 @@ package zdream.nsfplayer.sound.xgm;
  */
 public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	
-	XgmAudioChannel tri, noise, dpcm;
+	final XgmAudioChannel noise, dpcm;
+	final XgmLinearChannel tri;
+	
+	public Xgm2A07Mixer() {
+		noise = new XgmAudioChannel();
+		tri = new XgmLinearChannel();
+		dpcm = new XgmAudioChannel();
+	}
 	
 	/*protected int[][][] tnd_table = new int[16][16][128];
 	protected int[][][] tnd_table_non = new int[16][16][128];
@@ -40,34 +47,13 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	@Override
 	public void reset() {
 		super.reset();
-		if (tri != null) {
-			tri.reset();
-		}
-		if (noise != null) {
-			noise.reset();
-		}
-		if (dpcm != null) {
-			dpcm.reset();
-		}
+		tri.reset();
+		noise.reset();
+		dpcm.reset();
 	}
 	
 	@Override
-	public void setAudioChannel(byte channelCode, XgmAudioChannel ch) {
-		switch (channelCode) {
-		case CHANNEL_2A03_TRIANGLE:
-			tri = ch;
-			break;
-		case CHANNEL_2A03_NOISE:
-			noise = ch;
-			break;
-		case CHANNEL_2A03_DPCM:
-			dpcm = ch;
-			break;
-		}
-	}
-
-	@Override
-	public XgmAudioChannel getAudioChannel(byte channelCode) {
+	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
 		switch (channelCode) {
 		case CHANNEL_2A03_TRIANGLE:
 			return tri;
@@ -88,15 +74,9 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void checkCapacity(int size) {
-		if (tri != null) {
-			tri.checkCapacity(size);
-		}
-		if (noise != null) {
-			noise.checkCapacity(size);
-		}
-		if (dpcm != null) {
-			dpcm.checkCapacity(size);
-		}
+		tri.checkCapacity(size);
+		noise.checkCapacity(size);
+		dpcm.checkCapacity(size);
 	}
 	
 	@Override
@@ -112,7 +92,7 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 		 * ((MASTER) / (100.0 + 1.0 / ((double) t / 8227 + (double) n / 12241 + (double) d / 22638)));
 		 */
 		int value = (int) ((MASTER) / (100.0 + 1.0 / 
-				(tri.buffer[idx] * tri.getLevel() / 8227
+				(tri.readValue(idx) * tri.getLevel() / 8227
 				+ calcNoise(fromIdx, toIdx) * noise.getLevel() / 12241
 				+ dpcm.buffer[idx] * dpcm.getLevel() / 22638)));
 		

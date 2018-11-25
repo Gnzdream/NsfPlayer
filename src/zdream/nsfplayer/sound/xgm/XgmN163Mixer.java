@@ -9,36 +9,24 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	
 	private final XgmAudioChannel[] n163s = new XgmAudioChannel[8];
+	
+	public XgmN163Mixer() {
+		for (int i = 0; i < n163s.length; i++) {
+			n163s[i] = new XgmAudioChannel();
+		}
+	}
 
 	@Override
 	public void reset() {
 		super.reset();
 		for (int i = 0; i < n163s.length; i++) {
-			XgmAudioChannel ch = n163s[i];
-			if (ch == null) {
-				continue;
-			}
+			AbstractXgmAudioChannel ch = n163s[i];
 			ch.reset();
 		}
 	}
 
 	@Override
-	public void setAudioChannel(byte channelCode, XgmAudioChannel ch) {
-		switch (channelCode) {
-		case CHANNEL_N163_1: this.n163s[0] = ch; break;
-		case CHANNEL_N163_2: this.n163s[1] = ch; break;
-		case CHANNEL_N163_3: this.n163s[2] = ch; break;
-		case CHANNEL_N163_4: this.n163s[3] = ch; break;
-		case CHANNEL_N163_5: this.n163s[4] = ch; break;
-		case CHANNEL_N163_6: this.n163s[5] = ch; break;
-		case CHANNEL_N163_7: this.n163s[6] = ch; break;
-		case CHANNEL_N163_8: this.n163s[7] = ch; break;
-		default: return;
-		}
-	}
-
-	@Override
-	public XgmAudioChannel getAudioChannel(byte channelCode) {
+	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
 		switch (channelCode) {
 		case CHANNEL_N163_1:
 		case CHANNEL_N163_2:
@@ -56,8 +44,8 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	@Override
 	public void checkCapacity(int size) {
 		for (int i = 0; i < n163s.length; i++) {
-			XgmAudioChannel ch = n163s[i];
-			if (ch == null) {
+			AbstractXgmAudioChannel ch = n163s[i];
+			if (!ch.isEnable()) {
 				continue;
 			}
 			ch.checkCapacity(size);
@@ -67,8 +55,8 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	@Override
 	public void beforeRender() {
 		for (int i = 0; i < n163s.length; i++) {
-			XgmAudioChannel ch = n163s[i];
-			if (ch == null) {
+			AbstractXgmAudioChannel ch = n163s[i];
+			if (!ch.isEnable()) {
 				continue;
 			}
 			ch.beforeSubmit();

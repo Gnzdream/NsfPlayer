@@ -8,25 +8,20 @@ package zdream.nsfplayer.sound.xgm;
  */
 public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	
-	XgmAudioChannel fds;
+	final XgmAudioChannel fds;
+	
+	public XgmFDSMixer() {
+		fds = new XgmAudioChannel();
+	}
 
 	@Override
 	public void reset() {
 		super.reset();
-		if (fds != null) {
-			fds.reset();
-		}
+		fds.reset();
 	}
 
 	@Override
-	public void setAudioChannel(byte channelCode, XgmAudioChannel ch) {
-		if (channelCode == CHANNEL_FDS) {
-			fds = ch;
-		}
-	}
-
-	@Override
-	public XgmAudioChannel getAudioChannel(byte channelCode) {
+	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
 		if (channelCode == CHANNEL_FDS) {
 			return fds;
 		}
@@ -40,9 +35,7 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void checkCapacity(int size) {
-		if (fds != null) {
-			fds.checkCapacity(size);
-		}
+		fds.checkCapacity(size);
 	}
 
 	@Override

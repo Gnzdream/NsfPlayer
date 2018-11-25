@@ -12,7 +12,9 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 	final XgmAudioChannel[] chs = new XgmAudioChannel[6];
 
 	public XgmVRC7Mixer() {
-		
+		for (int i = 0; i < chs.length; i++) {
+			chs[i] = new XgmAudioChannel();
+		}
 	}
 
 	@Override
@@ -22,18 +24,6 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 			if (chs[i] != null) {
 				chs[i].reset();
 			}
-		}
-	}
-
-	@Override
-	public void setAudioChannel(byte channelCode, XgmAudioChannel ch) {
-		switch (channelCode) {
-		case CHANNEL_VRC7_FM1: chs[0] = ch; break;
-		case CHANNEL_VRC7_FM2: chs[1] = ch; break;
-		case CHANNEL_VRC7_FM3: chs[2] = ch; break;
-		case CHANNEL_VRC7_FM4: chs[3] = ch; break;
-		case CHANNEL_VRC7_FM5: chs[4] = ch; break;
-		case CHANNEL_VRC7_FM6: chs[5] = ch; break;
 		}
 	}
 

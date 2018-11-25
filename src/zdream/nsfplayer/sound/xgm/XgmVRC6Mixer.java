@@ -8,44 +8,25 @@ package zdream.nsfplayer.sound.xgm;
  */
 public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	
-	XgmAudioChannel pulse1, pulse2, sawtooth;
+	final XgmLinearChannel pulse1, pulse2, sawtooth;
 	private final int MASTER = (int) (256.0 * 1223.0 / 1920.0);
 
 	public XgmVRC6Mixer() {
-		
+		pulse1 = new XgmLinearChannel();
+		pulse2 = new XgmLinearChannel();
+		sawtooth = new XgmLinearChannel();
 	}
 	
 	@Override
 	public void reset() {
 		super.reset();
-		if (pulse1 != null) {
-			pulse1.reset();
-		}
-		if (pulse2 != null) {
-			pulse1.reset();
-		}
-		if (sawtooth != null) {
-			sawtooth.reset();
-		}
+		pulse1.reset();
+		pulse2.reset();
+		sawtooth.reset();
 	}
 
 	@Override
-	public void setAudioChannel(byte channelCode, XgmAudioChannel ch) {
-		switch (channelCode) {
-		case CHANNEL_VRC6_PULSE1:
-			pulse1 = ch;
-			break;
-		case CHANNEL_VRC6_PULSE2:
-			pulse2 = ch;
-			break;
-		case CHANNEL_VRC6_SAWTOOTH:
-			sawtooth = ch;
-			break;
-		}
-	}
-
-	@Override
-	public XgmAudioChannel getAudioChannel(byte channelCode) {
+	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
 		switch (channelCode) {
 		case CHANNEL_VRC6_PULSE1:
 			return pulse1;
@@ -59,15 +40,9 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void checkCapacity(int size) {
-		if (pulse1 != null) {
-			pulse1.checkCapacity(size);
-		}
-		if (pulse2 != null) {
-			pulse2.checkCapacity(size);
-		}
-		if (sawtooth != null) {
-			sawtooth.checkCapacity(size);
-		}
+		pulse1.checkCapacity(size);
+		pulse2.checkCapacity(size);
+		sawtooth.checkCapacity(size);
 	}
 	
 	@Override
@@ -82,9 +57,9 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 		int time = toIdx - fromIdx;
 		int idx = (fromIdx + toIdx) / 2;
 		
-		int sum = (int) (pulse1.buffer[idx] * pulse1.getLevel()
-				+ pulse2.buffer[idx] * pulse2.getLevel()
-				+ sawtooth.buffer[idx] * sawtooth.getLevel());
+		int sum = (int) (pulse1.readValue(idx) * pulse1.getLevel()
+				+ pulse2.readValue(idx) * pulse2.getLevel()
+				+ sawtooth.readValue(idx) * sawtooth.getLevel());
 		int value = (int) (sum * MASTER) >> 1;
 		value = intercept(value, time);
 		return value;
