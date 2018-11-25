@@ -103,8 +103,9 @@ public class PulseSound extends Sound2A03 {
 	
 	@Override
 	protected void onProcess(int time) {
-		if (period <= 0) {
-			this.time += time;
+		if (period < 8) {
+			dutyCycle = 0;
+			mix(0);
 			return;
 		}
 		
@@ -113,7 +114,7 @@ public class PulseSound extends Sound2A03 {
 		while (time >= counter) {
 			time -= counter;
 			this.time += counter;
-			counter	 = period + 1;
+			counter = period + 1;
 			
 			int value = processStep(counter);
 			mix(valid ? value : 0);
@@ -122,7 +123,6 @@ public class PulseSound extends Sound2A03 {
 		}
 
 		counter -= time;
-		this.time += time;
 	}
 	
 	protected int processStep(int period) {
