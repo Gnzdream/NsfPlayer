@@ -672,7 +672,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		for (int i = 0; i < count; i++) {
 			int index = block.readAsCInt();
 			int type = block.readAsCInt();
-			byte seqCount = block.readByte();
+			int seqCount = block.readUnsignedByte();
 			int loopPoint = block.readAsCInt();
 			int releasePoint = block.readAsCInt();
 			int setting = block.readAsCInt();
