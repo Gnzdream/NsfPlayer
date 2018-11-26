@@ -120,7 +120,9 @@ public class NesAPU extends AbstractSoundChip {
 			val.val = mem[adr & 0x7] & 0xFF;
 			return true;
 		} else if (adr == 0x4015) {
-			val.val = mem4015 & 0xFF;
+			int m = pulse1.isEnable() ? 1 : 0;
+			m |= pulse2.isEnable() ? 1 : 0;
+			val.val = m;
 			return true;
 		} else if (adr == 0x4017) {
 			val.val = mem4017 & 0xFF;

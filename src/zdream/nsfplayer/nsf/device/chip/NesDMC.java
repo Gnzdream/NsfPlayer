@@ -182,14 +182,25 @@ public class NesDMC extends AbstractSoundChip {
 			noise.lengthCounter = 0;
 		}
 	}
-
+	
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
 		if (adr >= 0x4008 && adr < 0x4014) {
 			val.val = mem[adr - 0x4008] & 0xFF;
 			return true;
 		} else if (adr == 0x4015) {
-			val.val = mem4015 & 0xFF;
+			{
+				// 修正 mem4015
+				if (dpcm.isFinish()) {
+					mem4015 = 0;
+				} else {
+					mem4015 = 16;
+				}
+				
+				mem4015 |= triangle.isEnable() ? 4 : 0;
+				mem4015 |= noise.isEnable() ? 8 : 0;
+			}
+			val.val |= mem4015;
 			return true;
 		}
 		return false;
