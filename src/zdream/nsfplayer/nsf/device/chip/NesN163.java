@@ -56,14 +56,14 @@ public class NesN163 extends AbstractSoundChip {
 
 	@Override
 	public boolean write(int adr, int val, int id) {
-		if (adr == 0xE000) { // master disable
+		if (adr == 0xE000) { // 主 disable 参数
 			masterDisable = ((val & 0x40) != 0);
 			return true;
-		} else if (adr == 0xF800) { // register select
+		} else if (adr == 0xF800) { // 选择
 			regSelect = (val & 0x7F);
 			regAdvance = (val & 0x80) != 0;
 			return true;
-		} else if (adr == 0x4800) { // register write
+		} else if (adr == 0x4800) { // 写入
 			handleWrite(val);
 			if (regAdvance)
 				regSelect = (regSelect + 1) & 0x7F;
@@ -74,7 +74,7 @@ public class NesN163 extends AbstractSoundChip {
 
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
-		if (adr == 0x4800) { // register read
+		if (adr == 0x4800) { // 选择读
 			val.val = handleRead();
 			if (regAdvance)
 				regSelect = (regSelect + 1) & 0x7F;

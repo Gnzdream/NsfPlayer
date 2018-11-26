@@ -5,7 +5,7 @@ import java.util.Iterator;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 
 /**
- * 图层
+ * 层
  * <p>与 Bus 类似, 但不会把读写的工作在全部设备间传播.<br>
  * 当有一个设备确认读写之后, 传播就会停止</p>
  * @author Zdream

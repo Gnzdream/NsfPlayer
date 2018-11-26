@@ -49,7 +49,6 @@ public class NesMem implements IDevice {
 
 	@Override
 	public boolean write(int addr, int value, int id) {
-		// System.out.println(String.format("write %d->index:%d  (%d)", value, addr, id));
 		if (0x0000 <= addr && addr < 0x2000) {
 			image[addr & 0x7ff] = (byte) (value & 0xff);
 			return true;
@@ -65,7 +64,6 @@ public class NesMem implements IDevice {
 		if (fdsEnable && 0x8000 <= addr && addr < 0xe000) {
 			image[addr] = (byte) (value & 0xff);
 		}
-		// System.out.println("write fail");
 		return false;
 	}
 

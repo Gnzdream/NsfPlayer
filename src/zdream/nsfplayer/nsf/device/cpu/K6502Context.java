@@ -1,7 +1,5 @@
 package zdream.nsfplayer.nsf.device.cpu;
 
-import zdream.nsfplayer.nsf.device.IDevice;
-
 public final class K6502Context {
 	/**
 	 * 寄存器 Accumulator
@@ -12,37 +10,34 @@ public final class K6502Context {
 	 */
 	public int p;
 	/**
-	 * X register
+	 * 寄存器 X register
 	 */
 	public int x;
 	/**
-	 * Y register
+	 * 寄存器 Y register
 	 */
 	public int y;
 	/**
-	 * Stack pointer
+	 * 堆栈指针 Stack pointer
 	 */
 	public int s;
 	/**
-	 * Program Counter
+	 * 指令计数器 Program Counter
 	 */
 	public int pc;
 	/**
-	 * interrupt request
+	 * 中断请求 interrupt request
 	 */
 	public int iRequest;
 	/**
-	 * interrupt mask
+	 * 中断位 interrupt mask
 	 */
 	public int iMask;
 	/**
-	 * (incremental)cycle counter
+	 * 时钟周期计数器 (incremental) cycle counter
 	 */
 	public int clock;
 	public int lastcode;
-	
-	// pointer to user area
-	public IDevice user;
 	
 	public int illegal;
 	

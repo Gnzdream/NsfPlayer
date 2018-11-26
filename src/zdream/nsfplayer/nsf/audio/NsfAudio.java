@@ -1,6 +1,7 @@
 package zdream.nsfplayer.nsf.audio;
 
 import zdream.nsfplayer.core.AbstractNsfAudio;
+import zdream.nsfplayer.core.ERegion;
 
 /**
  * <p>NSF 音频文件内的数据
@@ -147,6 +148,22 @@ public class NsfAudio extends AbstractNsfAudio {
 	@Override
 	public int getTrackCount() {
 		return total_songs;
+	}
+	
+	/**
+	 * 返回制式
+	 * @return
+	 *   制式
+	 * @since v0.2.10
+	 */
+	public ERegion getRegion() {
+		int v = pal_ntsc & 3;
+		switch (v) {
+		case 0: return ERegion.NTSC;
+		case 1: return ERegion.PAL;
+
+		default: return ERegion.UNKNOWED;
+		}
 	}
 	
 	NsfAudio() {

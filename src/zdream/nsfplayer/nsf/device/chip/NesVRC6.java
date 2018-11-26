@@ -45,7 +45,6 @@ public class NesVRC6 extends AbstractSoundChip {
 			return false;
 		}
 
-//		System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
 		return true;
 	}
 	

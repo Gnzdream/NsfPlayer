@@ -217,7 +217,6 @@ public class NesVRC7 extends AbstractSoundChip {
 		default:
 			break;
 		}
-		// opll.writeReg(this.address, data);
 	}
 
 	@Override

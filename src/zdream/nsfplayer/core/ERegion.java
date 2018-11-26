@@ -8,6 +8,6 @@ package zdream.nsfplayer.core;
  */
 public enum ERegion {
 	
-	NTSC, PAL, DENDY
+	NTSC, PAL, DENDY, UNKNOWED
 
 }

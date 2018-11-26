@@ -1,7 +1,6 @@
 package zdream.nsfplayer.nsf.device;
 
-import static zdream.nsfplayer.core.ERegion.NTSC;
-import static zdream.nsfplayer.core.ERegion.PAL;
+import static zdream.nsfplayer.core.ERegion.*;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_DENDY;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
@@ -229,7 +228,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		// 原工程是 NsfPlayer.reset()
 		
 		// 确定制式
-		region = confirmRegion(runtime.audio.pal_ntsc);
+		region = confirmRegion();
 		switch (region) {
 		case NTSC:
 			runtime.cpu.NES_BASECYCLES = BASE_FREQ_NTSC;
@@ -237,7 +236,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		case PAL:
 			runtime.cpu.NES_BASECYCLES = BASE_FREQ_PAL;
 			break;
-		case DENDY:
+		default:
 			runtime.cpu.NES_BASECYCLES = BASE_FREQ_DENDY;
 			break;
 		}
@@ -252,18 +251,13 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		runtime.cpu.reset();
 		resetCPUCounter();
 		
+		// 这里 NSF 内部虚拟 CPU 使用的帧率是双精度浮点.
+		// 默认值, NTSC: 60.0988, PAL/DENDY: 50.0070
 		double speed;
-		/*if (this.config.get("VSYNC_ADJUST").toInt() != 0)
-			speed = ((region == REGION_NTSC) ? 60.0988 : 50.0070);
-		else*/
-		// NSTC 采用 speed_ntsc, PAL 和 DENDY 采用 speed_pal
 		speed = 1000000.0 / ((region == NTSC) ? runtime.audio.speed_ntsc : runtime.audio.speed_pal);
 		
 		runtime.cpu.start(runtime.audio.init_address, runtime.audio.play_address,
 				speed, this.song, (region == PAL) ? 1 : 0, 0);
-		
-		// 忽略 mask 部分
-		// vrc7.setPatchSet(this.config.get("VRC7_PATCH").toInt());
 		
 		cycle.setParam(runtime.param.sampleRate, runtime.param.frameRate);
 	}
@@ -271,41 +265,36 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	/**
 	 * 确定制式.
 	 * NsfPlayer.getRegion(int)
-	 * @param flags
 	 * @return
 	 */
-	public ERegion confirmRegion(int flags) {
-		// 用户指定的
-		int pref = runtime.config.region;
-		
-		// 以用户指定的制式为准
-		switch (pref) {
-		case NsfRendererConfig.REGION_FORCE_NTSC:
-			return ERegion.NTSC;
-		case NsfRendererConfig.REGION_FORCE_PAL:
-			return ERegion.PAL;
-		case NsfRendererConfig.REGION_FORCE_DENDY:
-			return ERegion.DENDY;
-		}
+	public ERegion confirmRegion() {
+		// NSF 中指定的制式
+		ERegion flags = runtime.audio.getRegion();
 
 		// 查看 flags 的数据内容来确定
-		// single-mode NSF
-		if (flags == 0)
-			return ERegion.NTSC;
-		if (flags == 1)
-			return ERegion.PAL;
-
-		if ((flags & 2) != 0) // dual mode
-		{
-			if (pref == 1)
-				return ERegion.NTSC;
-			if (pref == 2)
-				return ERegion.PAL;
-			// else pref == 0 or invalid, use auto setting based on flags bit
-			return ((flags & 1) != 0) ? ERegion.PAL : ERegion.NTSC;
+		// single-mode NSF, 仅支持一种制式的, 则按这种制式渲染
+		if (flags == NTSC || flags == PAL) {
+			return flags;
 		}
+		
+		// 按用户指定的制式渲染
+		int pref = runtime.config.region;
+		
+		switch (pref) {
+		case NsfRendererConfig.REGION_FORCE_NTSC:
+			return NTSC;
+		case NsfRendererConfig.REGION_FORCE_PAL:
+			return PAL;
+		case NsfRendererConfig.REGION_FORCE_DENDY:
+			return DENDY;
+		}
+		
+		if (pref == 1)
+			return NTSC;
+		if (pref == 2)
+			return PAL;
 
-		return ERegion.NTSC; // fallback for invalid flags
+		return NTSC;
 	}
 	
 	/**
@@ -531,17 +520,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 ********** */
 	
 	/**
-	 * 在当前这一秒内, 已经执行的时钟数.
-	 * 范围 [0, CPU 每秒的时钟数)
-	 */
-	//int freqConsumed;
-	/**
-	 * 在当前这一秒内, 已经输出的采样数.
-	 * 范围 [0, 采样率)
-	 */
-	//int sampleConsumed;
-	
-	/**
 	 * 不计播放速度影响, 计算每帧采样数
 	 */
 	private final CycleCounter cycle = new CycleCounter();
@@ -553,9 +531,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	int cpuFreqRemain;
 	
 	private void resetCPUCounter() {
-//		freqConsumed = 0;
-//		sampleConsumed = 0;
-		cpuFreqRemain = 0; // apuFreqRemain = 0
+		cpuFreqRemain = 0;
 	}
 	
 	/**
@@ -594,31 +570,4 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		endFrame();
 	}
 	
-	/**
-	 * 计算输出当前采样, 需要的时钟周期数, 并返回
-	 */
-	/*private int countFreqInCurSample() {
-		int sampleRate = runtime.param.sampleRate; // 默认 48000
-		int freqPerSec = runtime.param.freqPerSec; // 每秒时钟周期数
-		
-		int ret = 0;
-		
-		sampleConsumed += 1;
-		int to = (int) ((long) sampleConsumed * freqPerSec / sampleRate);
-		ret = to - freqConsumed;
-		freqConsumed = to;
-		
-		if (sampleConsumed >= sampleRate) {
-			if (sampleConsumed > sampleRate || freqConsumed != freqPerSec) {
-				// 出现了问题
-				throw new IllegalStateException("时钟计算出现了错误");
-			}
-			
-			freqConsumed = 0;
-			sampleConsumed = 0;
-		}
-		
-		return ret;
-	}*/
-
 }

@@ -174,7 +174,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 ********** */
 	/*
 	 * 用于控制实际播放数据的部分.
-	 * 其中有: 控制音量、控制是否播放
+	 * 其中有: 控制音量、控制是否播放、控制渲染组件等
 	 */
 	
 	/**

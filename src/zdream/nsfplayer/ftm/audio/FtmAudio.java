@@ -1,9 +1,12 @@
 package zdream.nsfplayer.ftm.audio;
 
+import static zdream.nsfplayer.core.NsfStatic.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import zdream.nsfplayer.core.AbstractNsfAudio;
+import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
@@ -45,9 +48,7 @@ public class FtmAudio extends AbstractNsfAudio {
 	 * 制式.
 	 * 但在渲染时强制按 NTSC 方式, 这里仅仅是记录了制式的参数
 	 */
-	byte machine;
-	public static final byte MACHINE_NTSC = 0;
-	public static final byte MACHINE_PAL = 1;
+	ERegion region = ERegion.NTSC;
 	
 	/**
 	 * fps, 有效值为 [0, 800].<br>
@@ -86,31 +87,32 @@ public class FtmAudio extends AbstractNsfAudio {
 	int namcoChannels;
 	
 	/**
-	 * 制式, 包括 {@link #MACHINE_NTSC} 和 {@link #MACHINE_PAL}
+	 * 制式, 包括 {@link ERegion#NTSC} 和 {@link ERegion#PAL}
 	 * @return
+	 *   该曲目的制式
 	 */
-	public byte getMachine() {
-		return machine;
+	public ERegion getRegion() {
+		return region;
 	}
 	
 	/**
 	 * fps
 	 * @return
+	 *   帧率
 	 */
 	public int getFrameRate() {
 		if (frameRate == 0) {
-			switch (machine) {
-			case MACHINE_NTSC:
-				return 60;
-			case MACHINE_PAL:
-				return 50;
+			if (region == ERegion.NTSC) {
+				return FRAME_RATE_NTSC;
+			} else if (region == ERegion.PAL) {
+				return FRAME_RATE_PAL;
 			}
 		}
 		return frameRate;
 	}
 	
 	/**
-	 * 是否是该制式下默认的 fps
+	 * 是否是该制式下默认的帧率
 	 * @return
 	 */
 	public boolean isDefaultFrameRate() {

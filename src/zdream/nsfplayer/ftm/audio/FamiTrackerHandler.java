@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.audio;
 
 import java.util.ArrayList;
 
+import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfChannelCode;
@@ -40,10 +41,10 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	 * @param m
 	 */
 	public void setMechine(byte m) {
-		if (m != FtmAudio.MACHINE_NTSC && m != FtmAudio.MACHINE_PAL) {
+		if (m != 0 && m != 1) {
 			throw new FamiTrackerException("制式解析错误: " + m);
 		}
-		audio.machine = m;
+		audio.region = (m == 0) ? ERegion.NTSC : ERegion.PAL;
 	}
 	
 	/**

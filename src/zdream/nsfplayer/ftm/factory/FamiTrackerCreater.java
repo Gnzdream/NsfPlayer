@@ -6,6 +6,7 @@ import static zdream.nsfplayer.ftm.format.FtmStatic.*;
 import static zdream.nsfplayer.core.FtmChipType.*;
 import static zdream.nsfplayer.ftm.format.FtmNote.*;
 
+import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
@@ -364,7 +365,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				track.tempo = track.speed;
 				track.speed = 6;
 			} else {
-				track.tempo = (doc.audio.getMachine() == FtmAudio.MACHINE_NTSC) ?
+				track.tempo = (doc.audio.getRegion() == ERegion.NTSC) ?
 						FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
 			}
 		}
@@ -757,7 +758,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				
 			} else {
 				if (speed < 20) {
-					int tempo = (doc.audio.getMachine() == FtmAudio.MACHINE_NTSC) ?
+					int tempo = (doc.audio.getRegion() == ERegion.NTSC) ?
 							FtmTrack.DEFAULT_NTSC_TEMPO : FtmTrack.DEFAULT_PAL_TEMPO;
 					track.tempo = tempo;
 					track.speed = speed;

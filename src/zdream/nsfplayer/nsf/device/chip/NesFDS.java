@@ -69,12 +69,6 @@ public class NesFDS extends AbstractSoundChip {
 //				env_timer[EVOL] = 0;
 //			}
 			
-			// TEST
-			if (!fds.wavHalt) {
-				fds.wavFreq += 0;
-			}
-			// TEST end
-			
 			return true;
 		case 0x4084: // $4084 mod envelope
 			fds.modEnvDisable = ((val & 0x80) != 0);
@@ -122,6 +116,7 @@ public class NesFDS extends AbstractSoundChip {
 	@Override
 	public boolean read(int adr, IntHolder val, int id) {
 		if (adr >= 0x4040 && adr <= 0x407F) {
+			// 原 NsfPlayer 工程
 			// TODO: if wav_write is not enabled, the
 			// read address may not be reliable? need
 			// to test this on hardware.

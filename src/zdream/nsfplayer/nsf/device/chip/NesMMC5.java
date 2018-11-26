@@ -57,7 +57,6 @@ public class NesMMC5 extends AbstractSoundChip {
 			return false;
 		}
 		
-//		System.out.println(String.format("[%4X]:%2X, %3d", adr, val, val));
 		return true;
 	}
 
@@ -71,7 +70,7 @@ public class NesMMC5 extends AbstractSoundChip {
 			break;
 			
 		case 1:
-			// MMC5 没有 sweep 相关的控制命令, 这里忽略
+			// MMC5 没有 sweep 相关的控制命令, 这里直接返回
 			break;
 			
 		case 2: {

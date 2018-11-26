@@ -65,25 +65,7 @@ public class NesCPU implements IDevice {
 
 		while ( context.clock < clock ) {
 			if (!breaked) {
-				// DEBUG_OUT
 				pc_count++;
-				/*System.out.println(String.format("PC<%d>: 0x%04X => %d,%d,%d,%d,%d | %d",
-						pc_count++, context.pc,
-						context.a & 0xffff,
-						context.x & 0xffff,
-						context.y & 0xffff,
-						context.s & 0xffff,
-						context.p & 0xffff,
-						clock_of_frame));*/
-
-				if (pc_count % 100 == 0) {
-					//System.out.println(pc_count);
-				}
-				
-				if (pc_count==1588) {
-					//System.out.println(1588);
-				}
-				
 				context.exec();
 				if (context.pc == breakpoint)
 			        breaked = true;
@@ -101,13 +83,12 @@ public class NesCPU implements IDevice {
 					startup(int_address);
 				}
 				clock_of_frame += clock_per_frame;
-				// DEBUG_OUT("NMI\n");
 			}
 		}
 		
 		clock_of_frame -= (context.clock << FRAME_FIXED);
 
-		return context.clock; // return actual number of clocks executed
+		return context.clock; // 返回实际运行的时钟数
 	}
 	
 	public void setMemory (IDevice b) {
@@ -142,7 +123,6 @@ public class NesCPU implements IDevice {
 		context.writeByte = writeByte;
 		context.iRequest = K6502Context.K6502_INIT;
 		context.clock = 0;
-		context.user = this;
 		context.a = 0;
 		context.x = 0;
 		context.y = 0;
@@ -183,21 +163,9 @@ public class NesCPU implements IDevice {
 		startup(start_adr);
 
 		for (int i = 0; (i < (NES_BASECYCLES / int_freq)) && !breaked; i++, context.exec()) {
-			/*System.out.println(String.format("PC<%d>: 0x%04X => %d,%d,%d,%d,%d | %d",
-					pc_count++, context.pc,
-					context.a & 0xffff,
-					context.x & 0xffff,
-					context.y & 0xffff,
-					context.s & 0xffff,
-					context.p & 0xffff,
-					clock_of_frame));*/
 			pc_count++;
 			if (context.pc == breakpoint)
 				breaked = true;
-			
-			/*if (pc_count == 6) {
-				System.out.println("6");
-			}*/
 		}
 
 		clock_of_frame = 0;
