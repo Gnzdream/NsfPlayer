@@ -13,7 +13,7 @@ import zdream.nsfplayer.ftm.format.FtmTrack;
 
 /**
  * FamiTracker 的音频数据,
- * 一个抽象的 .ftm 文件或者该数据格式的替代对象.
+ * 一个抽象的 .ftm 文件或者该数据格式的封装对象.
  * 
  * @author Zdream
  * @since v0.1
@@ -25,12 +25,6 @@ public class FtmAudio extends AbstractNsfAudio {
 	{
 		handler = new FamiTrackerHandler(this);
 	}
-	
-	/**
-	 * FamiTracker 导出文本的版本号, 常见的有 0.4.2 0.4.3 ... 0.4.6
-	 */
-	@Deprecated
-	String version;
 	
 	/**
 	 * 标题 TITLE
@@ -48,7 +42,8 @@ public class FtmAudio extends AbstractNsfAudio {
 	public String copyright;
 	
 	/**
-	 * 制式
+	 * 制式.
+	 * 但在渲染时强制按 NTSC 方式, 这里仅仅是记录了制式的参数
 	 */
 	byte machine;
 	public static final byte MACHINE_NTSC = 0;
@@ -66,8 +61,11 @@ public class FtmAudio extends AbstractNsfAudio {
 	boolean useVcr6, useVcr7, useFds, useMmc5, useN163, useS5b;
 	
 	/**
-	 * 模式 mode<br>
-	 * 0 for old style vibrato, 1 for new style (这是 Famitracker 文档的原话)
+	 * <p>模式 mode
+	 * <p>0 for old style vibrato, 1 for new style (这是 Famitracker 文档的原话)
+	 * <br>指的是颤音的模式. 旧模式仅向上颤音, 新模式会正弦波颤音（向上与向下）
+	 * <p>在渲染时强制按照新模式, 这里仅仅是记录了该参数
+	 * </p>
 	 */
 	byte vibrato;
 
