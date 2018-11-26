@@ -51,6 +51,7 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 
 	@Override
 	public void beforeRender() {
+		super.beforeRender();
 		for (int i = 0; i < chs.length; i++) {
 			if (chs[i] != null) {
 				chs[i].beforeSubmit();

@@ -59,7 +59,12 @@ public class XgmSoundMixer extends SoundMixer {
 	 */
 	
 	final HashMap<Byte, AbstractXgmMultiMixer> multis = new HashMap<>();
-	final ArrayList<AbstractXgmMultiMixer> multiList = new ArrayList<>();
+	private final ArrayList<AbstractXgmMultiMixer> multiList = new ArrayList<>();
+	
+	/**
+	 * 缓存, 性能考虑
+	 */
+	private AbstractXgmMultiMixer[] multiArray;
 	
 	@Override
 	public AbstractXgmAudioChannel allocateChannel(byte channelCode) {
@@ -69,6 +74,7 @@ public class XgmSoundMixer extends SoundMixer {
 			multi = createMultiChannelMixer(chip);
 			multis.put(chip, multi);
 			multiList.add(multi);
+			multiArray = null;
 		}
 		
 		AbstractXgmAudioChannel ch = multi.getAudioChannel(channelCode);
@@ -140,6 +146,7 @@ public class XgmSoundMixer extends SoundMixer {
 	public void detachAll() {
 		multis.clear();
 		multiList.clear();
+		multiArray = null;
 	}
 
 	@Override
@@ -170,6 +177,11 @@ public class XgmSoundMixer extends SoundMixer {
 	 * 拦截器组
 	 */
 	final ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
+	
+	/**
+	 * 缓存, 性能考虑
+	 */
+	private ISoundInterceptor[] interceptorArray;
 	
 	/**
 	 * 用于计算周期和采样关系的模型
@@ -205,9 +217,9 @@ public class XgmSoundMixer extends SoundMixer {
 	 */
 	int intercept(int value, int time) {
 		int ret = value;
-		final int length = interceptors.size();
+		final int length = interceptorArray.length;
 		for (int i = 0; i < length; i++) {
-			ISoundInterceptor interceptor = interceptors.get(i);
+			ISoundInterceptor interceptor = interceptorArray[i];
 			if (interceptor.isEnable()) {
 				ret = interceptor.execute(ret, time);
 			}
@@ -239,9 +251,23 @@ public class XgmSoundMixer extends SoundMixer {
 	public int finishBuffer() {
 		beforeRender();
 		final int length = param.sampleInCurFrame;
-		int v;
+		int v, fromTime, delta, toTime = 0;
 		for (int i = 0; i < length; i++) {
-			v = renderOneSample(i);
+			
+			// 渲染一帧的流程
+			fromTime = toTime;
+			delta = counter.tick();
+			toTime = counter.getCycleCount();
+			// fromTime 和 toTime 是时钟数
+			v = 0;
+			
+			final int mlen = multiArray.length;
+			for (int midx = 0; midx < mlen; midx++) {
+				AbstractXgmMultiMixer multi = multiArray[midx];
+				v += multi.render(i, fromTime, toTime);
+			}
+			v = intercept(v, delta) >> 1;
+			
 			if (v > Short.MAX_VALUE) {
 				v = Short.MAX_VALUE;
 			} else if (v < Short.MIN_VALUE) {
@@ -261,26 +287,19 @@ public class XgmSoundMixer extends SoundMixer {
 		}
 		
 		counter.setParam(param.freqPerFrame, param.sampleInCurFrame);
+		
+		// 以下是性能考虑
+		if (interceptorArray == null || interceptorArray.length != interceptors.size()) {
+			interceptorArray = new ISoundInterceptor[interceptors.size()];
+		}
+		interceptors.toArray(interceptorArray);
+		
+		if (multiArray == null) {
+			multiArray = new AbstractXgmMultiMixer[multiList.size()];
+			multiList.toArray(multiArray);
+		}
 	}
 	
-	private int renderOneSample(int i) {
-		int fromIdx = counter.getCycleCount();
-		int delta = counter.tick();
-		int toIdx = counter.getCycleCount();
-		/*
-		 * fromIdx 和 toIdx 是时钟数
-		 */
-		int value = 0;
-		
-		final int mlen = multiList.size();
-		for (int midx = 0; midx < mlen; midx++) {
-			AbstractXgmMultiMixer multi = multiList.get(midx);
-			value += multi.render(i, fromIdx, toIdx);
-		}
-		
-		return intercept(value, delta) >> 1;
-	}
-
 	@Override
 	public int readBuffer(short[] buf, int offset, int length) {
 		int len = Math.min(length, param.sampleInCurFrame);

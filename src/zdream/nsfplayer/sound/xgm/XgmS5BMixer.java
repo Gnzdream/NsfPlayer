@@ -53,6 +53,7 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void beforeRender() {
+		super.beforeRender();
 		ch1.beforeSubmit();
 		ch2.beforeSubmit();
 		ch3.beforeSubmit();

@@ -47,6 +47,7 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	
 	@Override
 	public void beforeRender() {
+		super.beforeRender();
 		pulse1.beforeSubmit();
 		pulse2.beforeSubmit();
 		sawtooth.beforeSubmit();

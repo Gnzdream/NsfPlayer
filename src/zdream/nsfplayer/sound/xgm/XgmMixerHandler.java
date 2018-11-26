@@ -25,7 +25,7 @@ public class XgmMixerHandler implements IMixerHandler {
 	 * @return
 	 *   Xgm 混音器的全局拦截器组
 	 */
-	List<ISoundInterceptor> getGlobalInterceptors() {
+	public List<ISoundInterceptor> getGlobalInterceptors() {
 		return mixer.interceptors;
 	}
 	
@@ -37,7 +37,7 @@ public class XgmMixerHandler implements IMixerHandler {
 	 * @return
 	 *   对应芯片的混音拦截器组
 	 */
-	List<ISoundInterceptor> getChipInterceptors(byte chip) {
+	public List<ISoundInterceptor> getChipInterceptors(byte chip) {
 		AbstractXgmMultiMixer multi = mixer.multis.get(chip);
 		
 		if (multi == null) {

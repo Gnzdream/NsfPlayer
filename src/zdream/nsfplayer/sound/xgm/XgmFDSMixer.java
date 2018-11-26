@@ -30,6 +30,7 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 
 	@Override
 	public void beforeRender() {
+		super.beforeRender();
 		fds.beforeSubmit();
 	}
 	

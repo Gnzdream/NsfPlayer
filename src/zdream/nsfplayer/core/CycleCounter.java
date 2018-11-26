@@ -14,7 +14,7 @@ import zdream.nsfplayer.core.IResetable;
  * @author Zdream
  * @since v0.2.5
  */
-public class CycleCounter implements IResetable {
+public final class CycleCounter implements IResetable {
 	
 	/**
 	 * 总周期数

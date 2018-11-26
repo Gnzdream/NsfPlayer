@@ -17,10 +17,20 @@ public class BytesPlayer {
 	private SourceDataLine dateline;
 
 	public BytesPlayer() {
-		AudioFormat af = new AudioFormat(48000, 16, 1, true, false); // 单声道
+		this(48000);
+	}
+
+	/**
+	 * 修改播放时的采样率
+	 * @param s
+	 *   采样率, 默认 48000
+	 * @since v0.2.10
+	 */
+	public BytesPlayer(int s) {
+		AudioFormat af = new AudioFormat(s, 16, 1, true, false); // 单声道
 		try {
 			dateline = AudioSystem.getSourceDataLine(af);
-			dateline.open(af, 48000);
+			dateline.open(af, s);
 		} catch (LineUnavailableException e) {
 			System.err.println("初始化音频输出失败。");
 		}

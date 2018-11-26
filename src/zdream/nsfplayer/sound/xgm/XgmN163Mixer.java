@@ -54,6 +54,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 
 	@Override
 	public void beforeRender() {
+		super.beforeRender();
 		for (int i = 0; i < n163s.length; i++) {
 			AbstractXgmAudioChannel ch = n163s[i];
 			if (!ch.isEnable()) {

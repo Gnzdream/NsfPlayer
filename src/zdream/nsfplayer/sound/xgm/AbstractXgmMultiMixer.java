@@ -15,6 +15,11 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 	protected final ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
 	
 	/**
+	 * 缓存, 性能考虑
+	 */
+	private ISoundInterceptor[] interceptorArray;
+	
+	/**
 	 * @param value
 	 * @param time
 	 *   过去的时钟周期数
@@ -22,9 +27,9 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 	 */
 	protected int intercept(int value, int time) {
 		int ret = value;
-		final int length = interceptors.size();
+		final int length = interceptorArray.length;
 		for (int i = 0; i < length; i++) {
-			ISoundInterceptor interceptor = interceptors.get(i);
+			ISoundInterceptor interceptor = interceptorArray[i];
 			if (interceptor.isEnable()) {
 				ret = interceptor.execute(ret, time);
 			}
@@ -47,6 +52,14 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 		for (ISoundInterceptor i : interceptors) {
 			i.reset();
 		}
+	}
+	
+	@Override
+	public void beforeRender() {
+		if (interceptorArray == null || interceptorArray.length != interceptors.size()) {
+			interceptorArray = new ISoundInterceptor[interceptors.size()];
+		}
+		interceptors.toArray(interceptorArray);
 	}
 	
 }
