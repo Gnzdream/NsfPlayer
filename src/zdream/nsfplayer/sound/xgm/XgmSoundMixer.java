@@ -1,11 +1,12 @@
 package zdream.nsfplayer.sound.xgm;
 
+import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 import zdream.nsfplayer.core.CycleCounter;
-import zdream.nsfplayer.core.NsfChannelCode;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.sound.interceptor.Amplifier;
 import zdream.nsfplayer.sound.interceptor.Compressor;
@@ -82,19 +83,6 @@ public class XgmSoundMixer extends SoundMixer {
 		return ch;
 	}
 	
-	private byte chipOfChannel(byte channelCode) {
-		byte chip = NsfChannelCode.chipOfChannel(channelCode);
-		
-		if (chip == CHIP_2A03) {
-			if (channelCode == CHANNEL_2A03_TRIANGLE || channelCode == CHANNEL_2A03_NOISE
-					|| channelCode == CHANNEL_2A03_DPCM) {
-				return 0xF; // 表示 TND
-			}
-		}
-		
-		return chip;
-	}
-	
 	/**
 	 * 按照 chip 选择 IXgmMultiChannelMixer
 	 */
@@ -105,7 +93,7 @@ public class XgmSoundMixer extends SoundMixer {
 		case CHIP_2A03:
 			multi = new Xgm2A03Mixer();
 			break;
-		case 0xF:
+		case CHIP_2A07:
 			multi = new Xgm2A07Mixer();
 			break;
 		case CHIP_VRC6:

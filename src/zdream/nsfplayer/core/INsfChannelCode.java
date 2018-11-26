@@ -13,6 +13,10 @@ package zdream.nsfplayer.core;
  *   
  * @version v0.2.7
  *   补充轨道类型编号相关的参数
+ *   
+ * @version v0.2.10
+ *   补充 2A07 芯片号的声明,
+ *   现在原 2A03 芯片中的三角、噪音和 DPCM 移到 2A07 下.
  * 
  * @author Zdream
  * @since v0.2.1
@@ -64,6 +68,7 @@ public interface INsfChannelCode {
 	 */
 	public static final byte
 			CHIP_2A03 = 0,
+			CHIP_2A07 = 3,
 			CHIP_VRC6 = 0x10,
 			CHIP_VRC7 = 0x20,
 			CHIP_FDS = 0x30,

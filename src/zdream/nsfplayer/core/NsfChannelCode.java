@@ -18,10 +18,12 @@ public class NsfChannelCode implements INsfChannelCode {
 		switch (channelCode) {
 		case CHANNEL_2A03_PULSE1:
 		case CHANNEL_2A03_PULSE2:
+			return CHIP_2A03;
+			
 		case CHANNEL_2A03_TRIANGLE:
 		case CHANNEL_2A03_NOISE:
 		case CHANNEL_2A03_DPCM:
-			return CHIP_2A03;
+			return CHIP_2A07;
 			
 		case CHANNEL_VRC6_PULSE1:
 		case CHANNEL_VRC6_PULSE2:

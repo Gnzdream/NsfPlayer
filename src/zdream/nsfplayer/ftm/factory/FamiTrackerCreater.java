@@ -1030,7 +1030,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 	 */
 	private AbstractFtmInstrument createInstrument(FtmChipType type, FamiTrackerHandler doc, Block block) {
 		switch (type) {
-		case _2A03:
+		case _2A03: case _2A07:
 			return create2A03Instrument(doc, block);
 			
 		case VRC6:

@@ -205,7 +205,7 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter {
 		boolean valid = false;
 		FtmChipType type = querier.getInstrumentType(inst);
 		switch (chipOfChannel(channelType)) {
-		case CHIP_2A03: case CHIP_MMC5:
+		case CHIP_2A03: case CHIP_2A07: case CHIP_MMC5:
 			valid = type == _2A03; break;
 		case CHIP_VRC6:
 			valid = type == VRC6; break;

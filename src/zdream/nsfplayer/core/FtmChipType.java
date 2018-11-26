@@ -15,6 +15,8 @@ public enum FtmChipType {
 	
 	_2A03(CHIP_2A03),
 	
+	_2A07(CHIP_2A07),
+	
 	VRC6(CHIP_VRC6),
 	
 	VRC7(CHIP_VRC7),
@@ -48,6 +50,8 @@ public enum FtmChipType {
 		switch (code) {
 		case CHIP_2A03:
 			return _2A03;
+		case CHIP_2A07:
+			return _2A07;
 		case CHIP_VRC6:
 			return VRC6;
 		case CHIP_VRC7:
