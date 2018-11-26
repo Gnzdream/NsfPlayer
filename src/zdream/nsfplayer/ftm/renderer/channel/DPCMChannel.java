@@ -171,7 +171,7 @@ public class DPCMChannel extends AbstractFtmChannel {
 			if (sampleSize > 0) {
 				this.sample = sample;
 				this.curPeriod = pitch & 0xF;
-				this.sampleLength = sampleSize / 16 - this.offset * 4;
+				this.sampleLength = sampleSize / 16 - this.offset / 16;
 				this.loopLength = sampleSize - this.loopOffset;
 				this.needTrigger = true;
 
@@ -228,7 +228,7 @@ public class DPCMChannel extends AbstractFtmChannel {
 			// Start playing the sample
 			sound.loop = loop;
 			sound.periodIndex = curPeriod;
-			sound.offsetAddress = offset * 64;
+			sound.offsetAddress = offset;
 			sound.length = this.sampleLength * 16;
 			sound.sample = this.sample;
 			
