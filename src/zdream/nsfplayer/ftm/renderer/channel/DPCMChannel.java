@@ -56,15 +56,19 @@ public class DPCMChannel extends AbstractFtmChannel {
 	 */
 	private int deltaCounter = -1;
 	private boolean loop;
+	
+	/**
+	 * 读取位置的起始位, 单位 1 byte
+	 */
 	private int offset;
 	
 	/**
-	 * 单位: 16 bytes
+	 * 单位: 1 bytes
 	 */
 	private int sampleLength;
 	
 	/**
-	 * 单位: 64 bytes
+	 * 单位: 1 bytes
 	 */
 	private int loopOffset;
 	private int loopLength;
@@ -171,7 +175,7 @@ public class DPCMChannel extends AbstractFtmChannel {
 			if (sampleSize > 0) {
 				this.sample = sample;
 				this.curPeriod = pitch & 0xF;
-				this.sampleLength = sampleSize / 16 - this.offset / 16;
+				this.sampleLength = sampleSize - this.offset;
 				this.loopLength = sampleSize - this.loopOffset;
 				this.needTrigger = true;
 
@@ -229,13 +233,13 @@ public class DPCMChannel extends AbstractFtmChannel {
 			sound.loop = loop;
 			sound.periodIndex = curPeriod;
 			sound.offsetAddress = offset;
-			sound.length = this.sampleLength * 16;
+			sound.length = this.sampleLength;
 			sound.sample = this.sample;
 			
 			// Loop offset
 			if (loopOffset > 0) {
-				sound.offsetAddress = loopOffset * 64;
-				sound.length = this.loopLength * 16;
+				sound.offsetAddress = loopOffset;
+				sound.length = this.loopLength;
 			}
 			
 			sound.reload();
