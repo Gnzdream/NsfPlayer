@@ -559,6 +559,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 测试方法 *
 	 ********** */
 	
+	@Deprecated
 	public int enableLog = 0;
 	
 	private void log() {

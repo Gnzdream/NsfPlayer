@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
 /**
- * Famitracker 运行时状态的持有者
+ * Famitracker 运行时环境的持有者
  * 
  * @author Zdream
  * @since 0.2.1
@@ -9,7 +9,7 @@ package zdream.nsfplayer.ftm.renderer;
 public interface IFtmRuntimeHolder {
 	
 	/**
-	 * 获得运行状态数据
+	 * 获得运行环境实例
 	 * @return
 	 */
 	public FamiTrackerRuntime getRuntime();

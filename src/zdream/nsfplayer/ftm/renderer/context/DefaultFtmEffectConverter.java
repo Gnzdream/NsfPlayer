@@ -243,15 +243,6 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter {
 		short delay = 0;
 		
 		for (int i = 0; i < MAX_EFFECT_COLUMNS; i++) {
-			/*if (effNumber[i] != 0) {
-				b.append(' ').append(EFF_CHAR[effNumber[i] - 1]).append('-');
-				String paramStr = Integer.toHexString(effParam[i] & 0xFF);
-				if (paramStr.length() == 1) {
-					b.append('0');
-				}
-				b.append(paramStr);
-			}*/
-			
 			switch (note.effNumber[i]) {
 			case EF_NONE:
 				continue;

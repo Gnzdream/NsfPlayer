@@ -1,7 +1,7 @@
 package zdream.nsfplayer.nsf.renderer;
 
 /**
- * Nsf 运行时状态的持有者
+ * Nsf 运行时环境的持有者
  * 
  * @author Zdream
  * @since v0.2.4
@@ -9,7 +9,7 @@ package zdream.nsfplayer.nsf.renderer;
 public interface INsfRuntimeHolder {
 	
 	/**
-	 * 获得运行状态数据
+	 * 获得运行环境实例
 	 * @return
 	 */
 	public NsfRuntime getRuntime();

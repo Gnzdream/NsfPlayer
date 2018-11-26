@@ -14,6 +14,7 @@ public interface IFtmSchedule {
 	 * @param channelCode
 	 *   当前轨道号码
 	 * @param runtime
+	 *   运行环境
 	 */
 	public void trigger(byte channelCode, FamiTrackerRuntime runtime);
 

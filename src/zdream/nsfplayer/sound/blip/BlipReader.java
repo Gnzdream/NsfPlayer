@@ -45,7 +45,9 @@ public class BlipReader {
 	 * @param bass_shift
 	 *   默认为 9
 	 */
-	public void next( int bass_shift )         { accum += buf.buffer_[ptr++] - (accum >> bass_shift); }
+	public void next(int bass_shift) {
+		accum += buf.buffer_[ptr++] - (accum >> bass_shift);
+	}
 	
 	/**
 	 * <p>结束从 buffer 中读取采样数据.<br>

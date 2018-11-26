@@ -2,7 +2,7 @@ package zdream.nsfplayer.ftm.renderer.channel;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
-import zdream.nsfplayer.ftm.renderer.sequence.DefaultSequenceHandler;
+import zdream.nsfplayer.ftm.renderer.context.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 
 /**

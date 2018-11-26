@@ -18,8 +18,10 @@ public class BlipMixerConfig implements IMixerConfig {
 	public BlipMixerConfig clone() {
 		try {
 			return (BlipMixerConfig) super.clone();
-		} catch (CloneNotSupportedException e) {}
-		return null;
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

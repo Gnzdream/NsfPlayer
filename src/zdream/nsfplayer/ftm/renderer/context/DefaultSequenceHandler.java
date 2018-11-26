@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.renderer.sequence;
+package zdream.nsfplayer.ftm.renderer.context;
 
 import static zdream.nsfplayer.ftm.format.FtmSequence.SEQUENCE_COUNT;
 

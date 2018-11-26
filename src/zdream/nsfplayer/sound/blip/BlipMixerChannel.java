@@ -1,6 +1,6 @@
 package zdream.nsfplayer.sound.blip;
 
-import zdream.nsfplayer.ftm.renderer.tools.IExpression;
+import zdream.nsfplayer.core.IExpression;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
 /**

@@ -1229,7 +1229,6 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		// 通用轨道效果
 		case 'E': return EF_VOLUME; // 已弃用
 		case '3': return EF_PORTAMENTO;
-		// TODO Sweep up 和 Sweep down 这里暂时未实现
 		case '0': return EF_ARPEGGIO;
 		case '4': return EF_VIBRATO;
 		case '7': return EF_TREMOLO;
