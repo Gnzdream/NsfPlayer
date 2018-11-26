@@ -295,9 +295,9 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter {
 					int param = note.effParam[i];
 					if (typeOfChannel(channelType) == CHANNEL_TYPE_VRC7) {
 						if ((param & 0xF) != 0) { // up 或 0
-							putEffect(effects, VRC7VolumeSlideEffect.of((param & 0xF) * 2));
+							putEffect(effects, VRC7VolumeSlideEffect.of((param & 0xF)));
 						} else { // down
-							putEffect(effects, VRC7VolumeSlideEffect.of((param >> 4) * -2));
+							putEffect(effects, VRC7VolumeSlideEffect.of((param >> 4) * -1));
 						}
 					} else {
 						if ((param & 0xF) != 0) { // down 或 0
