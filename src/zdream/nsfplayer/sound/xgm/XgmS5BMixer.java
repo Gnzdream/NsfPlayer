@@ -39,15 +39,15 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size) {
+	public void checkCapacity(int size, int frame) {
 		if (ch1 != null) {
-			ch1.checkCapacity(size);
+			ch1.checkCapacity(size, frame);
 		}
 		if (ch2 != null) {
-			ch2.checkCapacity(size);
+			ch2.checkCapacity(size, frame);
 		}
 		if (ch3 != null) {
-			ch3.checkCapacity(size);
+			ch3.checkCapacity(size, frame);
 		}
 	}
 	

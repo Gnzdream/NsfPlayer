@@ -37,9 +37,9 @@ public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size) {
-		pulse1.checkCapacity(size);
-		pulse2.checkCapacity(size);
+	public void checkCapacity(int size, int frame) {
+		pulse1.checkCapacity(size, frame);
+		pulse2.checkCapacity(size, frame);
 	}
 	
 	@Override

@@ -54,7 +54,9 @@ public abstract class AbstractXgmAudioChannel implements IMixerChannel {
 	 * 每帧写操作之前调用, 让管道自己检查容量大小是否合适, 并进行修改
 	 * @param size
 	 *   容量大小. 一般单位为时钟
+	 * @param sample
+	 *   采样数
 	 */
-	protected abstract void checkCapacity(int size);
+	protected abstract void checkCapacity(int size, int sample);
 
 }

@@ -39,10 +39,10 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size) {
-		pulse1.checkCapacity(size);
-		pulse2.checkCapacity(size);
-		sawtooth.checkCapacity(size);
+	public void checkCapacity(int size, int frame) {
+		pulse1.checkCapacity(size, frame);
+		pulse2.checkCapacity(size, frame);
+		sawtooth.checkCapacity(size, frame);
 	}
 	
 	@Override
