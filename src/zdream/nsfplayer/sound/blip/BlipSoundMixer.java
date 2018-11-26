@@ -124,7 +124,7 @@ public class BlipSoundMixer extends SoundMixer {
 		case CHANNEL_TYPE_DPCM:
 		{
 			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (41543.36 / (1 / (x / 22638.0) + 30.0)) : 0);
+			mixer.setExpression((x) -> (x > 0) ? (int) (33234.69 / (1 / (x / 22638.0) + 30.0)) : 0);
 		} break;
 		
 		case CHANNEL_TYPE_MMC5_PULSE:

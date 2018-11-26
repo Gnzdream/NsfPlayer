@@ -847,7 +847,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			if (patternIdx < 0 || patternIdx >= MAX_PATTERN) {
 				handleException(block, EX_PAT_WRONG_PATTERN_NO, trackIdx, patternIdx);
 			}
-			if (items <= 0 || items >= MAX_PATTERN_LENGTH) {
+			if (items <= 0 || items > MAX_PATTERN_LENGTH) {
 				handleException(block, EX_PAT_WRONG_NOTE_AMOUNT, trackIdx, items);
 			}
 			
