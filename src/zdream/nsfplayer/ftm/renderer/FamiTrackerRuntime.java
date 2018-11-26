@@ -53,6 +53,7 @@ public class FamiTrackerRuntime {
 	 ********** */
 	
 	void init() {
+		this.param.levels.copyFrom(config.channelLevels);
 		rate = new NsfRateConverter(param);
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);

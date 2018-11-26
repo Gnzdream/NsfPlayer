@@ -45,40 +45,7 @@ public class NsfCommonParameter {
 	/* **********
 	 *   音量   *
 	 ********** */
-	public float level2A03Pules1 = 1.0f;
-	public float level2A03Pules2 = 1.0f;
-	public float level2A03Triangle = 1.0f;
-	public float level2A03Noise = 1.0f;
-	public float level2A03DPCM = 1.0f;
-	
-	public float levelVRC6Pules1 = 1.0f;
-	public float levelVRC6Pules2 = 1.0f;
-	public float levelVRC6Sawtooth = 1.0f;
-	
-	public float levelMMC5Pules1 = 1.0f;
-	public float levelMMC5Pules2 = 1.0f;
-	
-	public float levelFDS = 1.0f;
-	
-	public float levelN163Namco1 = 1.0f;
-	public float levelN163Namco2 = 1.0f;
-	public float levelN163Namco3 = 1.0f;
-	public float levelN163Namco4 = 1.0f;
-	public float levelN163Namco5 = 1.0f;
-	public float levelN163Namco6 = 1.0f;
-	public float levelN163Namco7 = 1.0f;
-	public float levelN163Namco8 = 1.0f;
-	
-	public float levelVRC7FM1 = 1.0f;
-	public float levelVRC7FM2 = 1.0f;
-	public float levelVRC7FM3 = 1.0f;
-	public float levelVRC7FM4 = 1.0f;
-	public float levelVRC7FM5 = 1.0f;
-	public float levelVRC7FM6 = 1.0f;
-	
-	public float levelS5BSquare1 = 1.0f;
-	public float levelS5BSquare2 = 1.0f;
-	public float levelS5BSquare3 = 1.0f;
+	public final ChannelLevelsParameter levels = new ChannelLevelsParameter();
 	
 	/* **********
 	 * 播放参数 *

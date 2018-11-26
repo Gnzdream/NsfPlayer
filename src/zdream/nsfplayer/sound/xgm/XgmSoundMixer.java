@@ -20,7 +20,7 @@ import zdream.nsfplayer.sound.mixer.SoundMixer;
  * Nsf 的音频合成器
  * 
  * @author Zdream
- * @since 0.2.1
+ * @since v0.2.1
  */
 public class XgmSoundMixer extends SoundMixer {
 	

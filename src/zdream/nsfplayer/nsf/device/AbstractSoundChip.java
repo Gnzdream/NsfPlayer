@@ -6,7 +6,7 @@ import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
- * <p>虚拟音频设备
+ * <p>虚拟音频设备 (相当于虚拟声卡)
  * 
  * @author Zdream
  * @since v0.2.4
@@ -31,7 +31,11 @@ public abstract class AbstractSoundChip implements IDevice, INsfChannelCode, INs
 	}
 	
 	/**
+	 * <p>整个渲染的工作分为初始化、执行和渲染三个部分,
+	 * 通过该值能够确定是否已经进入了渲染阶段.
+	 * </p>
 	 * @return
+	 *   是否开始渲染的标识.
 	 * @see #startRender
 	 * @since v0.2.9
 	 */

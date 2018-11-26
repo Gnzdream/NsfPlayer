@@ -1,5 +1,6 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import zdream.nsfplayer.core.ChannelLevelsParameter;
 import zdream.nsfplayer.sound.mixer.IMixerConfig;
 
 /**
@@ -42,54 +43,19 @@ public class FamiTrackerConfig implements Cloneable {
 	/**
 	 * 默认全是 1
 	 */
-	public class ChannelLevels {
-		
-		public float level2A03Pules1 = 1.0f;
-		public float level2A03Pules2 = 1.0f;
-		public float level2A03Triangle = 1.0f;
-		public float level2A03Noise = 1.0f;
-		public float level2A03DPCM = 1.0f;
-		
-		public float levelVRC6Pules1 = 1.0f;
-		public float levelVRC6Pules2 = 1.0f;
-		public float levelVRC6Sawtooth = 1.0f;
-		
-		public float levelMMC5Pules1 = 1.0f;
-		public float levelMMC5Pules2 = 1.0f;
-		
-		public float levelFDS = 1.0f;
-		
-		public float levelN163Namco1 = 1.0f;
-		public float levelN163Namco2 = 1.0f;
-		public float levelN163Namco3 = 1.0f;
-		public float levelN163Namco4 = 1.0f;
-		public float levelN163Namco5 = 1.0f;
-		public float levelN163Namco6 = 1.0f;
-		public float levelN163Namco7 = 1.0f;
-		public float levelN163Namco8 = 1.0f;
-		
-		public float levelVRC7FM1 = 1.0f;
-		public float levelVRC7FM2 = 1.0f;
-		public float levelVRC7FM3 = 1.0f;
-		public float levelVRC7FM4 = 1.0f;
-		public float levelVRC7FM5 = 1.0f;
-		public float levelVRC7FM6 = 1.0f;
-		
-		public float levelS5BSquare1 = 1.0f;
-		public float levelS5BSquare2 = 1.0f;
-		public float levelS5BSquare3 = 1.0f;
-	}
-	
-	public final ChannelLevels channelLevels = new ChannelLevels();
+	public final ChannelLevelsParameter channelLevels = new ChannelLevelsParameter();
 	
 	@Override
 	public FamiTrackerConfig clone() {
-		try {
-			return (FamiTrackerConfig) super.clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
+		FamiTrackerConfig c = new FamiTrackerConfig();
+		
+		c.sampleRate = this.sampleRate;
+		c.channelLevels.copyFrom(channelLevels);
+		if (mixerConfig != null) {
+			c.mixerConfig = mixerConfig.clone();
 		}
-		return null;
+		
+		return c;
 	}
 	
 }

@@ -62,6 +62,7 @@ public class NsfRuntime implements IResetable {
 	
 	NsfRuntime(NsfRendererConfig config) {
 		this.config = config;
+		param.levels.copyFrom(config.channelLevels);
 		manager = new DeviceManager(this);
 		clockCounter = new NsfClockCounter(param);
 		rate = new NsfRateConverter(param);

@@ -5,6 +5,7 @@ import static zdream.nsfplayer.core.ERegion.PAL;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_DENDY;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
+import static zdream.nsfplayer.core.INsfChannelCode.*;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -23,6 +24,7 @@ import zdream.nsfplayer.nsf.device.chip.NesVRC6;
 import zdream.nsfplayer.nsf.device.chip.NesVRC7;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
+import zdream.nsfplayer.nsf.renderer.NsfParameter;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
@@ -224,8 +226,9 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 
 	@Override
 	public void reset() {
-		// 见 NsfPlayer.reset()
+		// 原工程是 NsfPlayer.reset()
 		
+		// 确定制式
 		region = confirmRegion(runtime.audio.pal_ntsc);
 		switch (region) {
 		case NTSC:
@@ -306,7 +309,8 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	}
 	
 	/**
-	 * 重读 Nsf 音频
+	 * <p>按照 Nsf 的信息, 对虚拟设备进行一次重新装配工作
+	 * </p>
 	 * 
 	 * 这里参照 NsfPlayer 类, 见 NsfPlayer.reload()
 	 */
@@ -314,10 +318,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		
 		int maxBankswitch = reloadMemory();
 		
-		// 以下是原工程 NsfPlayer 的注释:
-		// virtual machine controlling memory reads and writes
-		// to various devices, expansions, etc.
-		// 应用 read() 和 write() 方法来控制虚拟设备, 以及它们的拓展类（子类）.
+		// 进行一次全拆除, 重新安装
 		detachAll();
 		runtime.chips.clear();
 		
@@ -330,7 +331,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			layer.attach(runtime.bank);
 		}
 		layer.attach(runtime.mem);
-		// dmc.setMemory(layer);
 		
 		// 连接音频芯片
 		apu_bus.attach(apu);
@@ -342,7 +342,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		attachSoundChipAndMixer(apu); // mixer.attach(apu);
 		attachSoundChipAndMixer(dmc); // mixer.attach(dmc);
 		
-		// apu_bus.attach(fsc); // FrameSequenceCounter
 		stack.attach(apu_bus);
 		
 		if (runtime.audio.useVrc6()) {
@@ -376,43 +375,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			putSoundChipToRuntime(s5b);
 			attachSoundChipAndMixer(s5b);
 		}
-		
-		/*
-		if (nsf.useMmc5) {
-			stack.attach(sc[NsfPlayerConfig.MMC5]);
-			mixer.attach(amp[NsfPlayerConfig.MMC5]);
-		}
-		if (nsf.useVrc6) {
-			stack.attach(sc[NsfPlayerConfig.VRC6]);
-			mixer.attach(amp[NsfPlayerConfig.VRC6]);
-		}
-		if (nsf.useVrc7) {
-			stack.attach(sc[NsfPlayerConfig.VRC7]);
-			mixer.attach(amp[NsfPlayerConfig.VRC7]);
-		}
-		if (nsf.useFme7) {
-			stack.attach(sc[NsfPlayerConfig.FME7]);
-			mixer.attach(amp[NsfPlayerConfig.FME7]);
-		}
-		if (nsf.useN106) {
-			stack.attach(sc[NsfPlayerConfig.N106]);
-			mixer.attach(amp[NsfPlayerConfig.N106]);
-		}
-		if (nsf.useFds) {
-			boolean write_enable = (config.getDeviceOption(NsfPlayerConfig.FDS, NesFDS.OPT_WRITE_PROTECT).toInt() == 0);
-
-			stack.attach(sc[NsfPlayerConfig.FDS]); // last before memory layer
-			mixer.attach(amp[NsfPlayerConfig.FDS]);
-			mem.setFDSMode(write_enable);
-			bank.setFDSMode(write_enable);
-
-			bank.setBankDefault(6, nsf.bankswitch[6]);
-			bank.setBankDefault(7, nsf.bankswitch[7]);
-		} else {
-			mem.setFDSMode(false);
-			bank.setFDSMode(false);
-		}*/
-		
 		
 		// 最后是 layer
 		stack.attach(layer);
@@ -510,13 +472,58 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	}
 	
 	/**
-	 * 获取每个轨道的音量. 这个值应该是从参数 param / 配置 config 中去取.
+	 * 获取每个轨道的音量. 这个值应该是从参数 {@link NsfParameter} 中去取.
 	 * @param channelCode
 	 * @return
 	 */
 	private float getInitLevel(byte channelCode) {
-		// TODO 原本从参数 param / 配置 config 中去取, 现在先这样
-		return 1.0f;
+		float level = 0;
+		switch (channelCode) {
+		case CHANNEL_2A03_PULSE1: level = runtime.param.levels.level2A03Pules1; break;
+		case CHANNEL_2A03_PULSE2: level = runtime.param.levels.level2A03Pules2; break;
+		case CHANNEL_2A03_TRIANGLE: level = runtime.param.levels.level2A03Triangle; break;
+		case CHANNEL_2A03_NOISE: level = runtime.param.levels.level2A03Noise; break;
+		case CHANNEL_2A03_DPCM: level = runtime.param.levels.level2A03DPCM; break;
+
+		case CHANNEL_VRC6_PULSE1: level = runtime.param.levels.levelVRC6Pules1; break;
+		case CHANNEL_VRC6_PULSE2: level = runtime.param.levels.levelVRC6Pules2; break;
+		case CHANNEL_VRC6_SAWTOOTH: level = runtime.param.levels.levelVRC6Sawtooth; break;
+
+		case CHANNEL_MMC5_PULSE1: level = runtime.param.levels.levelMMC5Pules1; break;
+		case CHANNEL_MMC5_PULSE2: level = runtime.param.levels.levelMMC5Pules2; break;
+		
+		case CHANNEL_FDS: level = runtime.param.levels.levelFDS; break;
+		
+		case CHANNEL_N163_1: level = runtime.param.levels.levelN163Namco1; break;
+		case CHANNEL_N163_2: level = runtime.param.levels.levelN163Namco2; break;
+		case CHANNEL_N163_3: level = runtime.param.levels.levelN163Namco3; break;
+		case CHANNEL_N163_4: level = runtime.param.levels.levelN163Namco4; break;
+		case CHANNEL_N163_5: level = runtime.param.levels.levelN163Namco5; break;
+		case CHANNEL_N163_6: level = runtime.param.levels.levelN163Namco6; break;
+		case CHANNEL_N163_7: level = runtime.param.levels.levelN163Namco7; break;
+		case CHANNEL_N163_8: level = runtime.param.levels.levelN163Namco8; break;
+		
+		case CHANNEL_VRC7_FM1: level = runtime.param.levels.levelVRC7FM1; break;
+		case CHANNEL_VRC7_FM2: level = runtime.param.levels.levelVRC7FM2; break;
+		case CHANNEL_VRC7_FM3: level = runtime.param.levels.levelVRC7FM3; break;
+		case CHANNEL_VRC7_FM4: level = runtime.param.levels.levelVRC7FM4; break;
+		case CHANNEL_VRC7_FM5: level = runtime.param.levels.levelVRC7FM5; break;
+		case CHANNEL_VRC7_FM6: level = runtime.param.levels.levelVRC7FM6; break;
+		
+		case CHANNEL_S5B_SQUARE1: level = runtime.param.levels.levelS5BSquare1; break;
+		case CHANNEL_S5B_SQUARE2: level = runtime.param.levels.levelS5BSquare2; break;
+		case CHANNEL_S5B_SQUARE3: level = runtime.param.levels.levelS5BSquare3; break;
+		
+		default: level = 1.0f; break;
+		}
+		
+		if (level > 1) {
+			level = 1.0f;
+		} else if (level < 0) {
+			level = 0;
+		}
+		
+		return level;
 	}
 
 	/* **********

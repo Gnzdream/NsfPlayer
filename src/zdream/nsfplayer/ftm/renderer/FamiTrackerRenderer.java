@@ -100,7 +100,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		// 重置播放相关的数据
 		int frameRate = runtime.fetcher.getFrameRate();
-		resetCounterParam(frameRate, runtime.config.sampleRate);
+		resetCounterParam(frameRate, runtime.param.sampleRate);
 		clearBuffer();
 		runtime.rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
 		
@@ -387,7 +387,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		runtime.param.speed = speed;
 		
 		int frameRate = runtime.querier.getFrameRate();
-		resetCounterParam(frameRate, runtime.config.sampleRate);
+		resetCounterParam(frameRate, runtime.param.sampleRate);
 		runtime.rate.onParamUpdate();
 	}
 	
@@ -452,7 +452,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	}
 	
 	/**
-	 * 获得某个轨道的原始音量. 这个值要从 {@link FamiTrackerConfig} 中取
+	 * 获得某个轨道的原始音量. 这个值要从 {@link FamiTrackerParameter} 中取
 	 * @param channelCode
 	 *   轨道号
 	 * @return
@@ -462,40 +462,40 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	private float getInitLevel(byte channelCode) {
 		float level = 0;
 		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1: level = runtime.config.channelLevels.level2A03Pules1; break;
-		case CHANNEL_2A03_PULSE2: level = runtime.config.channelLevels.level2A03Pules2; break;
-		case CHANNEL_2A03_TRIANGLE: level = runtime.config.channelLevels.level2A03Triangle; break;
-		case CHANNEL_2A03_NOISE: level = runtime.config.channelLevels.level2A03Noise; break;
-		case CHANNEL_2A03_DPCM: level = runtime.config.channelLevels.level2A03DPCM; break;
+		case CHANNEL_2A03_PULSE1: level = runtime.param.levels.level2A03Pules1; break;
+		case CHANNEL_2A03_PULSE2: level = runtime.param.levels.level2A03Pules2; break;
+		case CHANNEL_2A03_TRIANGLE: level = runtime.param.levels.level2A03Triangle; break;
+		case CHANNEL_2A03_NOISE: level = runtime.param.levels.level2A03Noise; break;
+		case CHANNEL_2A03_DPCM: level = runtime.param.levels.level2A03DPCM; break;
 
-		case CHANNEL_VRC6_PULSE1: level = runtime.config.channelLevels.levelVRC6Pules1; break;
-		case CHANNEL_VRC6_PULSE2: level = runtime.config.channelLevels.levelVRC6Pules2; break;
-		case CHANNEL_VRC6_SAWTOOTH: level = runtime.config.channelLevels.levelVRC6Sawtooth; break;
+		case CHANNEL_VRC6_PULSE1: level = runtime.param.levels.levelVRC6Pules1; break;
+		case CHANNEL_VRC6_PULSE2: level = runtime.param.levels.levelVRC6Pules2; break;
+		case CHANNEL_VRC6_SAWTOOTH: level = runtime.param.levels.levelVRC6Sawtooth; break;
 
-		case CHANNEL_MMC5_PULSE1: level = runtime.config.channelLevels.levelMMC5Pules1; break;
-		case CHANNEL_MMC5_PULSE2: level = runtime.config.channelLevels.levelMMC5Pules2; break;
+		case CHANNEL_MMC5_PULSE1: level = runtime.param.levels.levelMMC5Pules1; break;
+		case CHANNEL_MMC5_PULSE2: level = runtime.param.levels.levelMMC5Pules2; break;
 		
-		case CHANNEL_FDS: level = runtime.config.channelLevels.levelFDS; break;
+		case CHANNEL_FDS: level = runtime.param.levels.levelFDS; break;
 		
-		case CHANNEL_N163_1: level = runtime.config.channelLevels.levelN163Namco1; break;
-		case CHANNEL_N163_2: level = runtime.config.channelLevels.levelN163Namco2; break;
-		case CHANNEL_N163_3: level = runtime.config.channelLevels.levelN163Namco3; break;
-		case CHANNEL_N163_4: level = runtime.config.channelLevels.levelN163Namco4; break;
-		case CHANNEL_N163_5: level = runtime.config.channelLevels.levelN163Namco5; break;
-		case CHANNEL_N163_6: level = runtime.config.channelLevels.levelN163Namco6; break;
-		case CHANNEL_N163_7: level = runtime.config.channelLevels.levelN163Namco7; break;
-		case CHANNEL_N163_8: level = runtime.config.channelLevels.levelN163Namco8; break;
+		case CHANNEL_N163_1: level = runtime.param.levels.levelN163Namco1; break;
+		case CHANNEL_N163_2: level = runtime.param.levels.levelN163Namco2; break;
+		case CHANNEL_N163_3: level = runtime.param.levels.levelN163Namco3; break;
+		case CHANNEL_N163_4: level = runtime.param.levels.levelN163Namco4; break;
+		case CHANNEL_N163_5: level = runtime.param.levels.levelN163Namco5; break;
+		case CHANNEL_N163_6: level = runtime.param.levels.levelN163Namco6; break;
+		case CHANNEL_N163_7: level = runtime.param.levels.levelN163Namco7; break;
+		case CHANNEL_N163_8: level = runtime.param.levels.levelN163Namco8; break;
 		
-		case CHANNEL_VRC7_FM1: level = runtime.config.channelLevels.levelVRC7FM1; break;
-		case CHANNEL_VRC7_FM2: level = runtime.config.channelLevels.levelVRC7FM2; break;
-		case CHANNEL_VRC7_FM3: level = runtime.config.channelLevels.levelVRC7FM3; break;
-		case CHANNEL_VRC7_FM4: level = runtime.config.channelLevels.levelVRC7FM4; break;
-		case CHANNEL_VRC7_FM5: level = runtime.config.channelLevels.levelVRC7FM5; break;
-		case CHANNEL_VRC7_FM6: level = runtime.config.channelLevels.levelVRC7FM6; break;
+		case CHANNEL_VRC7_FM1: level = runtime.param.levels.levelVRC7FM1; break;
+		case CHANNEL_VRC7_FM2: level = runtime.param.levels.levelVRC7FM2; break;
+		case CHANNEL_VRC7_FM3: level = runtime.param.levels.levelVRC7FM3; break;
+		case CHANNEL_VRC7_FM4: level = runtime.param.levels.levelVRC7FM4; break;
+		case CHANNEL_VRC7_FM5: level = runtime.param.levels.levelVRC7FM5; break;
+		case CHANNEL_VRC7_FM6: level = runtime.param.levels.levelVRC7FM6; break;
 		
-		case CHANNEL_S5B_SQUARE1: level = runtime.config.channelLevels.levelS5BSquare1; break;
-		case CHANNEL_S5B_SQUARE2: level = runtime.config.channelLevels.levelS5BSquare2; break;
-		case CHANNEL_S5B_SQUARE3: level = runtime.config.channelLevels.levelS5BSquare3; break;
+		case CHANNEL_S5B_SQUARE1: level = runtime.param.levels.levelS5BSquare1; break;
+		case CHANNEL_S5B_SQUARE2: level = runtime.param.levels.levelS5BSquare2; break;
+		case CHANNEL_S5B_SQUARE3: level = runtime.param.levels.levelS5BSquare3; break;
 		
 		default: level = 1.0f; break;
 		}

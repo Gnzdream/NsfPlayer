@@ -1,6 +1,6 @@
 package zdream.nsfplayer.nsf.renderer;
 
-import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
+import zdream.nsfplayer.core.ChannelLevelsParameter;
 import zdream.nsfplayer.sound.mixer.IMixerConfig;
 
 /**
@@ -42,14 +42,27 @@ public class NsfRendererConfig implements Cloneable {
 	 */
 	public IMixerConfig mixerConfig;
 	
+	/* **********
+	 *   音量   *
+	 ********** */
+	
+	/**
+	 * 默认全是 1
+	 */
+	public final ChannelLevelsParameter channelLevels = new ChannelLevelsParameter();
+	
 	@Override
-	public FamiTrackerConfig clone() {
-		try {
-			return (FamiTrackerConfig) super.clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
+	public NsfRendererConfig clone() {
+		NsfRendererConfig c = new NsfRendererConfig();
+		
+		c.sampleRate = this.sampleRate;
+		c.region = this.region;
+		c.channelLevels.copyFrom(channelLevels);
+		if (mixerConfig != null) {
+			c.mixerConfig = mixerConfig.clone();
 		}
-		return null;
+		
+		return c;
 	}
 
 }
