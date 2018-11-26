@@ -1,7 +1,9 @@
 package zdream.nsfplayer.ftm.format;
 
 /**
- * FTM 乐曲
+ * <p>FTM 乐曲
+ * <p>{@link FtmAudio} 是多个 FTM 乐曲的集合.
+ * </p>
  * 
  * @author Zdream
  * @since v0.1

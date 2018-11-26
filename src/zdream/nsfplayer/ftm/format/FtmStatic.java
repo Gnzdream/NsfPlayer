@@ -58,6 +58,7 @@ public class FtmStatic {
 	public static final int MAX_PATTERN = MAX_FRAMES;
 	
 	/**
+	 * 最大的 DPCM 数
 	 * Maximum number of DPCM samples, cannot be increased unless the NSF driver is modified.
 	 */
 	public static final int MAX_DSAMPLES = 64;

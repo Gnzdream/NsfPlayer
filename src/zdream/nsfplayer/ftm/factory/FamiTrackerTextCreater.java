@@ -438,27 +438,27 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		inst.vol = Integer.parseInt(strs[2]);
 		if (inst.vol != -1) {
-			createSequence(doc, inst.vol, FtmSequenceType.VOLUME);
+			doc.getOrCreateSequence(_2A03, VOLUME, inst.vol);
 		}
 		
 		inst.arp = Integer.parseInt(strs[3]);
 		if (inst.arp != -1) {
-			createSequence(doc, inst.arp, FtmSequenceType.ARPEGGIO);
+			doc.getOrCreateSequence(_2A03, ARPEGGIO, inst.arp);
 		}
 		
 		inst.pit = Integer.parseInt(strs[4]);
 		if (inst.pit != -1) {
-			createSequence(doc, inst.pit, FtmSequenceType.PITCH);
+			doc.getOrCreateSequence(_2A03, PITCH, inst.pit);
 		}
 		
 		inst.hip = Integer.parseInt(strs[5]);
 		if (inst.hip != -1) {
-			createSequence(doc, inst.hip, FtmSequenceType.HI_PITCH);
+			doc.getOrCreateSequence(_2A03, HI_PITCH, inst.hip);
 		}
 		
 		inst.dut = Integer.parseInt(strs[6]);
 		if (inst.dut != -1) {
-			createSequence(doc, inst.dut, FtmSequenceType.DUTY);
+			doc.getOrCreateSequence(_2A03, DUTY, inst.dut);
 		}
 
 		doc.registerInstrument(inst);
@@ -531,27 +531,27 @@ public class FamiTrackerTextCreater extends AbstractFamiTrackerCreater<TextReade
 		
 		inst.vol = Integer.parseInt(strs[2]);
 		if (inst.vol != -1) {
-			createSequence(doc, inst.vol, FtmSequenceType.VOLUME);
+			doc.getOrCreateSequence(VRC6, VOLUME, inst.vol);
 		}
 		
 		inst.arp = Integer.parseInt(strs[3]);
 		if (inst.arp != -1) {
-			createSequence(doc, inst.arp, FtmSequenceType.ARPEGGIO);
+			doc.getOrCreateSequence(VRC6, ARPEGGIO, inst.arp);
 		}
 		
 		inst.pit = Integer.parseInt(strs[4]);
 		if (inst.pit != -1) {
-			createSequence(doc, inst.pit, FtmSequenceType.PITCH);
+			doc.getOrCreateSequence(VRC6, PITCH, inst.pit);
 		}
 		
 		inst.hip = Integer.parseInt(strs[5]);
 		if (inst.hip != -1) {
-			createSequence(doc, inst.hip, FtmSequenceType.HI_PITCH);
+			doc.getOrCreateSequence(VRC6, HI_PITCH, inst.hip);
 		}
 		
 		inst.dut = Integer.parseInt(strs[6]);
 		if (inst.dut != -1) {
-			createSequence(doc, inst.dut, FtmSequenceType.DUTY);
+			doc.getOrCreateSequence(VRC6, DUTY, inst.dut);
 		}
 
 		doc.registerInstrument(inst);

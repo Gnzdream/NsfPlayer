@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.audio;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 
 import zdream.nsfplayer.core.ERegion;
@@ -29,6 +31,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	public final FtmAudio audio;
 	
 	public FamiTrackerHandler(FtmAudio audio) {
+		requireNonNull(audio, "audio 不能为 null");
 		this.audio = audio;
 	}
 	
@@ -199,11 +202,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 		}
 		
 		FtmPattern pattern = null;
-		try {
-			pattern = track.patterns[patternIdx][channelIdx];
-		} catch (Exception e) {
-			System.out.println();
-		}
+		pattern = track.patterns[patternIdx][channelIdx];
 		
 		if (pattern == null) {
 			track.patterns[patternIdx][channelIdx] = pattern = new FtmPattern();
@@ -290,7 +289,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	 */
 	private void reScanChannel() {
 		// 计算轨道总数
-		channelCount = 5; // 2A03
+		channelCount = 5; // 2A03 + 2A07
 		if (audio.useVcr6) {
 			channelCount += 3;
 		}
@@ -306,9 +305,9 @@ public class FamiTrackerHandler implements INsfChannelCode {
 		if (audio.useN163) {
 			channelCount += audio.namcoChannels;
 		}
-		/*if (audio.useS5b) { // 忽略
-			count += 3;
-		}*/
+		if (audio.useS5b) {
+			channelCount += 3;
+		}
 		
 		// 补充轨道号
 		channelCode = new byte[channelCount];
@@ -354,6 +353,11 @@ public class FamiTrackerHandler implements INsfChannelCode {
 			for (int i = 0; i < length; i++) {
 				channelCode[codePtr++] = cs[i];
 			}
+		}
+		if (audio.useS5b) {
+			channelCode[codePtr++] = CHANNEL_S5B_SQUARE1;
+			channelCode[codePtr++] = CHANNEL_S5B_SQUARE2;
+			channelCode[codePtr++] = CHANNEL_S5B_SQUARE3;
 		}
 		
 		// 结束

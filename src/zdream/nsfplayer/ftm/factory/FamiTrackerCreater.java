@@ -1067,7 +1067,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				continue;
 			}
 			
-			createSequence(doc, index, type);
+			doc.getOrCreateSequence(FtmChipType._2A03, FtmSequenceType.get(type), index);
 			switch (type) {
 			case 0:
 				inst.vol = index;
@@ -1137,7 +1137,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				continue;
 			}
 			
-			createSeqVRC6(doc, index, type);
+			doc.getOrCreateSequence(FtmChipType.VRC6, FtmSequenceType.get(type), index);
 			switch (type) {
 			case 0:
 				inst.vol = index;

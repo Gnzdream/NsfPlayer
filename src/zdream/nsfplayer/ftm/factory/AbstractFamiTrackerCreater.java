@@ -1,10 +1,7 @@
 package zdream.nsfplayer.ftm.factory;
 
-import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.ftm.audio.FamiTrackerHandler;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.format.FtmSequence;
-import zdream.nsfplayer.ftm.format.FtmSequenceType;
 
 /**
  * <p>抽象的 FamiTracker 数据创建工具, 用于创建、完善 {@link FtmAudio} 的信息.
@@ -37,42 +34,6 @@ public abstract class AbstractFamiTrackerCreater<T> {
 	 */
 	public abstract void doCreate(T reader, FamiTrackerHandler handler)
 			throws FamiTrackerFormatException;
-	
-	/* **********
-	 *   序列   *
-	 ********** */
-
-	/**
-	 * 创建 2A03 的序列
-	 */
-	protected FtmSequence createSequence(FamiTrackerHandler doc, int index, byte type) {
-		// 将序列注册到 Ftm 中
-		return doc.getOrCreateSequence(FtmChipType._2A03, FtmSequenceType.get(type), index);
-	}
-	
-	/**
-	 * 创建 2A03 的序列
-	 */
-	protected FtmSequence createSequence(FamiTrackerHandler doc, int index, FtmSequenceType type) {
-		// 将序列注册到 Ftm 中
-		return doc.getOrCreateSequence(FtmChipType._2A03, type, index);
-	}
-	
-	/**
-	 * 创建 VRC6 的序列
-	 */
-	protected FtmSequence createSeqVRC6(FamiTrackerHandler doc, int index, byte type) {
-		// 将序列注册到 Ftm 中
-		return doc.getOrCreateSequence(FtmChipType.VRC6, FtmSequenceType.get(type), index);
-	}
-	
-	/**
-	 * 创建 VRC6 的序列
-	 */
-	protected FtmSequence createSeqVRC6(FamiTrackerHandler doc, int index, FtmSequenceType type) {
-		// 将序列注册到 Ftm 中
-		return doc.getOrCreateSequence(FtmChipType.VRC6, type, index);
-	}
 	
 	/* **********
 	 * 错误处理 *

@@ -231,7 +231,7 @@ public class ChannelFDS extends AbstractFtmChannel {
 		}
 		
 		if (instrumentUpdated && this.currentInst != null) {
-			// 写入 wave
+			// 写入 wave 包络数据
 			// 原本在 NSF 运行时, 还需要打开是否可写的标识, 然后再往里面写数据
 			// 因为这里是用 Sound 直接写入, 所以就省去了这个步骤
 			
