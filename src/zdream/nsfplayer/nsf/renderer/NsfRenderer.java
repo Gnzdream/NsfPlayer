@@ -12,6 +12,7 @@ import zdream.nsfplayer.sound.mixer.IMixerHandler;
 /**
  * <p>NSF 渲染器.
  * <p>该类在 v0.2.3 版本以前基本处于不可用的状态, 直到 v0.2.4 版本进行了大量的改造.
+ * <p>该渲染器是线程不安全的, 请注意不要在渲染途中设置参数.
  * </p>
  * 
  * @author Zdream

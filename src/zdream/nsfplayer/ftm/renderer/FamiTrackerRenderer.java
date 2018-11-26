@@ -23,7 +23,8 @@ import zdream.nsfplayer.sound.mixer.IMixerHandler;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
- * <p>来源于原 C++ 工程的 SoundGen 类
+ * <p>来源于原 C++ 工程的 SoundGen 类.
+ * <p>该渲染器是线程不安全的, 请注意不要在渲染途中设置参数.
  * </p>
  * 
  * @version v0.2.4
