@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.cmd;
 
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
+import zdream.nsfplayer.ftm.task.SpeedTask;
 
 /**
  * <p>关于播放的处理器
@@ -47,14 +48,16 @@ public class PlayHandler implements ICommandHandler {
 			env.printOut("[SPEED] 当前播放速度为 %f", env.getRenderer().getSpeed());
 			env.printOut("[SPEED] 使用 speed [s] 设置播放速度");
 		} else {
+			SpeedTask t = new SpeedTask();
 			if ("--reset".equals(args[1])) {
 				// 重置播放速度
-				env.getRenderer().resetSpeed();
+				t.setOption("speed", 1.0f);
 			} else {
 				// 设置播放速度
 				float speed = Float.parseFloat(args[1]);
-				env.getRenderer().setSpeed(speed);
+				t.setOption("speed", speed);
 			}
+			env.putTask(t);
 		}
 	}
 
