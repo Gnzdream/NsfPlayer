@@ -6,7 +6,7 @@ import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.TrackInfoBasic;
 import zdream.nsfplayer.xgm.device.sound.legacy.PSG;
 
-public class NesFME7 implements ISoundChip {
+public class NesFME7 implements ISoundChip, IDeviceValue {
 	
 	protected int[][] sm = new int[2][3]; // stereo mix
 	protected int[] buf = new int[2];

@@ -7,7 +7,7 @@ import zdream.nsfplayer.xgm.device.TrackInfoBasic;
 import zdream.nsfplayer.xgm.device.sound.legacy.OPLL_env;
 import zdream.nsfplayer.xgm.device.sound.legacy.OPLL_env.OPLL;
 
-public class NesVRC7 implements ISoundChip {
+public class NesVRC7 implements ISoundChip, IDeviceValue {
 	
 	protected int mask;
 	/** unsigned */

@@ -6,7 +6,7 @@ import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.TrackInfoBasic;
 
-public class NesMMC5 implements ISoundChip {
+public class NesMMC5 implements ISoundChip, IDeviceValue {
 	
 	public static final int
 			OPT_NONLINEAR_MIXER = 0,

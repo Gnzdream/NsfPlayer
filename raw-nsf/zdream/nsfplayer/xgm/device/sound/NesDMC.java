@@ -10,7 +10,7 @@ import zdream.nsfplayer.xgm.device.TrackInfoBasic;
  * Bottom Half of APU
  * @author Zdream
  */
-public class NesDMC implements ISoundChip, IFrameSequencer {
+public class NesDMC implements ISoundChip, IFrameSequencer, IDeviceValue {
 	
 	public static final int
 			OPT_ENABLE_4011 = 0,

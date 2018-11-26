@@ -10,7 +10,7 @@ import zdream.nsfplayer.xgm.device.TrackInfoBasic;
  * Upper half of APU
  * @author Zdream
  */
-public class NesAPU implements ISoundChip, IFrameSequencer {
+public class NesAPU implements ISoundChip, IFrameSequencer, IDeviceValue {
 	
 	public static final int
 			OPT_UNMUTE_ON_RESET = 0,

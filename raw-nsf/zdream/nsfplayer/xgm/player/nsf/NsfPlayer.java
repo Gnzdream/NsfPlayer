@@ -3,7 +3,6 @@ package zdream.nsfplayer.xgm.player.nsf;
 import zdream.nsfplayer.nsf.device.Bus;
 import zdream.nsfplayer.nsf.device.Layer;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
-import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.device.memory.NesBank;
 import zdream.nsfplayer.nsf.device.memory.NesMem;
 import zdream.nsfplayer.vcm.Value;
@@ -22,6 +21,7 @@ import zdream.nsfplayer.xgm.device.misc.NesDetector;
 import zdream.nsfplayer.xgm.device.misc.NesDetectorEx;
 import zdream.nsfplayer.xgm.device.misc.RawNesCPU;
 import zdream.nsfplayer.xgm.device.sound.FrameSequenceCounter;
+import zdream.nsfplayer.xgm.device.sound.IDeviceValue;
 import zdream.nsfplayer.xgm.device.sound.NesAPU;
 import zdream.nsfplayer.xgm.device.sound.NesDMC;
 import zdream.nsfplayer.xgm.device.sound.NesFDS;
@@ -72,7 +72,7 @@ public class NsfPlayer extends MultiSongPlayer {
 	public Layer layer = new Layer();
 	public Mixer mixer = new Mixer();
 
-	public RawNesCPU cpu = new RawNesCPU(NesCPU.DEFAULT_CLOCK);
+	public RawNesCPU cpu = new RawNesCPU(IDeviceValue.DEFAULT_CLOCK);
 	public NesMem mem = new NesMem();
 	public NesBank bank = new NesBank();
 

@@ -5,7 +5,7 @@ import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 import zdream.nsfplayer.xgm.device.TrackInfoBasic;
 
-public class NesVRC6 implements ISoundChip {
+public class NesVRC6 implements ISoundChip, IDeviceValue {
 
 	/** frequency divider, unsigned */
 	protected int[] counter = new int[3];

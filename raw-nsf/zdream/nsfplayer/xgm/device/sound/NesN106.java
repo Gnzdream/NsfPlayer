@@ -6,7 +6,7 @@ import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.xgm.device.ISoundChip;
 import zdream.nsfplayer.xgm.device.ITrackInfo;
 
-public class NesN106 implements ISoundChip {
+public class NesN106 implements ISoundChip, IDeviceValue {
 	
 	public static final int
 			OPT_SERIAL = 0,

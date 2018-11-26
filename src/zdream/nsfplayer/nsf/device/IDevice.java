@@ -9,9 +9,6 @@ import zdream.nsfplayer.nsf.device.cpu.IntHolder;
  */
 public interface IDevice extends IResetable {
 	
-	public final static int DEFAULT_CLOCK = 1789772;
-	public final static int DEFAULT_RATE = 48000;
-	
 	/**
 	 * 数据写入
 	 * @param adr
