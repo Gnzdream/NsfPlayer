@@ -140,6 +140,7 @@ public class NesFDS extends AbstractSoundChip {
 	@Override
 	public void reset() {
 		fds.reset();
+		masterIo = true;
 	}
 
 	@Override
