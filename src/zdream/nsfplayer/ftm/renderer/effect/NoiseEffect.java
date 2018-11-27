@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 
 /**
  * 噪声轨道专用, 修改噪声值的效果

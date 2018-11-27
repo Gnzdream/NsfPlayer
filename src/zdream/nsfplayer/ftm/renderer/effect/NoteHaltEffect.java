@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 
 /**
  * 音键停止播放声音的效果. 单例

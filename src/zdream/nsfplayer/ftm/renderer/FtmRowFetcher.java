@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.renderer;
 
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 
@@ -203,7 +204,7 @@ public class FtmRowFetcher {
 	 * <p>以 {@link FtmTrack} 里面定义的速度为准
 	 * </p>
 	 */
-	void resetSpeed() {
+	public void resetSpeed() {
 		speed = querier.audio.getTrack(param.trackIdx).speed;
 		tempo = querier.audio.getTrack(param.trackIdx).tempo;
 		
@@ -248,18 +249,40 @@ public class FtmRowFetcher {
 	}
 	
 	/**
-	 * <p>处理跳行的情况.
+	 * 执行, 让该工具向前跑一帧.
+	 * @return
+	 *   该帧是否更新了行
+	 * @since v0.3.0
+	 */
+	public boolean doFrameUpdate() {
+		updateRow = false;
+		
+		if (this.needRowUpdate()) {
+			this.updateRow = true;
+			
+			// 确定部分
+			confirmJump();
+			
+			// 执行部分
+			toNextRow();
+		}
+		
+		return updateRow;
+	}
+	
+	/**
+	 * <p>确定走到下一行是否需要跳行.
 	 * <p>如果上一帧有 Bxx Dxx 等跳着执行播放的效果触发,
 	 * 则 {@link #jumpSection} 或 {@link #skipRow} 不等于 -1. 这时就直接进行跳转;
 	 * </p>
 	 */
-	void handleJump() {
+	public void confirmJump() {
 		if (skipRow >= 0) {
 			if (jumpSection >= 0) {
 				nextSection = jumpSection;
 				jumpSection = -1;
 			} else {
-				toNextRowBegin();
+				confirmNextSectionBegin();
 			}
 			nextRow = skipRow;
 			skipRow = -1;
@@ -276,12 +299,12 @@ public class FtmRowFetcher {
 	}
 	
 	/**
-	 * 按照正常的习惯, 确定下一个播放的行.
+	 * 执行到下一行, 并确定走到下一行之后, 再下一行需要播放的位置
 	 * <p>一般而言, 下一个播放的行是该行的下一行, 但是在以下情况下, 会有变化:
 	 * <p>当到某段的结尾, 会跳转到下一段的首行;
 	 * </p>
 	 */
-	void nextRow() {
+	public void toNextRow() {
 		param.curRow = nextRow;
 		param.curSection = nextSection;
 		
@@ -291,14 +314,16 @@ public class FtmRowFetcher {
 		int len = querier.maxRow(param.trackIdx); // 段长
 		if (nextRow >= len) {
 			// 跳到下一段的第 0 行
-			toNextRowBegin();
+			confirmNextSectionBegin();
 		}
 	}
 	
 	/**
-	 * 转到下一段的第一行
+	 * <p>转到下一段的第一行
+	 * <p>该方法是确定下一行的位置, 而不是执行
+	 * </p>
 	 */
-	private void toNextRowBegin() {
+	private void confirmNextSectionBegin() {
 		nextRow = 0;
 		nextSection++;
 		

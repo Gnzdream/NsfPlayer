@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 
 /**
  * <p>修改音色的效果, Vxx

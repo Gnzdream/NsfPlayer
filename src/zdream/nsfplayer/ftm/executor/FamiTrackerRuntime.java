@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.renderer;
+package zdream.nsfplayer.ftm.executor;
 
 import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
 
@@ -8,6 +8,9 @@ import java.util.Map;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
+import zdream.nsfplayer.ftm.renderer.FtmRowFetcher;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
 import zdream.nsfplayer.ftm.renderer.context.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.context.IFtmEffectConverter;
@@ -52,7 +55,7 @@ public class FamiTrackerRuntime {
 	 *  初始化  *
 	 ********** */
 	
-	void init() {
+	public void init() {
 		this.param.levels.copyFrom(config.channelLevels);
 		rate = new NsfRateConverter(param);
 		selector = new ChannelDeviceSelector();
@@ -98,8 +101,8 @@ public class FamiTrackerRuntime {
 	 *   段号, 从 0 开始
 	 * @since v0.2.9
 	 */
-	void ready(FtmAudio audio, int track, int section) {
-		fetcher.querier = querier = new FamiTrackerQuerier(audio);
+	public void ready(FtmAudio audio, int track, int section) {
+		querier = new FamiTrackerQuerier(audio);
 		fetcher.ready(querier, track, section);
 		
 		// 向 runtime.effects 中添加 map
@@ -119,7 +122,7 @@ public class FamiTrackerRuntime {
 	 *   段号, 从 0 开始
 	 * @since v0.2.9
 	 */
-	void ready(int track, int section) {
+	public void ready(int track, int section) {
 		fetcher.ready(track, section);
 		for (Map<FtmEffectType, IFtmEffect> map : effects.values()) {
 			map.clear();
@@ -191,45 +194,38 @@ public class FamiTrackerRuntime {
 	 * </p>
 	 * @since v0.2.9
 	 */
-	void mixerReady() {
+	public void mixerReady() {
 		mixer.readyBuffer();
 	}
 	
 	/**
 	 * 音乐向前跑一帧. 看看现在跑到 Ftm 的哪一行上
 	 */
-	void runFrame() {
+	public void runFrame() {
 		// 重置
 		param.finished = false;
-		fetcher.updateRow = false;
 		this.clearEffects();
 		
-		// (SoundGen.runFrame)
-		if (fetcher.needRowUpdate()) {
-			// 表示上一行已经播放完毕, 开始查找要播放的下一行的位置
-			// Enable this to skip rows on high tempos
-			fetcher.updateRow = true;
-			fetcher.handleJump();
+		if (fetcher.doFrameUpdate()) {
 			storeRow();
-			fetcher.nextRow();
 		}
 	}
 	
 	/**
 	 * 确定现在正在播放的行, 让 {@link IFtmEffectConverter} 获取并处理
 	 */
-	void storeRow() {
+	public void storeRow() {
 		final int len = querier.channelCount();
 		
 		int trackIdx = param.trackIdx;
-		int nextSection = fetcher.nextSection;
-		int nextRow = fetcher.nextRow;
+		int section = param.curSection;
+		int row = param.curRow;
 		
 		for (int i = 0; i < len; i++) {
 			byte channel = querier.channelCode(i);
 			byte channelType = typeOfChannel(channel);
 			
-			converter.convert(querier.getNote(trackIdx, nextSection, i, nextRow),
+			converter.convert(querier.getNote(trackIdx, section, i, row),
 					channelType, effects.get(channel), geffect, querier);
 		}
 	}

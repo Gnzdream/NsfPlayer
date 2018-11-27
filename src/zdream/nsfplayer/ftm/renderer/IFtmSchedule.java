@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
+
 /**
  * <p>每帧开始前触发的任务. 仅在第一帧的效果触发之前执行一次, 执行完后就删除
  * </p>

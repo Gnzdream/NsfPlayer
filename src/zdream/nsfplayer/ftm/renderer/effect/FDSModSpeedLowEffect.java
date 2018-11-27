@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelFDS;
 
 /**

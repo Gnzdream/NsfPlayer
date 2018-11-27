@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.IFtmSchedule;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 

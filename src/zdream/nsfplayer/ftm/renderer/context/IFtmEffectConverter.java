@@ -9,7 +9,7 @@ import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 
 /**
- * Ftm 效果转换器接口, 用于将 {@link FtmNote} 转换成 {@link ChannelEffectBatch} 集合.
+ * Ftm 效果转换器接口, 用于将 {@link FtmNote} 转换成 {@link IFtmEffect} 集合.
  * 它是一个 FTM 运行环境中需要的一个工具.
  * 
  * @version v0.2.9

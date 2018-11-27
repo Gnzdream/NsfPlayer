@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 
 /**
  * <p>跳到下一段的指定行, Dxx

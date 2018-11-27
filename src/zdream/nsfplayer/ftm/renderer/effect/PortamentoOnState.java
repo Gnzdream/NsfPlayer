@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 
 /**
  * <p>持续滑音的状态, 3xx

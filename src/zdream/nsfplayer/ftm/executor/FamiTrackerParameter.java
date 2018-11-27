@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.renderer;
+package zdream.nsfplayer.ftm.executor;
 
 import zdream.nsfplayer.core.NsfCommonParameter;
 
@@ -25,11 +25,11 @@ public class FamiTrackerParameter extends NsfCommonParameter {
 	/**
 	 * 记录正在播放的行号
 	 */
-	int curRow;
+	public int curRow;
 	
 	/**
 	 * 正在播放的段号
 	 */
-	int curSection;
+	public int curSection;
 
 }

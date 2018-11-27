@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.effect;
 
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.format.FtmNote;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerRuntime;
 
 /**
  * <p>修改音高 (pitch) 的效果, Pxx

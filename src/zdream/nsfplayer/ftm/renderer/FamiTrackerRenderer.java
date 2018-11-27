@@ -15,6 +15,8 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;

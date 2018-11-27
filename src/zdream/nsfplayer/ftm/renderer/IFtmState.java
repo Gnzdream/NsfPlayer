@@ -1,5 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
+import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
+
 /**
  * <p>状态. 每个轨道和全局在播放时, 每帧都进行触发的.
  * </p>
