@@ -86,7 +86,7 @@ public final class XgmLinearChannel extends AbstractXgmAudioChannel {
 	}
 
 	@Override
-	protected void checkCapacity(int size) {
+	protected void checkCapacity(int size, int frame) {
 		this.capacity = size;
 		
 		int len = size / 32 + 8;

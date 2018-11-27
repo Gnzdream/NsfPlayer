@@ -15,10 +15,46 @@ import zdream.nsfplayer.sound.interceptor.EchoUnit;
 import zdream.nsfplayer.sound.interceptor.Filter;
 import zdream.nsfplayer.sound.interceptor.ISoundInterceptor;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.sound.mixer.IMixerHandler;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
- * Nsf 的音频合成器
+ * <p>Xgm 的混音器, 原来是 NsfPlayer 的默认使用混音器.
+ * <p>自从 Mixer 渲染部分和 NSF / FTM 的执行部分分离之后,
+ * 无论是 FamiTracker 还是 Nsf 部分, 均能够使用 Xgm 混音器作为输出混音器.
+ * 
+ * <p>与 Blip 混音器不同的是, 它渲染策略是, 对每个采样进行计算、加工, 最后输出.
+ * 由于能够操作每个采样点, 因此它的灵活性和可扩展性均比 Blip 混音器高出很多,
+ * 但是代价也是很明显的: 慢.
+ * 
+ * <p>根据测试的结果, 渲染同样的曲目, Xgm 混音器在开启所有内置效果拦截器的情况下,
+ * 渲染时间是 Blip 混音器的 1.2 至 10 倍. 这个现象在渲染只有 2A03 + 2A07 轨道,
+ * 而且 DPCM 轨道不发出声音的情况下尤为明显. 因此如果没有对音频数据作处理的需求, 建议使用 Blip 混音器.
+ * 
+ * <p>内置的效果拦截器中, 回音构造器花费的时间最长. 因此如果播放卡顿, 优先关闭回音构造器.
+ * 关闭内置回音的方法: 以 NsfRenderer 为例:
+ * <blockquote><pre>
+ *     NsfRenderer renderer;
+ *     
+ *     ...
+ * 
+ *     XgmMixerHandler h = (XgmMixerHandler) renderer.getMixerHandler();
+ *     List<ISoundInterceptor> itcs = h.getGlobalInterceptors();
+ *     for (ISoundInterceptor itc: itcs) {
+ *        if (itc instanceof EchoUnit) {
+ *           itc.setEnable(false);
+ *        }
+ *     }
+ * </pre></blockquote>
+ * 以上方法能够成功的条件是启用 Xgm 混音器作为输出混音器,
+ * 否则<code>renderer.getMixerHandler()</code> 不会返回 <code>XgmMixerHandler</code> 实例.
+ * </p>
+ * 
+ * @version v0.2.10
+ *   <br>自从大部分 Renderer 类开放了获取混音器操作类 {@link IMixerHandler} 的获取之后,
+ *   音频拦截器的使用终于给用户们开放了. 这也极大地添加了 Xgm 混音器的灵活性.
+ *   <br>另外, 这个版本对 Xgm 混音器作了大幅度的优化, 它的运行效率同版本 v0.2.9 相比
+ *   提高了 10% - 30%.
  * 
  * @author Zdream
  * @since v0.2.1
@@ -231,7 +267,7 @@ public class XgmSoundMixer extends SoundMixer {
 		final int len = multiList.size();
 		for (int i = 0; i < len; i++) {
 			AbstractXgmMultiMixer multi = multiList.get(i);
-			multi.checkCapacity(param.freqPerFrame);
+			multi.checkCapacity(param.freqPerFrame, param.sampleInCurFrame);
 		}
 	}
 
