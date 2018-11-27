@@ -12,16 +12,24 @@ import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
+import zdream.nsfplayer.sound.blip.BlipMixerConfig;
+import zdream.nsfplayer.sound.blip.BlipSoundMixer;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.sound.mixer.IMixerConfig;
 import zdream.nsfplayer.sound.mixer.IMixerHandler;
+import zdream.nsfplayer.sound.mixer.SoundMixer;
+import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
+import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -37,7 +45,24 @@ import zdream.nsfplayer.sound.mixer.IMixerHandler;
  */
 public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
-	final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
+	private final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
+	
+	/**
+	 * 执行器
+	 */
+	private final FamiTrackerExecutor executor = new FamiTrackerExecutor(runtime);
+	
+	/**
+	 * 速率转换器
+	 */
+	private final NsfRateConverter rate;
+	
+	/**
+	 * 音频合成器
+	 */
+	private SoundMixer mixer;
+	
+	private FamiTrackerConfig config;
 	
 	/**
 	 * 利用默认配置产生一个音频渲染器
@@ -48,14 +73,43 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	public FamiTrackerRenderer(FamiTrackerConfig config) {
 		if (config == null) {
-			this.runtime.config = new FamiTrackerConfig();
+			this.config = new FamiTrackerConfig();
 		} else {
-			this.runtime.config = config.clone();
+			this.config = config.clone();
 		}
 		
-		runtime.param.sampleRate = this.runtime.config.sampleRate;
+		runtime.param.sampleRate = this.config.sampleRate;
 		
-		this.runtime.init();
+		this.runtime.init(this.config.channelLevels);
+		rate = new NsfRateConverter(runtime.param);
+		initMixer();
+	}
+	
+	private void initMixer() {
+		IMixerConfig mixerConfig = config.mixerConfig;
+		if (mixerConfig == null) {
+			mixerConfig = new XgmMixerConfig();
+		}
+		
+		if (mixerConfig instanceof XgmMixerConfig) {
+			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
+			XgmSoundMixer mixer = new XgmSoundMixer();
+			mixer.setConfig((XgmMixerConfig) mixerConfig);
+			mixer.param = runtime.param;
+			this.mixer = mixer;
+		} else if (mixerConfig instanceof BlipMixerConfig) {
+			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
+			BlipSoundMixer mixer = new BlipSoundMixer();
+			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
+			mixer.sampleRate = config.sampleRate;
+			mixer.setConfig((BlipMixerConfig) mixerConfig);
+			mixer.param = runtime.param;
+			this.mixer = mixer;
+		} else {
+			// TODO 暂时不支持 xgm 和 blip 之外的 mixerConfig
+		}
+
+		this.mixer.init();
 	}
 	
 	/* **********
@@ -105,9 +159,9 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		int frameRate = runtime.fetcher.getFrameRate();
 		resetCounterParam(frameRate, runtime.param.sampleRate);
 		clearBuffer();
-		runtime.rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
+		rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
 		
-		initMixer();
+		reloadMixer();
 		initChannels();
 	}
 	
@@ -201,8 +255,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	protected int renderFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
-		runtime.rate.doConvert();
-		runtime.mixerReady();
+		rate.doConvert();
+		mixer.readyBuffer();
 		
 		runtime.runFrame();
 		updateChannels(true);
@@ -221,7 +275,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	protected int skipFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
-		runtime.rate.doConvert();
+		rate.doConvert();
 		
 		runtime.runFrame();
 		updateChannels(false);
@@ -333,7 +387,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		} else if (level > 1) {
 			level = 1;
 		}
-		runtime.mixer.setLevel(channelCode, level);
+		mixer.setLevel(channelCode, level);
 	}
 	
 	/**
@@ -347,7 +401,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.3
 	 */
 	public float getLevel(byte channelCode) throws NullPointerException {
-		return runtime.mixer.getLevel(channelCode);
+		return mixer.getLevel(channelCode);
 	}
 	
 	/**
@@ -391,7 +445,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		int frameRate = runtime.querier.getFrameRate();
 		resetCounterParam(frameRate, runtime.param.sampleRate);
-		runtime.rate.onParamUpdate();
+		rate.onParamUpdate();
 	}
 	
 	@Override
@@ -406,7 +460,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.10
 	 */
 	public IMixerHandler getMixerHandler() {
-		return runtime.mixer.getHandler();
+		return mixer.getHandler();
 	}
 	
 	/* **********
@@ -416,9 +470,9 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	/**
 	 * 初始化 / 重置音频合成器 (混音器)
 	 */
-	private void initMixer() {
-		runtime.mixer.detachAll();
-		runtime.mixer.reset();
+	private void reloadMixer() {
+		mixer.detachAll();
+		mixer.reset();
 	}
 	
 	/**
@@ -445,7 +499,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			
 			AbstractNsfSound sound = ch.getSound();
 			if (sound != null) {
-				IMixerChannel mix = runtime.mixer.allocateChannel(code);
+				IMixerChannel mix = mixer.allocateChannel(code);
 				sound.setOut(mix);
 				
 				// 音量
@@ -538,7 +592,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 重置 Mixer
 	 */
 	private void resetMixer() {
-		runtime.mixer.reset();
+		mixer.reset();
 	}
 	
 	/**
@@ -554,8 +608,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 从 Mixer 中读取音频数据
 	 */
 	private void readMixer() {
-		runtime.mixer.finishBuffer();
-		runtime.mixer.readBuffer(data, 0, data.length);
+		mixer.finishBuffer();
+		mixer.readBuffer(data, 0, data.length);
 	}
 	
 	/* **********

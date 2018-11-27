@@ -176,13 +176,9 @@ public class BlipSoundMixer extends SoundMixer {
 	
 	@Override
 	public void readyBuffer() {
-		int size = sampleRate / frameRate;
+		int size = param.sampleInCurFrame;
+		this.sampleRate = param.sampleRate;
 		int newSize = (size * 1000 * 2) / sampleRate;
-		
-		float speed = param.speed;
-		if (speed != 1) {
-			newSize = (int) (newSize / speed);
-		}
 		
 		// 合理的振幅为 4
 		if (newSize > oldSize + 4 || newSize < oldSize - 4) {

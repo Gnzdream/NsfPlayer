@@ -10,7 +10,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
  * <p>FamiTracker 的执行构件.
  * <p>在 0.2.x 版本中, FamiTracker 的执行部分是直接写在 FamiTrackerRenderer 中的,
  * 从版本 0.3.0 开始, 执行构件从 renderer 中分离出来, 单独构成一个类.
- * 它交接了原本是需要 FamiTrackerRuntime 完成的任务.
+ * 它交接了原本是需要 FamiTrackerRuntime 或 FamiTrackerRenderer 完成的任务中, 与执行相关的任务.
  * </p>
  * 
  * @author Zdream
@@ -21,7 +21,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	/* **********
 	 *   成员   *
 	 ********** */
-	FamiTrackerRuntime runtime = new FamiTrackerRuntime();
+	private final FamiTrackerRuntime runtime;
 	
 	/* **********
 	 * 准备部分 *
@@ -70,7 +70,9 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		requireNonNull(audio, "FamiTracker 曲目 audio = null");
 		
 		runtime.ready(audio, track, section);
-//		
+		
+		
+		
 //		// 重置播放相关的数据
 //		int frameRate = runtime.fetcher.getFrameRate();
 //		resetCounterParam(frameRate, runtime.param.sampleRate);
@@ -86,7 +88,11 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 ********** */
 
 	public FamiTrackerExecutor() {
-		// TODO Auto-generated constructor stub
+		this(new FamiTrackerRuntime());
+	}
+
+	public FamiTrackerExecutor(FamiTrackerRuntime runtime) {
+		this.runtime = runtime;
 	}
 
 	@Override

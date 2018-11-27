@@ -5,23 +5,16 @@ import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
 import java.util.HashMap;
 import java.util.Map;
 
-import zdream.nsfplayer.core.NsfRateConverter;
+import zdream.nsfplayer.core.ChannelLevelsParameter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
-import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 import zdream.nsfplayer.ftm.renderer.FtmRowFetcher;
 import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
 import zdream.nsfplayer.ftm.renderer.context.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.context.IFtmEffectConverter;
 import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
-import zdream.nsfplayer.sound.blip.BlipMixerConfig;
-import zdream.nsfplayer.sound.blip.BlipSoundMixer;
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
-import zdream.nsfplayer.sound.mixer.SoundMixer;
-import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
-import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
 
 /**
  * Famitracker 运行时状态
@@ -36,7 +29,6 @@ public class FamiTrackerRuntime {
 	 ********** */
 	public IFtmEffectConverter converter;
 	
-	public FamiTrackerConfig config;
 	public FamiTrackerParameter param = new FamiTrackerParameter();
 	
 	/**
@@ -46,49 +38,15 @@ public class FamiTrackerRuntime {
 	 */
 	public final HashMap<Byte, AbstractFtmChannel> channels = new HashMap<>();
 	
-	/**
-	 * 音频合成器
-	 */
-	public SoundMixer mixer;
-	
 	/* **********
 	 *  初始化  *
 	 ********** */
 	
-	public void init() {
-		this.param.levels.copyFrom(config.channelLevels);
-		rate = new NsfRateConverter(param);
+	public void init(ChannelLevelsParameter p) {
+		this.param.levels.copyFrom(p);
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);
 		converter = new DefaultFtmEffectConverter();
-		initMixer();
-	}
-	
-	private void initMixer() {
-		IMixerConfig mixerConfig = config.mixerConfig;
-		if (mixerConfig == null) {
-			mixerConfig = new XgmMixerConfig();
-		}
-		
-		if (mixerConfig instanceof XgmMixerConfig) {
-			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
-			XgmSoundMixer mixer = new XgmSoundMixer();
-			mixer.setConfig((XgmMixerConfig) mixerConfig);
-			mixer.param = param;
-			this.mixer = mixer;
-		} else if (mixerConfig instanceof BlipMixerConfig) {
-			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
-			BlipSoundMixer mixer = new BlipSoundMixer();
-			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
-			mixer.sampleRate = config.sampleRate;
-			mixer.setConfig((BlipMixerConfig) mixerConfig);
-			mixer.param = param;
-			this.mixer = mixer;
-		} else {
-			// TODO 暂时不支持 xgm 和 blip 之外的 mixerConfig
-		}
-
-		this.mixer.init();
 	}
 	
 	/**
@@ -133,10 +91,6 @@ public class FamiTrackerRuntime {
 	/* **********
 	 *   工具   *
 	 ********** */
-	/**
-	 * 速率转换器
-	 */
-	public NsfRateConverter rate;
 	
 	/**
 	 * 行数据获取与播放位置解析工具
@@ -186,17 +140,6 @@ public class FamiTrackerRuntime {
 	/* **********
 	 *   操作   *
 	 ********** */
-	
-	/**
-	 * <p>通知混音器, 当前帧的渲染开始了.
-	 * <p>这个方法原本用于通知混音器, 如果本帧的渲染速度需要变化,
-	 * 可以通过该方法, 让混音器提前对此做好准备, 修改存储的采样数容量, 从而调节播放速度.
-	 * </p>
-	 * @since v0.2.9
-	 */
-	public void mixerReady() {
-		mixer.readyBuffer();
-	}
 	
 	/**
 	 * 音乐向前跑一帧. 看看现在跑到 Ftm 的哪一行上
