@@ -2,7 +2,7 @@ package zdream.nsfplayer.ftm.renderer.context;
 
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.channel.Channel2A03Pulse;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelFDS;
 import zdream.nsfplayer.ftm.renderer.channel.ChannelMMC5Pulse;

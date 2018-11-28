@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.format.FtmInstrumentVRC7;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.sound.vrc7.OPLL;
 import zdream.nsfplayer.sound.vrc7.OPLLPatch;
 import zdream.nsfplayer.sound.vrc7.SoundVRC7;

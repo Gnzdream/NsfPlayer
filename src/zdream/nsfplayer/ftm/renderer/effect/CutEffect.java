@@ -2,8 +2,8 @@ package zdream.nsfplayer.ftm.renderer.effect;
 
 import java.util.HashSet;
 
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**

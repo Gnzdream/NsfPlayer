@@ -1,9 +1,9 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.context.DefaultSequenceHandler;
 import zdream.nsfplayer.ftm.renderer.tools.NoteLookupTable;
 import zdream.nsfplayer.sound.SoundFDS;

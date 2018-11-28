@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
@@ -30,7 +30,7 @@ public class EmptyFtmChannel extends AbstractFtmChannel {
 	}
 
 	@Override
-	protected void writeToSound() {
+	public void writeToSound() {
 		
 	}
 

@@ -4,8 +4,8 @@ import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_NOISE;
 
 import java.util.HashSet;
 
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**

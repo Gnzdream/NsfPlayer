@@ -1,8 +1,8 @@
 package zdream.nsfplayer.ftm.renderer.channel;
 
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.sound.DPCMSound;
 
 /**
@@ -26,10 +26,7 @@ public class DPCMChannel extends AbstractFtmChannel {
 	@Override
 	public void playNote() {
 		super.playNote();
-	}
-	
-	@Override
-	public void triggerSound(boolean needProcess) {
+		
 		/*
 		 * 向外部宣布, 这个发声器是否在工作. 没有实际作用.
 		 * 因为外部想知道是否在发声, 只能通过 isplaying 和音量两个方式来感知
@@ -38,8 +35,6 @@ public class DPCMChannel extends AbstractFtmChannel {
 		if (!sound.isFinish()) {
 			curVolume = 1;
 		}
-		
-		super.triggerSound(needProcess);
 	}
 	
 	/* **********

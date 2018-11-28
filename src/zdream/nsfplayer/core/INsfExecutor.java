@@ -1,7 +1,7 @@
 package zdream.nsfplayer.core;
 
 /**
- * <p>帧执行构件的接口
+ * <p>NSF 执行构件的接口
  * </p>
  * 
  * @param <T>
@@ -11,7 +11,7 @@ package zdream.nsfplayer.core;
  * @author Zdream
  * @since v0.3.0
  */
-public interface IFrameExecutor<T> extends IEnable, IResetable {
+public interface INsfExecutor<T> extends IEnable, IResetable {
 	
 	/**
 	 * 以某项输入数据作为初始化依据
@@ -21,7 +21,7 @@ public interface IFrameExecutor<T> extends IEnable, IResetable {
 	public void ready(T t);
 	
 	/**
-	 * 执行一帧
+	 * 执行一个单位时间. 这个时间长度因不同的构件而异.
 	 */
 	public void tick();
 	

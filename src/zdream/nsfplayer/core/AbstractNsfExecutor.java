@@ -9,7 +9,7 @@ package zdream.nsfplayer.core;
  * @author Zdream
  * @since v0.3.0
  */
-public abstract class AbstractNsfExecutor<T extends AbstractNsfAudio> implements IFrameExecutor<T> {
+public abstract class AbstractNsfExecutor<T extends AbstractNsfAudio> implements INsfExecutor<T> {
 	
 	public AbstractNsfExecutor() {
 		

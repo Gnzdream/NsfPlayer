@@ -3,7 +3,6 @@ package zdream.nsfplayer.ftm.renderer;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -14,8 +13,8 @@ import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
-import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
@@ -45,12 +44,12 @@ import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
  */
 public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
-	private final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
+	private FamiTrackerRuntime runtime;
 	
 	/**
 	 * 执行器
 	 */
-	private final FamiTrackerExecutor executor = new FamiTrackerExecutor(runtime);
+	private final FamiTrackerExecutor executor = new FamiTrackerExecutor();
 	
 	/**
 	 * 速率转换器
@@ -78,9 +77,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			this.config = config.clone();
 		}
 		
-		runtime.param.sampleRate = this.config.sampleRate;
+		runtime = executor.getRuntime();
+		runtime.param.sampleRate = this.config.sampleRate; // TODO 需要移掉
+		this.runtime.init(this.config.channelLevels); // TODO 需要移掉
 		
-		this.runtime.init(this.config.channelLevels);
 		rate = new NsfRateConverter(runtime.param);
 		initMixer();
 	}
@@ -153,16 +153,16 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			int track,
 			int section)
 			throws FamiTrackerException {
-		runtime.ready(audio, track, section);
+		executor.ready(audio, track, section);
 		
 		// 重置播放相关的数据
-		int frameRate = runtime.fetcher.getFrameRate();
+		int frameRate = executor.getFrameRate();
 		resetCounterParam(frameRate, runtime.param.sampleRate);
 		clearBuffer();
 		rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
 		
 		reloadMixer();
-		initChannels();
+		connectChannels();
 	}
 	
 	/**
@@ -174,7 +174,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready() throws FamiTrackerException {
-		ready(runtime.param.trackIdx, runtime.param.curSection);
+		executor.ready();
+		resetMixer();
 	}
 	
 	/**
@@ -204,12 +205,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready(int track, int section) throws FamiTrackerException {
-		if (runtime.fetcher.querier == null) {
-			throw new NullPointerException("FtmAudio = null");
-		}
-		
-		runtime.ready(track, section);
-		runtime.resetAllChannels();
+		executor.ready(track, section);
 		resetMixer();
 	}
 	
@@ -235,11 +231,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.9
 	 */
 	public void switchTo(int track, int section) {
-		if (runtime.fetcher.querier == null) {
-			throw new NullPointerException("FtmAudio = null");
-		}
-		
-		runtime.ready(track, section);
+		executor.switchTo(track, section);
 	}
 	
 	/* **********
@@ -258,8 +250,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		rate.doConvert();
 		mixer.readyBuffer();
 		
-		runtime.runFrame();
-		updateChannels(true);
+		handleDelay();
+		executor.tick();
+//		updateChannels(true);
+		triggerSounds();
 		
 		runtime.fetcher.updateState();
 		
@@ -276,9 +270,11 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
 		rate.doConvert();
-		
-		runtime.runFrame();
-		updateChannels(false);
+
+		executor.tick();
+//		runtime.runFrame();
+//		updateChannels(false);
+		triggerSounds();
 		
 		runtime.fetcher.updateState();
 		
@@ -476,35 +472,34 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	}
 	
 	/**
-	 * 利用 runtime 已经完成填充的数据, 建立 AbstractFtmChannel, 还有各个轨道的 EffectBatch
-	 * 
-	 * 包含原工程 SoundGen.createChannels()
+	 * <p>将执行构件中的发声器取出, 与混音器相连接.
+	 * </p>
 	 */
-	private void initChannels() {
-		runtime.channels.clear();
-		runtime.effects.clear();
-		runtime.selector.reset();
+	private void connectChannels() {
+		Set<Byte> channels = executor.allChannelSet();
+		this.channels = new ChannelParam[channels.size()];
 		
-		final FamiTrackerQuerier querier = runtime.querier;
-		
-		final int len = querier.channelCount();
-		for (int i = 0; i < len; i++) {
-			byte code = querier.channelCode(i);
-			
-			AbstractFtmChannel ch = runtime.selector.selectFtmChannel(code);
-			ch.setRuntime(runtime);
-			ch.setDelay(i * 100);
-			runtime.channels.put(code, ch);
-			runtime.effects.put(code, new HashMap<>());
-			
-			AbstractNsfSound sound = ch.getSound();
+		int index = 0;
+		for (byte channelCode: channels) {
+			AbstractNsfSound sound = executor.getSound(channelCode);
 			if (sound != null) {
-				IMixerChannel mix = mixer.allocateChannel(code);
+				IMixerChannel mix = mixer.allocateChannel(channelCode);
 				sound.setOut(mix);
 				
 				// 音量
-				mix.setLevel(getInitLevel(code));
+				mix.setLevel(getInitLevel(channelCode));
+				
+				// TODO 告诉混音器更多的信息, 包括发声器的输出采样率 (NSF 的为 177万, mpeg 的为 44100 或 48000 等)
+				
 			}
+			
+			// channel param
+			ChannelParam p = new ChannelParam();
+			this.channels[index] = p;
+			p.channelCode = channelCode;
+			p.delay = index * 100;
+			
+			index++;
 		}
 	}
 	
@@ -519,40 +514,40 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	private float getInitLevel(byte channelCode) {
 		float level = 0;
 		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1: level = runtime.param.levels.level2A03Pules1; break;
-		case CHANNEL_2A03_PULSE2: level = runtime.param.levels.level2A03Pules2; break;
-		case CHANNEL_2A03_TRIANGLE: level = runtime.param.levels.level2A03Triangle; break;
-		case CHANNEL_2A03_NOISE: level = runtime.param.levels.level2A03Noise; break;
-		case CHANNEL_2A03_DPCM: level = runtime.param.levels.level2A03DPCM; break;
+		case CHANNEL_2A03_PULSE1: level = config.channelLevels.level2A03Pules1; break;
+		case CHANNEL_2A03_PULSE2: level = config.channelLevels.level2A03Pules2; break;
+		case CHANNEL_2A03_TRIANGLE: level = config.channelLevels.level2A03Triangle; break;
+		case CHANNEL_2A03_NOISE: level = config.channelLevels.level2A03Noise; break;
+		case CHANNEL_2A03_DPCM: level = config.channelLevels.level2A03DPCM; break;
 
-		case CHANNEL_VRC6_PULSE1: level = runtime.param.levels.levelVRC6Pules1; break;
-		case CHANNEL_VRC6_PULSE2: level = runtime.param.levels.levelVRC6Pules2; break;
-		case CHANNEL_VRC6_SAWTOOTH: level = runtime.param.levels.levelVRC6Sawtooth; break;
+		case CHANNEL_VRC6_PULSE1: level = config.channelLevels.levelVRC6Pules1; break;
+		case CHANNEL_VRC6_PULSE2: level = config.channelLevels.levelVRC6Pules2; break;
+		case CHANNEL_VRC6_SAWTOOTH: level = config.channelLevels.levelVRC6Sawtooth; break;
 
-		case CHANNEL_MMC5_PULSE1: level = runtime.param.levels.levelMMC5Pules1; break;
-		case CHANNEL_MMC5_PULSE2: level = runtime.param.levels.levelMMC5Pules2; break;
+		case CHANNEL_MMC5_PULSE1: level = config.channelLevels.levelMMC5Pules1; break;
+		case CHANNEL_MMC5_PULSE2: level = config.channelLevels.levelMMC5Pules2; break;
 		
-		case CHANNEL_FDS: level = runtime.param.levels.levelFDS; break;
+		case CHANNEL_FDS: level = config.channelLevels.levelFDS; break;
 		
-		case CHANNEL_N163_1: level = runtime.param.levels.levelN163Namco1; break;
-		case CHANNEL_N163_2: level = runtime.param.levels.levelN163Namco2; break;
-		case CHANNEL_N163_3: level = runtime.param.levels.levelN163Namco3; break;
-		case CHANNEL_N163_4: level = runtime.param.levels.levelN163Namco4; break;
-		case CHANNEL_N163_5: level = runtime.param.levels.levelN163Namco5; break;
-		case CHANNEL_N163_6: level = runtime.param.levels.levelN163Namco6; break;
-		case CHANNEL_N163_7: level = runtime.param.levels.levelN163Namco7; break;
-		case CHANNEL_N163_8: level = runtime.param.levels.levelN163Namco8; break;
+		case CHANNEL_N163_1: level = config.channelLevels.levelN163Namco1; break;
+		case CHANNEL_N163_2: level = config.channelLevels.levelN163Namco2; break;
+		case CHANNEL_N163_3: level = config.channelLevels.levelN163Namco3; break;
+		case CHANNEL_N163_4: level = config.channelLevels.levelN163Namco4; break;
+		case CHANNEL_N163_5: level = config.channelLevels.levelN163Namco5; break;
+		case CHANNEL_N163_6: level = config.channelLevels.levelN163Namco6; break;
+		case CHANNEL_N163_7: level = config.channelLevels.levelN163Namco7; break;
+		case CHANNEL_N163_8: level = config.channelLevels.levelN163Namco8; break;
 		
-		case CHANNEL_VRC7_FM1: level = runtime.param.levels.levelVRC7FM1; break;
-		case CHANNEL_VRC7_FM2: level = runtime.param.levels.levelVRC7FM2; break;
-		case CHANNEL_VRC7_FM3: level = runtime.param.levels.levelVRC7FM3; break;
-		case CHANNEL_VRC7_FM4: level = runtime.param.levels.levelVRC7FM4; break;
-		case CHANNEL_VRC7_FM5: level = runtime.param.levels.levelVRC7FM5; break;
-		case CHANNEL_VRC7_FM6: level = runtime.param.levels.levelVRC7FM6; break;
+		case CHANNEL_VRC7_FM1: level = config.channelLevels.levelVRC7FM1; break;
+		case CHANNEL_VRC7_FM2: level = config.channelLevels.levelVRC7FM2; break;
+		case CHANNEL_VRC7_FM3: level = config.channelLevels.levelVRC7FM3; break;
+		case CHANNEL_VRC7_FM4: level = config.channelLevels.levelVRC7FM4; break;
+		case CHANNEL_VRC7_FM5: level = config.channelLevels.levelVRC7FM5; break;
+		case CHANNEL_VRC7_FM6: level = config.channelLevels.levelVRC7FM6; break;
 		
-		case CHANNEL_S5B_SQUARE1: level = runtime.param.levels.levelS5BSquare1; break;
-		case CHANNEL_S5B_SQUARE2: level = runtime.param.levels.levelS5BSquare2; break;
-		case CHANNEL_S5B_SQUARE3: level = runtime.param.levels.levelS5BSquare3; break;
+		case CHANNEL_S5B_SQUARE1: level = config.channelLevels.levelS5BSquare1; break;
+		case CHANNEL_S5B_SQUARE2: level = config.channelLevels.levelS5BSquare2; break;
+		case CHANNEL_S5B_SQUARE3: level = config.channelLevels.levelS5BSquare3; break;
 		
 		default: level = 1.0f; break;
 		}
@@ -567,24 +562,41 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	}
 	
 	/**
-	 * 让每个 channel 进行播放操作
-	 * @param needTriggleSound
-	 *   是否需要让发声器工作
+	 * <p>处理延迟写. 后一个轨道比前一个轨道晚 100 时钟写入数据.
+	 * <p>由于每个轨道的触发时间不同可以有效避免轨道之间共振情况的发生,
+	 * 因此这里需要采用轨道先后写入数据的方式.
+	 * <p>在版本 v0.2.9 与 v0.2.10 时, 延迟写是由 AbstractFtmChannel 完成的.
+	 * 现在由于执行构件的分离, 延迟写的任务现在由渲染器承担.
+	 * </p>
+	 * @see #triggerSounds()
+	 * @since v0.3.0
 	 */
-	private void updateChannels(boolean needTriggleSound) {
-		final FamiTrackerQuerier querier = runtime.querier;
-		
-		// 全局效果
-		globalEffectsExecute();
-		
-		// 局部效果
-		final int len = querier.channelCount();
-		for (int i = 0; i < len; i++) {
-			byte code = querier.channelCode(i);
-			AbstractFtmChannel channel = runtime.channels.get(code);
+	private void handleDelay() {
+		for (int i = 0; i < channels.length; i++) {
+			ChannelParam p = channels[i];
 			
-			channel.playNote();
-			channel.triggerSound(needTriggleSound);
+			byte channelCode = p.channelCode;
+			AbstractNsfSound s = executor.getSound(channelCode);
+			s.process(p.delay);
+		}
+	}
+	
+	/**
+	 * <p>让发声器逐个进行工作.
+	 * <p>工作的时钟数, 为该帧需要工作的时钟数, 减去延迟时钟数.
+	 * </p>
+	 * @see #handleDelay()
+	 * @since v0.3.0
+	 */
+	private void triggerSounds() {
+		final int clock = runtime.param.freqPerFrame;
+		for (int i = 0; i < channels.length; i++) {
+			ChannelParam p = channels[i];
+			
+			byte channelCode = p.channelCode;
+			AbstractNsfSound s = executor.getSound(channelCode);
+			s.process(clock - p.delay);
+			s.endFrame();
 		}
 	}
 	
@@ -593,15 +605,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	private void resetMixer() {
 		mixer.reset();
-	}
-	
-	/**
-	 * 全局效果的实现
-	 */
-	private void globalEffectsExecute() {
-		for (IFtmEffect eff : runtime.geffect.values()) {
-			eff.execute((byte) 0, runtime);
-		}
 	}
 	
 	/**
@@ -669,5 +672,17 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		System.out.println(b);
 	}
+	
+	class ChannelParam {
+		/**
+		 * 轨道号
+		 */
+		byte channelCode;
+		/**
+		 * 延迟写时钟数
+		 */
+		int delay;
+	}
+	private ChannelParam[] channels;
 	
 }

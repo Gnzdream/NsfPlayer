@@ -5,8 +5,8 @@ import java.util.HashSet;
 import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
 
 import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
-import zdream.nsfplayer.ftm.renderer.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.renderer.IFtmState;
 
 /**

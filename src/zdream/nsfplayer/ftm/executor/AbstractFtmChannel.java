@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.renderer;
+package zdream.nsfplayer.ftm.executor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,7 +6,9 @@ import java.util.HashSet;
 
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
+import zdream.nsfplayer.ftm.renderer.IFtmRuntimeHolder;
+import zdream.nsfplayer.ftm.renderer.IFtmSchedule;
+import zdream.nsfplayer.ftm.renderer.IFtmState;
 import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -62,7 +64,7 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 * </p>
 	 * @since v0.2.9
 	 */
-	protected abstract void writeToSound();
+	public abstract void writeToSound();
 	
 	/* **********
 	 * 外部接口 *
@@ -91,36 +93,6 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 		
 		// 状态
 		triggleState();
-	}
-	
-	/**
-	 * <p>播放 note
-	 * <p>子类在这个基础上, 完成将数据写到发声器中, 指导发声器工作, 将数据写到音频管道中.
-	 * </p>
-	 * @param needProcess
-	 *   是否需要让发声器工作.
-	 *   <br>如果为 true, 发声器将工作; 如果为 false, 该函数仅需要将数据写入发声器, 但不会让发声器工作
-	 * 
-	 * @see #playNote()
-	 * @since v0.2.9
-	 */
-	public void triggerSound(boolean needProcess) {
-		if (needProcess) {
-			// 延迟触发（不是延迟效果）
-			getSound().process(delay);
-		}
-		
-		writeToSound();
-		
-		if (needProcess) {
-			// 拿到一帧对应的时钟周期数, 减去延迟的时间
-			int freq = getRuntime().param.freqPerFrame - delay;
-			
-			getSound().process(freq);
-			
-			// 结束
-			getSound().endFrame();
-		}
 	}
 	
 	/* **********
@@ -414,34 +386,6 @@ public abstract class AbstractFtmChannel implements INsfChannelCode, IFtmRuntime
 	 */
 	public boolean isPlaying() {
 		return playing;
-	}
-	
-	/**
-	 * <p>延迟触发时钟数.
-	 * <p>由于轨道与轨道之间可能会有共振效果,
-	 * 因此让某些轨道延迟触发可以很大程度上避免共振情况的发生
-	 * </p>
-	 * @since v0.2.9
-	 */
-	protected int delay;
-	
-	/**
-	 * @return
-	 *   延迟触发时钟数
-	 * @since v0.2.9
-	 */
-	public int getDelay() {
-		return delay;
-	}
-
-	/**
-	 * 设置延迟. 该方法应该由上层 (Renderer) 来调用
-	 * @param delay
-	 *   延迟触发时钟数
-	 * @since v0.2.9
-	 */
-	public void setDelay(int delay) {
-		this.delay = delay;
 	}
 
 	@Override
