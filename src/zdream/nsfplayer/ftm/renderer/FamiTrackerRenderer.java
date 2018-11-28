@@ -3,7 +3,6 @@ package zdream.nsfplayer.ftm.renderer;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +17,8 @@ import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
-import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
+import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
 import zdream.nsfplayer.sound.blip.BlipSoundMixer;
@@ -78,8 +77,12 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		}
 		
 		runtime = executor.getRuntime();
-		runtime.param.sampleRate = this.config.sampleRate; // TODO 需要移掉
-		this.runtime.init(this.config.channelLevels); // TODO 需要移掉
+		
+		// TODO 需要移掉: 采样率数据只有渲染构建需要
+		runtime.param.sampleRate = this.config.sampleRate;
+		
+		// TODO 需要移掉: 音量参数只有渲染构建需要
+		this.runtime.init(this.config.channelLevels);
 		
 		rate = new NsfRateConverter(runtime.param);
 		initMixer();
@@ -239,8 +242,9 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 ********** */
 	
 	/**
-	 * 渲染一帧
-	 * <br>SoundGen.playFrame
+	 * <p>渲染一帧.
+	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构建也执行一帧.
+	 * </p>
 	 * @return
 	 *   本函数已渲染的采样数 (按单声道计算)
 	 */
@@ -252,10 +256,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		handleDelay();
 		executor.tick();
-//		updateChannels(true);
 		triggerSounds();
-		
-		runtime.fetcher.updateState();
 		
 		// 从 mixer 中读取数据
 		readMixer();
@@ -265,18 +266,20 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		return ret;
 	}
 	
-	@Override
+	/**
+	 * <p>跳过一帧.
+	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构建不执行.
+	 * </p>
+	 * @return
+	 *   本函数已跳过的采样数 (按单声道计算)
+	 */
 	protected int skipFrame() {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
 		rate.doConvert();
 
 		executor.tick();
-//		runtime.runFrame();
-//		updateChannels(false);
 		triggerSounds();
-		
-		runtime.fetcher.updateState();
 		
 		return ret;
 	}
@@ -306,7 +309,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   获取正在播放的曲目号
 	 */
 	public int getCurrentTrack() {
-		return runtime.param.trackIdx;
+		return executor.getCurrentTrack();
 	}
 
 	/**
@@ -314,7 +317,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   获取正在播放的段号
 	 */
 	public int getCurrentSection() {
-		return runtime.param.curSection;
+		return executor.getCurrentSection();
 	}
 	
 	/**
@@ -322,7 +325,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   获取正在播放的行号
 	 */
 	public int getCurrentRow() {
-		return runtime.param.curRow;
+		return executor.getCurrentRow();
 	}
 	
 	/**
@@ -332,7 +335,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.2
 	 */
 	public boolean currentRowRunOut() {
-		return runtime.fetcher.needRowUpdate();
+		return executor.currentRowRunOut();
 	}
 
 	/**
@@ -344,7 +347,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.9
 	 */
 	public int getNextSection() {
-		return runtime.fetcher.getNextSection();
+		return executor.getNextSection();
 	}
 	
 	/**
@@ -356,7 +359,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.9
 	 */
 	public int getNextRow() {
-		return runtime.fetcher.getNextRow();
+		return executor.getNextRow();
 	}
 	
 	/**
@@ -366,7 +369,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.2
 	 */
 	public Set<Byte> allChannelSet() {
-		return new HashSet<>(runtime.effects.keySet());
+		return executor.allChannelSet();
 	}
 	
 	/**
@@ -409,9 +412,9 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.2
 	 */
 	public void setChannelMask(byte channelCode, boolean mask) {
-		AbstractFtmChannel ch = runtime.channels.get(channelCode);
-		if (ch != null) {
-			ch.getSound().setMask(mask);
+		AbstractNsfSound sound = executor.getSound(channelCode);
+		if (sound != null) {
+			sound.setMask(mask);
 		}
 	}
 	
@@ -426,7 +429,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.2.3
 	 */
 	public boolean isChannelMask(byte channelCode) throws NullPointerException {
-		return runtime.channels.get(channelCode).getSound().isMask();
+		return executor.getSound(channelCode).isMask();
 	}
 	
 	@Override

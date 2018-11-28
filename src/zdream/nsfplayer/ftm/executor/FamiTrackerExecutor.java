@@ -11,7 +11,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
@@ -91,17 +91,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 		requireNonNull(audio, "FamiTracker 曲目 audio = null");
 		
 		runtime.ready(audio, track, section);
-		
-		
-		
-//		// 重置播放相关的数据
-//		int frameRate = runtime.fetcher.getFrameRate();
-//		resetCounterParam(frameRate, runtime.param.sampleRate);
-//		clearBuffer();
-//		runtime.rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
-//		
-//		initMixer();
-		initChannels();
+		readyChannels();
 	}
 	
 	/**
@@ -176,7 +166,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 		runtime.ready(track, section);
 	}
 	
-	private void initChannels() {
+	private void readyChannels() {
 		runtime.channels.clear();
 		runtime.effects.clear();
 		runtime.selector.reset();
@@ -214,6 +204,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 		runtime.runFrame();
 		updateChannels();
 
+		runtime.fetcher.updateState();
 	}
 
 	/**
@@ -242,13 +233,67 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 	
 	@Override
 	public void reset() {
-		// TODO Auto-generated method stub
-
+		ready();
 	}
 	
 	/* **********
 	 * 参数指标 *
 	 ********** */
+	
+	/**
+	 * @return
+	 *   获取正在播放的曲目号
+	 */
+	public int getCurrentTrack() {
+		return runtime.param.trackIdx;
+	}
+
+	/**
+	 * @return
+	 *   获取正在播放的段号
+	 */
+	public int getCurrentSection() {
+		return runtime.param.curSection;
+	}
+	
+	/**
+	 * @return
+	 *   获取正在播放的行号
+	 */
+	public int getCurrentRow() {
+		return runtime.param.curRow;
+	}
+	
+	/**
+	 * 询问当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
+	 * @return
+	 *   true, 如果当前行已经播放完毕
+	 */
+	public boolean currentRowRunOut() {
+		return runtime.fetcher.needRowUpdate();
+	}
+
+	/**
+	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置所对应的段号.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @return
+	 *   下一行对应的段号
+	 */
+	public int getNextSection() {
+		return runtime.fetcher.getNextSection();
+	}
+	
+	/**
+	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置所对应的行号.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @return
+	 *   下一行对应的段号
+	 */
+	public int getNextRow() {
+		return runtime.fetcher.getNextRow();
+	}
 	
 	/**
 	 * 获取执行的帧率, 每秒多少帧. 帧率会随着播放的曲目不同而不同.

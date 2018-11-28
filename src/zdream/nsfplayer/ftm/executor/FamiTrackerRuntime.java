@@ -8,12 +8,11 @@ import java.util.Map;
 import zdream.nsfplayer.core.ChannelLevelsParameter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.renderer.FtmRowFetcher;
-import zdream.nsfplayer.ftm.renderer.context.ChannelDeviceSelector;
-import zdream.nsfplayer.ftm.renderer.context.DefaultFtmEffectConverter;
-import zdream.nsfplayer.ftm.renderer.context.IFtmEffectConverter;
-import zdream.nsfplayer.ftm.renderer.effect.FtmEffectType;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.executor.context.ChannelDeviceSelector;
+import zdream.nsfplayer.ftm.executor.context.DefaultFtmEffectConverter;
+import zdream.nsfplayer.ftm.executor.context.IFtmEffectConverter;
+import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
+import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 
 /**
  * Famitracker 运行时状态

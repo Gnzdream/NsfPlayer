@@ -6,10 +6,7 @@ import java.util.HashSet;
 
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.ftm.renderer.IFtmRuntimeHolder;
-import zdream.nsfplayer.ftm.renderer.IFtmSchedule;
-import zdream.nsfplayer.ftm.renderer.IFtmState;
-import zdream.nsfplayer.ftm.renderer.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
