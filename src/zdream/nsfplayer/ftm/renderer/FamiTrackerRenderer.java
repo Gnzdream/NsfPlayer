@@ -72,10 +72,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			this.config = config.clone();
 		}
 		
-		// TODO 需要移掉: 采样率数据只有渲染构建需要
+		// 采样率数据只有渲染构建需要
 		param.sampleRate = this.config.sampleRate;
 		
-		// TODO 需要移掉: 音量参数只有渲染构建需要
+		// 音量参数只有渲染构建需要
 		param.levels.copyFrom(this.config.channelLevels);
 		
 		rate = new NsfRateConverter(param);
@@ -237,7 +237,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	/**
 	 * <p>渲染一帧.
-	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构建也执行一帧.
+	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构件也执行一帧.
 	 * </p>
 	 * @return
 	 *   本函数已渲染的采样数 (按单声道计算)
@@ -255,14 +255,12 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		// 从 mixer 中读取数据
 		readMixer();
 		
-//		log();
-		
 		return ret;
 	}
 	
 	/**
 	 * <p>跳过一帧.
-	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构建不执行.
+	 * <p>这个方法在 v0.3.0 版本中有了新的解释, 即: 执行构件执行一帧, 渲染构件不执行.
 	 * </p>
 	 * @return
 	 *   本函数已跳过的采样数 (按单声道计算)

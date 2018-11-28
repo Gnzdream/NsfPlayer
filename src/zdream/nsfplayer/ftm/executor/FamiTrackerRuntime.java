@@ -24,7 +24,6 @@ public class FamiTrackerRuntime {
 	/* **********
 	 *   成员   *
 	 ********** */
-	public IFtmEffectConverter converter;
 	
 	public FamiTrackerParameter param = new FamiTrackerParameter();
 	
@@ -92,6 +91,11 @@ public class FamiTrackerRuntime {
 	 * 行数据获取与播放位置解析工具
 	 */
 	public FtmRowFetcher fetcher;
+	
+	/**
+	 * 键——效果转换器
+	 */
+	public IFtmEffectConverter converter;
 
 	/**
 	 * 查询器
