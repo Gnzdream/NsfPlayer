@@ -57,7 +57,7 @@ public class SongHandler implements ICommandHandler {
 	private void handlePrev(String[] args, FtmPlayerConsole env) {
 		int song = env.getRenderer().getCurrentTrack() - 1;
 		if (song < 0) {
-			song = env.getFtmAudio().getTrackCount() - 1;
+			song = env.getAudio().getTrackCount() - 1;
 		}
 		chooseSong(song, env);
 	}
