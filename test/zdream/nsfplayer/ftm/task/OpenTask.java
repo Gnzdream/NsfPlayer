@@ -42,7 +42,7 @@ public class OpenTask implements IFtmTask {
 	public void setOption(String key, Object arg) {
 		if ("filename".equals(key) || "f".equals(key)) {
 			filename = arg.toString();
-		} else if ("beginSong".equals(key)) {
+		} else if ("beginSong".equals(key) || "song".equals(key)) {
 			beginSong = (Integer) arg;
 		} else if ("format".equals(key)) {
 			switch (arg.toString().toLowerCase()) {
