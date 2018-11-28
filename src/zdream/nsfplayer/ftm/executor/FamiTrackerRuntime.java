@@ -5,7 +5,6 @@ import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
 import java.util.HashMap;
 import java.util.Map;
 
-import zdream.nsfplayer.core.ChannelLevelsParameter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.context.ChannelDeviceSelector;
@@ -40,8 +39,7 @@ public class FamiTrackerRuntime {
 	 *  初始化  *
 	 ********** */
 	
-	public void init(ChannelLevelsParameter p) {
-		this.param.levels.copyFrom(p);
+	public void init() {
 		selector = new ChannelDeviceSelector();
 		fetcher = new FtmRowFetcher(param);
 		converter = new DefaultFtmEffectConverter();

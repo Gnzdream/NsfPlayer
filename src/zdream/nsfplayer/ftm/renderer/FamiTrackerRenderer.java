@@ -2,23 +2,16 @@ package zdream.nsfplayer.ftm.renderer;
 
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
-import zdream.nsfplayer.ftm.executor.FamiTrackerRuntime;
-import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
-import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
 import zdream.nsfplayer.sound.blip.BlipSoundMixer;
@@ -35,15 +28,16 @@ import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
  * <p>该渲染器是线程不安全的, 请注意不要在渲染途中设置参数.
  * </p>
  * 
- * @version v0.2.4
- *   抽出抽象渲染器, 将部分方法移交至父类抽象渲染器中.
+ * @version <b>v0.2.4</b>
+ * <br>抽出抽象渲染器, 将部分方法移交至父类抽象渲染器中.
+ *   
+ * @version <b>v0.3.0</b>
+ * <br>将原来执行相关的构件移至 {@link FamiTrackerExecutor} 中.
  * 
  * @author Zdream
  * @since v0.2.1
  */
 public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
-	
-	private FamiTrackerRuntime runtime;
 	
 	/**
 	 * 执行器
@@ -62,6 +56,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	
 	private FamiTrackerConfig config;
 	
+	private NsfCommonParameter param = new NsfCommonParameter();
+	
 	/**
 	 * 利用默认配置产生一个音频渲染器
 	 */
@@ -76,15 +72,13 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			this.config = config.clone();
 		}
 		
-		runtime = executor.getRuntime();
-		
 		// TODO 需要移掉: 采样率数据只有渲染构建需要
-		runtime.param.sampleRate = this.config.sampleRate;
+		param.sampleRate = this.config.sampleRate;
 		
 		// TODO 需要移掉: 音量参数只有渲染构建需要
-		this.runtime.init(this.config.channelLevels);
+		param.levels.copyFrom(this.config.channelLevels);
 		
-		rate = new NsfRateConverter(runtime.param);
+		rate = new NsfRateConverter(param);
 		initMixer();
 	}
 	
@@ -98,7 +92,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
 			XgmSoundMixer mixer = new XgmSoundMixer();
 			mixer.setConfig((XgmMixerConfig) mixerConfig);
-			mixer.param = runtime.param;
+			mixer.param = param;
 			this.mixer = mixer;
 		} else if (mixerConfig instanceof BlipMixerConfig) {
 			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
@@ -106,7 +100,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
 			mixer.sampleRate = config.sampleRate;
 			mixer.setConfig((BlipMixerConfig) mixerConfig);
-			mixer.param = runtime.param;
+			mixer.param = param;
 			this.mixer = mixer;
 		} else {
 			// TODO 暂时不支持 xgm 和 blip 之外的 mixerConfig
@@ -160,7 +154,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		// 重置播放相关的数据
 		int frameRate = executor.getFrameRate();
-		resetCounterParam(frameRate, runtime.param.sampleRate);
+		resetCounterParam(frameRate, param.sampleRate);
 		clearBuffer();
 		rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
 		
@@ -250,7 +244,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	protected int renderFrame() {
 		int ret = countNextFrame();
-		runtime.param.sampleInCurFrame = ret;
+		param.sampleInCurFrame = ret;
 		rate.doConvert();
 		mixer.readyBuffer();
 		
@@ -261,7 +255,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		// 从 mixer 中读取数据
 		readMixer();
 		
-		log();
+//		log();
 		
 		return ret;
 	}
@@ -275,7 +269,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	protected int skipFrame() {
 		int ret = countNextFrame();
-		runtime.param.sampleInCurFrame = ret;
+		param.sampleInCurFrame = ret;
 		rate.doConvert();
 
 		executor.tick();
@@ -293,7 +287,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @return
 	 */
 	public boolean isFinished() {
-		return runtime.param.finished;
+		return param.finished;
 	}
 
 	/* **********
@@ -440,16 +434,16 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			speed = 0.1f;
 		}
 		
-		runtime.param.speed = speed;
+		param.speed = speed;
 		
-		int frameRate = runtime.querier.getFrameRate();
-		resetCounterParam(frameRate, runtime.param.sampleRate);
+		int frameRate = executor.getFrameRate();
+		resetCounterParam(frameRate, param.sampleRate);
 		rate.onParamUpdate();
 	}
 	
 	@Override
 	public float getSpeed() {
-		return runtime.param.speed;
+		return param.speed;
 	}
 	
 	/**
@@ -592,7 +586,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @since v0.3.0
 	 */
 	private void triggerSounds() {
-		final int clock = runtime.param.freqPerFrame;
+		final int clock = param.freqPerFrame;
 		for (int i = 0; i < channels.length; i++) {
 			ChannelParam p = channels[i];
 			
@@ -616,64 +610,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	private void readMixer() {
 		mixer.finishBuffer();
 		mixer.readBuffer(data, 0, data.length);
-	}
-	
-	/* **********
-	 * 测试方法 *
-	 ********** */
-	
-	@Deprecated
-	public int enableLog = 0;
-	
-	private void log() {
-		switch (enableLog) {
-		case 1:
-			logEffect();
-			break;
-		case 2:
-			logVolume();
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	private void logEffect() {
-		StringBuilder b = new StringBuilder(128);
-		b.append(String.format("%02d:%03d", runtime.param.curSection, runtime.param.curRow));
-		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
-			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
-			if (entry.getValue().isEmpty()) {
-				continue;
-			}
-			
-			b.append(' ').append(Integer.toHexString(entry.getKey())).append('=');
-			b.append(entry.getValue().values());
-		}
-		
-		if (!runtime.geffect.isEmpty()) {
-			b.append(' ').append("G").append('=').append(runtime.geffect.values());
-		}
-		System.out.println(b);
-	}
-	
-	private void logVolume() {
-		final StringBuilder b = new StringBuilder(64);
-		b.append(String.format("%02d:%03d ", runtime.param.curSection, runtime.param.curRow));
-		
-		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());
-		bs.sort(null);
-		bs.forEach((channelCode) -> {
-			AbstractFtmChannel ch = runtime.channels.get(channelCode);
-			int v = ch.getCurrentVolume();
-			if (!ch.isPlaying()) {
-				v = 0;
-			}
-			b.append(String.format("%3d|", v));
-		});
-		
-		System.out.println(b);
 	}
 	
 	class ChannelParam {

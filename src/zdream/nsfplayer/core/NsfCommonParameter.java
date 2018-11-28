@@ -9,7 +9,7 @@ package zdream.nsfplayer.core;
  */
 public class NsfCommonParameter {
 	
-	protected NsfCommonParameter() {
+	public NsfCommonParameter() {
 		
 	}
 	

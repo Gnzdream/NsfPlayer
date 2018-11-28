@@ -2,8 +2,12 @@ package zdream.nsfplayer.ftm.executor;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfExecutor;
@@ -11,6 +15,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -27,21 +32,14 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
 public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 		implements INsfChannelCode {
 
-	public FamiTrackerExecutor() {
-		
-	}
-	
-	/* **********
-	 *   成员   *
-	 ********** */
-	private final FamiTrackerRuntime runtime = new FamiTrackerRuntime();
-	
 	/**
-	 * TODO 在移交期间暂时开放
-	 * @return
+	 * 执行上下文
 	 */
-	public FamiTrackerRuntime getRuntime() {
-		return runtime;
+	private final FamiTrackerRuntime runtime;
+	
+	public FamiTrackerExecutor() {
+		runtime = new FamiTrackerRuntime();
+		this.runtime.init();
 	}
 	
 	/* **********
@@ -181,15 +179,6 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 			ch.setRuntime(runtime);
 			runtime.channels.put(code, ch);
 			runtime.effects.put(code, new HashMap<>());
-			
-//			AbstractNsfSound sound = ch.getSound();
-//			if (sound != null) {
-//				IMixerChannel mix = mixer.allocateChannel(code);
-//				sound.setOut(mix);
-//				
-//				// 音量
-//				mix.setLevel(getInitLevel(code));
-//			}
 		}
 	}
 	
@@ -205,6 +194,8 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 		updateChannels();
 
 		runtime.fetcher.updateState();
+		
+		log(); // TODO 以后用 hook 代替
 	}
 
 	/**
@@ -239,6 +230,18 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 	/* **********
 	 * 参数指标 *
 	 ********** */
+	
+	/**
+	 * <p>询问是否已经播放完毕
+	 * <p>如果已经播放完毕的 Ftm 音频尝试再调用 {@link #render(byte[], int, int)}
+	 * 或者 {@link #renderOneFrame(byte[], int, int)}, 则会忽略停止符号,
+	 * 强制再向下播放.
+	 * </p>
+	 * @return
+	 */
+	public boolean isFinished() {
+		return runtime.param.finished;
+	}
 	
 	/**
 	 * @return
@@ -331,6 +334,64 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
 			return null;
 		}
 		return ch.getSound();
+	}
+	
+	/* **********
+	 * 测试方法 *
+	 ********** */
+	
+	@Deprecated
+	public int enableLog = 0;
+	
+	private void log() {
+		switch (enableLog) {
+		case 1:
+			logEffect();
+			break;
+		case 2:
+			logVolume();
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	private void logEffect() {
+		StringBuilder b = new StringBuilder(128);
+		b.append(String.format("%02d:%03d", this.getCurrentSection(), this.getCurrentRow()));
+		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
+			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
+			if (entry.getValue().isEmpty()) {
+				continue;
+			}
+			
+			b.append(' ').append(Integer.toHexString(entry.getKey())).append('=');
+			b.append(entry.getValue().values());
+		}
+		
+		if (!runtime.geffect.isEmpty()) {
+			b.append(' ').append("G").append('=').append(runtime.geffect.values());
+		}
+		System.out.println(b);
+	}
+	
+	private void logVolume() {
+		final StringBuilder b = new StringBuilder(64);
+		b.append(String.format("%02d:%03d ", this.getCurrentSection(), this.getCurrentRow()));
+		
+		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());
+		bs.sort(null);
+		bs.forEach((channelCode) -> {
+			AbstractFtmChannel ch = runtime.channels.get(channelCode);
+			int v = ch.getCurrentVolume();
+			if (!ch.isPlaying()) {
+				v = 0;
+			}
+			b.append(String.format("%3d|", v));
+		});
+		
+		System.out.println(b);
 	}
 
 }
