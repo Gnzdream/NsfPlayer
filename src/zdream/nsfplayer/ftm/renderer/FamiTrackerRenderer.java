@@ -285,7 +285,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @return
 	 */
 	public boolean isFinished() {
-		return param.finished;
+		return executor.isFinished();
 	}
 
 	/* **********

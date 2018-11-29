@@ -29,8 +29,7 @@ import zdream.nsfplayer.sound.AbstractNsfSound;
  * @author Zdream
  * @since v0.3.0
  */
-public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio>
-		implements INsfChannelCode {
+public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 
 	/**
 	 * 执行上下文
