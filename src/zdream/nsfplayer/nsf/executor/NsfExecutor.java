@@ -1,9 +1,15 @@
 package zdream.nsfplayer.nsf.executor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import zdream.nsfplayer.core.AbstractNsfExecutor;
+import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
+import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
+import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
  * <p>Nsf 的执行构件.
@@ -46,6 +52,48 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 	 ********** */
 	
 	/**
+	 * 跟随 Nsf 文件中指定的制式
+	 */
+	public static final int REGION_FOLLOW_AUDIO = 0;
+	/**
+	 * 强制要求 NTSC
+	 */
+	public static final int REGION_FORCE_NTSC = 1;
+	/**
+	 * 强制要求 PAL
+	 */
+	public static final int REGION_FORCE_PAL = 2;
+	/**
+	 * 强制要求 DENDY
+	 */
+	public static final int REGION_FORCE_DENDY = 3;
+	
+	/**
+	 * 设置播放的制式要求
+	 * @param region
+	 *   制式要求
+	 * @see #REGION_FOLLOW_AUDIO
+	 * @see #REGION_FORCE_NTSC
+	 * @see #REGION_FORCE_PAL
+	 * @see #REGION_FORCE_DENDY
+	 * @throws IllegalArgumentException
+	 *   当制式要求不为预设的这四个时
+	 */
+	public void setRegion(int region) {
+		switch (region) {
+		case REGION_FOLLOW_AUDIO:
+		case REGION_FORCE_NTSC:
+		case REGION_FORCE_PAL:
+		case REGION_FORCE_DENDY:
+			runtime.param.region = region;
+			break;
+
+		default:
+			throw new IllegalArgumentException("制式要求: " + region + " 不可解析");
+		}
+	}
+	
+	/**
 	 * 设置 tick() 的执行的速率.
 	 * @param rate
 	 *   执行速率. 一般这个值等于 sampleRate
@@ -74,6 +122,36 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 	public void reset() {
 		// TODO Auto-generated method stub
 
+	}
+	
+	/* **********
+	 * 参数指标 *
+	 ********** */
+	
+	/**
+	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出
+	 * @return
+	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
+	 */
+	public Set<Byte> allChannelSet() {
+		return new HashSet<>(runtime.chips.keySet());
+	}
+	
+	/**
+	 * <p>获得对应轨道号的发声器.
+	 * <p>发声器就是执行体最后的输出, 所有的执行结果将直接写入到发声器中.
+	 * </p>
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   对应轨道的发声器实例. 如果没有对应的轨道, 返回 null.
+	 */
+	public AbstractNsfSound getSound(byte channelCode) {
+		AbstractSoundChip chip = runtime.chips.get(channelCode);
+		if (chip == null) {
+			return null;
+		}
+		return chip.getSound(channelCode);
 	}
 	
 	/* **********

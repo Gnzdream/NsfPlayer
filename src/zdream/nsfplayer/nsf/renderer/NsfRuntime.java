@@ -33,11 +33,11 @@ public class NsfRuntime implements IResetable {
 	 ********** */
 	
 	public NsfAudio audio;
+	@Deprecated
 	public NsfRendererConfig config;
 	public final NsfParameter param = new NsfParameter();
 	public final DeviceManager manager;
 	public final NsfClockCounter clockCounter;
-	public final NsfRateConverter rate;
 	
 	// 存储部件
 	public final NesMem mem;
@@ -73,7 +73,6 @@ public class NsfRuntime implements IResetable {
 		param.levels.copyFrom(config.channelLevels);
 		manager = new DeviceManager(this);
 		clockCounter = new NsfClockCounter(param);
-		rate = new NsfRateConverter(param);
 		
 		mem = new NesMem();
 		bank = new NesBank();

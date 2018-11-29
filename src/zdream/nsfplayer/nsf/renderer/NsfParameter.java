@@ -18,6 +18,11 @@ public class NsfParameter extends NsfCommonParameter {
 		super();
 	}
 	
+	/**
+	 * 用户指定用哪种制式进行播放, NTSC 或者 PAL
+	 */
+	public int region;
+	
 	/* **********
 	 * 时钟周期 *
 	 ********** */

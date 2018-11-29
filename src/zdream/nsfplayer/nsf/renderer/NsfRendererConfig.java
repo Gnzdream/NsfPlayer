@@ -1,6 +1,7 @@
 package zdream.nsfplayer.nsf.renderer;
 
 import zdream.nsfplayer.core.ChannelLevelsParameter;
+import zdream.nsfplayer.nsf.executor.NsfExecutor;
 import zdream.nsfplayer.sound.mixer.IMixerConfig;
 
 /**
@@ -23,19 +24,19 @@ public class NsfRendererConfig implements Cloneable {
 	/**
 	 * 跟随 Nsf 文件中指定的制式
 	 */
-	public static final int REGION_FOLLOW_AUDIO = 0;
+	public static final int REGION_FOLLOW_AUDIO = NsfExecutor.REGION_FOLLOW_AUDIO;
 	/**
 	 * 强制要求 NTSC
 	 */
-	public static final int REGION_FORCE_NTSC = 1;
+	public static final int REGION_FORCE_NTSC = NsfExecutor.REGION_FORCE_NTSC;
 	/**
 	 * 强制要求 PAL
 	 */
-	public static final int REGION_FORCE_PAL = 2;
+	public static final int REGION_FORCE_PAL = NsfExecutor.REGION_FORCE_PAL;
 	/**
 	 * 强制要求 DENDY
 	 */
-	public static final int REGION_FORCE_DENDY = 3;
+	public static final int REGION_FORCE_DENDY = NsfExecutor.REGION_FORCE_DENDY;
 	
 	/**
 	 * Mixer 参数

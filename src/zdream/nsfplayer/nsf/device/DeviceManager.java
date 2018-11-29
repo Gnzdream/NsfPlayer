@@ -1,10 +1,11 @@
 package zdream.nsfplayer.nsf.device;
 
-import static zdream.nsfplayer.core.ERegion.*;
+import static zdream.nsfplayer.core.ERegion.DENDY;
+import static zdream.nsfplayer.core.ERegion.NTSC;
+import static zdream.nsfplayer.core.ERegion.PAL;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_DENDY;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
-import static zdream.nsfplayer.core.INsfChannelCode.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,12 +26,9 @@ import zdream.nsfplayer.nsf.device.chip.NesVRC7;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
-import zdream.nsfplayer.nsf.renderer.NsfParameter;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
-import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.SoundN163;
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
 
 /**
  * 用于管理 Nsf 运行时状态的所有硬件设备的管理者
@@ -120,7 +118,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		stack.detachAll();
 		layer.detachAll();
 		apu_bus.detachAll();
-		runtime.mixer.detachAll();
 	}
 	
 	// 音频芯片
@@ -280,7 +277,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		}
 		
 		// 按用户指定的制式渲染
-		int pref = runtime.config.region;
+		int pref = runtime.param.region;
 		
 		switch (pref) {
 		case NsfRendererConfig.REGION_FORCE_NTSC:
@@ -329,42 +326,33 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		// 先将声卡挂到 runtime 上去
 		putSoundChipToRuntime(apu);
 		putSoundChipToRuntime(dmc);
-		// 混音器
-		attachSoundChipAndMixer(apu); // mixer.attach(apu);
-		attachSoundChipAndMixer(dmc); // mixer.attach(dmc);
 		
 		stack.attach(apu_bus);
 		
 		if (runtime.audio.useVrc6()) {
 			stack.attach(vrc6);
 			putSoundChipToRuntime(vrc6);
-			attachSoundChipAndMixer(vrc6);
 		}
 		if (runtime.audio.useMmc5()) {
 			stack.attach(mmc5);
 			putSoundChipToRuntime(mmc5);
-			attachSoundChipAndMixer(mmc5);
 		}
 		if (runtime.audio.useFds()) {
 			stack.attach(fds);
 			putSoundChipToRuntime(fds);
-			attachSoundChipAndMixer(fds);
 		}
 		if (runtime.audio.useN163()) {
 			n163.forceChannelCount(1);
 			stack.attach(n163);
 			putSoundChipToRuntime(n163);
-			attachSoundChipAndMixer(n163);
 		}
 		if (runtime.audio.useVrc7()) {
 			stack.attach(vrc7);
 			putSoundChipToRuntime(vrc7);
-			attachSoundChipAndMixer(vrc7);
 		}
 		if (runtime.audio.useS5b()) {
 			stack.attach(s5b);
 			putSoundChipToRuntime(s5b);
-			attachSoundChipAndMixer(s5b);
 		}
 		
 		// 最后是 layer
@@ -393,12 +381,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 * @param n163ChannelCount
 	 */
 	public void reattachN163(int n163ChannelCount) {
-		ArrayList<IN163ReattachListener> ls = runtime.n163Lsners;
-		for (IN163ReattachListener l : ls) {
-			l.onReattach(n163ChannelCount);
-		}
-		
-		// TODO 以下代码需要移出去
 		for (int i = 0; i < 8; i++) {
 			byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
 			SoundN163 sound = n163.getSound(channelCode);
@@ -407,20 +389,17 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			if (on) {
 				if (!runtime.chips.containsKey(channelCode)) {
 					runtime.chips.put(channelCode, n163);
-					
-					IMixerChannel mix = runtime.mixer.allocateChannel(channelCode);
-					sound.setOut(mix);
-					
-					mix.setLevel(getInitLevel(channelCode));
 				}
 			} else {
 				if (runtime.chips.containsKey(channelCode)) {
 					runtime.chips.remove(channelCode);
-					
-					IMixerChannel mix = runtime.mixer.getMixerChannel(channelCode);
-					mix.setEnable(false);
 				}
 			}
+		}
+		
+		ArrayList<IN163ReattachListener> ls = runtime.n163Lsners;
+		for (IN163ReattachListener l : ls) {
+			l.onReattach(n163ChannelCount);
 		}
 	}
 	
@@ -449,80 +428,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		return bmax;
 	}
 	
-	/**
-	 * 连接 Mixer 和虚拟声卡
-	 * @param chip
-	 */
-	private void attachSoundChipAndMixer(AbstractSoundChip chip) {
-		byte[] channels = chip.getAllChannelCodes();
-		
-		for (int i = 0; i < channels.length; i++) {
-			byte code = channels[i];
-			AbstractNsfSound sound = chip.getSound(code);
-			
-			IMixerChannel mix = runtime.mixer.allocateChannel(code);
-			sound.setOut(mix);
-			
-			// 音量
-			mix.setLevel(getInitLevel(code));
-		}
-	}
-	
-	/**
-	 * 获取每个轨道的音量. 这个值应该是从参数 {@link NsfParameter} 中去取.
-	 * @param channelCode
-	 * @return
-	 */
-	private float getInitLevel(byte channelCode) {
-		float level = 0;
-		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1: level = runtime.param.levels.level2A03Pules1; break;
-		case CHANNEL_2A03_PULSE2: level = runtime.param.levels.level2A03Pules2; break;
-		case CHANNEL_2A03_TRIANGLE: level = runtime.param.levels.level2A03Triangle; break;
-		case CHANNEL_2A03_NOISE: level = runtime.param.levels.level2A03Noise; break;
-		case CHANNEL_2A03_DPCM: level = runtime.param.levels.level2A03DPCM; break;
-
-		case CHANNEL_VRC6_PULSE1: level = runtime.param.levels.levelVRC6Pules1; break;
-		case CHANNEL_VRC6_PULSE2: level = runtime.param.levels.levelVRC6Pules2; break;
-		case CHANNEL_VRC6_SAWTOOTH: level = runtime.param.levels.levelVRC6Sawtooth; break;
-
-		case CHANNEL_MMC5_PULSE1: level = runtime.param.levels.levelMMC5Pules1; break;
-		case CHANNEL_MMC5_PULSE2: level = runtime.param.levels.levelMMC5Pules2; break;
-		
-		case CHANNEL_FDS: level = runtime.param.levels.levelFDS; break;
-		
-		case CHANNEL_N163_1: level = runtime.param.levels.levelN163Namco1; break;
-		case CHANNEL_N163_2: level = runtime.param.levels.levelN163Namco2; break;
-		case CHANNEL_N163_3: level = runtime.param.levels.levelN163Namco3; break;
-		case CHANNEL_N163_4: level = runtime.param.levels.levelN163Namco4; break;
-		case CHANNEL_N163_5: level = runtime.param.levels.levelN163Namco5; break;
-		case CHANNEL_N163_6: level = runtime.param.levels.levelN163Namco6; break;
-		case CHANNEL_N163_7: level = runtime.param.levels.levelN163Namco7; break;
-		case CHANNEL_N163_8: level = runtime.param.levels.levelN163Namco8; break;
-		
-		case CHANNEL_VRC7_FM1: level = runtime.param.levels.levelVRC7FM1; break;
-		case CHANNEL_VRC7_FM2: level = runtime.param.levels.levelVRC7FM2; break;
-		case CHANNEL_VRC7_FM3: level = runtime.param.levels.levelVRC7FM3; break;
-		case CHANNEL_VRC7_FM4: level = runtime.param.levels.levelVRC7FM4; break;
-		case CHANNEL_VRC7_FM5: level = runtime.param.levels.levelVRC7FM5; break;
-		case CHANNEL_VRC7_FM6: level = runtime.param.levels.levelVRC7FM6; break;
-		
-		case CHANNEL_S5B_SQUARE1: level = runtime.param.levels.levelS5BSquare1; break;
-		case CHANNEL_S5B_SQUARE2: level = runtime.param.levels.levelS5BSquare2; break;
-		case CHANNEL_S5B_SQUARE3: level = runtime.param.levels.levelS5BSquare3; break;
-		
-		default: level = 1.0f; break;
-		}
-		
-		if (level > 1) {
-			level = 1.0f;
-		} else if (level < 0) {
-			level = 0;
-		}
-		
-		return level;
-	}
-
 	/* **********
 	 *   执行   *
 	 ********** */
