@@ -3,7 +3,6 @@ package zdream.nsfplayer.nsf.renderer;
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfRenderer;
-import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -32,13 +31,13 @@ import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
  */
 public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	
-	private final NsfExecutor executor;
+	private final NsfExecutor executor = new NsfExecutor();
 	
 	public final NsfRateConverter rate;
 	
 	private NsfRuntime runtime;
 	
-	private final NsfCommonParameter param = new NsfCommonParameter();
+//	private final NsfCommonParameter param = new NsfCommonParameter();
 	
 	NsfRendererConfig config;
 	
@@ -54,7 +53,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	public NsfRenderer(NsfRendererConfig config) {
 		this.config = config;
 		
-		executor = new NsfExecutor(config);
 		executor.setRegion(config.region);
 		executor.setRate(config.sampleRate);
 		executor.addN163ReattachListener(n163lsner);
@@ -62,7 +60,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime = executor.getRuntime();
 		initMixer();
 		rate = new NsfRateConverter(runtime.param);
-		param.levels.copyFrom(config.channelLevels);
+//		param.levels.copyFrom(config.channelLevels);
 	}
 	
 	public void initMixer() {
@@ -109,9 +107,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   当 audio 为 null 时
 	 */
 	public void ready(NsfAudio audio) {
-		if (audio == null) {
-			throw new NullPointerException("audio = null");
-		}
 		ready0(audio, audio.start);
 	}
 
@@ -127,14 +122,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
 	 */
 	public void ready(NsfAudio audio, int track) {
-		if (audio == null) {
-			throw new NullPointerException("audio = null");
-		}
-		if (track < 0 || track >= audio.total_songs) {
-			throw new IllegalArgumentException(
-					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内, " + track + " 是非法值");
-		}
-		
 		this.ready0(audio, track);
 	}
 	
@@ -163,17 +150,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	}
 	
 	private void ready0(NsfAudio audio, int track) {
-		if (track < 0 || track >= audio.total_songs) {
-			track = 0;
-		}
-		
 		runtime.param.sampleRate = this.config.sampleRate;
 		runtime.param.frameRate = frameRate;
 		
-		runtime.audio = audio;
-		runtime.manager.setSong(track);
+		executor.ready(audio, track);
 		
-		runtime.reset();
 		mixer.reset();
 		connectChannels();
 		

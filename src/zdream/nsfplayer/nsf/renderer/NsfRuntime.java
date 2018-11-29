@@ -26,8 +26,6 @@ public class NsfRuntime implements IResetable {
 	 ********** */
 	
 	public NsfAudio audio;
-	@Deprecated
-	public NsfRendererConfig config;
 	public final NsfParameter param = new NsfParameter();
 	public final DeviceManager manager;
 	public final NsfClockCounter clockCounter;
@@ -55,19 +53,13 @@ public class NsfRuntime implements IResetable {
 	 *  初始化  *
 	 ********** */
 	
-	public NsfRuntime(NsfRendererConfig config) {
-		this.config = config;
-		param.levels.copyFrom(config.channelLevels);
+	public NsfRuntime() {
 		manager = new DeviceManager(this);
 		clockCounter = new NsfClockCounter(param);
 		
 		mem = new NesMem();
 		bank = new NesBank();
 		cpu = new NesCPU();
-	}
-	
-	public NsfRuntime() {
-		this(new NsfRendererConfig());
 	}
 	
 	public void init() {

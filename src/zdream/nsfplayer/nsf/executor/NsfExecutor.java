@@ -1,5 +1,7 @@
 package zdream.nsfplayer.nsf.executor;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,7 +9,6 @@ import zdream.nsfplayer.core.AbstractNsfExecutor;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
-import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -27,15 +28,6 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 	
 	public NsfExecutor() {
 		this.runtime = new NsfRuntime();
-		runtime.init();
-	}
-	
-	/**
-	 * TODO 待删除
-	 * @return
-	 */
-	public NsfExecutor(NsfRendererConfig config) {
-		this.runtime = new NsfRuntime(config);
 		runtime.init();
 	}
 	
@@ -102,10 +94,54 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 		runtime.param.sampleRate = rate; // 默认: 48000
 	}
 
-	@Override
-	public void ready(NsfAudio audio) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * 读取 Nsf 音频, 并以默认曲目进行准备
+	 * @param audio
+	 * @throws NullPointerException
+	 *   当 audio 为 null 时
+	 */
+	public void ready(NsfAudio audio) throws NullPointerException {
+		requireNonNull(audio, "NSF 曲目 audio = null");
+		ready0(audio, audio.start);
+	}
+	
+	/**
+	 * 读取 Nsf 音频, 以指定曲目进行准备
+	 * @param audio
+	 *   Nsf 音频实例
+	 * @param track
+	 *   曲目号
+	 * @throws NullPointerException
+	 *   当 audio 为 null 时
+	 * @throws IllegalArgumentException
+	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
+	 */
+	public void ready(NsfAudio audio, int track) throws NullPointerException, IllegalArgumentException {
+		requireNonNull(audio, "NSF 曲目 audio = null");
+		if (track < 0 || track >= audio.total_songs) {
+			throw new IllegalArgumentException(
+					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内, " + track + " 是非法值");
+		}
+		
+		this.ready0(audio, track);
+	}
+	
+	private void ready0(NsfAudio audio, int track) {
+		if (track < 0 || track >= audio.total_songs) {
+			track = 0;
+		}
+		
+		runtime.audio = audio;
+		runtime.manager.setSong(track);
+		
+		runtime.reset();
+//		mixer.reset();
+//		connectChannels();
+//		
+//		super.resetCounterParam(frameRate, config.sampleRate);
+//		clearBuffer();
+//		runtime.clockCounter.onParamUpdate(config.sampleRate, runtime.param.freqPerSec);
+//		rate.onParamUpdate(frameRate, runtime.param.freqPerSec);
 	}
 	
 	/* **********
