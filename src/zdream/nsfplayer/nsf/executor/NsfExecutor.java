@@ -31,14 +31,6 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 		runtime.init();
 	}
 	
-	/**
-	 * TODO 待移交
-	 * @return
-	 */
-	public NsfRuntime getRuntime() {
-		return runtime;
-	}
-	
 	/* **********
 	 * 准备部分 *
 	 ********** */
@@ -126,6 +118,31 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 		this.ready0(audio, track);
 	}
 	
+	/**
+	 * <p>在不更改 Nsf 音频的同时, 切换到指定曲目的开头.
+	 * <p>第一次播放时需要指定 Nsf 音频数据.
+	 * 因此第一次需要调用含 {@link NsfAudio} 参数的重载方法
+	 * </p>
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link NsfAudio} 音频时
+	 * @throws IllegalArgumentException
+	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
+	 */
+	public void ready(int track) throws NullPointerException {
+		NsfAudio audio = runtime.audio;
+		requireNonNull(audio, "NSF 曲目 audio = null");
+		
+		if (track < 0 || track >= audio.total_songs) {
+			throw new IllegalArgumentException(
+					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
+		}
+		
+		runtime.manager.setSong(track);
+		runtime.reset();
+	}
+	
 	private void ready0(NsfAudio audio, int track) {
 		if (track < 0 || track >= audio.total_songs) {
 			track = 0;
@@ -135,13 +152,6 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 		runtime.manager.setSong(track);
 		
 		runtime.reset();
-//		mixer.reset();
-//		connectChannels();
-//		
-//		super.resetCounterParam(frameRate, config.sampleRate);
-//		clearBuffer();
-//		runtime.clockCounter.onParamUpdate(config.sampleRate, runtime.param.freqPerSec);
-//		rate.onParamUpdate(frameRate, runtime.param.freqPerSec);
 	}
 	
 	/* **********
@@ -169,6 +179,14 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 	 */
 	public int cycleRate() {
 		return runtime.param.freqPerSec;
+	}
+	
+	/**
+	 * @return
+	 *   当前正在播放的曲目号
+	 */
+	public int getCurrentTrack() {
+		return runtime.manager.getSong();
 	}
 	
 	/**

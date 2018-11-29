@@ -5,10 +5,10 @@ import java.util.Set;
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.FloatCycleCounter;
+import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
-import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.chip.NesN163;
 import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.nsf.executor.NsfExecutor;
@@ -36,17 +36,21 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	private final NsfExecutor executor = new NsfExecutor();
 	
 	/**
-	 * 算每帧多少时钟
+	 * 算每帧多少时钟, 计入 speed 影响
 	 */
 	public final NsfRateConverter rate;
 	
-	private NsfRuntime runtime;
-	
-//	private final NsfCommonParameter param = new NsfCommonParameter();
-	
+	/**
+	 * 算每帧多少采样, 计入 speed 影响
+	 */
 	private final FloatCycleCounter apuCounter = new FloatCycleCounter();
 	
-	NsfRendererConfig config;
+	private final NsfCommonParameter param = new NsfCommonParameter();
+	
+	/**
+	 * 缓存所有轨道号
+	 */
+	private byte[] channels;
 	
 	/**
 	 * 管理 executor 的 tick 次数
@@ -64,20 +68,20 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	}
 	
 	public NsfRenderer(NsfRendererConfig config) {
-		this.config = config;
+		param.sampleRate = config.sampleRate;
+		param.frameRate = frameRate;
 		
 		executor.setRegion(config.region);
 		executor.setRate(config.sampleRate);
 		executor.addN163ReattachListener(n163lsner);
 		
-		runtime = executor.getRuntime();
-		initMixer();
-		rate = new NsfRateConverter(runtime.param);
+		initMixer(config);
+		rate = new NsfRateConverter(param);
 		exeCycle.setParam(config.sampleRate, this.frameRate);
-//		param.levels.copyFrom(config.channelLevels);
+		param.levels.copyFrom(config.channelLevels);
 	}
 	
-	public void initMixer() {
+	public void initMixer(NsfRendererConfig config) {
 		IMixerConfig mixerConfig = config.mixerConfig;
 		if (mixerConfig == null) {
 			mixerConfig = new XgmMixerConfig();
@@ -87,7 +91,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
 			XgmSoundMixer mixer = new XgmSoundMixer();
 			mixer.setConfig((XgmMixerConfig) mixerConfig);
-			mixer.param = runtime.param;
+			mixer.param = param;
 			this.mixer = mixer;
 		} else if (mixerConfig instanceof BlipMixerConfig) {
 			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
@@ -95,7 +99,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
 			mixer.sampleRate = config.sampleRate;
 			mixer.setConfig((BlipMixerConfig) mixerConfig);
-			mixer.param = runtime.param;
+			mixer.param = param;
 			this.mixer = mixer;
 		} else {
 			// TODO 暂时不支持 xgm 和 blip 之外的 mixerConfig
@@ -152,37 +156,33 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   当曲目号 track 在范围 [0, audio.total_songs) 之外时.
 	 */
 	public void ready(int track) throws NullPointerException {
-		NsfAudio audio = runtime.audio;
-		
-		if (track < 0 || track >= audio.total_songs) {
-			throw new IllegalArgumentException(
-					"曲目号 track 需要在范围 [0, " + audio.total_songs + ") 内");
-		}
-		
-		runtime.manager.setSong(track);
-		runtime.reset();
+		this.ready(track);
 	}
 	
 	private void ready0(NsfAudio audio, int track) {
-		runtime.param.sampleRate = this.config.sampleRate;
-		runtime.param.frameRate = frameRate;
-		
 		executor.ready(audio, track);
 		
 		mixer.reset();
 		connectChannels();
 		
-		super.resetCounterParam(frameRate, config.sampleRate);
+		super.resetCounterParam(frameRate, param.sampleRate);
 		clearBuffer();
-		runtime.clockCounter.onParamUpdate(config.sampleRate, runtime.param.freqPerSec);
-		rate.onParamUpdate(frameRate, runtime.param.freqPerSec);
 		
-		apuCounter.setParam(countCycle(runtime.param.speed), config.sampleRate);
+		rate.onParamUpdate(frameRate, executor.cycleRate());
+		apuCounter.setParam(countCycle(param.speed), param.sampleRate);
 	}
 	
+	/**
+	 * <p>连接执行构件中的 sound 和渲染构件的轨道.
+	 * <p>这个方法可以暂时确定所有轨道号
+	 * </p>
+	 */
 	private void connectChannels() {
 		mixer.detachAll();
 		Set<Byte> channels = executor.allChannelSet();
+		this.channels = new byte[channels.size()];
+		
+		int index = 0;
 		for (byte channelCode: channels) {
 			AbstractNsfSound sound = executor.getSound(channelCode);
 			if (sound != null) {
@@ -193,11 +193,12 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 				mix.setLevel(getInitLevel(channelCode));
 				
 				// TODO 告诉混音器更多的信息, 包括发声器的输出采样率 (NSF 的为 177万, mpeg 的为 44100 或 48000 等)
-				
 			}
+			
+			// 缓存轨道号
+			this.channels[index] = channelCode;
+			index++;
 		}
-		
-		
 	}
 	
 	/* **********
@@ -207,15 +208,14 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	@Override
 	protected int renderFrame() {
 		int ret = countNextFrame();
-		runtime.param.sampleInCurFrame = ret;
+		param.sampleInCurFrame = ret;
 		rate.doConvert();
 		mixerReady();
 		
-		int exeCount = exeCycle.tick();
+		final int exeCount = exeCycle.tick();
 		for (int i = 0; i < exeCount; i++) {
 			executor.tick();
-			// process sound
-			processSounds(apuCounter.tick()); // TODO
+			processSounds(apuCounter.tick());
 		}
 		endFrame();
 
@@ -228,10 +228,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	@Override
 	protected int skipFrame() {
 		int ret = countNextFrame();
-		runtime.param.sampleInCurFrame = ret;
+		param.sampleInCurFrame = ret;
 		rate.doConvert();
 		
-		int exeCount = exeCycle.tick();
+		final int exeCount = exeCycle.tick();
 		for (int i = 0; i < exeCount; i++) {
 			executor.tick();
 		}
@@ -274,8 +274,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * 所有的 sound 调用 sound.process(freqPerFrame);
 	 */
 	private void processSounds(int freq) {
-		Set<Byte> set = this.allChannelSet();
-		for (byte channelCode : set) {
+		byte[] bs = getChannelArray();
+		for (byte channelCode : bs) {
 			executor.getSound(channelCode).process(freq);
 		}
 	}
@@ -284,10 +284,23 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * 所有的 sound 调用 sound.endFrame();
 	 */
 	private void endFrame() {
-		Set<Byte> set = this.allChannelSet();
-		for (byte channelCode : set) {
+		byte[] bs = getChannelArray();
+		for (byte channelCode : bs) {
 			executor.getSound(channelCode).endFrame();
 		}
+	}
+	
+	private byte[] getChannelArray() {
+		if (channels == null) {
+			Set<Byte> set = this.allChannelSet();
+			channels = new byte[set.size()];
+			
+			int index = 0;
+			for (byte channelCode : set) {
+				channels[index++] = channelCode;
+			}
+		}
+		return channels;
 	}
 
 	/* **********
@@ -304,7 +317,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @since v0.2.8
 	 */
 	public int getCurrentTrack() {
-		return runtime.manager.getSong();
+		return executor.getCurrentTrack();
 	}
 	
 	/**
@@ -355,9 +368,9 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @since v0.2.4
 	 */
 	public void setChannelMask(byte channelCode, boolean mask) {
-		AbstractSoundChip chip = runtime.chips.get(channelCode);
-		if (chip != null) {
-			chip.getSound(channelCode).setMask(mask);
+		AbstractNsfSound sound = executor.getSound(channelCode);
+		if (sound != null) {
+			sound.setMask(mask);
 		}
 	}
 	
@@ -372,7 +385,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @since v0.2.4
 	 */
 	public boolean isChannelMask(byte channelCode) throws NullPointerException {
-		return runtime.chips.get(channelCode).getSound(channelCode).isMask();
+		return executor.getSound(channelCode).isMask();
 	}
 	
 	@Override
@@ -383,15 +396,16 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 			speed = 0.1f;
 		}
 		
-		runtime.param.speed = speed;
+		param.speed = speed;
 
-		apuCounter.setParam(countCycle(runtime.param.speed), config.sampleRate);
+		super.resetCounterParam(frameRate, param.sampleRate);
+		apuCounter.setParam(countCycle(speed), param.sampleRate);
 		rate.onParamUpdate();
 	}
 	
 	@Override
 	public float getSpeed() {
-		return runtime.param.speed;
+		return param.speed;
 	}
 	
 	/**
@@ -420,6 +434,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 					mix.setEnable(false);
 				}
 			}
+			
+			channels = null;
 		}
 		
 	}
@@ -433,40 +449,40 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	private float getInitLevel(byte channelCode) {
 		float level = 0;
 		switch (channelCode) {
-		case CHANNEL_2A03_PULSE1: level = runtime.param.levels.level2A03Pules1; break;
-		case CHANNEL_2A03_PULSE2: level = runtime.param.levels.level2A03Pules2; break;
-		case CHANNEL_2A03_TRIANGLE: level = runtime.param.levels.level2A03Triangle; break;
-		case CHANNEL_2A03_NOISE: level = runtime.param.levels.level2A03Noise; break;
-		case CHANNEL_2A03_DPCM: level = runtime.param.levels.level2A03DPCM; break;
+		case CHANNEL_2A03_PULSE1: level = param.levels.level2A03Pules1; break;
+		case CHANNEL_2A03_PULSE2: level = param.levels.level2A03Pules2; break;
+		case CHANNEL_2A03_TRIANGLE: level = param.levels.level2A03Triangle; break;
+		case CHANNEL_2A03_NOISE: level = param.levels.level2A03Noise; break;
+		case CHANNEL_2A03_DPCM: level = param.levels.level2A03DPCM; break;
 
-		case CHANNEL_VRC6_PULSE1: level = runtime.param.levels.levelVRC6Pules1; break;
-		case CHANNEL_VRC6_PULSE2: level = runtime.param.levels.levelVRC6Pules2; break;
-		case CHANNEL_VRC6_SAWTOOTH: level = runtime.param.levels.levelVRC6Sawtooth; break;
+		case CHANNEL_VRC6_PULSE1: level = param.levels.levelVRC6Pules1; break;
+		case CHANNEL_VRC6_PULSE2: level = param.levels.levelVRC6Pules2; break;
+		case CHANNEL_VRC6_SAWTOOTH: level = param.levels.levelVRC6Sawtooth; break;
 
-		case CHANNEL_MMC5_PULSE1: level = runtime.param.levels.levelMMC5Pules1; break;
-		case CHANNEL_MMC5_PULSE2: level = runtime.param.levels.levelMMC5Pules2; break;
+		case CHANNEL_MMC5_PULSE1: level = param.levels.levelMMC5Pules1; break;
+		case CHANNEL_MMC5_PULSE2: level = param.levels.levelMMC5Pules2; break;
 		
-		case CHANNEL_FDS: level = runtime.param.levels.levelFDS; break;
+		case CHANNEL_FDS: level = param.levels.levelFDS; break;
 		
-		case CHANNEL_N163_1: level = runtime.param.levels.levelN163Namco1; break;
-		case CHANNEL_N163_2: level = runtime.param.levels.levelN163Namco2; break;
-		case CHANNEL_N163_3: level = runtime.param.levels.levelN163Namco3; break;
-		case CHANNEL_N163_4: level = runtime.param.levels.levelN163Namco4; break;
-		case CHANNEL_N163_5: level = runtime.param.levels.levelN163Namco5; break;
-		case CHANNEL_N163_6: level = runtime.param.levels.levelN163Namco6; break;
-		case CHANNEL_N163_7: level = runtime.param.levels.levelN163Namco7; break;
-		case CHANNEL_N163_8: level = runtime.param.levels.levelN163Namco8; break;
+		case CHANNEL_N163_1: level = param.levels.levelN163Namco1; break;
+		case CHANNEL_N163_2: level = param.levels.levelN163Namco2; break;
+		case CHANNEL_N163_3: level = param.levels.levelN163Namco3; break;
+		case CHANNEL_N163_4: level = param.levels.levelN163Namco4; break;
+		case CHANNEL_N163_5: level = param.levels.levelN163Namco5; break;
+		case CHANNEL_N163_6: level = param.levels.levelN163Namco6; break;
+		case CHANNEL_N163_7: level = param.levels.levelN163Namco7; break;
+		case CHANNEL_N163_8: level = param.levels.levelN163Namco8; break;
 		
-		case CHANNEL_VRC7_FM1: level = runtime.param.levels.levelVRC7FM1; break;
-		case CHANNEL_VRC7_FM2: level = runtime.param.levels.levelVRC7FM2; break;
-		case CHANNEL_VRC7_FM3: level = runtime.param.levels.levelVRC7FM3; break;
-		case CHANNEL_VRC7_FM4: level = runtime.param.levels.levelVRC7FM4; break;
-		case CHANNEL_VRC7_FM5: level = runtime.param.levels.levelVRC7FM5; break;
-		case CHANNEL_VRC7_FM6: level = runtime.param.levels.levelVRC7FM6; break;
+		case CHANNEL_VRC7_FM1: level = param.levels.levelVRC7FM1; break;
+		case CHANNEL_VRC7_FM2: level = param.levels.levelVRC7FM2; break;
+		case CHANNEL_VRC7_FM3: level = param.levels.levelVRC7FM3; break;
+		case CHANNEL_VRC7_FM4: level = param.levels.levelVRC7FM4; break;
+		case CHANNEL_VRC7_FM5: level = param.levels.levelVRC7FM5; break;
+		case CHANNEL_VRC7_FM6: level = param.levels.levelVRC7FM6; break;
 		
-		case CHANNEL_S5B_SQUARE1: level = runtime.param.levels.levelS5BSquare1; break;
-		case CHANNEL_S5B_SQUARE2: level = runtime.param.levels.levelS5BSquare2; break;
-		case CHANNEL_S5B_SQUARE3: level = runtime.param.levels.levelS5BSquare3; break;
+		case CHANNEL_S5B_SQUARE1: level = param.levels.levelS5BSquare1; break;
+		case CHANNEL_S5B_SQUARE2: level = param.levels.levelS5BSquare2; break;
+		case CHANNEL_S5B_SQUARE3: level = param.levels.levelS5BSquare3; break;
 		
 		default: level = 1.0f; break;
 		}
@@ -480,6 +496,13 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		return level;
 	}
 	
+	/**
+	 * 计算指定 speed 影响之后, 实际每秒运行的时钟数
+	 * @param speed
+	 *   速度
+	 * @return
+	 *   实际每秒运行的时钟数
+	 */
 	private int countCycle(float speed) {
 		int cycle = executor.cycleRate();
 		if (speed != 1 && speed > 0) {

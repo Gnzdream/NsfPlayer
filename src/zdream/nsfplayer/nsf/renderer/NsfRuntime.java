@@ -3,9 +3,9 @@ package zdream.nsfplayer.nsf.renderer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
-import zdream.nsfplayer.nsf.context.NsfClockCounter;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.DeviceManager;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
@@ -28,7 +28,7 @@ public class NsfRuntime implements IResetable {
 	public NsfAudio audio;
 	public final NsfParameter param = new NsfParameter();
 	public final DeviceManager manager;
-	public final NsfClockCounter clockCounter;
+	public final CycleCounter cpuCounter = new CycleCounter();
 	
 	// 存储部件
 	public final NesMem mem;
@@ -55,7 +55,6 @@ public class NsfRuntime implements IResetable {
 	
 	public NsfRuntime() {
 		manager = new DeviceManager(this);
-		clockCounter = new NsfClockCounter(param);
 		
 		mem = new NesMem();
 		bank = new NesBank();

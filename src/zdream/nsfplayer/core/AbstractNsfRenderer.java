@@ -320,7 +320,7 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	}
 	
 	/**
-	 * 计算下一帧需要的采样数 (每个声道)
+	 * 计算下一帧需要的采样数 (每个声道), 已经将播放速度造成的影响计入
 	 * @return
 	 *   下一帧需要的采样数
 	 */

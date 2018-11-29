@@ -168,6 +168,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			break;
 		}
 		runtime.param.freqPerSec = runtime.cpu.NES_BASECYCLES;
+		runtime.cpuCounter.setParam(runtime.param.freqPerSec, runtime.param.sampleRate);
 		
 		// 由于RAM空间可能在播放后被修改, 因此需要重新加载
 		reload();
@@ -374,8 +375,7 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 * (虽然说是一帧, 但是实际上是看当前帧的采样数决定的)
 	 */
 	public void tickCPU() {
-		runtime.clockCounter.doConvert();
-		int freqInCurSample = runtime.param.cpuClockInCurSample;
+		int freqInCurSample = runtime.cpuCounter.tick();
 		
 		cpuFreqRemain += freqInCurSample;
 		if (cpuFreqRemain > 0) {
