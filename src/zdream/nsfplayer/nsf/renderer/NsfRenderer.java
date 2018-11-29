@@ -1,38 +1,9 @@
 package zdream.nsfplayer.nsf.renderer;
 
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_DPCM;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_NOISE;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_PULSE1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_PULSE2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_2A03_TRIANGLE;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_FDS;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_MMC5_PULSE1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_MMC5_PULSE2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_3;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_4;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_5;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_6;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_7;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_N163_8;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_S5B_SQUARE3;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC6_PULSE1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC6_PULSE2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC6_SAWTOOTH;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC7_FM1;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC7_FM2;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC7_FM3;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC7_FM4;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC7_FM5;
-import static zdream.nsfplayer.core.INsfChannelCode.CHANNEL_VRC7_FM6;
-
-import java.util.HashSet;
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfRenderer;
+import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -41,10 +12,14 @@ import zdream.nsfplayer.nsf.device.chip.NesN163;
 import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.nsf.executor.NsfExecutor;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.SoundN163;
+import zdream.nsfplayer.sound.blip.BlipMixerConfig;
+import zdream.nsfplayer.sound.blip.BlipSoundMixer;
 import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.sound.mixer.IMixerConfig;
 import zdream.nsfplayer.sound.mixer.IMixerHandler;
 import zdream.nsfplayer.sound.mixer.SoundMixer;
+import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
+import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
 
 /**
  * <p>NSF 渲染器.
@@ -63,17 +38,58 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	
 	private NsfRuntime runtime;
 	
+	private final NsfCommonParameter param = new NsfCommonParameter();
+	
+	NsfRendererConfig config;
+	
+	/**
+	 * 音频混音器
+	 */
+	public SoundMixer mixer;
+	
 	public NsfRenderer() {
 		this(new NsfRendererConfig());
 	}
 	
 	public NsfRenderer(NsfRendererConfig config) {
+		this.config = config;
+		
 		executor = new NsfExecutor(config);
 		executor.setRegion(config.region);
+		executor.setRate(config.sampleRate);
 		executor.addN163ReattachListener(n163lsner);
 		
 		runtime = executor.getRuntime();
+		initMixer();
 		rate = new NsfRateConverter(runtime.param);
+		param.levels.copyFrom(config.channelLevels);
+	}
+	
+	public void initMixer() {
+		IMixerConfig mixerConfig = config.mixerConfig;
+		if (mixerConfig == null) {
+			mixerConfig = new XgmMixerConfig();
+		}
+		
+		if (mixerConfig instanceof XgmMixerConfig) {
+			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
+			XgmSoundMixer mixer = new XgmSoundMixer();
+			mixer.setConfig((XgmMixerConfig) mixerConfig);
+			mixer.param = runtime.param;
+			this.mixer = mixer;
+		} else if (mixerConfig instanceof BlipMixerConfig) {
+			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
+			BlipSoundMixer mixer = new BlipSoundMixer();
+			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
+			mixer.sampleRate = config.sampleRate;
+			mixer.setConfig((BlipMixerConfig) mixerConfig);
+			mixer.param = runtime.param;
+			this.mixer = mixer;
+		} else {
+			// TODO 暂时不支持 xgm 和 blip 之外的 mixerConfig
+		}
+
+		this.mixer.init();
 	}
 	
 	/* **********
@@ -151,24 +167,23 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 			track = 0;
 		}
 		
-		runtime.param.sampleRate = this.runtime.config.sampleRate;
+		runtime.param.sampleRate = this.config.sampleRate;
 		runtime.param.frameRate = frameRate;
 		
 		runtime.audio = audio;
 		runtime.manager.setSong(track);
 		
 		runtime.reset();
+		mixer.reset();
 		connectChannels();
 		
-		super.resetCounterParam(frameRate, runtime.config.sampleRate);
+		super.resetCounterParam(frameRate, config.sampleRate);
 		clearBuffer();
-		runtime.clockCounter.onParamUpdate(runtime.config.sampleRate, runtime.param.freqPerSec);
+		runtime.clockCounter.onParamUpdate(config.sampleRate, runtime.param.freqPerSec);
 		rate.onParamUpdate(frameRate, runtime.param.freqPerSec);
 	}
 	
 	private void connectChannels() {
-		SoundMixer mixer = runtime.mixer;
-		
 		mixer.detachAll();
 		Set<Byte> channels = executor.allChannelSet();
 		for (byte channelCode: channels) {
@@ -197,7 +212,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		int ret = countNextFrame();
 		runtime.param.sampleInCurFrame = ret;
 		rate.doConvert();
-		runtime.mixerReady();
+		mixerReady();
 		
 		runtime.manager.tickCPU(true);
 
@@ -222,8 +237,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * 从 Mixer 中读取音频数据
 	 */
 	private void readMixer() {
-		runtime.mixer.finishBuffer();
-		runtime.mixer.readBuffer(data, 0, data.length);
+		mixer.finishBuffer();
+		mixer.readBuffer(data, 0, data.length);
 	}
 	
 	/**
@@ -235,6 +250,17 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 */
 	public boolean isFinished() {
 		return false;
+	}
+	
+	/**
+	 * <p>通知混音器, 当前帧的渲染开始了.
+	 * <p>这个方法原本用于通知混音器, 如果本帧的渲染速度需要变化,
+	 * 可以通过该方法, 让混音器提前对此做好准备, 修改存储的采样数容量, 从而调节播放速度.
+	 * </p>
+	 * @since v0.2.9
+	 */
+	private void mixerReady() {
+		mixer.readyBuffer();
 	}
 
 	/* **********
@@ -276,7 +302,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		} else if (level > 1) {
 			level = 1;
 		}
-		runtime.mixer.setLevel(channelCode, level);
+		mixer.setLevel(channelCode, level);
 	}
 	
 	/**
@@ -290,7 +316,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @since v0.2.4
 	 */
 	public float getLevel(byte channelCode) throws NullPointerException {
-		return runtime.mixer.getLevel(channelCode);
+		return mixer.getLevel(channelCode);
 	}
 	
 	/**
@@ -332,7 +358,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		
 		runtime.param.speed = speed;
 		
-		resetCounterParam(frameRate, runtime.config.sampleRate);
+		resetCounterParam(frameRate, config.sampleRate);
 		runtime.clockCounter.onAPUParamUpdate();
 		rate.onParamUpdate();
 	}
@@ -349,7 +375,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @since v0.2.10
 	 */
 	public IMixerHandler getMixerHandler() {
-		return runtime.mixer.getHandler();
+		return mixer.getHandler();
 	}
 	
 	class N163ReattachListener implements IN163ReattachListener {
@@ -360,11 +386,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 				byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
 				AbstractNsfSound sound = executor.getSound(channelCode);
 				if (sound != null) {
-					IMixerChannel mix = runtime.mixer.allocateChannel(channelCode);
+					IMixerChannel mix = mixer.allocateChannel(channelCode);
 					sound.setOut(mix);
 					mix.setLevel(getInitLevel(channelCode));
 				} else {
-					IMixerChannel mix = runtime.mixer.getMixerChannel(channelCode);
+					IMixerChannel mix = mixer.getMixerChannel(channelCode);
 					mix.setEnable(false);
 				}
 			}
