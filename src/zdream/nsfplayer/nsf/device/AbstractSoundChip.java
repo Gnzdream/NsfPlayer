@@ -56,19 +56,4 @@ public abstract class AbstractSoundChip implements IDevice, INsfChannelCode, INs
 	 */
 	public abstract byte[] getAllChannelCodes();
 	
-	/**
-	 * 在 sound 进行播放之前, 还会调用一个方法, 就是这个.
-	 */
-	public void beforeRender() {
-		startRender = true;
-	}
-	
-	/**
-	 * 在 sound 进行播放之后调用
-	 * @since v0.2.9
-	 */
-	public void afterRender() {
-		startRender = false;
-	}
-	
 }

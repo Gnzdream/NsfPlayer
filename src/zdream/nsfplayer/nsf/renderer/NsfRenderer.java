@@ -3,6 +3,8 @@ package zdream.nsfplayer.nsf.renderer;
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfRenderer;
+import zdream.nsfplayer.core.CycleCounter;
+import zdream.nsfplayer.core.FloatCycleCounter;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -33,13 +35,24 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	
 	private final NsfExecutor executor = new NsfExecutor();
 	
+	/**
+	 * 算每帧多少时钟
+	 */
 	public final NsfRateConverter rate;
 	
 	private NsfRuntime runtime;
 	
 //	private final NsfCommonParameter param = new NsfCommonParameter();
 	
+	private final FloatCycleCounter apuCounter = new FloatCycleCounter();
+	
 	NsfRendererConfig config;
+	
+	/**
+	 * 管理 executor 的 tick 次数
+	 * 不计播放速度影响, 计算每帧采样数
+	 */
+	private final CycleCounter exeCycle = new CycleCounter();
 	
 	/**
 	 * 音频混音器
@@ -60,6 +73,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime = executor.getRuntime();
 		initMixer();
 		rate = new NsfRateConverter(runtime.param);
+		exeCycle.setParam(config.sampleRate, this.frameRate);
 //		param.levels.copyFrom(config.channelLevels);
 	}
 	
@@ -162,6 +176,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		clearBuffer();
 		runtime.clockCounter.onParamUpdate(config.sampleRate, runtime.param.freqPerSec);
 		rate.onParamUpdate(frameRate, runtime.param.freqPerSec);
+		
+		apuCounter.setParam(countCycle(runtime.param.speed), config.sampleRate);
 	}
 	
 	private void connectChannels() {
@@ -195,7 +211,13 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		rate.doConvert();
 		mixerReady();
 		
-		runtime.manager.tickCPU(true);
+		int exeCount = exeCycle.tick();
+		for (int i = 0; i < exeCount; i++) {
+			executor.tick();
+			// process sound
+			processSounds(apuCounter.tick()); // TODO
+		}
+		endFrame();
 
 		// 从 mixer 中读取数据
 		readMixer();
@@ -209,7 +231,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		runtime.param.sampleInCurFrame = ret;
 		rate.doConvert();
 		
-		runtime.manager.tickCPU(false);
+		int exeCount = exeCycle.tick();
+		for (int i = 0; i < exeCount; i++) {
+			executor.tick();
+		}
+		endFrame();
 
 		return ret;
 	}
@@ -242,6 +268,26 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 */
 	private void mixerReady() {
 		mixer.readyBuffer();
+	}
+
+	/**
+	 * 所有的 sound 调用 sound.process(freqPerFrame);
+	 */
+	private void processSounds(int freq) {
+		Set<Byte> set = this.allChannelSet();
+		for (byte channelCode : set) {
+			executor.getSound(channelCode).process(freq);
+		}
+	}
+	
+	/**
+	 * 所有的 sound 调用 sound.endFrame();
+	 */
+	private void endFrame() {
+		Set<Byte> set = this.allChannelSet();
+		for (byte channelCode : set) {
+			executor.getSound(channelCode).endFrame();
+		}
 	}
 
 	/* **********
@@ -338,9 +384,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		}
 		
 		runtime.param.speed = speed;
-		
-		resetCounterParam(frameRate, config.sampleRate);
-		runtime.clockCounter.onAPUParamUpdate();
+
+		apuCounter.setParam(countCycle(runtime.param.speed), config.sampleRate);
 		rate.onParamUpdate();
 	}
 	
@@ -433,6 +478,14 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		}
 		
 		return level;
+	}
+	
+	private int countCycle(float speed) {
+		int cycle = executor.cycleRate();
+		if (speed != 1 && speed > 0) {
+			cycle = (int) (cycle / speed);
+		}
+		return cycle;
 	}
 
 }

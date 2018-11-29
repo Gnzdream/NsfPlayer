@@ -150,8 +150,7 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 
 	@Override
 	public void tick() {
-		// TODO Auto-generated method stub
-
+		runtime.manager.tickCPU();
 	}
 
 	@Override
@@ -163,6 +162,14 @@ public class NsfExecutor extends AbstractNsfExecutor<NsfAudio> {
 	/* **********
 	 * 参数指标 *
 	 ********** */
+	
+	/**
+	 * @return
+	 *   每秒的时钟数
+	 */
+	public int cycleRate() {
+		return runtime.param.freqPerSec;
+	}
 	
 	/**
 	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出

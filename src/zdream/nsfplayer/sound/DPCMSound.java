@@ -231,7 +231,8 @@ public class DPCMSound extends Sound2A03 {
 			dac = deltaCounter;
 			deltaCounter = -1;
 		}
-		mix(dac);
+		if (out != null)
+			mix(dac);
 	}
 	
 	/**

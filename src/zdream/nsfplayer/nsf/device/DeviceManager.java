@@ -8,10 +8,7 @@ import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
-import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.IResetable;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -23,7 +20,6 @@ import zdream.nsfplayer.nsf.device.chip.NesN163;
 import zdream.nsfplayer.nsf.device.chip.NesS5B;
 import zdream.nsfplayer.nsf.device.chip.NesVRC6;
 import zdream.nsfplayer.nsf.device.chip.NesVRC7;
-import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
@@ -149,74 +145,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 			runtime.chips.put(channelCode, chip);
 		}
 	}
-	
-	/**
-	 * 所有的 sound 调用 sound.process(freqPerFrame);
-	 */
-	private void processSounds(int freq) {
-		apu.beforeRender();
-		dmc.beforeRender();
-		
-		if (runtime.audio.useVrc6()) {
-			vrc6.beforeRender();
-		}
-		if (runtime.audio.useMmc5()) {
-			mmc5.beforeRender();
-		}
-		if (runtime.audio.useFds()) {
-			fds.beforeRender();
-		}
-		if (runtime.audio.useN163()) {
-			n163.beforeRender();
-		}
-		if (runtime.audio.useVrc7()) {
-			vrc7.beforeRender();
-		}
-		if (runtime.audio.useS5b()) {
-			s5b.beforeRender();
-		}
-		
-		// 执行部分
-		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
-			Entry<Byte, AbstractSoundChip> entry = it.next();
-			byte channelCode = entry.getKey();
-			entry.getValue().getSound(channelCode).process(freq);
-		}
-		
-		// 结束部分
-		apu.afterRender();
-		dmc.afterRender();
-		
-		if (runtime.audio.useVrc6()) {
-			vrc6.afterRender();
-		}
-		if (runtime.audio.useMmc5()) {
-			mmc5.afterRender();
-		}
-		if (runtime.audio.useFds()) {
-			fds.afterRender();
-		}
-		if (runtime.audio.useN163()) {
-			n163.afterRender();
-		}
-		if (runtime.audio.useVrc7()) {
-			vrc7.afterRender();
-		}
-		if (runtime.audio.useS5b()) {
-			s5b.afterRender();
-		}
-	}
-	
-	/**
-	 * 所有的 sound 调用 sound.endFrame();
-	 */
-	private void endFrame() {
-		for (Iterator<Entry<Byte, AbstractSoundChip>> it = runtime.chips.entrySet().iterator(); it.hasNext();) {
-			Entry<Byte, AbstractSoundChip> entry = it.next();
-			byte channelCode = entry.getKey();
-			entry.getValue().getSound(channelCode).endFrame();
-		}
-	}
 
 	/* **********
 	 *   重置   *
@@ -257,8 +185,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 		
 		runtime.cpu.start(runtime.audio.init_address, runtime.audio.play_address,
 				speed, this.song, (region == PAL) ? 1 : 0, 0);
-		
-		cycle.setParam(runtime.param.sampleRate, runtime.param.frameRate);
 	}
 
 	/**
@@ -432,10 +358,6 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 *   执行   *
 	 ********** */
 	
-	/**
-	 * 不计播放速度影响, 计算每帧采样数
-	 */
-	private final CycleCounter cycle = new CycleCounter();
 	
 	/**
 	 * CPU 剩余没有用完的时钟数.
@@ -450,37 +372,21 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	/**
 	 * 让 CPU 往下走一帧
 	 * (虽然说是一帧, 但是实际上是看当前帧的采样数决定的)
-	 * @param needTriggleSound
-	 *   是否需要让发声器工作
 	 */
-	public void tickCPU(boolean needTriggleSound) {
-		// 这个值是, 不计播放速度时的每帧采样数
-		// runtime.param.sampleInCurFrame 是将播放速度计算进去的值
-		// 所以两者并不相等
-		int sampleInCurFrame = cycle.tick();
+	public void tickCPU() {
+		runtime.clockCounter.doConvert();
+		int freqInCurSample = runtime.param.cpuClockInCurSample;
 		
-		NesCPU cpu = runtime.cpu;
-		for (int i = 0; i < sampleInCurFrame; i++) {
-			runtime.clockCounter.doConvert();
-			int freqInCurSample = runtime.param.cpuClockInCurSample;
-			
-			cpuFreqRemain += freqInCurSample;
-			if (cpuFreqRemain > 0) {
-				int realCpuFreq = cpu.exec(cpuFreqRemain);
-				cpuFreqRemain -= realCpuFreq;
+		cpuFreqRemain += freqInCurSample;
+		if (cpuFreqRemain > 0) {
+			int realCpuFreq = runtime.cpu.exec(cpuFreqRemain);
+			cpuFreqRemain -= realCpuFreq;
 
-				// tick APU frame sequencer
-				/*fsc.tickFrameSequence(real_cpu_clocks);
-				if (nsf.useMmc5)
-					mmc5.tickFrameSequence(real_cpu_clocks);*/
-			}
-			
-			if (needTriggleSound) {
-				processSounds(runtime.param.apuClockInCurSample);
-			}
+			// tick APU frame sequencer
+			/*fsc.tickFrameSequence(real_cpu_clocks);
+			if (nsf.useMmc5)
+				mmc5.tickFrameSequence(real_cpu_clocks);*/
 		}
-		
-		endFrame();
 	}
 	
 }
