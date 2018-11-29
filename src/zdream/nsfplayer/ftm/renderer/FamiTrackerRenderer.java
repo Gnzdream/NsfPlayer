@@ -50,7 +50,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	private final NsfRateConverter rate;
 	
 	/**
-	 * 音频合成器
+	 * 音频混音器
 	 */
 	private SoundMixer mixer;
 	

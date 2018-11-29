@@ -1,5 +1,6 @@
 package zdream.nsfplayer.nsf.renderer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import zdream.nsfplayer.core.IResetable;
@@ -11,6 +12,7 @@ import zdream.nsfplayer.nsf.device.DeviceManager;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
 import zdream.nsfplayer.nsf.device.memory.NesBank;
 import zdream.nsfplayer.nsf.device.memory.NesMem;
+import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
 import zdream.nsfplayer.sound.blip.BlipSoundMixer;
 import zdream.nsfplayer.sound.mixer.IMixerConfig;
@@ -52,15 +54,21 @@ public class NsfRuntime implements IResetable {
 	public final HashMap<Byte, AbstractSoundChip> chips = new HashMap<>();
 	
 	/**
-	 * 音频合成器（混音器）
+	 * 音频混音器
 	 */
+	@Deprecated
 	public SoundMixer mixer;
+	
+	/**
+	 * N163 重连的监听器
+	 */
+	public final ArrayList<IN163ReattachListener> n163Lsners = new ArrayList<>();
 	
 	/* **********
 	 *  初始化  *
 	 ********** */
 	
-	NsfRuntime(NsfRendererConfig config) {
+	public NsfRuntime(NsfRendererConfig config) {
 		this.config = config;
 		param.levels.copyFrom(config.channelLevels);
 		manager = new DeviceManager(this);
@@ -72,13 +80,15 @@ public class NsfRuntime implements IResetable {
 		cpu = new NesCPU();
 	}
 	
-	NsfRuntime() {
+	public NsfRuntime() {
 		this(new NsfRendererConfig());
 	}
 	
-	void init() {
+	public void init() {
 		initParam();
 		initMixer();
+		
+		// 这个方法没干事情
 		manager.init();
 	}
 	

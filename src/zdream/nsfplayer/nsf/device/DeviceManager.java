@@ -6,6 +6,7 @@ import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_PAL;
 import static zdream.nsfplayer.core.INsfChannelCode.*;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -22,6 +23,7 @@ import zdream.nsfplayer.nsf.device.chip.NesS5B;
 import zdream.nsfplayer.nsf.device.chip.NesVRC6;
 import zdream.nsfplayer.nsf.device.chip.NesVRC7;
 import zdream.nsfplayer.nsf.device.cpu.NesCPU;
+import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
 import zdream.nsfplayer.nsf.renderer.INsfRuntimeHolder;
 import zdream.nsfplayer.nsf.renderer.NsfParameter;
 import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
@@ -391,6 +393,12 @@ public class DeviceManager implements INsfRuntimeHolder, IResetable {
 	 * @param n163ChannelCount
 	 */
 	public void reattachN163(int n163ChannelCount) {
+		ArrayList<IN163ReattachListener> ls = runtime.n163Lsners;
+		for (IN163ReattachListener l : ls) {
+			l.onReattach(n163ChannelCount);
+		}
+		
+		// TODO 以下代码需要移出去
 		for (int i = 0; i < 8; i++) {
 			byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
 			SoundN163 sound = n163.getSound(channelCode);

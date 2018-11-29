@@ -7,6 +7,8 @@ import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.AbstractSoundChip;
+import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
+import zdream.nsfplayer.nsf.executor.NsfExecutor;
 import zdream.nsfplayer.sound.mixer.IMixerHandler;
 
 /**
@@ -20,16 +22,18 @@ import zdream.nsfplayer.sound.mixer.IMixerHandler;
  */
 public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	
+	private final NsfExecutor executor;
+	
 	private NsfRuntime runtime;
 	
 	public NsfRenderer() {
-		this.runtime = new NsfRuntime();
-		runtime.init();
+		executor = new NsfExecutor();
+		runtime = executor.getRuntime();
 	}
 	
 	public NsfRenderer(NsfRendererConfig config) {
-		this.runtime = new NsfRuntime(config);
-		runtime.init();
+		executor = new NsfExecutor(config);
+		runtime = executor.getRuntime();
 	}
 	
 	/* **********
@@ -283,6 +287,16 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 */
 	public IMixerHandler getMixerHandler() {
 		return runtime.mixer.getHandler();
+	}
+	
+	class N163ReattachListener implements IN163ReattachListener {
+
+		@Override
+		public void onReattach(int n163ChannelCount) {
+			// TODO Auto-generated method stub
+			
+		}
+		
 	}
 
 }
