@@ -16,11 +16,11 @@ import zdream.nsfplayer.mixer.IMixerChannel;
 import zdream.nsfplayer.mixer.IMixerConfig;
 import zdream.nsfplayer.mixer.IMixerHandler;
 import zdream.nsfplayer.mixer.ISoundMixer;
+import zdream.nsfplayer.mixer.blip.BlipMixerConfig;
+import zdream.nsfplayer.mixer.blip.BlipSoundMixer;
+import zdream.nsfplayer.mixer.xgm.XgmMixerConfig;
+import zdream.nsfplayer.mixer.xgm.XgmMultiSoundMixer;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.blip.BlipMixerConfig;
-import zdream.nsfplayer.sound.blip.BlipSoundMixer;
-import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
-import zdream.nsfplayer.sound.xgm.XgmMultiSoundMixer;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
