@@ -4,7 +4,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
-import zdream.nsfplayer.sound.blip.BlipMixerConfig;
+import zdream.nsfplayer.mixer.blip.BlipMixerConfig;
 import zdream.utils.common.BytesPlayer;
 
 /**

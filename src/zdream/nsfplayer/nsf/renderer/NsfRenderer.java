@@ -343,7 +343,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		} else if (level > 1) {
 			level = 1;
 		}
-		mixer.setLevel(channelCode, level);
+		
+		int id = findMixerChannelByCode(channelCode);
+		if (id != -1) {
+			mixer.setLevel(id, level);
+		}
 	}
 	
 	/**
@@ -357,7 +361,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * @since v0.2.4
 	 */
 	public float getLevel(byte channelCode) throws NullPointerException {
-		return mixer.getLevel(channelCode);
+		int id = findMixerChannelByCode(channelCode);
+		if (id != -1) {
+			return mixer.getLevel(id);
+		}
+		throw new NullPointerException("不存在 " + channelCode + " 对应的轨道");
 	}
 	
 	/**
@@ -572,5 +580,25 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		int mixerChannel;
 	}
 	private ChannelParam[] channels;
+	
+	/**
+	 * 根据轨道号, 找到 Mixer 中的轨道标识号
+	 * @param channelCode
+	 *   NSF 定义的轨道号
+	 * @return
+	 *   Mixer 的轨道标识号
+	 * @since v0.3.0
+	 */
+	private int findMixerChannelByCode(byte channelCode) {
+		for (ChannelParam p : channels) {
+			if (p == null) {
+				continue;
+			}
+			if (p.channelCode == channelCode) {
+				return p.mixerChannel;
+			}
+		}
+		return -1;
+	}
 
 }

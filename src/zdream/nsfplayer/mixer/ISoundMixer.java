@@ -58,7 +58,7 @@ public interface ISoundMixer extends IResetable, INsfChannelCode {
 	 * <p>替换原来 v0.2.0 的 getMixerChannel(byte) 方法.
 	 * </p>
 	 * @param id
-	 *   标识号
+	 *   轨道标识号
 	 * @return
 	 *   轨道的实例, 或者 null
 	 * @since v0.2.3
@@ -102,14 +102,14 @@ public interface ISoundMixer extends IResetable, INsfChannelCode {
 	
 	/**
 	 * 设置某个轨道的音量
-	 * @param code
-	 *   轨道号
+	 * @param id
+	 *   轨道标识号
 	 * @param level
 	 *   音量. 范围 [0, 1.0f]
 	 * @since v0.2.3
 	 */
-	default void setLevel(byte code, float level) {
-		IMixerChannel ch = getMixerChannel(code);
+	default void setLevel(int id, float level) {
+		IMixerChannel ch = getMixerChannel(id);
 		if (ch != null) {
 			ch.setLevel(level);
 		}
@@ -117,16 +117,16 @@ public interface ISoundMixer extends IResetable, INsfChannelCode {
 	
 	/**
 	 * 获得某个轨道的音量
-	 * @param code
-	 *   轨道号
+	 * @param id
+	 *   轨道标识号
 	 * @return
 	 *   音量. 范围 [0, 1.0f]
 	 * @throws NullPointerException
 	 *   当不存在 <code>code</code> 对应的轨道时
 	 * @since v0.2.3
 	 */
-	default float getLevel(byte code) throws NullPointerException {
-		return getMixerChannel(code).getLevel();
+	default float getLevel(int id) throws NullPointerException {
+		return getMixerChannel(id).getLevel();
 	}
 
 }
