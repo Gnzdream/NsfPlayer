@@ -9,6 +9,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	
 	final XgmAudioChannel fds;
+	boolean fdsEnable;
 	
 	public XgmFDSMixer() {
 		fds = new XgmAudioChannel();
@@ -21,11 +22,26 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	}
 
 	@Override
-	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
-		if (channelCode == CHANNEL_FDS) {
-			return fds;
+	public AbstractXgmAudioChannel getRemainAudioChannel(byte type) {
+		if (type == CHANNEL_TYPE_FDS) {
+			return (fdsEnable) ? null : fds;
 		}
 		return null;
+	}
+	
+	@Override
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
+		if (channel == fds) {
+			fdsEnable = enable;
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		if (channel == fds) {
+			return fdsEnable;
+		}
+		return false;
 	}
 
 	@Override
@@ -48,7 +64,7 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 		final float MASTER_VOL = 2935.2f; // = 2.4 * 1223.0; max FDS vol vs max APU square (arbitrarily 1223)
 		final float MAX_OUT = 2016f; // = 32.0f * 63.0f; value that should map to master vol
 		
-		float v = fds.buffer[index] * fds.getLevel() * (MASTER_VOL / MAX_OUT);
+		float v = (fdsEnable) ? fds.buffer[index] * fds.getLevel() * (MASTER_VOL / MAX_OUT) : 0;
 		int value = (int) v;
 		
 		value = intercept(value, time);

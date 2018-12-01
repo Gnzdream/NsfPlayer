@@ -10,6 +10,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 
 	final XgmAudioChannel[] chs = new XgmAudioChannel[6];
+	private boolean[] enables = new boolean[6];
 
 	public XgmVRC7Mixer() {
 		for (int i = 0; i < chs.length; i++) {
@@ -21,31 +22,49 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 	public void reset() {
 		super.reset();
 		for (int i = 0; i < chs.length; i++) {
-			if (chs[i] != null) {
-				chs[i].reset();
-			}
+			chs[i].reset();
 		}
 	}
 
 	@Override
-	public XgmAudioChannel getAudioChannel(byte channelCode) {
-		switch (channelCode) {
-		case CHANNEL_VRC7_FM1: return chs[0];
-		case CHANNEL_VRC7_FM2: return chs[1];
-		case CHANNEL_VRC7_FM3: return chs[2];
-		case CHANNEL_VRC7_FM4: return chs[3];
-		case CHANNEL_VRC7_FM5: return chs[4];
-		case CHANNEL_VRC7_FM6: return chs[5];
+	public XgmAudioChannel getRemainAudioChannel(byte type) {
+		if (type != CHANNEL_TYPE_VRC7) {
+			return null;
 		}
+		
+		for (int i = 0; i < enables.length; i++) {
+			if (!enables[i]) {
+				return chs[i];
+			}
+		}
+		
 		return null;
+	}
+	
+	@Override
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
+		for (int i = 0; i < chs.length; i++) {
+			if (channel == chs[i]) {
+				enables[i] = enable;
+				break;
+			}
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		for (int i = 0; i < chs.length; i++) {
+			if (channel == chs[i]) {
+				return enables[i];
+			}
+		}
+		return false;
 	}
 	
 	@Override
 	public void checkCapacity(int size, int frame) {
 		for (int i = 0; i < chs.length; i++) {
-			if (chs[i] != null) {
-				chs[i].checkCapacity(size, frame);
-			}
+			chs[i].checkCapacity(size, frame);
 		}
 	}
 
@@ -53,9 +72,7 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 	public void beforeRender() {
 		super.beforeRender();
 		for (int i = 0; i < chs.length; i++) {
-			if (chs[i] != null) {
-				chs[i].beforeSubmit();
-			}
+			chs[i].beforeSubmit();
 		}
 	}
 
@@ -65,7 +82,7 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 		float sum = 0;
 		
 		for (int i = 0; i < chs.length; i++) {
-			if (chs[i] != null) {
+			if (enables[i]) {
 				sum += (chs[i].buffer[index] * chs[i].getLevel());
 			}
 		}

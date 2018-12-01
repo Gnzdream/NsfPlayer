@@ -9,6 +9,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	
 	private final XgmAudioChannel[] n163s = new XgmAudioChannel[8];
+	private final boolean[] enables = new boolean[8];
 	
 	public XgmN163Mixer() {
 		for (int i = 0; i < n163s.length; i++) {
@@ -26,28 +27,47 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	}
 
 	@Override
-	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
-		switch (channelCode) {
-		case CHANNEL_N163_1:
-		case CHANNEL_N163_2:
-		case CHANNEL_N163_3:
-		case CHANNEL_N163_4:
-		case CHANNEL_N163_5:
-		case CHANNEL_N163_6:
-		case CHANNEL_N163_7:
-		case CHANNEL_N163_8:
-			return n163s[channelCode - CHANNEL_N163_1];
+	public AbstractXgmAudioChannel getRemainAudioChannel(byte type) {
+		if (type != CHANNEL_TYPE_N163) {
+			return null;
 		}
+		
+		for (int i = 0; i < enables.length; i++) {
+			if (!enables[i]) {
+				return n163s[i];
+			}
+		}
+		
 		return null;
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
 		for (int i = 0; i < n163s.length; i++) {
-			AbstractXgmAudioChannel ch = n163s[i];
-			if (!ch.isEnable()) {
+			if (channel == n163s[i]) {
+				enables[i] = enable;
+				break;
+			}
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		for (int i = 0; i < n163s.length; i++) {
+			if (channel == n163s[i]) {
+				return enables[i];
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public void checkCapacity(int size, int frame) {
+		for (int i = 0; i < enables.length; i++) {
+			if (!enables[i]) {
 				continue;
 			}
+			AbstractXgmAudioChannel ch = n163s[i];
 			ch.checkCapacity(size, frame);
 		}
 	}
@@ -55,11 +75,11 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	@Override
 	public void beforeRender() {
 		super.beforeRender();
-		for (int i = 0; i < n163s.length; i++) {
-			AbstractXgmAudioChannel ch = n163s[i];
-			if (!ch.isEnable()) {
+		for (int i = 0; i < enables.length; i++) {
+			if (!enables[i]) {
 				continue;
 			}
+			AbstractXgmAudioChannel ch = n163s[i];
 			ch.beforeSubmit();
 		}
 	}
@@ -72,7 +92,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 		int count = 0;
 		for (int i = 0; i < n163s.length; i++) {
 			XgmAudioChannel ch = n163s[i];
-			if (ch == null || !ch.isEnable()) {
+			if (ch == null || !enables[i]) {
 				continue;
 			}
 			sum += (ch.buffer[index] * ch.getLevel());

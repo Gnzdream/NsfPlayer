@@ -12,6 +12,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 
 	final XgmLinearChannel pulse1, pulse2;
+	private boolean pulse1Enable, pulse2Enable;
 
 	public XgmMMC5Mixer() {
 		pulse1 = new XgmLinearChannel();
@@ -26,14 +27,35 @@ public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public XgmLinearChannel getAudioChannel(byte channelCode) {
-		switch (channelCode) {
-		case CHANNEL_MMC5_PULSE1:
-			return pulse1;
-		case CHANNEL_MMC5_PULSE2:
-			return pulse2;
+	public XgmLinearChannel getRemainAudioChannel(byte type) {
+		if (type != CHANNEL_TYPE_MMC5_PULSE) {
+			return null;
 		}
-		return null;
+		
+		if (pulse1Enable && pulse2Enable) {
+			return null;
+		}
+		
+		return (pulse1Enable) ? pulse2 : pulse1;
+	}
+	
+	@Override
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
+		if (channel == pulse1) {
+			pulse1Enable = enable;
+		} else if (channel == pulse2) {
+			pulse2Enable = enable;
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		if (channel == pulse1) {
+			return pulse1Enable;
+		} else if (channel == pulse2) {
+			return pulse2Enable;
+		}
+		return false;
 	}
 	
 	@Override
@@ -54,9 +76,10 @@ public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 		int time = toIdx - fromIdx;
 		int idx = (fromIdx + toIdx) / 2;
 		
-		int sum = (int) (pulse1.readValue(idx) * pulse1.getLevel()
-				+ pulse2.readValue(idx) * pulse2.getLevel());
-		int value = (int) ((8192.0 * 95.88) / (8128.0 / sum + 100));
+		float sum = 
+				(pulse1Enable ? pulse1.readValue(idx) * pulse1.getLevel() : 0)
+				+ (pulse2Enable ? pulse2.readValue(idx) * pulse2.getLevel() : 0);
+		int value = (sum == 0) ? 0 : (int) ((8192.0 * 95.88) / (8128.0 / sum + 100));
 		return (intercept(value, time));
 	}
 

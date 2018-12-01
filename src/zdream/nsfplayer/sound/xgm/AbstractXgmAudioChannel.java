@@ -1,6 +1,6 @@
 package zdream.nsfplayer.sound.xgm;
 
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.mixer.IMixerChannel;
 
 /**
  * 抽象的 Xgm 混音器轨道
@@ -16,11 +16,6 @@ public abstract class AbstractXgmAudioChannel implements IMixerChannel {
 	 */
 	protected float level = 1.0f;
 	
-	/**
-	 * 是否被打开的标志
-	 */
-	protected boolean enable = false;
-
 	@Override
 	public void setLevel(float level) {
 		this.level = level;
@@ -31,16 +26,6 @@ public abstract class AbstractXgmAudioChannel implements IMixerChannel {
 		return level;
 	}
 
-	@Override
-	public void setEnable(boolean enable) {
-		this.enable = enable;
-	}
-
-	@Override
-	public boolean isEnable() {
-		return enable;
-	}
-	
 	/* **********
 	 * XGM混音器 *
 	 ********** */
@@ -58,5 +43,5 @@ public abstract class AbstractXgmAudioChannel implements IMixerChannel {
 	 *   采样数
 	 */
 	protected abstract void checkCapacity(int size, int sample);
-
+	
 }

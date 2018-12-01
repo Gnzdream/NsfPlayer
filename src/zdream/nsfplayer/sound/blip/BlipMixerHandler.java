@@ -1,6 +1,6 @@
 package zdream.nsfplayer.sound.blip;
 
-import zdream.nsfplayer.sound.mixer.IMixerHandler;
+import zdream.nsfplayer.mixer.IMixerHandler;
 
 /**
  * Blip 混音器的操作类

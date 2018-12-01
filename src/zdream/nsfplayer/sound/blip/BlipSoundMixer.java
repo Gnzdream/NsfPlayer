@@ -1,11 +1,7 @@
 package zdream.nsfplayer.sound.blip;
 
-import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
-
-import java.util.HashMap;
-
 import zdream.nsfplayer.core.NsfCommonParameter;
-import zdream.nsfplayer.sound.mixer.SoundMixer;
+import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
 
 /**
  * <p>Blip 的音频合成器, 原 FamiTracker 专用
@@ -16,7 +12,7 @@ import zdream.nsfplayer.sound.mixer.SoundMixer;
  * @author Zdream
  * @since 0.2.1
  */
-public class BlipSoundMixer extends SoundMixer {
+public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 	
 	public int sampleRate;
 	public int frameRate;
@@ -40,8 +36,6 @@ public class BlipSoundMixer extends SoundMixer {
 	
 	@Override
 	public void reset() {
-		super.reset();
-
 		buffer.clockRate(param.freqPerSec);
 	}
 	
@@ -58,26 +52,14 @@ public class BlipSoundMixer extends SoundMixer {
 	}
 	
 	/* **********
-	 * 音频管道 *
+	 * 轨道参数 *
 	 ********** */
 	
-	/**
-	 * 轨道号 - 音频管道
-	 */
-	HashMap<Byte, BlipMixerChannel> mixers = new HashMap<>();
-	
 	@Override
-	public void detachAll() {
-		mixers.clear();
-	}
-	
-	@Override
-	public BlipMixerChannel allocateChannel(byte code) {
+	protected ChannelAttr createChannelAttr(byte type) {
 		BlipMixerChannel c = new BlipMixerChannel(this);
-		mixers.put(code, c);
-		c.setEnable(true);
 		
-		configMixChannel(code, c);
+		configMixChannel(type, c);
 		c.synth.output(buffer);
 		
 		// EQ
@@ -85,23 +67,19 @@ public class BlipSoundMixer extends SoundMixer {
 		c.synth.trebleEq(eq);
 		c.synth.volume(1.0);
 		
-		return c;
+		return new ChannelAttr(type, c);
 	}
-
-	@Override
-	public BlipMixerChannel getMixerChannel(byte code) {
-		return mixers.get(code);
-	}
+	
+	/* **********
+	 * 音频管道 *
+	 ********** */
 	
 	/**
 	 * 配置音频轨道
-	 * @param code
-	 *   轨道号
+	 * @param type
+	 *   轨道类型
 	 */
-	private static void configMixChannel(byte code, BlipMixerChannel mixer) {
-		byte type = typeOfChannel(code);
-		
-		
+	private static void configMixChannel(byte type, BlipMixerChannel mixer) {
 		switch (type) {
 		case CHANNEL_TYPE_PULSE:
 		{

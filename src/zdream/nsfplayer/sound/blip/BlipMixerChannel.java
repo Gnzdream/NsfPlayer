@@ -1,7 +1,7 @@
 package zdream.nsfplayer.sound.blip;
 
 import zdream.nsfplayer.core.IExpression;
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.mixer.IMixerChannel;
 
 /**
  * FTM 默认的音频管道
@@ -77,16 +77,6 @@ public class BlipMixerChannel implements IMixerChannel {
 	@Override
 	public void reset() {
 		lastInValue = lastMixValue = 0;
-	}
-
-	@Override
-	public void setEnable(boolean enable) {
-		this.enable = enable;
-	}
-
-	@Override
-	public boolean isEnable() {
-		return enable;
 	}
 
 }

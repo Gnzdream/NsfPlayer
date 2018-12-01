@@ -1,7 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
 import zdream.nsfplayer.core.ChannelLevelsParameter;
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
+import zdream.nsfplayer.mixer.IMixerConfig;
 
 /**
  * 用于设置启动 {@link FamiTrackerRenderer} 的启动参数.

@@ -12,12 +12,16 @@ import zdream.nsfplayer.core.IResetable;
 public interface IXgmMultiChannelMixer extends INsfChannelCode, IResetable {
 	
 	/**
-	 * 获取音频轨道
-	 * @param channelCode
-	 *   轨道号
+	 * <p>获取剩余对应类型的音频轨道实例.
+	 * <p>如果该合并轨道支持该类型, 并且还有空余的、未使用的轨道, 返回该音频管道.
+	 * </p>
+	 * @param type
+	 *   轨道类型.
 	 * @return
+	 *   音频轨道实例.
+	 *   如果该合并轨道不支持该类型的轨道, 或者没有剩余的该类型的轨道, 返回 null.
 	 */
-	public AbstractXgmAudioChannel getAudioChannel(byte channelCode);
+	public AbstractXgmAudioChannel getRemainAudioChannel(byte type);
 	
 	/**
 	 * 通知所有音频轨道, 需要重设容量大小

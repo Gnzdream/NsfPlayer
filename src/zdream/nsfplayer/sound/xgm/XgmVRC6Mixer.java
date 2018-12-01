@@ -9,6 +9,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	
 	final XgmLinearChannel pulse1, pulse2, sawtooth;
+	private boolean enable1, enable2, enableSaw;
 	private final int MASTER = (int) (256.0 * 1223.0 / 1920.0);
 
 	public XgmVRC6Mixer() {
@@ -26,16 +27,44 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	}
 
 	@Override
-	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
-		switch (channelCode) {
-		case CHANNEL_VRC6_PULSE1:
-			return pulse1;
-		case CHANNEL_VRC6_PULSE2:
-			return pulse2;
-		case CHANNEL_VRC6_SAWTOOTH:
-			return sawtooth;
+	public AbstractXgmAudioChannel getRemainAudioChannel(byte type) {
+		if (type == CHANNEL_TYPE_VRC6_PULSE) {
+			if (!enable1) {
+				return pulse1;
+			}
+			if (!enable2) {
+				return pulse2;
+			}
+			
+		} else if (type == CHANNEL_TYPE_SAWTOOTH) {
+			if (!enableSaw) {
+				return sawtooth;
+			}
 		}
 		return null;
+	}
+	
+	@Override
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
+		if (channel == pulse1) {
+			enable1 = enable;
+		} else if (channel == pulse2) {
+			enable2 = enable;
+		} else if (channel == sawtooth) {
+			enableSaw = enable;
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		if (channel == pulse1) {
+			return enable1;
+		} else if (channel == pulse2) {
+			return enable2;
+		} else if (channel == sawtooth) {
+			return enableSaw;
+		}
+		return false;
 	}
 	
 	@Override
@@ -58,9 +87,9 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 		int time = toIdx - fromIdx;
 		int idx = (fromIdx + toIdx) / 2;
 		
-		int sum = (int) (pulse1.readValue(idx) * pulse1.getLevel()
-				+ pulse2.readValue(idx) * pulse2.getLevel()
-				+ sawtooth.readValue(idx) * sawtooth.getLevel());
+		float sum = (enable1 ? pulse1.readValue(idx) * pulse1.getLevel() : 0)
+				+ (enable2 ? pulse2.readValue(idx) * pulse2.getLevel() : 0)
+				+ (enableSaw ? sawtooth.readValue(idx) * sawtooth.getLevel() : 0);
 		int value = (int) (sum * MASTER) >> 1;
 		value = intercept(value, time);
 		return value;

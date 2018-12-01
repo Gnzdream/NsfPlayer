@@ -1,8 +1,8 @@
 package zdream.nsfplayer.nsf.renderer;
 
 import zdream.nsfplayer.core.ChannelLevelsParameter;
+import zdream.nsfplayer.mixer.IMixerConfig;
 import zdream.nsfplayer.nsf.executor.NsfExecutor;
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
 
 /**
  * NSF 渲染器配置

@@ -8,6 +8,10 @@ import zdream.nsfplayer.core.FloatCycleCounter;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.core.NsfStatic;
+import zdream.nsfplayer.mixer.IMixerChannel;
+import zdream.nsfplayer.mixer.IMixerConfig;
+import zdream.nsfplayer.mixer.IMixerHandler;
+import zdream.nsfplayer.mixer.ISoundMixer;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.device.chip.NesN163;
 import zdream.nsfplayer.nsf.executor.IN163ReattachListener;
@@ -15,12 +19,8 @@ import zdream.nsfplayer.nsf.executor.NsfExecutor;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
 import zdream.nsfplayer.sound.blip.BlipSoundMixer;
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
-import zdream.nsfplayer.sound.mixer.IMixerHandler;
-import zdream.nsfplayer.sound.mixer.SoundMixer;
 import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
-import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
+import zdream.nsfplayer.sound.xgm.XgmMultiSoundMixer;
 
 /**
  * <p>NSF 渲染器.
@@ -61,7 +61,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	/**
 	 * 音频混音器
 	 */
-	public SoundMixer mixer;
+	public ISoundMixer mixer;
 	
 	public NsfRenderer() {
 		this(new NsfRendererConfig());
@@ -70,6 +70,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	public NsfRenderer(NsfRendererConfig config) {
 		param.sampleRate = config.sampleRate;
 		param.frameRate = frameRate;
+		param.levels.copyFrom(config.channelLevels);
 		
 		executor.setRegion(config.region);
 		executor.setRate(config.sampleRate);
@@ -78,7 +79,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		initMixer(config);
 		rate = new NsfRateConverter(param);
 		exeCycle.setParam(config.sampleRate, this.frameRate);
-		param.levels.copyFrom(config.channelLevels);
 	}
 	
 	public void initMixer(NsfRendererConfig config) {
@@ -89,7 +89,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		
 		if (mixerConfig instanceof XgmMixerConfig) {
 			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
-			XgmSoundMixer mixer = new XgmSoundMixer();
+			XgmMultiSoundMixer mixer = new XgmMultiSoundMixer();
 			mixer.setConfig((XgmMixerConfig) mixerConfig);
 			mixer.param = param;
 			this.mixer = mixer;

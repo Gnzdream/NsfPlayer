@@ -10,39 +10,13 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	
 	final XgmAudioChannel noise, dpcm;
 	final XgmLinearChannel tri;
+	private boolean triEnable, noiseEnable, dpcmEnable;
 	
 	public Xgm2A07Mixer() {
 		noise = new XgmAudioChannel();
 		tri = new XgmLinearChannel();
 		dpcm = new XgmAudioChannel();
 	}
-	
-	/*protected int[][][] tnd_table = new int[16][16][128];
-	protected int[][][] tnd_table_non = new int[16][16][128];
-
-	public Xgm2A07Mixer() {
-		// volume adjusted by 0.75 based on empirical measurements
-		// 音量乘上 0.75 是经验测量的结果 ——原 NsfPlayer 工程里面的注释
-		final double MASTER = 8192.0 * 0.75;
-		double wt = 8227, wn = 12241, wd = 22638;
-		
-		for (int t = 0; t < 16; t++) {
-			for (int n = 0; n < 16; n++) {
-				for (int d = 0; d < 128; d++) {
-					tnd_table[t][n][d] = (int) (MASTER * (3.0 * t + 2.0 * n + d) / 208.0);
-				}
-			}
-		}
-		
-		for (int t = 0; t < 16; t++) {
-			for (int n = 0; n < 16; n++) {
-				for (int d = 0; d < 128; d++) {
-					tnd_table_non[t][n][d] = (int) ((MASTER * 159.79)
-							/ (100.0 + 1.0 / (t / wt + n / wn + d / wd)));
-				}
-			}
-		}
-	}*/
 	
 	@Override
 	public void reset() {
@@ -53,16 +27,39 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public AbstractXgmAudioChannel getAudioChannel(byte channelCode) {
-		switch (channelCode) {
-		case CHANNEL_2A03_TRIANGLE:
-			return tri;
-		case CHANNEL_2A03_NOISE:
-			return noise;
-		case CHANNEL_2A03_DPCM:
-			return dpcm;
+	public AbstractXgmAudioChannel getRemainAudioChannel(byte type) {
+		switch (type) {
+		case CHANNEL_TYPE_TRIANGLE:
+			return (triEnable) ? null : tri;
+		case CHANNEL_TYPE_NOISE:
+			return (noiseEnable) ? null : noise;
+		case CHANNEL_TYPE_DPCM:
+			return (dpcmEnable) ? null : dpcm;
 		}
 		return null;
+	}
+	
+	@Override
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
+		if (channel == tri) {
+			triEnable = enable;
+		} else if (channel == noise) {
+			noiseEnable = enable;
+		} else if (channel == dpcm) {
+			dpcmEnable = enable;
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		if (channel == tri) {
+			return triEnable;
+		} else if (channel == noise) {
+			return noiseEnable;
+		} else if (channel == dpcm) {
+			return dpcmEnable;
+		}
+		return false;
 	}
 	
 	@Override
@@ -92,14 +89,11 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 		/*
 		 * ((MASTER) / (100.0 + 1.0 / ((double) t / 8227 + (double) n / 12241 + (double) d / 22638)));
 		 */
-		float v0 = tri.readValue(idx) * tri.getLevel() / 8227;
-		float v1 = noise.buffer[index] * noise.getLevel() / 12241;
-		float v2 = dpcm.buffer[index] * dpcm.getLevel() / 22638;
-		if (v1 > 0 && v0 > 0) {
-			v1 += 0;
-		}
+		float v0 = (triEnable) ? tri.readValue(idx) * tri.getLevel() / 8227 : 0;
+		float v1 = (noiseEnable) ? noise.buffer[index] * noise.getLevel() / 12241 : 0;
+		float v2 = (dpcmEnable) ? dpcm.buffer[index] * dpcm.getLevel() / 22638 : 0;
 		float v = v0 + v1 + v2;
-		int value = (int) ((MASTER) / (100.0 + 1.0 / v));
+		int value = (v != 0) ? (int) ((MASTER) / (100.0 + 1.0 / v)) : 0;
 		
 //		int value = (int) (8192.0 * 0.75 *
 //				(3.0 * tri.buffer[idx] * tri.getLevel()

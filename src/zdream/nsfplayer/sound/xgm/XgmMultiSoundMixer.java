@@ -1,22 +1,21 @@
 package zdream.nsfplayer.sound.xgm;
 
+import static java.util.Objects.requireNonNull;
 import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.NsfCommonParameter;
+import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
+import zdream.nsfplayer.mixer.IMixerHandler;
 import zdream.nsfplayer.sound.interceptor.Amplifier;
 import zdream.nsfplayer.sound.interceptor.Compressor;
 import zdream.nsfplayer.sound.interceptor.DCFilter;
 import zdream.nsfplayer.sound.interceptor.EchoUnit;
 import zdream.nsfplayer.sound.interceptor.Filter;
 import zdream.nsfplayer.sound.interceptor.ISoundInterceptor;
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
-import zdream.nsfplayer.sound.mixer.IMixerHandler;
-import zdream.nsfplayer.sound.mixer.SoundMixer;
 
 /**
  * <p>Xgm 的混音器, 原来是 NsfPlayer 的默认使用混音器.
@@ -59,11 +58,11 @@ import zdream.nsfplayer.sound.mixer.SoundMixer;
  * @author Zdream
  * @since v0.2.1
  */
-public class XgmSoundMixer extends SoundMixer {
+public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioChannel> {
 	
 	public NsfCommonParameter param;
 
-	public XgmSoundMixer() {
+	public XgmMultiSoundMixer() {
 		
 	}
 	
@@ -83,41 +82,73 @@ public class XgmSoundMixer extends SoundMixer {
 	}
 	
 	/* **********
+	 * 轨道参数 *
+	 ********** */
+	
+	protected class XgmMultiChannelAttr extends ChannelAttr {
+		protected XgmMultiChannelAttr(byte code, AbstractXgmAudioChannel t) {
+			super(code, t);
+		}
+		
+		AbstractXgmMultiMixer multi;
+	}
+	
+	@Override
+	protected XgmMultiChannelAttr createChannelAttr(final byte code) {
+		
+		AbstractXgmAudioChannel channel;
+		for (AbstractXgmMultiMixer multi : multiList) {
+			channel = multi.getRemainAudioChannel(code);
+			if (channel != null) {
+				// 将该轨道插入到原来已经存在的合并轨道中
+				XgmMultiChannelAttr attr = new XgmMultiChannelAttr(code, channel);
+				multi.setEnable(channel, true);
+				attr.multi = multi;
+				return attr;
+			}
+		}
+		
+		// 这里就需要创建合并轨道了
+		byte chip = chipOfChannel(code);
+		AbstractXgmMultiMixer multi = createMultiChannelMixer(chip);
+		multiList.add(multi);
+		multiArray = null;
+		
+		channel = multi.getRemainAudioChannel(code);
+		requireNonNull(channel);
+		
+		XgmMultiChannelAttr attr = new XgmMultiChannelAttr(code, channel);
+		multi.setEnable(channel, true);
+		attr.multi = multi;
+		return attr;
+	}
+	
+	XgmMultiChannelAttr getAttr(int id) {
+		if (attrs.size() <= id) {
+			return null;
+		}
+		return (XgmMultiChannelAttr) attrs.get(id);
+	}
+	
+	/* **********
 	 * 音频管道 *
 	 ********** */
 	/*
 	 * 连接方式是：
-	 * sound >> XgmAudioChannel >> AbstractXgmMultiMixer >> XgmSoundMixer
+	 * sound (执行构件) >> XgmAudioChannel >> AbstractXgmMultiMixer >> XgmMultiSoundMixer
 	 * 
 	 * 其中, 一个 sound 连一个 XgmAudioChannel
 	 * 多个 XgmAudioChannel 连一个 IXgmMultiChannelMixer
-	 * 多个 IXgmMultiChannelMixer 连一个 XgmSoundMixer
-	 * XgmSoundMixer 只有一个
+	 * 多个 IXgmMultiChannelMixer 连一个 XgmMultiSoundMixer
+	 * XgmMultiSoundMixer 只有一个
 	 */
 	
-	final HashMap<Byte, AbstractXgmMultiMixer> multis = new HashMap<>();
 	private final ArrayList<AbstractXgmMultiMixer> multiList = new ArrayList<>();
 	
 	/**
 	 * 缓存, 性能考虑
 	 */
 	private AbstractXgmMultiMixer[] multiArray;
-	
-	@Override
-	public AbstractXgmAudioChannel allocateChannel(byte channelCode) {
-		byte chip = chipOfChannel(channelCode);
-		AbstractXgmMultiMixer multi = multis.get(chip);
-		if (multi == null) {
-			multi = createMultiChannelMixer(chip);
-			multis.put(chip, multi);
-			multiList.add(multi);
-			multiArray = null;
-		}
-		
-		AbstractXgmAudioChannel ch = multi.getAudioChannel(channelCode);
-		ch.setEnable(true);
-		return ch;
-	}
 	
 	/**
 	 * 按照 chip 选择 IXgmMultiChannelMixer
@@ -168,21 +199,17 @@ public class XgmSoundMixer extends SoundMixer {
 
 	@Override
 	public void detachAll() {
-		multis.clear();
 		multiList.clear();
 		multiArray = null;
+		super.detachAll();
 	}
-
+	
 	@Override
-	public IMixerChannel getMixerChannel(byte channelCode) {
-		byte chip = chipOfChannel(channelCode);
-		AbstractXgmMultiMixer multi = multis.get(chip);
+	public void detach(int id) {
+		XgmMultiChannelAttr attr = (XgmMultiChannelAttr) attrs.get(id);
+		attr.multi.setEnable(attr.channel, false);
 		
-		if (multi != null) {
-			return multi.getAudioChannel(channelCode);
-		}
-		
-		return null;
+		super.detach(id);
 	}
 	
 	@Override

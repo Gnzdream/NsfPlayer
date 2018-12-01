@@ -12,15 +12,15 @@ import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
+import zdream.nsfplayer.mixer.IMixerChannel;
+import zdream.nsfplayer.mixer.IMixerConfig;
+import zdream.nsfplayer.mixer.IMixerHandler;
+import zdream.nsfplayer.mixer.ISoundMixer;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 import zdream.nsfplayer.sound.blip.BlipMixerConfig;
 import zdream.nsfplayer.sound.blip.BlipSoundMixer;
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
-import zdream.nsfplayer.sound.mixer.IMixerHandler;
-import zdream.nsfplayer.sound.mixer.SoundMixer;
 import zdream.nsfplayer.sound.xgm.XgmMixerConfig;
-import zdream.nsfplayer.sound.xgm.XgmSoundMixer;
+import zdream.nsfplayer.sound.xgm.XgmMultiSoundMixer;
 
 /**
  * <p>默认 FamiTracker 部分的音频渲染器.
@@ -52,7 +52,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	/**
 	 * 音频混音器
 	 */
-	private SoundMixer mixer;
+	private ISoundMixer mixer;
 	
 	private FamiTrackerConfig config;
 	
@@ -90,7 +90,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		
 		if (mixerConfig instanceof XgmMixerConfig) {
 			// 采用 Xgm 音频混合器 (原 NsfPlayer 使用的)
-			XgmSoundMixer mixer = new XgmSoundMixer();
+			XgmMultiSoundMixer mixer = new XgmMultiSoundMixer();
 			mixer.setConfig((XgmMixerConfig) mixerConfig);
 			mixer.param = param;
 			this.mixer = mixer;

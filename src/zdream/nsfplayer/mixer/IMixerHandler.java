@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.mixer;
+package zdream.nsfplayer.mixer;
 
 /**
  * 混音器操作接口

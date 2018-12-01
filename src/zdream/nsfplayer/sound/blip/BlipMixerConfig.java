@@ -1,6 +1,6 @@
 package zdream.nsfplayer.sound.blip;
 
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
+import zdream.nsfplayer.mixer.IMixerConfig;
 
 /**
  * Blip 混音器的配置项

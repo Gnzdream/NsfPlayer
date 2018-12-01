@@ -2,9 +2,9 @@ package zdream.nsfplayer.sound.xgm;
 
 import java.util.List;
 
-import zdream.nsfplayer.core.INsfChannelCode;
+import zdream.nsfplayer.mixer.IMixerHandler;
 import zdream.nsfplayer.sound.interceptor.ISoundInterceptor;
-import zdream.nsfplayer.sound.mixer.IMixerHandler;
+import zdream.nsfplayer.sound.xgm.XgmMultiSoundMixer.XgmMultiChannelAttr;
 
 /**
  * Xgm 混音器的操作类
@@ -14,9 +14,9 @@ import zdream.nsfplayer.sound.mixer.IMixerHandler;
  */
 public class XgmMixerHandler implements IMixerHandler {
 
-	private XgmSoundMixer mixer;
+	private XgmMultiSoundMixer mixer;
 
-	XgmMixerHandler(XgmSoundMixer mixer) {
+	XgmMixerHandler(XgmMultiSoundMixer mixer) {
 		this.mixer = mixer;
 	}
 	
@@ -30,15 +30,18 @@ public class XgmMixerHandler implements IMixerHandler {
 	}
 	
 	/**
-	 * 返回各个芯片对应的拦截器组
-	 * @param chip
-	 *   <br>芯片号, 为 {@link INsfChannelCode} 的静态成员 CHIP_*. 
-	 *   <br>另外 2A03 的三角波、噪音、DPCM 的芯片号为 0xF, 而非 CHIP_2A03, 需要注意.
+	 * <p>返回轨道标识号对应轨道的拦截器组.
+	 * <p>如果选用的混音器是 {@link XgmMultiSoundMixer},
+	 * 那么返回的是轨道标识号对应合并轨道的拦截器组.
+	 * </p>
+	 * @param id
+	 *   <br>代表对应轨道的标识号
 	 * @return
-	 *   对应芯片的混音拦截器组
+	 *   拦截器组
 	 */
-	public List<ISoundInterceptor> getChipInterceptors(byte chip) {
-		AbstractXgmMultiMixer multi = mixer.multis.get(chip);
+	public List<ISoundInterceptor> getChipInterceptors(int id) {
+		XgmMultiChannelAttr attr = mixer.getAttr(id);
+		AbstractXgmMultiMixer multi = attr.multi;
 		
 		if (multi == null) {
 			return null;

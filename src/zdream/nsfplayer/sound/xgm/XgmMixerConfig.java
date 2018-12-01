@@ -1,6 +1,6 @@
 package zdream.nsfplayer.sound.xgm;
 
-import zdream.nsfplayer.sound.mixer.IMixerConfig;
+import zdream.nsfplayer.mixer.IMixerConfig;
 
 /**
  * Xgm 混音器的配置项

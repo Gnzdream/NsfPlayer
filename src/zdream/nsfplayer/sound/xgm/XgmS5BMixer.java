@@ -9,6 +9,7 @@ package zdream.nsfplayer.sound.xgm;
 public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	
 	final XgmLinearChannel ch1, ch2, ch3;
+	private boolean enable1, enable2, enable3;
 	private final int MASTER = 15; // 8 * 0.64 * 3 = 15.36
 
 	public XgmS5BMixer() {
@@ -26,29 +27,51 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	}
 
 	@Override
-	public XgmLinearChannel getAudioChannel(byte channelCode) {
-		switch (channelCode) {
-		case CHANNEL_S5B_SQUARE1:
+	public XgmLinearChannel getRemainAudioChannel(byte type) {
+		if (type != CHANNEL_TYPE_S5B) {
+			return null;
+		}
+		
+		if (!enable1) {
 			return ch1;
-		case CHANNEL_S5B_SQUARE2:
+		}
+		if (!enable2) {
 			return ch2;
-		case CHANNEL_S5B_SQUARE3:
+		}
+		if (!enable3) {
 			return ch3;
 		}
 		return null;
 	}
 	
 	@Override
+	public void setEnable(AbstractXgmAudioChannel channel, boolean enable) {
+		if (channel == this.ch1) {
+			enable1 = enable;
+		} else if (channel == this.ch2) {
+			enable2 = enable;
+		} else if (channel == this.ch3) {
+			enable3 = enable;
+		}
+	}
+	
+	@Override
+	public boolean isEnable(AbstractXgmAudioChannel channel) {
+		if (channel == this.ch1) {
+			return enable1;
+		} else if (channel == this.ch2) {
+			return enable2;
+		} else if (channel == this.ch3) {
+			return enable3;
+		}
+		return false;
+	}
+	
+	@Override
 	public void checkCapacity(int size, int frame) {
-		if (ch1 != null) {
-			ch1.checkCapacity(size, frame);
-		}
-		if (ch2 != null) {
-			ch2.checkCapacity(size, frame);
-		}
-		if (ch3 != null) {
-			ch3.checkCapacity(size, frame);
-		}
+		ch1.checkCapacity(size, frame);
+		ch2.checkCapacity(size, frame);
+		ch3.checkCapacity(size, frame);
 	}
 	
 	@Override
@@ -64,9 +87,10 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 		int time = toIdx - fromIdx;
 		int idx = (fromIdx + toIdx) / 2;
 		
-		int sum = (int) (ch1.readValue(idx) * ch1.getLevel()
-				+ ch2.readValue(idx) * ch2.getLevel()
-				+ ch3.readValue(idx) * ch3.getLevel());
+		float sum = 
+				(enable1 ? ch1.readValue(idx) * ch1.getLevel() : 0)
+				+ (enable2 ? ch2.readValue(idx) * ch2.getLevel() : 0)
+				+ (enable3 ? ch3.readValue(idx) * ch3.getLevel() : 0);
 		int value = (int) (sum * MASTER);
 		value = intercept(value, time);
 		return value;

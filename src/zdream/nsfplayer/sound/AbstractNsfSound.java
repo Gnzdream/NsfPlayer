@@ -2,7 +2,7 @@ package zdream.nsfplayer.sound;
 
 import zdream.nsfplayer.core.IEnable;
 import zdream.nsfplayer.core.IResetable;
-import zdream.nsfplayer.sound.mixer.IMixerChannel;
+import zdream.nsfplayer.mixer.IMixerChannel;
 
 /**
  * 音频发声器的超类

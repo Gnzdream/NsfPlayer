@@ -1,4 +1,4 @@
-package zdream.nsfplayer.sound.mixer;
+package zdream.nsfplayer.mixer;
 
 /**
  * 混音器的配置项接口. 默认接受克隆协议
