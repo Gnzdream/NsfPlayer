@@ -48,11 +48,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	private final NsfCommonParameter param = new NsfCommonParameter();
 	
 	/**
-	 * 缓存所有轨道号
-	 */
-	private byte[] channels;
-	
-	/**
 	 * 管理 executor 的 tick 次数
 	 * 不计播放速度影响, 计算每帧采样数
 	 */
@@ -180,13 +175,17 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	private void connectChannels() {
 		mixer.detachAll();
 		Set<Byte> channels = executor.allChannelSet();
-		this.channels = new byte[channels.size()];
+		
+		// 计算总轨道数. 总数 + 8 为了 N163 轨道的数据能补上.
+		this.channels = new ChannelParam[channels.size() + 8];
 		
 		int index = 0;
+		int mixerChannel = -1;
 		for (byte channelCode: channels) {
 			AbstractNsfSound sound = executor.getSound(channelCode);
 			if (sound != null) {
-				IMixerChannel mix = mixer.allocateChannel(channelCode);
+				mixerChannel = mixer.allocateChannel(channelCode);
+				IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
 				sound.setOut(mix);
 				
 				// 音量
@@ -196,7 +195,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 			}
 			
 			// 缓存轨道号
-			this.channels[index] = channelCode;
+			ChannelParam p = new ChannelParam();
+			p.channelCode = channelCode;
+			p.mixerChannel = mixerChannel;
+			this.channels[index] = p;
 			index++;
 		}
 	}
@@ -274,9 +276,15 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * 所有的 sound 调用 sound.process(freqPerFrame);
 	 */
 	private void processSounds(int freq) {
-		byte[] bs = getChannelArray();
-		for (byte channelCode : bs) {
-			executor.getSound(channelCode).process(freq);
+		if (channels == null) {
+			return;
+		}
+		
+		for (ChannelParam p : channels) {
+			if (p == null) {
+				continue;
+			}
+			executor.getSound(p.channelCode).process(freq);
 		}
 	}
 	
@@ -284,25 +292,18 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 * 所有的 sound 调用 sound.endFrame();
 	 */
 	private void endFrame() {
-		byte[] bs = getChannelArray();
-		for (byte channelCode : bs) {
-			executor.getSound(channelCode).endFrame();
+		if (channels == null) {
+			return;
+		}
+		
+		for (ChannelParam p : channels) {
+			if (p == null) {
+				continue;
+			}
+			executor.getSound(p.channelCode).endFrame();
 		}
 	}
 	
-	private byte[] getChannelArray() {
-		if (channels == null) {
-			Set<Byte> set = this.allChannelSet();
-			channels = new byte[set.size()];
-			
-			int index = 0;
-			for (byte channelCode : set) {
-				channels[index++] = channelCode;
-			}
-		}
-		return channels;
-	}
-
 	/* **********
 	 * 仪表盘区 *
 	 ********** */
@@ -426,16 +427,65 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 				byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
 				AbstractNsfSound sound = executor.getSound(channelCode);
 				if (sound != null) {
-					IMixerChannel mix = mixer.allocateChannel(channelCode);
-					sound.setOut(mix);
-					mix.setLevel(getInitLevel(channelCode));
+					ChannelParam p = searchParam(channelCode);
+					if (p == null) {
+						// 创建连接
+						int mixerChannel = mixer.allocateChannel(channelCode);
+						IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
+						sound.setOut(mix);
+						mix.setLevel(getInitLevel(channelCode));
+						
+						p = new ChannelParam();
+						p.channelCode = channelCode;
+						p.mixerChannel = mixerChannel;
+						
+						putChannelParam(p);
+					}
 				} else {
-					IMixerChannel mix = mixer.getMixerChannel(channelCode);
-					mix.setEnable(false);
+					ChannelParam p = searchParam(channelCode);
+					if (p != null) {
+						// 删除连接
+						
+						int mixerChannel = p.mixerChannel;
+						mixer.detach(mixerChannel);
+						
+						removeChannelParam(p);
+					}
+				}
+			}
+		}
+		
+		private ChannelParam searchParam(byte code) {
+			for (ChannelParam p : channels) {
+				if (p == null) {
+					break;
+				}
+				if (p.channelCode == code) {
+					return p;
 				}
 			}
 			
-			channels = null;
+			return null;
+		}
+		
+		private void putChannelParam(ChannelParam p) {
+			for (int i = 0; i < channels.length; i++) {
+				if (channels[i] == null) {
+					channels[i] = p;
+					return;
+				}
+			}
+			
+			// 数组需要扩充
+		}
+		
+		private void removeChannelParam(ChannelParam p) {
+			for (int i = 0; i < channels.length; i++) {
+				if (channels[i] == p) {
+					channels[i] = null;
+					return;
+				}
+			}
 		}
 		
 	}
@@ -510,5 +560,17 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		}
 		return cycle;
 	}
+	
+	class ChannelParam {
+		/**
+		 * 轨道号
+		 */
+		byte channelCode;
+		/**
+		 * Mixer 轨道标识号
+		 */
+		int mixerChannel;
+	}
+	private ChannelParam[] channels;
 
 }

@@ -475,10 +475,12 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		this.channels = new ChannelParam[channels.size()];
 		
 		int index = 0;
+		int mixerChannel = -1;
 		for (byte channelCode: channels) {
 			AbstractNsfSound sound = executor.getSound(channelCode);
 			if (sound != null) {
-				IMixerChannel mix = mixer.allocateChannel(channelCode);
+				mixerChannel = mixer.allocateChannel(channelCode);
+				IMixerChannel mix = mixer.getMixerChannel(mixerChannel);
 				sound.setOut(mix);
 				
 				// 音量
@@ -493,6 +495,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			this.channels[index] = p;
 			p.channelCode = channelCode;
 			p.delay = index * 100;
+			p.mixerChannel = mixerChannel;
 			
 			index++;
 		}
@@ -619,6 +622,10 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		 * 延迟写时钟数
 		 */
 		int delay;
+		/**
+		 * Mixer 轨道标识号
+		 */
+		int mixerChannel;
 	}
 	private ChannelParam[] channels;
 	
