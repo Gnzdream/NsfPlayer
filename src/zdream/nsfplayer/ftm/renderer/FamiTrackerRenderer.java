@@ -13,6 +13,8 @@ import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
+import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
+import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
 import zdream.nsfplayer.mixer.IMixerChannel;
 import zdream.nsfplayer.mixer.IMixerConfig;
 import zdream.nsfplayer.mixer.IMixerHandler;
@@ -635,6 +637,73 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			}
 		}
 		return -1;
+	}
+	
+
+	
+	/* **********
+	 *  监听器  *
+	 ********** */
+	
+	/**
+	 * 添加获取音键的监听器
+	 * @param l
+	 *   获取音键的监听器
+	 * @throws NullPointerException
+	 *   当监听器 <code>l == null</code> 时
+	 * @since v0.3.0
+	 */
+	public void addFetchListener(IFtmFetchListener l) {
+		executor.addFetchListener(l);
+	}
+	
+	/**
+	 * 移除获取音键的监听器
+	 * @param l
+	 *   移除音键的监听器
+	 * @since v0.3.0
+	 */
+	public void removeFetchListener(IFtmFetchListener l) {
+		executor.removeFetchListener(l);
+	}
+	
+	/**
+	 * 清空所有获取音键的监听器
+	 * @since v0.3.0
+	 */
+	public void clearFetchListener() {
+		executor.clearFetchListener();
+	}
+	
+	/**
+	 * 添加执行结束的监听器.
+	 * 该监听器会在效果执行结束, 但还未写入 sound 时唤醒.
+	 * @param l
+	 *   执行结束的监听器
+	 * @throws NullPointerException
+	 *   当监听器 <code>l == null</code> 时
+	 * @since v0.3.0
+	 */
+	public void addExecuteFinishedListener(IFtmExecutedListener l) {
+		executor.addExecuteFinishedListener(l);
+	}
+	
+	/**
+	 * 移除执行结束的监听器
+	 * @param l
+	 *   执行结束的监听器
+	 * @since v0.3.0
+	 */
+	public void removeExecuteFinishedListener(IFtmExecutedListener l) {
+		executor.removeExecuteFinishedListener(l);
+	}
+	
+	/**
+	 * 清空所有执行结束的监听器
+	 * @since v0.3.0
+	 */
+	public void clearExecuteFinishedListener() {
+		executor.clearExecuteFinishedListener();
 	}
 	
 }

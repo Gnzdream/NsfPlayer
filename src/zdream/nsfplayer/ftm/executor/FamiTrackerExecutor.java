@@ -17,6 +17,8 @@ import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
+import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
@@ -211,13 +213,28 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		}
 		
 		// 局部效果
-		final int len = querier.channelCount();
-		for (int i = 0; i < len; i++) {
-			byte code = querier.channelCode(i);
-			AbstractFtmChannel channel = runtime.channels.get(code);
-			
-			channel.playNote();
-			channel.writeToSound();
+		if (runtime.elners.isEmpty()) {
+			// 这里是不需要调用监听器的流程（其实就是想快一点，所以两个流程不合并）
+			final int len = querier.channelCount();
+			for (int i = 0; i < len; i++) {
+				byte code = querier.channelCode(i);
+				AbstractFtmChannel channel = runtime.channels.get(code);
+				
+				channel.playNote();
+				channel.writeToSound();
+			}
+		} else {
+			// 下面是需要调用监听器的流程
+			final int len = querier.channelCount();
+			for (int i = 0; i < len; i++) {
+				byte code = querier.channelCode(i);
+				runtime.channels.get(code).playNote();
+			}
+			runtime.onExecuteFinished();
+			for (int i = 0; i < len; i++) {
+				byte code = querier.channelCode(i);
+				runtime.channels.get(code).writeToSound();
+			}
 		}
 	}
 	
@@ -333,6 +350,67 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 			return null;
 		}
 		return ch.getSound();
+	}
+	
+	/* **********
+	 *  监听器  *
+	 ********** */
+	
+	/**
+	 * 添加获取音键的监听器
+	 * @param l
+	 *   获取音键的监听器
+	 * @throws NullPointerException
+	 *   当监听器 <code>l == null</code> 时
+	 */
+	public void addFetchListener(IFtmFetchListener l) {
+		requireNonNull(l, "listener = null");
+		runtime.flners.add(l);
+	}
+	
+	/**
+	 * 移除获取音键的监听器
+	 * @param l
+	 *   移除音键的监听器
+	 */
+	public void removeFetchListener(IFtmFetchListener l) {
+		runtime.flners.remove(l);
+	}
+	
+	/**
+	 * 清空所有获取音键的监听器
+	 */
+	public void clearFetchListener() {
+		runtime.flners.clear();
+	}
+	
+	/**
+	 * 添加执行结束的监听器.
+	 * 该监听器会在效果执行结束, 但还未写入 sound 时唤醒.
+	 * @param l
+	 *   执行结束的监听器
+	 * @throws NullPointerException
+	 *   当监听器 <code>l == null</code> 时
+	 */
+	public void addExecuteFinishedListener(IFtmExecutedListener l) {
+		requireNonNull(l, "listener = null");
+		runtime.elners.add(l);
+	}
+	
+	/**
+	 * 移除执行结束的监听器
+	 * @param l
+	 *   执行结束的监听器
+	 */
+	public void removeExecuteFinishedListener(IFtmExecutedListener l) {
+		runtime.elners.remove(l);
+	}
+	
+	/**
+	 * 清空所有执行结束的监听器
+	 */
+	public void clearExecuteFinishedListener() {
+		runtime.elners.clear();
 	}
 	
 	/* **********

@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.executor;
 
 import static zdream.nsfplayer.core.NsfChannelCode.typeOfChannel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,9 @@ import zdream.nsfplayer.ftm.executor.context.DefaultFtmEffectConverter;
 import zdream.nsfplayer.ftm.executor.context.IFtmEffectConverter;
 import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
+import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
+import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
+import zdream.nsfplayer.ftm.format.FtmNote;
 
 /**
  * Famitracker 运行时状态
@@ -168,9 +172,58 @@ public class FamiTrackerRuntime {
 			byte channel = querier.channelCode(i);
 			byte channelType = typeOfChannel(channel);
 			
-			converter.convert(querier.getNote(trackIdx, section, i, row),
-					channelType, effects.get(channel), geffect, querier);
+			FtmNote note = querier.getNote(trackIdx, section, i, row);
+			note = onFetcher(note, channel);
+			
+			converter.convert(note, channelType, effects.get(channel), geffect, querier);
 		}
+	}
+	
+	/* **********
+	 *  监听器  *
+	 ********** */
+	
+	public final ArrayList<IFtmFetchListener> flners = new ArrayList<>();
+	public final ArrayList<IFtmExecutedListener> elners = new ArrayList<>();
+	
+	/**
+	 * 调用音键获取监听器
+	 * @param note
+	 *   原始音键, 可能为 null
+	 * @param channelCode
+	 *   当前轨道号
+	 * @return
+	 */
+	FtmNote onFetcher(FtmNote note, byte channelCode) {
+		if (flners.isEmpty()) {
+			return note;
+		}
+		
+		FtmNote n = (note != null) ? note.clone() : null;
+		FamiTrackerExecutorHandler h = new FamiTrackerExecutorHandler(this);
+		
+		for (IFtmFetchListener l : flners) {
+			try {
+				n = l.onFetch(n, channelCode, h);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		}
+		h.destroy();
+		
+		return n;
+	}
+	
+	/**
+	 * 调用执行完毕监听器
+	 */
+	void onExecuteFinished() {
+		if (elners.isEmpty()) {
+			return;
+		}
+		
+		FamiTrackerExecutorHandler h = new FamiTrackerExecutorHandler(this);
+		elners.forEach(l -> l.onExecuteFinished(h));
 	}
 	
 }

@@ -223,5 +223,4 @@ public class FtmNote implements Cloneable {
 		
 		return n;
 	}
-
 }
