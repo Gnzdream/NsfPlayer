@@ -7,8 +7,8 @@ import java.util.Set;
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfCommonParameter;
+import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.core.NsfRateConverter;
-import zdream.nsfplayer.ftm.audio.FamiTrackerException;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
@@ -97,7 +97,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		} else if (mixerConfig instanceof BlipMixerConfig) {
 			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
 			BlipSoundMixer mixer = new BlipSoundMixer();
-			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
 			mixer.sampleRate = config.sampleRate;
 			mixer.setConfig((BlipMixerConfig) mixerConfig);
 			mixer.param = param;
@@ -119,7 +118,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * </p>
 	 * @param audio
 	 */
-	public void ready(FtmAudio audio) throws FamiTrackerException {
+	public void ready(FtmAudio audio) throws NsfPlayerException {
 		ready(audio, 0, 0);
 	}
 	
@@ -131,7 +130,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @param track
 	 *   曲目号, 从 0 开始
 	 */
-	public void ready(FtmAudio audio, int track) throws FamiTrackerException {
+	public void ready(FtmAudio audio, int track) throws NsfPlayerException {
 		ready(audio, track, 0);
 	}
 	
@@ -149,7 +148,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			FtmAudio audio,
 			int track,
 			int section)
-			throws FamiTrackerException {
+			throws NsfPlayerException {
 		executor.ready(audio, track, section);
 		
 		// 重置播放相关的数据
@@ -170,7 +169,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
-	public void ready() throws FamiTrackerException {
+	public void ready() throws NsfPlayerException {
 		executor.ready();
 		resetMixer();
 	}
@@ -185,7 +184,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
-	public void ready(int track) throws FamiTrackerException {
+	public void ready(int track) throws NsfPlayerException {
 		ready(track, 0);
 	}
 	
@@ -201,7 +200,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
-	public void ready(int track, int section) throws FamiTrackerException {
+	public void ready(int track, int section) throws NsfPlayerException {
 		executor.ready(track, section);
 		resetMixer();
 	}

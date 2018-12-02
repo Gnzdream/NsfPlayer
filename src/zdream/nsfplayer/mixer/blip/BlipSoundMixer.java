@@ -15,7 +15,6 @@ import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
 public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 	
 	public int sampleRate;
-	public int frameRate;
 	public int bassFilter, trebleDamping, trebleFilter;
 	
 	public NsfCommonParameter param;
@@ -27,7 +26,7 @@ public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 	
 	@Override
 	public void init() {
-		int size = sampleRate / frameRate;
+		int size = sampleRate / 50; // 帧率在最低值 50, 这样可以保证高帧率 (比如 60) 也能兼容
 		oldSize = (size * 1000 * 2) / sampleRate;
 		
 		buffer.setSampleRate(sampleRate, oldSize);
@@ -68,6 +67,17 @@ public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 		c.synth.volume(1.0);
 		
 		return new ChannelAttr(type, c);
+	}
+	
+	@Override
+	public void setInSample(int id, int inSample) {
+		ChannelAttr a = attrs.get(id);
+		if (a == null) {
+			return;
+		}
+		
+		BlipMixerChannel c = a.channel;
+		c.synth.in_sample_rate(inSample * param.frameRate);
 	}
 	
 	/* **********

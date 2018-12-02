@@ -1,6 +1,6 @@
 package zdream.nsfplayer.ftm.factory;
 
-import zdream.nsfplayer.ftm.audio.FamiTrackerException;
+import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 
 /**
@@ -9,7 +9,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
  * @author Zdream
  * @since v0.1
  */
-public class FamiTrackerFormatException extends FamiTrackerException {
+public class FamiTrackerFormatException extends NsfPlayerException {
 
 	private static final long serialVersionUID = 6874694323781455170L;
 

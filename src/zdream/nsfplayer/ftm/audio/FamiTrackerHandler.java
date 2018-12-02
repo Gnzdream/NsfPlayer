@@ -8,6 +8,7 @@ import zdream.nsfplayer.core.ERegion;
 import zdream.nsfplayer.core.FtmChipType;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfChannelCode;
+import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.ftm.format.AbstractFtmInstrument;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrumentFDS;
@@ -45,7 +46,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	 */
 	public void setMechine(byte m) {
 		if (m != 0 && m != 1) {
-			throw new FamiTrackerException("制式解析错误: " + m);
+			throw new NsfPlayerException("制式解析错误: " + m);
 		}
 		audio.region = (m == 0) ? ERegion.NTSC : ERegion.PAL;
 	}
@@ -58,7 +59,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	 */
 	public void setFramerate(int fps) {
 		if (fps < 0 || fps > 800) {
-			throw new FamiTrackerException("刷新率数据错误: " + fps);
+			throw new NsfPlayerException("刷新率数据错误: " + fps);
 		}
 		audio.frameRate = fps;
 	}
@@ -80,7 +81,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	
 	public void setVibrato(byte vibrato) {
 		if (vibrato != 0 && vibrato != 1) {
-			throw new FamiTrackerException("振动模式错误: " + vibrato);
+			throw new NsfPlayerException("振动模式错误: " + vibrato);
 		}
 		audio.vibrato = vibrato;
 	}
@@ -92,7 +93,7 @@ public class FamiTrackerHandler implements INsfChannelCode {
 	 */
 	public void setNamcoChannels(int count) {
 		if (count < 0 || count > 8) {
-			throw new FamiTrackerException("N163 轨道数错误: " + count);
+			throw new NsfPlayerException("N163 轨道数错误: " + count);
 		}
 		audio.namcoChannels = count;
 		

@@ -14,11 +14,11 @@ public class NsfAudioFactory {
 
 	public NsfAudioFactory() {}
 	
-	public NsfAudio createFromFile(String path) throws IOException, NsfAudioException {
+	public NsfAudio createFromFile(String path) throws IOException, NsfAudioFormatException {
 		return create(FileUtils.readFile(path));
 	}
 	
-	public NsfAudio create(byte[] image) throws NsfAudioException {
+	public NsfAudio create(byte[] image) throws NsfAudioFormatException {
 		return create(image, 0);
 	}
 	
@@ -29,13 +29,13 @@ public class NsfAudioFactory {
 	 * @param offset
 	 *   镜像 byte 数据从数组第几个数据开始, 默认 0
 	 * @return
-	 * @throws NsfAudioException
+	 * @throws NsfAudioFormatException
 	 *   文件格式不匹配导致读取失败
 	 */
-	public NsfAudio create(byte[] image, int offset) throws NsfAudioException {
+	public NsfAudio create(byte[] image, int offset) throws NsfAudioFormatException {
 		
 		if (image.length < 0x80) // 这里相当于检查 image == null
-			throw new NsfAudioException("镜像数组太小");
+			throw new NsfAudioFormatException("镜像数组太小");
 		
 		// 指向 image 的索引
 		int ptr = offset;
@@ -46,7 +46,7 @@ public class NsfAudioFactory {
 		final byte[] HEAD = {'N', 'E', 'S', 'M'};
 		for (int i = 0; i < HEAD.length; i++) {
 			if (HEAD[i] != image[ptr++]) {
-				throw new NsfAudioException("文件头标识有误");
+				throw new NsfAudioFormatException("文件头标识有误");
 			}
 		}
 		ptr++; // 第 5 字节忽略

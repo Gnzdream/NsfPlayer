@@ -52,11 +52,6 @@ public class NsfCommonParameter {
 	 ********** */
 	
 	/**
-	 * 正播放的曲目号
-	 */
-	public int trackIdx;
-	
-	/**
 	 * 是否结束的标志
 	 */
 	public boolean finished;

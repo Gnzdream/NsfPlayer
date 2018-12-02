@@ -91,7 +91,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		} else if (mixerConfig instanceof BlipMixerConfig) {
 			// 采用 Blip 音频混合器 (原 FamiTracker 使用的)
 			BlipSoundMixer mixer = new BlipSoundMixer();
-			mixer.frameRate = 50; // 帧率在最低值, 这样可以保证高帧率 (比如 60) 也能兼容
 			mixer.sampleRate = config.sampleRate;
 			mixer.setConfig((BlipMixerConfig) mixerConfig);
 			mixer.param = param;

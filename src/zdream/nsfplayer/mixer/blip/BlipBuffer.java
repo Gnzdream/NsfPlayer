@@ -4,6 +4,8 @@ import static zdream.nsfplayer.mixer.blip.BufferContext.*;
 
 import java.util.Arrays;
 
+import zdream.nsfplayer.core.NsfPlayerException;
+
 /**
  * <p>源文件 Blip_Buffer 0.4.0
  * <p>Band-limited sound synthesis and buffering
@@ -58,7 +60,8 @@ public class BlipBuffer {
 	/**
 	 * <p>设置每秒的时钟数
 	 * <p>Set number of source time units per second
-	 * @param rate
+	 * @param cps
+	 *   全局的入采样率, 对于 NSF 轨道而言是每秒时钟数
 	 */
 	public void clockRate(int cps) {
 		factor_ = clockRateFactor(clock_rate_ = cps);
@@ -315,10 +318,13 @@ public class BlipBuffer {
 		return t * factor_ + offset_;
 	}
 
-	private int clockRateFactor( int clock_rate ) {
+	int clockRateFactor( int clock_rate ) {
 		double ratio = (double) sample_rate_ / clock_rate;
 		int factor = (int) Math.floor( ratio * (1L << 16) + 0.5 );
-		assert( factor > 0 || sample_rate_ == 0 ); // fails if clock/output ratio is too large
+		if (factor <= 0 && sample_rate_ != 0) {
+			throw new NsfPlayerException(
+					String.format("入采样率 %d 与出采样率 %d 的比率过大", clock_rate, sample_rate_));
+		}
 		return factor;
 	}
 	
@@ -347,6 +353,10 @@ public class BlipBuffer {
 	long reader_accum; // 确定为 long
 	int bass_shift;
 	int sample_rate_;
+	
+	/**
+	 * 每秒时钟数, 即全局的入采样率
+	 */
 	int clock_rate_;
 	private int bass_freq_;
 	int length_;

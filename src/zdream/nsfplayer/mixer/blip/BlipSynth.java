@@ -3,13 +3,23 @@ package zdream.nsfplayer.mixer.blip;
 import static zdream.nsfplayer.mixer.blip.BufferContext.*;
 
 /**
- * <p>
- * <p>Range specifies the greatest expected change in amplitude.
- * Calculate it by finding the difference between the maximum and minimum expected amplitudes (max - min).
+ * <p>Blip 轨道输入工具, 用于往 {@link BlipBuffer} 填充音频.
+ * </p>
  * @author Zdream
  */
 public class BlipSynth {
 	
+	/**
+	 * <p>指定预期的最大变化振幅值,
+	 * 通过找出最大和最小期望振幅数值之差（max - min）来计算后面的音频数值
+	 * <p>Range specifies the greatest expected change in amplitude.
+	 * Calculate it by finding the difference between the maximum and minimum expected amplitudes (max - min).
+	 * </p>
+	 * @param quality
+	 *   输入的音频的质量, 即位率, 每个采样由多少个位组成. 默认 16
+	 * @param range
+	 *   指定振幅的最大预期变化
+	 */
 	public BlipSynth(int quality, int range) {
 		this.quality = quality;
 		this.range = range;
@@ -62,7 +72,8 @@ public class BlipSynth {
 	public void update( int time, int amplitude ) {
 		int delta = amplitude - impl.last_amp;
 		impl.last_amp = amplitude;
-		offset_resampled( time * impl.buf.factor_ + impl.buf.offset_, delta, impl.buf );
+		offset_resampled( time * ((factor_ != 0) ? factor_ : impl.buf.factor_) + impl.buf.offset_,
+				delta, impl.buf );
 	}
 
 // Low-level interface
@@ -74,13 +85,13 @@ public class BlipSynth {
 	 * Delta can be positive or negative.
 	 * The actual change in amplitude is delta * (volume / range)
 	 * @param time
-	 *   时间点
+	 *   时刻, 采用入采样率的时间单位, 对 NSF 轨道而言为每秒时钟数.
 	 * @param delta
-	 *   可正可负
+	 *   音频数据, 可正可负
 	 * @param buf
 	 */
 	public final void offset( int time, int delta, BlipBuffer buf ) {
-		offset_resampled( time * buf.factor_ + buf.offset_, delta, buf );
+		offset_resampled( time * ((factor_ != 0) ? factor_ : buf.factor_) + buf.offset_, delta, buf );
 	}
 	
 	public final void offset(int t, int delta) {
@@ -110,10 +121,6 @@ public class BlipSynth {
 		final int rev = fwd + quality - 2;
 		
 		{
-			if (bufptr + fwd == 32769) {
-				System.out.println(buf.buffer_.length);
-			}
-			
 			long t0 = i0 * delta + buf.buffer_ [bufptr + fwd];
 			long t1 = impulses [impptr + blip_res] * delta + buf.buffer_ [bufptr + fwd + 1];
 			i0 = impulses [impptr + blip_res * 2];
@@ -172,19 +179,47 @@ public class BlipSynth {
 		buf.buffer_ [bufptr + rev + 1] = t1;
 	}
 	
-	// Same as offset(), except code is inlined for higher performance
-	public final void offset_inline( int t, int delta, BlipBuffer buf ) {
-		offset_resampled( t * buf.factor_ + buf.offset_, delta, buf );
-	}
-	public final void offset_inline( int t, int delta ) {
-		offset_resampled( t * impl.buf.factor_ + impl.buf.offset_, delta, impl.buf );
-	}
-	
 	public final int quality, range;
 		
-	// typedef short imp_t;
 	private short[] impulses;
 	private BlipSynth_ impl;
 	
+	/**
+	 * 默认为 0, 表示不启用;
+	 * 如果它不为 0, 则使用该值而不是 BlipBuffer 提供的全局 factor_
+	 */
+	private int factor_;
+	
+	/**
+	 * 如果有自定义的入采样率, 在这里设置.
+	 * @param rate
+	 *   输入的采样率.
+	 *   如果是 0 则使用全局的入采样率
+	 * @since v0.3.0
+	 */
+	public void in_sample_rate(int rate) {
+		if (rate <= 0) {
+			factor_ = 0;
+		} else {
+			this.factor_ = impl.buf.clockRateFactor(rate);
+		}
+	}
+	
+	/**
+	 * 如果有自定义的入采样率, 在这里设置.
+	 * @param rate
+	 *   输入的采样率
+	 *   如果是 0 则使用全局的入采样率
+	 * @param buf
+	 *   指定的音频缓冲
+	 * @since v0.3.0
+	 */
+	public void in_sample_rate(int rate, BlipBuffer buf) {
+		if (rate <= 0) {
+			factor_ = 0;
+		} else {
+			this.factor_ = buf.clockRateFactor(rate);
+		}
+	}
 
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfExecutor;
 import zdream.nsfplayer.core.INsfChannelCode;
-import zdream.nsfplayer.ftm.audio.FamiTrackerException;
+import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
@@ -52,7 +52,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 * @param audio
 	 *   FamiTracker 的封装的曲目
 	 */
-	public void ready(FtmAudio audio) throws FamiTrackerException {
+	public void ready(FtmAudio audio) throws NsfPlayerException {
 		ready(audio, 0, 0);
 	}
 	
@@ -65,7 +65,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 * @param track
 	 *   曲目号, 从 0 开始
 	 */
-	public void ready(FtmAudio audio, int track) throws FamiTrackerException {
+	public void ready(FtmAudio audio, int track) throws NsfPlayerException {
 		ready(audio, track, 0);
 	}
 	
@@ -84,7 +84,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 			FtmAudio audio,
 			int track,
 			int section)
-			throws FamiTrackerException {
+			throws NsfPlayerException {
 		requireNonNull(audio, "FamiTracker 曲目 audio = null");
 		
 		runtime.ready(audio, track, section);
@@ -99,7 +99,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
-	public void ready() throws FamiTrackerException {
+	public void ready() throws NsfPlayerException {
 		ready(runtime.param.trackIdx, runtime.param.curSection);
 	}
 	
@@ -113,7 +113,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
-	public void ready(int track) throws FamiTrackerException {
+	public void ready(int track) throws NsfPlayerException {
 		ready(track, 0);
 	}
 	
@@ -129,7 +129,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
-	public void ready(int track, int section) throws FamiTrackerException {
+	public void ready(int track, int section) throws NsfPlayerException {
 		requireNonNull(runtime.querier, "FamiTracker 曲目 audio = null");
 		
 		runtime.ready(track, section);
