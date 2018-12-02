@@ -7,7 +7,7 @@ import zdream.nsfplayer.core.INsfChannelCode;
 
 /**
  * <p>从 Sound 里面的音频数据转成采样数据的工具.
- * <p>现在只支持单轨道转化
+ * <p>现在只支持单轨道转化. 音量的影响放在转化之后.
  * </p>
  * 
  * @author Zdream

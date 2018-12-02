@@ -95,7 +95,7 @@ public interface ISoundMixer extends IResetable, INsfChannelCode {
 	/**
 	 * 结束该帧. 在 {@link #readBuffer(short[], int, int)} 之前调用
 	 * @return
-	 *   返回有多少音频采样数
+	 *   返回有多少音频采样数 (按照单声道计)
 	 */
 	public int finishBuffer();
 	

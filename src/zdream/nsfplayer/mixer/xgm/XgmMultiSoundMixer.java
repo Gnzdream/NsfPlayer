@@ -17,7 +17,7 @@ import zdream.nsfplayer.mixer.interceptor.Filter;
 import zdream.nsfplayer.mixer.interceptor.ISoundInterceptor;
 
 /**
- * <p>Xgm 的混音器, 原来是 NsfPlayer 的默认使用混音器.
+ * <p>Xgm 的合并轨混音器, 原来是 NsfPlayer 的默认使用混音器.
  * <p>自从 Mixer 渲染部分和 NSF / FTM 的执行部分分离之后,
  * 无论是 FamiTracker 还是 Nsf 部分, 均能够使用 Xgm 混音器作为输出混音器.
  * 
