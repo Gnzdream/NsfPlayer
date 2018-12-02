@@ -59,28 +59,21 @@ public class XgmMMC5Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		pulse1.checkCapacity(size, frame);
-		pulse2.checkCapacity(size, frame);
-	}
-	
-	@Override
 	public void beforeRender() {
 		super.beforeRender();
-		pulse1.beforeSubmit();
-		pulse2.beforeSubmit();
+		if (pulse1Enable)
+			pulse1.beforeSubmit();
+		if (pulse2Enable)
+			pulse2.beforeSubmit();
 	}
 
 	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
-		int idx = (fromIdx + toIdx) / 2;
-		
+	public int render(int index) {
 		float sum = 
-				(pulse1Enable ? pulse1.readValue(idx) * pulse1.getLevel() : 0)
-				+ (pulse2Enable ? pulse2.readValue(idx) * pulse2.getLevel() : 0);
+				(pulse1Enable ? pulse1.read(index) * pulse1.getLevel() : 0)
+				+ (pulse2Enable ? pulse2.read(index) * pulse2.getLevel() : 0);
 		int value = (sum == 0) ? 0 : (int) ((8192.0 * 95.88) / (8128.0 / sum + 100));
-		return (intercept(value, time));
+		return (intercept(value, 1));
 	}
 
 }

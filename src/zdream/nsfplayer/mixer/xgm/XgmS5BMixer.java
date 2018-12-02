@@ -68,31 +68,24 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		ch1.checkCapacity(size, frame);
-		ch2.checkCapacity(size, frame);
-		ch3.checkCapacity(size, frame);
-	}
-	
-	@Override
 	public void beforeRender() {
 		super.beforeRender();
-		ch1.beforeSubmit();
-		ch2.beforeSubmit();
-		ch3.beforeSubmit();
+		if (enable1)
+			ch1.beforeSubmit();
+		if (enable2)
+			ch2.beforeSubmit();
+		if (enable3)
+			ch3.beforeSubmit();
 	}
 
 	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
-		int idx = (fromIdx + toIdx) / 2;
-		
+	public int render(int index) {
 		float sum = 
-				(enable1 ? ch1.readValue(idx) * ch1.getLevel() : 0)
-				+ (enable2 ? ch2.readValue(idx) * ch2.getLevel() : 0)
-				+ (enable3 ? ch3.readValue(idx) * ch3.getLevel() : 0);
+				(enable1 ? ch1.readValue(index) * ch1.getLevel() : 0)
+				+ (enable2 ? ch2.readValue(index) * ch2.getLevel() : 0)
+				+ (enable3 ? ch3.readValue(index) * ch3.getLevel() : 0);
 		int value = (int) (sum * MASTER);
-		value = intercept(value, time);
+		value = intercept(value, 1);
 		return value;
 	}
 

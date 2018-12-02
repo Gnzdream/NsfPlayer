@@ -62,17 +62,6 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		for (int i = 0; i < enables.length; i++) {
-			if (!enables[i]) {
-				continue;
-			}
-			AbstractXgmAudioChannel ch = n163s[i];
-			ch.checkCapacity(size, frame);
-		}
-	}
-
-	@Override
 	public void beforeRender() {
 		super.beforeRender();
 		for (int i = 0; i < enables.length; i++) {
@@ -85,9 +74,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 	}
 
 	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
-		
+	public int render(int index) {
 		float sum = 0;
 		int count = 0;
 		for (int i = 0; i < n163s.length; i++) {
@@ -95,7 +82,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 			if (ch == null || !enables[i]) {
 				continue;
 			}
-			sum += (ch.buffer[index] * ch.getLevel());
+			sum += (ch.read(index) * ch.getLevel());
 			count ++;
 		}
 		
@@ -154,7 +141,7 @@ public class XgmN163Mixer extends AbstractXgmMultiMixer {
 		final double MAX_OUT = 57600; // max digital value: = 15.0 * 15.0 * 256.0
 		
 		int v = (int) ((MASTER_VOL / MAX_OUT) * sum);
-		v = intercept(v, time);
+		v = intercept(v, 1);
 		return v;
 	}
 

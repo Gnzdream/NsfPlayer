@@ -47,6 +47,10 @@ public final class XgmLinearChannel extends AbstractXgmAudioChannel {
 	 */
 	int lastReadPtr;
 	
+	/**
+	 * 当前帧的输入采样率 / 输出采样数
+	 */
+	float param;
 	
 	/* **********
 	 * 公共方法 *
@@ -104,6 +108,13 @@ public final class XgmLinearChannel extends AbstractXgmAudioChannel {
 		nextWritePtr = 0;
 		lastReadPtr = 0;
 		writeNext(0, lastWriteValue);
+		this.param = (float) size / frame;
+	}
+	
+	@Override
+	protected float read(int index) {
+		float time = index * param + param / 2;
+		return readValue((int) time);
 	}
 	
 	int readValue(final int time) {

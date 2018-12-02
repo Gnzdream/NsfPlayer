@@ -18,7 +18,8 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	@Override
 	public void reset() {
 		super.reset();
-		fds.reset();
+		if (fdsEnable)
+			fds.reset();
 	}
 
 	@Override
@@ -51,23 +52,16 @@ public class XgmFDSMixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		fds.checkCapacity(size, frame);
-	}
-
-	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
-		
+	public int render(int index) {
 		// 最终输出部分
 		// 8 bit approximation of master volume
 		final float MASTER_VOL = 2935.2f; // = 2.4 * 1223.0; max FDS vol vs max APU square (arbitrarily 1223)
 		final float MAX_OUT = 2016f; // = 32.0f * 63.0f; value that should map to master vol
 		
-		float v = (fdsEnable) ? fds.buffer[index] * fds.getLevel() * (MASTER_VOL / MAX_OUT) : 0;
+		float v = (fdsEnable) ? fds.read(index) * fds.getLevel() * (MASTER_VOL / MAX_OUT) : 0;
 		int value = (int) v;
 		
-		value = intercept(value, time);
+		value = intercept(value, 1);
 		return value;
 	}
 

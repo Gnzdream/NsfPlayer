@@ -66,6 +66,28 @@ public interface ISoundMixer extends IResetable, INsfChannelCode {
 	public IMixerChannel getMixerChannel(int id);
 	
 	/**
+	 * <p>设置下一帧, 或者后面帧, 对应轨道的入采样数.
+	 * <p>混音器需要做的是, 将对应入采样率的音频数据转化成出采样率的数据,
+	 * 这个方法需要在往 {@link IMixerChannel} 轨道中写入数据前调用, 规定当前帧,
+	 * {@link AbstractNsfSound} 会往该轨道输入采样数为多少的音频数据.
+	 * 这个需求的出现是因为 NSF 的采样率往往达到 177 万多, 而普通的采样音频,
+	 * 例如 MPEG 的采样率, 大都为 44.1 千 (44100 Hz). 需要统筹这两类音频的混音,
+	 * 需要事先知道它们的入采样率, 或者相关的数据.
+	 * <p>如果 <code>inSample</code> 设置为 0 或者负数, 或者没有调用该方法的,
+	 * 默认采用全局的入采样数.
+	 * </p>
+	 * @param id
+	 *   轨道标识号
+	 * @param inSample
+	 *   下一帧、以及后面所有帧, 每帧的入采样数.
+	 *   <br>该值设置后渲染后面的帧时均不会发生变化, 直到下一次设置.
+	 *   <br>如果设置为 0 或者负数, 表示清空上一次入采样数设置,
+	 *   系统将采用全局的入采样数替换该轨道的入采样数.
+	 * @since v0.3.0
+	 */
+	default public void setInSample(int id, int inSample) {}
+	
+	/**
 	 * 每帧启用混音器前调用
 	 */
 	public void readyBuffer();

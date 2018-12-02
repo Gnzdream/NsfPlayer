@@ -6,7 +6,6 @@ import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import zdream.nsfplayer.core.CycleCounter;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
 import zdream.nsfplayer.mixer.IMixerHandler;
@@ -130,6 +129,20 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 		return (XgmMultiChannelAttr) attrs.get(id);
 	}
 	
+	@Override
+	public void setInSample(int id, int inSample) {
+		XgmMultiChannelAttr attr = getAttr(id);
+		if (attr == null) {
+			return;
+		}
+		
+		if (inSample <= 0) {
+			attr.inSample = 0;
+		} else {
+			attr.inSample = inSample;
+		}
+	}
+	
 	/* **********
 	 * 音频管道 *
 	 ********** */
@@ -234,11 +247,6 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	 */
 	private ISoundInterceptor[] interceptorArray;
 	
-	/**
-	 * 用于计算周期和采样关系的模型
-	 */
-	private final CycleCounter counter = new CycleCounter();
-	
 	private void initInterceptors() {
 		// 构造拦截器组
 		EchoUnit echo = new EchoUnit();
@@ -291,33 +299,39 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	@Override
 	public void readyBuffer() {
 		allocateSampleArray();
-		final int len = multiList.size();
-		for (int i = 0; i < len; i++) {
-			AbstractXgmMultiMixer multi = multiList.get(i);
-			multi.checkCapacity(param.freqPerFrame, param.sampleInCurFrame);
+		int inSample;
+		for (ChannelAttr attr : attrs) {
+			if (attr == null) {
+				continue;
+			}
+			
+			XgmMultiChannelAttr a = (XgmMultiChannelAttr) attr;
+			inSample = a.inSample;
+			if (inSample == 0) {
+				inSample = param.freqPerFrame;
+			}
+			a.channel.checkCapacity(inSample, param.sampleInCurFrame);
 		}
 	}
 
 	@Override
 	public int finishBuffer() {
 		beforeRender();
+		
+		// 实际渲染工作
 		final int length = param.sampleInCurFrame;
-		int v, fromTime, delta, toTime = 0;
+		int v;
 		for (int i = 0; i < length; i++) {
 			
 			// 渲染一帧的流程
-			fromTime = toTime;
-			delta = counter.tick();
-			toTime = counter.getCycleCount();
-			// fromTime 和 toTime 是时钟数
 			v = 0;
 			
 			final int mlen = multiArray.length;
 			for (int midx = 0; midx < mlen; midx++) {
 				AbstractXgmMultiMixer multi = multiArray[midx];
-				v += multi.render(i, fromTime, toTime);
+				v += multi.render(i);
 			}
-			v = intercept(v, delta) >> 1;
+			v = intercept(v, 1) >> 1;
 			
 			if (v > Short.MAX_VALUE) {
 				v = Short.MAX_VALUE;
@@ -336,8 +350,6 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 			AbstractXgmMultiMixer multi = multiList.get(i);
 			multi.beforeRender();
 		}
-		
-		counter.setParam(param.freqPerFrame, param.sampleInCurFrame);
 		
 		// 以下是性能考虑
 		if (interceptorArray == null || interceptorArray.length != interceptors.size()) {

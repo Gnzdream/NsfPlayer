@@ -22,7 +22,7 @@ public abstract class AbstractXgmMultiMixer implements IXgmMultiChannelMixer {
 	/**
 	 * @param value
 	 * @param time
-	 *   过去的时钟周期数
+	 *   过去的时间数, 一般为 1. 单位为一个出采样率的时间间隔
 	 * @return
 	 */
 	protected int intercept(int value, int time) {

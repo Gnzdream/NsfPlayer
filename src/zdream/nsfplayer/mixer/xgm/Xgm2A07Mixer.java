@@ -65,23 +65,16 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 	@Override
 	public void beforeRender() {
 		super.beforeRender();
-		tri.beforeSubmit();
-		noise.beforeSubmit();
-		dpcm.beforeSubmit();
+		if (triEnable)
+			tri.beforeSubmit();
+		if (noiseEnable)
+			noise.beforeSubmit();
+		if (dpcmEnable)
+			dpcm.beforeSubmit();
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		tri.checkCapacity(size, frame);
-		noise.checkCapacity(size, frame);
-		dpcm.checkCapacity(size, frame);
-	}
-	
-	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
-		int idx = (fromIdx + toIdx) / 2;
-		
+	public int render(int index) {
 		// volume adjusted by 0.75 based on empirical measurements
 		// 音量乘上 0.75 是经验测量的结果 ——原 NsfPlayer 工程里面的注释
 		// 8192.0 * 0.75 * 159.79 = 981749.76
@@ -89,9 +82,9 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 		/*
 		 * ((MASTER) / (100.0 + 1.0 / ((double) t / 8227 + (double) n / 12241 + (double) d / 22638)));
 		 */
-		float v0 = (triEnable) ? tri.readValue(idx) * tri.getLevel() / 8227 : 0;
-		float v1 = (noiseEnable) ? noise.buffer[index] * noise.getLevel() / 12241 : 0;
-		float v2 = (dpcmEnable) ? dpcm.buffer[index] * dpcm.getLevel() / 22638 : 0;
+		float v0 = (triEnable) ? tri.read(index) * tri.getLevel() / 8227 : 0;
+		float v1 = (noiseEnable) ? noise.read(index) * noise.getLevel() / 12241 : 0;
+		float v2 = (dpcmEnable) ? dpcm.read(index) * dpcm.getLevel() / 22638 : 0;
 		float v = v0 + v1 + v2;
 		int value = (v != 0) ? (int) ((MASTER) / (100.0 + 1.0 / v)) : 0;
 		
@@ -99,7 +92,7 @@ public class Xgm2A07Mixer extends AbstractXgmMultiMixer {
 //				(3.0 * tri.buffer[idx] * tri.getLevel()
 //						+ 2.0 * noise.buffer[idx] * noise.getLevel()
 //						+ dpcm.buffer[idx] * dpcm.getLevel()) / 208.0);
-		return (intercept(value, time));
+		return (intercept(value, 1));
 	}
 	
 }

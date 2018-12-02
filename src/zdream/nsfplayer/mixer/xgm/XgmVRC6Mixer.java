@@ -68,30 +68,23 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		pulse1.checkCapacity(size, frame);
-		pulse2.checkCapacity(size, frame);
-		sawtooth.checkCapacity(size, frame);
-	}
-	
-	@Override
 	public void beforeRender() {
 		super.beforeRender();
-		pulse1.beforeSubmit();
-		pulse2.beforeSubmit();
-		sawtooth.beforeSubmit();
+		if (enable1)
+			pulse1.beforeSubmit();
+		if (enable2)
+			pulse2.beforeSubmit();
+		if (enableSaw)
+			sawtooth.beforeSubmit();
 	}
 
 	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
-		int idx = (fromIdx + toIdx) / 2;
-		
-		float sum = (enable1 ? pulse1.readValue(idx) * pulse1.getLevel() : 0)
-				+ (enable2 ? pulse2.readValue(idx) * pulse2.getLevel() : 0)
-				+ (enableSaw ? sawtooth.readValue(idx) * sawtooth.getLevel() : 0);
+	public int render(int index) {
+		float sum = (enable1 ? pulse1.read(index) * pulse1.getLevel() : 0)
+				+ (enable2 ? pulse2.read(index) * pulse2.getLevel() : 0)
+				+ (enableSaw ? sawtooth.read(index) * sawtooth.getLevel() : 0);
 		int value = (int) (sum * MASTER) >> 1;
-		value = intercept(value, time);
+		value = intercept(value, 1);
 		return value;
 	}
 

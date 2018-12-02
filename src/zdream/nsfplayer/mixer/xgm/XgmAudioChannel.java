@@ -120,6 +120,11 @@ public final class XgmAudioChannel extends AbstractXgmAudioChannel {
 		this.mix0(lastValue, maxTime);
 		this.lastTime = 0;
 	}
+	
+	@Override
+	protected float read(int index) {
+		return buffer[index];
+	}
 
 	@Override
 	protected void checkCapacity(int size, int frame) {

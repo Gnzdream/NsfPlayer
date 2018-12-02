@@ -62,35 +62,29 @@ public class XgmVRC7Mixer extends AbstractXgmMultiMixer {
 	}
 	
 	@Override
-	public void checkCapacity(int size, int frame) {
-		for (int i = 0; i < chs.length; i++) {
-			chs[i].checkCapacity(size, frame);
-		}
-	}
-
-	@Override
 	public void beforeRender() {
 		super.beforeRender();
-		for (int i = 0; i < chs.length; i++) {
-			chs[i].beforeSubmit();
+		for (int i = 0; i < enables.length; i++) {
+			if (enables[i])
+				chs[i].beforeSubmit();
 		}
 	}
 
 	@Override
-	public int render(int index, int fromIdx, int toIdx) {
-		int time = toIdx - fromIdx;
+	public int render(int index) {
 		float sum = 0;
 		
-		for (int i = 0; i < chs.length; i++) {
+		for (int i = 0; i < enables.length; i++) {
 			if (enables[i]) {
-				sum += (chs[i].buffer[index] * chs[i].getLevel());
+				XgmAudioChannel ch = chs[i];
+				sum += (ch.read(index) * ch.getLevel());
 			}
 		}
 		
 		final int MASTER = 205; // 0.8 * 256.0 = 204.8
 		int value = (int) ((sum * MASTER) / 16);
 		
-		return (intercept(value, time));
+		return (intercept(value, 1));
 	}
 
 }
