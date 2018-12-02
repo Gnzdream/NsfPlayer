@@ -1,7 +1,9 @@
 package zdream.nsfplayer.mixer.blip;
 
+import zdream.nsfplayer.core.IExpression;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
+import zdream.nsfplayer.mixer.NsfMixerSoundConvertor;
 
 /**
  * <p>Blip 的音频合成器, 原 FamiTracker 专用
@@ -90,65 +92,41 @@ public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 	 *   轨道类型
 	 */
 	private static void configMixChannel(byte type, BlipMixerChannel mixer) {
+		IExpression exp = NsfMixerSoundConvertor.getExpression(type);
+		mixer.setExpression(exp);
+		
 		switch (type) {
 		case CHANNEL_TYPE_PULSE:
-		{
-			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (95.88 * 400 / ((8128.0 / x) + 156.0)) : 0);
-		} break;
-		
 		case CHANNEL_TYPE_TRIANGLE:
-		{
-			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (46159.29 / (1 / (x / 8227.0) + 30.0)) : 0);
-		} break;
-		
 		case CHANNEL_TYPE_NOISE:
-		{
-			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (41543.36 / (1 / (x / 12241.0) + 30.0)) : 0);
-		} break;
-		
 		case CHANNEL_TYPE_DPCM:
-		{
-			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (33234.69 / (1 / (x / 22638.0) + 30.0)) : 0);
-		} break;
-		
 		case CHANNEL_TYPE_MMC5_PULSE:
 		case CHANNEL_TYPE_VRC6_PULSE:
 		case CHANNEL_TYPE_SAWTOOTH:
 		{
 			mixer.updateSetting(12, -500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (96 * 360 / ((8000.0 / x) + 180)) : 0);
 		} break;
 		
 		case CHANNEL_TYPE_FDS:
 		{
 			mixer.updateSetting(12, -3500);
-			mixer.setExpression((x) -> (x > 0) ? (int) (x / 1.9) : 0);
 		} break;
 		
 		case CHANNEL_TYPE_N163:
-		{
-			mixer.updateSetting(12, -800);
-			mixer.setExpression((x) -> (int) (x / 2.4)); // 数值可正可负
-		} break;
-		
 		case CHANNEL_TYPE_VRC7:
 		{
 			mixer.updateSetting(12, -800);
-			mixer.setExpression((x) -> (int) (x / 2.0)); // 数值可正可负
 		} break;
 		
 		case CHANNEL_TYPE_S5B:
 		{
 			mixer.updateSetting(12, -1200);
-			mixer.setExpression((x) -> (int) (x * 1.1708)); // 数值可正可负
 		} break;
 		
 		default:
-			break;
+		{
+			mixer.updateSetting(12, -1);
+		} break;
 		}
 		
 	}

@@ -32,7 +32,9 @@ public class BlipSynth {
 	 * <p>Set overall volume of waveform
 	 * @param v
 	 */
-	public void volume( double v ) { impl.volume_unit( v * (1.0 / (range < 0 ? -range : range)) ); }
+	public void volume(double v) {
+		impl.volume_unit(v * (1.0 / (range < 0 ? -range : range)));
+	}
 	
 	/**
 	 * <p>设置低通过滤器
