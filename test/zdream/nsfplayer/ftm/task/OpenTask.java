@@ -4,7 +4,7 @@ import static zdream.nsfplayer.ftm.task.OpenType.*;
 
 import java.io.IOException;
 
-import zdream.nsfplayer.ftm.FamiTrackerApplication;
+import zdream.nsfplayer.core.NsfPlayerApplication;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
@@ -64,13 +64,13 @@ public class OpenTask implements IFtmTask {
 		try {
 			switch (type) {
 			case FTM: {
-				FtmAudio audio = FamiTrackerApplication.app.open(filename);
+				FtmAudio audio = NsfPlayerApplication.app.open(filename);
 				env.setFtmAudio(audio);
 				env.getFamiTrackerRenderer().ready(audio);
 			} break;
 			
 			case TXT: {
-				FtmAudio audio = FamiTrackerApplication.app.openWithTxt(filename);
+				FtmAudio audio = NsfPlayerApplication.app.openWithTxt(filename);
 				env.setFtmAudio(audio);
 				env.getFamiTrackerRenderer().ready(audio);
 			} break;

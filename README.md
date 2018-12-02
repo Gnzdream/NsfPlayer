@@ -123,7 +123,7 @@ Step 1: Create ``FtmAudio`` instance encapsulates the data of the FTM file.
 
 ``` Java
 String path = "test\\assets\\test\\JtS Stage 3.ftm";
-FtmAudio audio = FamiTrackerApplication.app.open(path);
+FtmAudio audio = NsfPlayerApplication.app.open(path);
 ```
 
 其中 path 就是 FTM 文件的路径。这个工程在 ``test\assets\test\`` 下也内置了部分测试时使用的 FTM 文件，

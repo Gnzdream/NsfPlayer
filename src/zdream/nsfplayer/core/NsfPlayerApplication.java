@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm;
+package zdream.nsfplayer.core;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -6,30 +6,37 @@ import java.nio.charset.Charset;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.factory.FamiTrackerFormatException;
 import zdream.nsfplayer.ftm.factory.FtmAudioFactory;
+import zdream.nsfplayer.mixer.factory.NsfSoundMixerFactory;
 
 /**
- * 应用的实体. 用于打开 FamiTracker 的文件等操作
+ * <p>NsfPlayer 应用
+ * <p>替换原来的 FamiTrackerApplication
+ * </p>
  * 
  * @author Zdream
- * @date 2018-04-25
- * @since v0.1
+ * @since v0.3.0
  */
-public class FamiTrackerApplication {
+public class NsfPlayerApplication {
 	
-	public static final FamiTrackerApplication app;
+	public static final NsfPlayerApplication app;
 	
 	public static Charset defCharset;
 	
 	static {
 		defCharset = Charset.forName("UTF-8");
-		app = new FamiTrackerApplication();
+		app = new NsfPlayerApplication();
 	}
 	
-	public FamiTrackerApplication() {
-		factory = new FtmAudioFactory();
+	public NsfPlayerApplication() {
+		ftmFactory = new FtmAudioFactory();
+		mixerFactory = new NsfSoundMixerFactory();
 	}
 	
-	public final FtmAudioFactory factory;
+	/* **********
+	 *   FTM    *
+	 ********** */
+	
+	public final FtmAudioFactory ftmFactory;
 	
 	/**
 	 * 加载 FamiTracker (.ftm) 的文件, 生成 {@link FtmAudio} 实例
@@ -37,7 +44,7 @@ public class FamiTrackerApplication {
 	 *   文件路径
 	 */
 	public FtmAudio open(String filePath) throws IOException, FamiTrackerFormatException {
-		return factory.create(filePath);
+		return ftmFactory.create(filePath);
 	}
 	
 	/**
@@ -47,7 +54,17 @@ public class FamiTrackerApplication {
 	 * @since v0.2.5
 	 */
 	public FtmAudio openWithTxt(String filePath) throws IOException, FamiTrackerFormatException {
-		return factory.createFromTextPath(filePath);
+		return ftmFactory.createFromTextPath(filePath);
 	}
+	
+	/* **********
+	 *   NSF    *
+	 ********** */
+	
+	/* **********
+	 *  Mixer   *
+	 ********** */
+	
+	public final NsfSoundMixerFactory mixerFactory;
 	
 }
