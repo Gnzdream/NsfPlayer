@@ -134,7 +134,7 @@ public final class FamiTrackerExecutorHandler implements INsfChannelCode {
 	 *   对应轨道的发声器实例. 如果没有对应的轨道, 返回 null.
 	 */
 	public AbstractNsfSound getSound(byte channelCode) {
-		AbstractFtmChannel ch = runtime.channels.get(channelCode);
+		AbstractFtmChannel ch = getChannel(channelCode);
 		if (ch == null) {
 			return null;
 		}
