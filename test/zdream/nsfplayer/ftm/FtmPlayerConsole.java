@@ -13,6 +13,7 @@ import zdream.nsfplayer.ftm.cmd.ChannelHandler;
 import zdream.nsfplayer.ftm.cmd.ICommandHandler;
 import zdream.nsfplayer.ftm.cmd.PlayHandler;
 import zdream.nsfplayer.ftm.cmd.SongHandler;
+import zdream.nsfplayer.ftm.renderer.FamiTrackerConfig;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerRenderer;
 import zdream.nsfplayer.ftm.task.ChooseSongTask;
 import zdream.nsfplayer.ftm.task.IFtmTask;
@@ -20,8 +21,10 @@ import zdream.nsfplayer.ftm.task.OpenTask;
 import zdream.nsfplayer.ftm.task.OpenType;
 import zdream.nsfplayer.ftm.task.PauseTask;
 import zdream.nsfplayer.ftm.task.PlayTask;
+import zdream.nsfplayer.mixer.xgm.XgmMixerConfig;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.renderer.NsfRenderer;
+import zdream.nsfplayer.nsf.renderer.NsfRendererConfig;
 import zdream.utils.common.BytesPlayer;
 import zdream.utils.common.CodeSpliter;
 
@@ -57,8 +60,16 @@ public class FtmPlayerConsole {
 	Map<String, ICommandHandler> handlers = new HashMap<String, ICommandHandler>();
 
 	public FtmPlayerConsole() {
-		ftmRenderer = new FamiTrackerRenderer();
-		nsfRenderer = new NsfRenderer();
+		XgmMixerConfig c = new XgmMixerConfig();
+		c.channelType = XgmMixerConfig.TYPE_SINGER;
+		
+		FamiTrackerConfig config1 = new FamiTrackerConfig();
+		config1.mixerConfig = c;
+		ftmRenderer = new FamiTrackerRenderer(config1);
+		
+		NsfRendererConfig config2 = new NsfRendererConfig();
+		config2.mixerConfig = c;
+		nsfRenderer = new NsfRenderer(config2);
 		player = new BytesPlayer();
 		
 		attachHandler(new BaseHandler());

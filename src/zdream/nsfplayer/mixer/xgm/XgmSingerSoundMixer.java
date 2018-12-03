@@ -2,6 +2,7 @@ package zdream.nsfplayer.mixer.xgm;
 
 import java.util.ArrayList;
 
+import zdream.nsfplayer.ITrackMixer;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
@@ -21,12 +22,13 @@ import zdream.nsfplayer.mixer.interceptor.ISoundInterceptor;
  * @author Zdream
  * @since v0.3.0
  */
-public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel> {
+public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
+		implements ITrackMixer {
 	
 	public NsfCommonParameter param;
 	
 	public XgmSingerSoundMixer() {
-		setTrackCount(1);
+		
 	}
 	
 	/* **********
@@ -36,7 +38,7 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 	/**
 	 * 全局参数 : 声道数. 1 表示单声道, 2 表示立体声, 可以 3 或者更多.
 	 */
-	int trackCount = 1;
+	int trackCount;
 	
 	/**
 	 * @return
@@ -117,7 +119,7 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 	protected ArrayList<ISoundInterceptor>[] interceptors;
 	
 	/**
-	 * 缓存, 性能考虑
+	 * 缓存, 性能与并发考虑
 	 */
 	private ISoundInterceptor[][] interceptorArray;
 	
@@ -154,8 +156,8 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 	 */
 	int intercept(int value, int time, int track) {
 		int ret = value;
-		final int length = interceptorArray.length;
 		ISoundInterceptor[] array = interceptorArray[track];
+		final int length = array.length;
 		
 		for (int i = 0; i < length; i++) {
 			ISoundInterceptor interceptor = array[i];
@@ -213,9 +215,9 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 	public int finishBuffer() {
 		XgmSingleChannel[] chs = new XgmSingleChannel[attrs.size()];
 		int chCount = 0;
-		for (XgmSingleChannel ch : chs) {
-			if (ch != null) {
-				chs[chCount++] = ch;
+		for (ChannelAttr attr : attrs) {
+			if (attr != null) {
+				chs[chCount++] = attr.channel;
 			}
 		}
 		
@@ -223,10 +225,53 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 		
 		// 实际渲染工作
 		final int length = param.sampleInCurFrame;
+		if (samples.length == 1) {
+			handleMonoBuffer(chs, chCount, length);
+		} else {
+			handleMultiTrackBuffer(chs, chCount, length);
+		}
+		return length;
+	}
+	
+	/**
+	 * 处理单声道的情况
+	 * @param chs
+	 * @param chCount
+	 * @param length
+	 */
+	private void handleMonoBuffer(XgmSingleChannel[] chs, int chCount, int length) {
 		int v;
-		for (int track = 0; track < samples.length; track++) {
-			short[] ss = samples[track];
-			for (int i = 0; i < length; i++) {
+		short[] ss = samples[0];
+		for (int i = 0; i < length; i++) {
+			// 渲染一帧的流程
+			v = 0;
+			
+			for (int cidx = 0; cidx < chCount; cidx++) {
+				XgmSingleChannel ch = chs[cidx];
+				v += ch.render(i, 0);
+			}
+			v = intercept(v, 1, 0);
+			
+			if (v > Short.MAX_VALUE) {
+				v = Short.MAX_VALUE;
+			} else if (v < Short.MIN_VALUE) {
+				v = Short.MIN_VALUE;
+			}
+			ss[i] = (short) v;
+		}
+	}
+	
+	/**
+	 * 处理多声道的情况
+	 * @param chs
+	 * @param chCount
+	 * @param length
+	 */
+	private void handleMultiTrackBuffer(XgmSingleChannel[] chs, int chCount, int length) {
+		int v;
+		for (int i = 0; i < length; i++) {
+			for (int track = 0; track < samples.length; track++) {
+				short[] ss = samples[track];
 				// 渲染一帧的流程
 				v = 0;
 				
@@ -234,7 +279,7 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 					XgmSingleChannel ch = chs[cidx];
 					v += ch.render(i, track);
 				}
-				v = intercept(v, 1, track) >> 1;
+				v = intercept(v, 1, track);
 				
 				if (v > Short.MAX_VALUE) {
 					v = Short.MAX_VALUE;
@@ -244,12 +289,22 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 				ss[i] = (short) v;
 			}
 		}
-		return length;
 	}
 	
 	private void beforeRender(XgmSingleChannel[] chs, int chCount) {
 		for (int i = 0; i < chCount; i++) {
 			chs[i].beforeSubmit();
+		}
+		
+		// 以下是性能考虑
+		for (int i = 0; i < interceptors.length; i++) {
+			ISoundInterceptor[] array = interceptorArray[i];
+			ArrayList<ISoundInterceptor> list = interceptors[i];
+			
+			if (array == null || array.length != list.size()) {
+				interceptorArray[i] = array = new ISoundInterceptor[list.size()];
+			}
+			list.toArray(array);
 		}
 	}
 

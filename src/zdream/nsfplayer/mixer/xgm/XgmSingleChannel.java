@@ -82,7 +82,7 @@ public class XgmSingleChannel extends AbstractXgmAudioChannel {
 	 */
 	public int render(int index, int track) {
 		float lv = trackLevel[track];
-		float v = (lv == 0) ? 0 : read(index) * lv;
+		float v = (lv == 0) ? 0 : read(index) * lv * 12;
 		return intercept((int) v, 1, track);
 	}
 
@@ -165,8 +165,8 @@ public class XgmSingleChannel extends AbstractXgmAudioChannel {
 	 */
 	protected int intercept(int value, int time, int track) {
 		int ret = value;
-		final int length = interceptorArray.length;
 		ISoundInterceptor[] array = interceptorArray[track];
+		final int length = array.length;
 		
 		for (int i = 0; i < length; i++) {
 			ISoundInterceptor interceptor = array[i];
