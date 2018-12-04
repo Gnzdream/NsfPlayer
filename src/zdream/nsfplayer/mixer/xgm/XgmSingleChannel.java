@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import zdream.nsfplayer.core.IExpression;
 import zdream.nsfplayer.core.NsfCommonParameter;
+import zdream.nsfplayer.mixer.ITrackChannel;
 import zdream.nsfplayer.mixer.interceptor.Amplifier;
 import zdream.nsfplayer.mixer.interceptor.Filter;
 import zdream.nsfplayer.mixer.interceptor.ISoundInterceptor;
@@ -15,7 +16,7 @@ import zdream.nsfplayer.mixer.interceptor.ISoundInterceptor;
  * @author Zdream
  * @since v0.3.0
  */
-public class XgmSingleChannel extends AbstractXgmAudioChannel {
+public class XgmSingleChannel extends AbstractXgmAudioChannel implements ITrackChannel {
 	
 	/**
 	 * 起到暂存的作用. store.level 数据将被忽略.
@@ -116,15 +117,12 @@ public class XgmSingleChannel extends AbstractXgmAudioChannel {
 		}
 	}
 	
-	/**
-	 * 设置声道音量
-	 * @param level
-	 *   音量
-	 * @param track
-	 *   声道
-	 */
-	void setTrackLevel(float level, int track) {
+	public void setTrackLevel(float level, int track) {
 		trackLevel[track] = level;
+	}
+	
+	public float getTrackLevel(int track) {
+		return trackLevel[track];
 	}
 
 	/* **********

@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>拆分音频轨道.
- * <p>将一个输入源的数据拆分成多条路输出. 这个是多声道输出的解决方案
+ * <p>一入多出拆分音频轨道.
+ * <p>将一个输入源的数据拆分成多条路输出.
+ * 它与 {@link SplitTrackChannel} 组合是多声道输出的解决方案
  * </p>
  * 
+ * @see SplitTrackChannel
  * @author Zdream
  * @since v0.3.0
  */
@@ -69,6 +71,11 @@ public class SplitMixerChannel implements IMixerChannel {
 
 	@Override
 	public void setLevel(float level) {
+		if (level > 1) {
+			level = 1;
+		} else if (level < 0) {
+			level = 0;
+		}
 		this.masterLevel = level;
 	}
 
