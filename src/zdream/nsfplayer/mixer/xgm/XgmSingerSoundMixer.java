@@ -111,6 +111,9 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 	 * 音频合成 *
 	 ********** */
 	
+	/**
+	 * [声道][采样]
+	 */
 	short[][] samples;
 	
 	/**
@@ -311,16 +314,19 @@ public class XgmSingerSoundMixer extends AbstractNsfSoundMixer<XgmSingleChannel>
 	@Override
 	public int readBuffer(short[] buf, int offset, int length) {
 		int len = Math.min(length / trackCount, param.sampleInCurFrame);
-		int index = 0;
-		final int trackCount = this.trackCount;
 		
-		for (int i = 0; i < len; i++) {
-			for (int track = 0; track < trackCount; track++) {
-				buf[index++] = samples[track][i];
+		if (trackCount == 1) {
+			System.arraycopy(samples[0], 0, buf, offset, len);
+			return len;
+		} else {
+			int index = 0;
+			for (int i = 0; i < len; i++) {
+				for (int track = 0; track < trackCount; track++) {
+					buf[index++] = samples[track][i];
+				}
 			}
+			return len * trackCount;
 		}
-		
-		return len * trackCount;
 	}
 	
 	/**

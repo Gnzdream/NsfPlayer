@@ -22,11 +22,13 @@ public class XgmMixerHandler implements IMixerHandler {
 	
 	/**
 	 * 返回全局的混音拦截器组
+	 * @param track
+	 *   声道号
 	 * @return
 	 *   Xgm 混音器的全局拦截器组
 	 */
-	public List<ISoundInterceptor> getGlobalInterceptors() {
-		return mixer.interceptors;
+	public List<ISoundInterceptor> getGlobalInterceptors(int track) {
+		return mixer.interceptors[track];
 	}
 	
 	/**

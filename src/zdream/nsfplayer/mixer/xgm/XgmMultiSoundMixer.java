@@ -4,9 +4,10 @@ import static java.util.Objects.requireNonNull;
 import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
+import zdream.nsfplayer.ITrackMixer;
 import zdream.nsfplayer.core.NsfCommonParameter;
+import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
 import zdream.nsfplayer.mixer.IMixerHandler;
 import zdream.nsfplayer.mixer.interceptor.Amplifier;
@@ -57,17 +58,13 @@ import zdream.nsfplayer.mixer.interceptor.ISoundInterceptor;
  * @author Zdream
  * @since v0.2.1
  */
-public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioChannel> {
+public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioChannel>
+		implements ITrackMixer {
 	
 	public NsfCommonParameter param;
 
 	public XgmMultiSoundMixer() {
 		
-	}
-	
-	@Override
-	public void init() {
-		initInterceptors();
 	}
 
 	/**
@@ -83,6 +80,53 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	/* **********
 	 * 轨道参数 *
 	 ********** */
+	
+	/**
+	 * 全局参数 : 声道数. 1 表示单声道, 2 表示立体声, 可以 3 或者更多.
+	 */
+	int trackCount;
+	
+	/**
+	 * @return
+	 *   当前的声道数
+	 */
+	public int getTrackCount() {
+		return trackCount;
+	}
+	
+	/**
+	 * 声道数改变之后, 声道音量、拦截器组会重置, 前面的所有修改全部被丢弃.
+	 * @param trackCount
+	 *   声道数
+	 */
+	@SuppressWarnings("unchecked")
+	public void setTrackCount(int trackCount) {
+		if (trackCount <= 0) {
+			throw new NsfPlayerException("声道数: " + trackCount + " 为非法值");
+		}
+		
+		this.trackCount = trackCount;
+		
+		samples = new short[trackCount][];
+		
+		// 轨道
+//		int len = attrs.size();
+//		for (int i = 0; i < len; i++) {
+//			ChannelAttr attr = attrs.get(i);
+//			if (attr == null) {
+//				continue;
+//			}
+//			
+//			attr.channel.setTrackCount(trackCount, param);
+//		}
+		
+		// 拦截器组
+		interceptors = new ArrayList[trackCount];
+		for (int i = 0; i < trackCount; i++) {
+			interceptors[i] = initInterceptors(new ArrayList<>());
+		}
+		interceptorArray = new ISoundInterceptor[trackCount][];
+	}
 	
 	protected class XgmMultiChannelAttr extends ChannelAttr {
 		protected XgmMultiChannelAttr(byte code, AbstractXgmAudioChannel t) {
@@ -228,72 +272,71 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	@Override
 	public void reset() {
 		multiList.forEach(multi -> multi.reset());
-		interceptors.forEach(i -> i.reset());
+		for (ArrayList<ISoundInterceptor> list : interceptors) {
+			list.forEach(i -> i.reset());
+		}
 	}
 	
 	/* **********
 	 * 音频合成 *
 	 ********** */
 	
-	short[] samples;
+	/**
+	 * [声道][采样]
+	 */
+	short[][] samples;
 
 	/**
 	 * 拦截器组
 	 */
-	final ArrayList<ISoundInterceptor> interceptors = new ArrayList<>();
+	ArrayList<ISoundInterceptor>[] interceptors;
 	
 	/**
 	 * 缓存, 性能考虑
 	 */
-	private ISoundInterceptor[] interceptorArray;
+	private ISoundInterceptor[][] interceptorArray;
 	
-	private void initInterceptors() {
+	private ArrayList<ISoundInterceptor> initInterceptors(ArrayList<ISoundInterceptor> list) {
 		// 构造拦截器组
 		EchoUnit echo = new EchoUnit();
 		echo.setRate(param.sampleRate);
-		attachIntercept(echo); // 注意, 回音是这里产生的. 如果想去掉回音, 修改这里
+		list.add(echo); // 注意, 回音是这里产生的. 如果想去掉回音, 修改这里
 
 		DCFilter dcf = new DCFilter();
 		dcf.setRate(param.sampleRate);
 		dcf.setParam(270, 164);
-		attachIntercept(dcf);
+		list.add(dcf);
 
 		Filter f = new Filter();
 		f.setRate(param.sampleRate);
 		f.setParam(4700, 112);
-		attachIntercept(f);
+		list.add(f);
 
 		Compressor cmp = new Compressor();
 		cmp.setParam(1, 1, 1);
-		attachIntercept(cmp);
+		list.add(cmp);
+		
+		return list;
 	}
 	
 	/**
 	 * @param value
 	 * @param time
 	 *   过去的时钟周期数
+	 * @param track
+	 *   声道号
 	 * @return
 	 */
-	int intercept(int value, int time) {
+	int intercept(int value, int time, ISoundInterceptor[] array) {
 		int ret = value;
-		final int length = interceptorArray.length;
+		final int length = array.length;
 		for (int i = 0; i < length; i++) {
-			ISoundInterceptor interceptor = interceptorArray[i];
+			ISoundInterceptor interceptor = array[i];
 			if (interceptor.isEnable()) {
 				ret = interceptor.execute(ret, time);
 			}
 		}
 		return ret;
-	}
-	
-	/**
-	 * 添加音频数据的拦截器
-	 * @param interceptor
-	 */
-	public void attachIntercept(ISoundInterceptor interceptor) {
-		if (interceptor != null) {
-			interceptors.add(interceptor);
-		}
 	}
 	
 	@Override
@@ -318,11 +361,28 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	public int finishBuffer() {
 		beforeRender();
 		
-		// 实际渲染工作
 		final int length = param.sampleInCurFrame;
+		if (trackCount == 1) {
+			handleMonoBuffer(length);
+		} else {
+			handleMultiTrackBuffer(length);
+		}
+		
+		return length;
+	}
+	
+	/**
+	 * 处理单声道的情况
+	 * @param chs
+	 * @param chCount
+	 * @param length
+	 */
+	private void handleMonoBuffer(int length) {
 		int v;
+		short[] ss = samples[0];
+		ISoundInterceptor[] itcpts = this.interceptorArray[0];
+		
 		for (int i = 0; i < length; i++) {
-			
 			// 渲染一帧的流程
 			v = 0;
 			
@@ -331,17 +391,47 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 				AbstractXgmMultiMixer multi = multiArray[midx];
 				v += multi.render(i);
 			}
-			v = intercept(v, 1) >> 1;
+			v = intercept(v, 1, itcpts) >> 1;
 			
 			if (v > Short.MAX_VALUE) {
 				v = Short.MAX_VALUE;
 			} else if (v < Short.MIN_VALUE) {
 				v = Short.MIN_VALUE;
 			}
-			samples[i] = (short) v;
+			ss[i] = (short) v;
 		}
+	}
+	
+	/**
+	 * 处理多声道的情况
+	 * @param chs
+	 * @param chCount
+	 * @param length
+	 */
+	private void handleMultiTrackBuffer(int length) {
+		int v;
+		short[] ss;
+		final int mlen = multiArray.length;
 		
-		return length;
+		for (int i = 0; i < length; i++) {
+			for (int track = 0; track < trackCount; track++) {
+				ss = samples[track];
+				v = 0;
+				
+				for (int midx = 0; midx < mlen; midx++) {
+					AbstractXgmMultiMixer multi = multiArray[midx];
+					v += multi.render(i);
+				}
+				v = intercept(v, 1, this.interceptorArray[track]) >> 1;
+				
+				if (v > Short.MAX_VALUE) {
+					v = Short.MAX_VALUE;
+				} else if (v < Short.MIN_VALUE) {
+					v = Short.MIN_VALUE;
+				}
+				ss[i] = (short) v;
+			}
+		}
 	}
 	
 	private void beforeRender() {
@@ -352,10 +442,15 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 		}
 		
 		// 以下是性能考虑
-		if (interceptorArray == null || interceptorArray.length != interceptors.size()) {
-			interceptorArray = new ISoundInterceptor[interceptors.size()];
+		for (int i = 0; i < interceptors.length; i++) {
+			ISoundInterceptor[] array = interceptorArray[i];
+			ArrayList<ISoundInterceptor> list = interceptors[i];
+			
+			if (array == null || array.length != list.size()) {
+				interceptorArray[i] = array = new ISoundInterceptor[list.size()];
+			}
+			list.toArray(array);
 		}
-		interceptors.toArray(interceptorArray);
 		
 		if (multiArray == null) {
 			multiArray = new AbstractXgmMultiMixer[multiList.size()];
@@ -366,12 +461,19 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	@Override
 	public int readBuffer(short[] buf, int offset, int length) {
 		int len = Math.min(length, param.sampleInCurFrame);
-		System.arraycopy(samples, 0, buf, offset, len);
 		
-		// 重置 samples
-		Arrays.fill(samples, (short) 0);
-		
-		return len;
+		if (trackCount == 1) {
+			System.arraycopy(samples[0], 0, buf, offset, len);
+			return len;
+		} else {
+			int index = 0;
+			for (int i = 0; i < len; i++) {
+				for (int track = 0; track < trackCount; track++) {
+					buf[index++] = samples[track][i];
+				}
+			}
+			return len * trackCount;
+		}
 	}
 	
 	/**
@@ -380,14 +482,22 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	 * 创建数组需要知道 param.sampleInCurFrame 的值
 	 */
 	private void allocateSampleArray() {
-		if (this.samples != null) {
-			if (this.samples.length < param.sampleInCurFrame) {
-				this.samples = new short[param.sampleInCurFrame + 16];
+		if (this.samples[0] != null) {
+			int oldSize = this.samples[0].length;
+			
+			if (oldSize < param.sampleInCurFrame || oldSize - param.sampleInCurFrame > 32) {
+				int newSize = param.sampleInCurFrame + 16;
+				for (int i = 0; i < samples.length; i++) {
+					samples[i] = new short[newSize];
+				}
 			}
 			return;
 		}
 		
-		this.samples = new short[param.sampleInCurFrame + 16];
+		int newSize = param.sampleInCurFrame + 16;
+		for (int i = 0; i < samples.length; i++) {
+			samples[i] = new short[newSize];
+		}
 	}
 	
 	/* **********

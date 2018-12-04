@@ -40,6 +40,7 @@ public class NsfSoundMixerFactory {
 			case XgmMixerConfig.TYPE_MULTI: default: {
 				XgmMultiSoundMixer mixer = new XgmMultiSoundMixer();
 				mixer.param = param;
+				mixer.setTrackCount(1);
 				mixer.setConfig((XgmMixerConfig) c);
 				m = mixer;
 			} break;
