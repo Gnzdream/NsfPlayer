@@ -2,12 +2,8 @@ package zdream.nsfplayer.ftm.executor;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import zdream.nsfplayer.core.AbstractNsfExecutor;
@@ -15,7 +11,6 @@ import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
-import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
 import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
@@ -195,8 +190,6 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		updateChannels();
 
 		runtime.fetcher.updateState();
-		
-		log(); // TODO 以后用 hook 代替
 	}
 
 	/**
@@ -413,62 +406,4 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		runtime.elners.clear();
 	}
 	
-	/* **********
-	 * 测试方法 *
-	 ********** */
-	
-	@Deprecated
-	public int enableLog = 0;
-	
-	private void log() {
-		switch (enableLog) {
-		case 1:
-			logEffect();
-			break;
-		case 2:
-			logVolume();
-			break;
-
-		default:
-			break;
-		}
-	}
-	
-	private void logEffect() {
-		StringBuilder b = new StringBuilder(128);
-		b.append(String.format("%02d:%03d", this.getCurrentSection(), this.getCurrentRow()));
-		for (Iterator<Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>>> it = runtime.effects.entrySet().iterator(); it.hasNext();) {
-			Map.Entry<Byte, Map<FtmEffectType, IFtmEffect>> entry = it.next();
-			if (entry.getValue().isEmpty()) {
-				continue;
-			}
-			
-			b.append(' ').append(Integer.toHexString(entry.getKey())).append('=');
-			b.append(entry.getValue().values());
-		}
-		
-		if (!runtime.geffect.isEmpty()) {
-			b.append(' ').append("G").append('=').append(runtime.geffect.values());
-		}
-		System.out.println(b);
-	}
-	
-	private void logVolume() {
-		final StringBuilder b = new StringBuilder(64);
-		b.append(String.format("%02d:%03d ", this.getCurrentSection(), this.getCurrentRow()));
-		
-		List<Byte> bs = new ArrayList<>(runtime.effects.keySet());
-		bs.sort(null);
-		bs.forEach((channelCode) -> {
-			AbstractFtmChannel ch = runtime.channels.get(channelCode);
-			int v = ch.getCurrentVolume();
-			if (!ch.isPlaying()) {
-				v = 0;
-			}
-			b.append(String.format("%3d|", v));
-		});
-		
-		System.out.println(b);
-	}
-
 }
