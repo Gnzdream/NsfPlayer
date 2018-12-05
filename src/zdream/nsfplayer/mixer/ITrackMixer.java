@@ -1,6 +1,4 @@
-package zdream.nsfplayer;
-
-import zdream.nsfplayer.mixer.ISoundMixer;
+package zdream.nsfplayer.mixer;
 
 /**
  * <p>多声道的音频合成器

@@ -253,7 +253,6 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 		rate.doConvert();
 
 		executor.tick();
-		triggerSounds();
 		
 		return ret;
 	}

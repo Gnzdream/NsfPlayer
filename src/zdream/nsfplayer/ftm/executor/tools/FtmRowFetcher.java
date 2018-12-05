@@ -1,7 +1,8 @@
-package zdream.nsfplayer.ftm.executor;
+package zdream.nsfplayer.ftm.executor.tools;
 
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
 import zdream.nsfplayer.ftm.format.FtmNote;
 import zdream.nsfplayer.ftm.format.FtmTrack;
 

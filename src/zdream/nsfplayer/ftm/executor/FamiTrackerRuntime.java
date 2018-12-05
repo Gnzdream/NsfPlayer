@@ -15,6 +15,7 @@ import zdream.nsfplayer.ftm.executor.effect.FtmEffectType;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
 import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
+import zdream.nsfplayer.ftm.executor.tools.FtmRowFetcher;
 import zdream.nsfplayer.ftm.format.FtmNote;
 
 /**

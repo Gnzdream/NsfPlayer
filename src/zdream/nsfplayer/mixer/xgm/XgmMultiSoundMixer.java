@@ -5,11 +5,11 @@ import static zdream.nsfplayer.core.NsfChannelCode.chipOfChannel;
 
 import java.util.ArrayList;
 
-import zdream.nsfplayer.ITrackMixer;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
 import zdream.nsfplayer.mixer.IMixerHandler;
+import zdream.nsfplayer.mixer.ITrackMixer;
 import zdream.nsfplayer.mixer.interceptor.Amplifier;
 import zdream.nsfplayer.mixer.interceptor.Compressor;
 import zdream.nsfplayer.mixer.interceptor.DCFilter;

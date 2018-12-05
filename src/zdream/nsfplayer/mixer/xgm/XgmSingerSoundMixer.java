@@ -2,10 +2,10 @@ package zdream.nsfplayer.mixer.xgm;
 
 import java.util.ArrayList;
 
-import zdream.nsfplayer.ITrackMixer;
 import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.mixer.AbstractNsfSoundMixer;
+import zdream.nsfplayer.mixer.ITrackMixer;
 import zdream.nsfplayer.mixer.NsfMixerSoundConvertor;
 import zdream.nsfplayer.mixer.interceptor.Compressor;
 import zdream.nsfplayer.mixer.interceptor.DCFilter;

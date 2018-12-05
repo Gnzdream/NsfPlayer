@@ -191,6 +191,18 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 
 		runtime.fetcher.updateState();
 	}
+	
+	/**
+	 * <p>阻塞执行一帧.
+	 * <p>在这一帧中, 所有前面触发的效果继续执行,
+	 * 但是所有跳行、播放位置改变将不会执行, 关于时间的计算暂停.
+	 * </p>
+	 * @since v0.3.1
+	 */
+	public void tickBlock() {
+		updateChannels();
+		runtime.fetcher.updateState();
+	}
 
 	/**
 	 * <p>让每个 channel 进行播放操作. 但是这个过程只会将数据写入发声器, 但不会让发声器工作.
@@ -279,7 +291,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	/**
 	 * 询问当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
 	 * @return
-	 *   true, 如果当前行已经播放完毕
+	 *   true, 如果当前行已经播放完毕. 下一帧将进行跳行工作
 	 */
 	public boolean currentRowRunOut() {
 		return runtime.fetcher.needRowUpdate();
