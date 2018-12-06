@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.renderer;
 
 import static java.util.Objects.requireNonNull;
+import static zdream.nsfplayer.core.NsfStatic.BASE_FREQ_NTSC;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,11 +14,14 @@ import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfPlayerApplication;
 import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.core.NsfRateConverter;
+import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
+import zdream.nsfplayer.mixer.EmptyMixerChannel;
 import zdream.nsfplayer.mixer.IMixerConfig;
 import zdream.nsfplayer.mixer.ISoundMixer;
 import zdream.nsfplayer.mixer.xgm.XgmMixerConfig;
+import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**
  * <p>FamiTracker 同步音频渲染器.
@@ -32,7 +36,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		implements INsfChannelCode {
 	
 	/**
-	 * 速率转换器
+	 * 速率转换器, 也给主执行器使用
 	 */
 	private final NsfRateConverter rate;
 	
@@ -43,6 +47,9 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	
 	private FamiTrackerConfig config;
 	
+	/**
+	 * 参数, 也给主执行器使用
+	 */
 	private final NsfCommonParameter param = new NsfCommonParameter();
 	
 	public FamiTrackerSyncRenderer() {
@@ -58,6 +65,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// 采样率数据只有渲染构建需要
 		param.sampleRate = this.config.sampleRate;
+		param.frameRate = this.frameRate;
+		param.freqPerSec = NsfStatic.BASE_FREQ_NTSC;
 		
 		// 音量参数只有渲染构建需要
 		param.levels.copyFrom(this.config.channelLevels);
@@ -74,6 +83,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		}
 		
 		this.mixer = NsfPlayerApplication.app.mixerFactory.create(mixerConfig, param);
+		this.mixer.reset();
 	}
 	
 	/* **********
@@ -91,6 +101,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 */
 	public void ready(FtmAudio audio) {
 		updateAudio(masterExecutorId, audio, 0, 0, 0, true);
+		eParams[masterExecutorId].enable = true;
 	}
 	
 	/**
@@ -106,6 +117,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 */
 	public void ready(FtmAudio audio, int track) {
 		updateAudio(masterExecutorId, audio, track, 0, 0, true);
+		eParams[masterExecutorId].enable = true;
 	}
 	
 	/**
@@ -126,6 +138,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			int track,
 			int section) {
 		updateAudio(masterExecutorId, audio, track, section, 0, true);
+		eParams[masterExecutorId].enable = true;
 	}
 	
 	/**
@@ -149,6 +162,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			int section,
 			int row) {
 		updateAudio(masterExecutorId, audio, track, section, row, true);
+		eParams[masterExecutorId].enable = true;
 	}
 	
 	/**
@@ -207,34 +221,139 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		updateAudio(masterExecutorId, track, section, row);
 	}
 
-	@Override
+	/**
+	 * 当所有渲染器均停止, 标志着曲目渲染完成.
+	 */
 	public boolean isFinished() {
-		// TODO Auto-generated method stub
-		return false;
+		for (ExecutorParam ep : eParams) {
+			if (ep == null || !ep.enable) {
+				continue;
+			}
+			if (!ep.stop) {
+				return false;
+			}
+		}
+		return true;
 	}
+	
+	/* **********
+	 * 渲染部分 *
+	 ********** */
 
-	@Override
+	/**
+	 * <p>所有未停止的执行器渲染一帧.
+	 * 已经停止的执行器将进入停止状态, 直到用户重置、唤醒或者删除.
+	 * </p>
+	 * @return
+	 *   本函数已渲染的采样数 (按单声道计算)
+	 */
 	protected int renderFrame() {
-		// TODO Auto-generated method stub
-		return 0;
+		int ret = countNextFrame();
+		param.sampleInCurFrame = ret;
+		rate.doConvert();
+		mixer.readyBuffer();
+		
+		handleDelay();
+		tickExeutors();
+		triggerSounds();
+		
+		// 从 mixer 中读取数据
+		readMixer();
+		
+		return ret;
 	}
 
 	@Override
 	protected int skipFrame() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void setSpeed(float speed) {
-		// TODO Auto-generated method stub
+		int ret = countNextFrame();
+		param.sampleInCurFrame = ret;
+		rate.doConvert();
 		
+		tickExeutors();
+		
+		return ret;
 	}
-
-	@Override
-	public float getSpeed() {
-		// TODO Auto-generated method stub
-		return 0;
+	
+	/**
+	 * 让所有未停止的执行器执行一帧, 并判断是否停止, 如果是, 更新停止状态
+	 */
+	private void tickExeutors() {
+		for (ExecutorParam ep : eParams) {
+			if (ep == null || !ep.enable || ep.stop) {
+				continue;
+			}
+			ep.executor.tick();
+			if (ep.executor.isFinished()) {
+				ep.stop = true;
+			}
+		}
+	}
+	
+	/**
+	 * <p>处理延迟写. 后一个轨道比前一个轨道晚 100 时钟写入数据.
+	 * <p>由于每个轨道的触发时间不同可以有效避免轨道之间共振情况的发生,
+	 * 因此这里需要采用轨道先后写入数据的方式.
+	 * </p>
+	 * @see #triggerSounds()
+	 */
+	private void handleDelay() {
+		int delay = 0;
+		final int clock = param.freqPerFrame;
+		for (int i = 0; i < this.cParams.length; i++) {
+			ChannelParam cp = cParams[i];
+			if (cp == null) {
+				continue;
+			}
+			
+			ExecutorParam ep = eParams[cp.executorId];
+			if (!ep.enable || ep.stop) {
+				continue;
+			}
+			
+			byte channelCode = cp.channelCode;
+			AbstractNsfSound s = ep.executor.getSound(channelCode);
+			s.process(cp.delay = delay);
+			
+			delay += 100;
+			if (delay >= clock) {
+				delay = clock - 1;
+			}
+		}
+	}
+	
+	/**
+	 * <p>让发声器逐个进行工作.
+	 * <p>工作的时钟数, 为该帧需要工作的时钟数, 减去延迟时钟数.
+	 * </p>
+	 * @see #handleDelay()
+	 */
+	private void triggerSounds() {
+		final int clock = param.freqPerFrame;
+		for (int i = 0; i < this.cParams.length; i++) {
+			ChannelParam cp = cParams[i];
+			if (cp == null) {
+				continue;
+			}
+			
+			ExecutorParam ep = eParams[cp.executorId];
+			if (!ep.enable || ep.stop) {
+				continue;
+			}
+			
+			byte channelCode = cp.channelCode;
+			AbstractNsfSound s = ep.executor.getSound(channelCode);
+			s.process(clock - cp.delay);
+			s.endFrame();
+			cp.delay = 0;
+		}
+	}
+	
+	/**
+	 * 从 Mixer 中读取音频数据
+	 */
+	private void readMixer() {
+		mixer.finishBuffer();
+		mixer.readBuffer(data, 0, data.length);
 	}
 	
 	/* **********
@@ -288,6 +407,10 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		 * 混音器对应的轨道号
 		 */
 		int mixerId = -1;
+		/**
+		 * 轨道延迟. 单位 clock
+		 */
+		int delay;
 		
 		public ChannelParam(int id) {
 			this.id = id;
@@ -316,6 +439,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	
 	/**
 	 * <p>为一个新的 audio 分配一个新的执行器.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
 	 * <p>如果主执行器没有启动, 优先分配给主执行器.
 	 * </p>
 	 * @param audio
@@ -323,20 +447,80 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 * @return
 	 */
 	public int allocate(FtmAudio audio) {
-		// 主执行器
-		ExecutorParam p = eParams[masterExecutorId];
-		if (!p.enable) {
-			updateAudio(masterExecutorId, audio, 0, 0, 0, true);
-			return masterExecutorId;
-		}
-		
-		// TODO 新的执行器
-		
-		return -1;
+		return allocate(audio, 0, 0, 0);
 	}
 	
 	/**
-	 * <p>为一个新的 audio 分配一个新的执行器, 并指定哪些轨道需要渲染. 其它的所有轨道将设置为不渲染
+	 * <p>为一个新的 audio 分配一个新的执行器, 指定该开始渲染的曲目.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
+	 * <p>如果主执行器没有启动, 优先分配给主执行器.
+	 * </p>
+	 * @param audio
+	 *   音频数据
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @return
+	 */
+	public int allocate(FtmAudio audio, int track) {
+		return allocate(audio, track, 0, 0);
+	}
+	
+	/**
+	 * <p>为一个新的 audio 分配一个新的执行器, 指定该开始渲染的曲目以及初始段.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
+	 * <p>如果主执行器没有启动, 优先分配给主执行器.
+	 * </p>
+	 * @param audio
+	 *   音频数据
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @return
+	 */
+	public int allocate(FtmAudio audio, int track, int section) {
+		return allocate(audio, track, section, 0);
+	}
+	
+	/**
+	 * <p>为一个新的 audio 分配一个新的执行器, 指定该开始渲染的曲目以及初始行.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
+	 * <p>如果主执行器没有启动, 优先分配给主执行器.
+	 * </p>
+	 * @param audio
+	 *   音频数据
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
+	 * @return
+	 */
+	public int allocate(FtmAudio audio, int track, int section, int row) {
+		// 主执行器
+		ExecutorParam p = eParams[masterExecutorId];
+		if (!p.enable) {
+			updateAudio(masterExecutorId, audio, track, section, row, true);
+			p.enable = true;
+			return masterExecutorId;
+		}
+		
+		// 新的执行器
+		p = createExecutorParam();
+		p.audio = audio;
+		updateAudio(p.id, audio, track, section, row, true);
+		
+		// 锁定频率
+		p.executor.lockFrameRate(frameRate);
+		// 重置入采样计数器
+		
+		return p.id;
+	}
+	
+	/**
+	 * <p>为一个新的 audio 分配一个新的执行器, 并指定哪些轨道需要渲染. 其它的所有轨道将设置为不渲染.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
 	 * <p>如果主执行器没有启动, 优先分配给主执行器.
 	 * </p>
 	 * @param audio
@@ -346,34 +530,93 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 * @return
 	 */
 	public int allocate(FtmAudio audio, byte... channelCodes) {
+		return allocate(audio, 0, 0, 0, channelCodes);
+	}
+	
+	/**
+	 * <p>为一个新的 audio 分配一个新的执行器, 指定该开始渲染的曲目.
+	 * 此外, 指定哪些轨道需要渲染, 其它的所有轨道将设置为不渲染.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
+	 * <p>如果主执行器没有启动, 优先分配给主执行器.
+	 * </p>
+	 * @param audio
+	 *   音频数据
+	 * @param channelCodes
+	 *   所有需要渲染的 NSF 轨道号
+	 * @return
+	 */
+	public int allocate(FtmAudio audio, int track, byte... channelCodes) {
+		return allocate(audio, track, 0, 0, channelCodes);
+	}
+	
+	/**
+	 * <p>为一个新的 audio 分配一个新的执行器, 指定该开始渲染的曲目以及初始段.
+	 * 此外, 指定哪些轨道需要渲染, 其它的所有轨道将设置为不渲染.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
+	 * <p>如果主执行器没有启动, 优先分配给主执行器.
+	 * </p>
+	 * @param audio
+	 *   音频数据
+	 * @param channelCodes
+	 *   所有需要渲染的 NSF 轨道号
+	 * @return
+	 */
+	public int allocate(FtmAudio audio, int track, int section, byte... channelCodes) {
+		return allocate(audio, track, section, 0, channelCodes);
+	}
+	
+	/**
+	 * <p>为一个新的 audio 分配一个新的执行器, 指定该开始渲染的曲目以及初始行.
+	 * 此外, 指定哪些轨道需要渲染, 其它的所有轨道将设置为不渲染.
+	 * 原有正在渲染的曲目不终止, 不暂停, 与该新的执行器同时执行.
+	 * <p>如果主执行器没有启动, 优先分配给主执行器.
+	 * </p>
+	 * @param audio
+	 *   音频数据
+	 * @param channelCodes
+	 *   所有需要渲染的 NSF 轨道号
+	 * @return
+	 */
+	public int allocate(
+			FtmAudio audio,
+			int track,
+			int section,
+			int row,
+			byte... channelCodes) {
 		// 主执行器
 		ExecutorParam p = eParams[masterExecutorId];
 		if (!p.enable) {
-			updateAudio(masterExecutorId, audio, 0, 0, 0, channelCodes);
+			updateAudio(masterExecutorId, audio, track, section, row, channelCodes);
+			p.enable = true;
 			return masterExecutorId;
 		}
 		
-		// TODO 新的执行器
+		// 新的执行器
+		p = createExecutorParam();
+		p.audio = audio;
+		updateAudio(p.id, audio, track, section, row, channelCodes);
 		
-		return -1;
+		// 需要锁定频率
+		p.executor.lockFrameRate(frameRate);
 		
+		return p.id;
 	}
 	
 	/**
 	 * <p>为一个已经在工作的执行器, 指定哪个轨道需要补充渲染.
-	 * 如果这个轨道已经在渲染了, 返回该轨道的轨道标识号.
-	 * 否则创建一个新的轨道, 返回新轨道的轨道标识号
+	 * 如果这个轨道已经在渲染了, 返回 false.
+	 * 否则创建一个新的轨道, 返回 true
 	 * </p>
 	 * @param exeId
 	 *   执行器标识号
 	 * @param channelCode
 	 *   NSF 的轨道号
 	 * @return
-	 *   轨道标识号
+	 *   是否产生新的轨道. true 表示产生了新的轨道, false 表示原来该轨道已经存在
 	 * @throws NsfPlayerException
 	 *   当不存在 exeId 对应的执行器时
 	 */
-	public int allocate(int exeId, byte channelCode) {
+	public boolean allocate(int exeId, byte channelCode) {
 		checkExecutorId(exeId);
 		
 		// 查询部分
@@ -382,7 +625,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 				continue;
 			}
 			if (cp.executorId == exeId && cp.channelCode == channelCode) {
-				return cp.id;
+				return false;
 			}
 		}
 		
@@ -390,9 +633,9 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		ChannelParam cp = createChannelParam(1)[0];
 		cp.executorId = exeId;
 		cp.channelCode = channelCode;
-		mixerChannelConnect0(cp.id);
+		mixerChannelConnect(cp.id);
 		
-		return cp.id;
+		return true;
 	}
 	
 	/**
@@ -418,8 +661,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 				continue;
 			}
 			if (cp.executorId == exeId && cp.channelCode == channelCode) {
-				mixerChannelDisconnect0(cp.id);
-				freeChannel0(cp.id);
+				mixerChannelDisconnect(cp.id);
+				removeChannelParam(cp.id);
 				return true;
 			}
 		}
@@ -438,8 +681,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		checkChannelId(channelId);
 		
 		ChannelParam cp = cParams[channelId];
-		mixerChannelDisconnect0(cp.id);
-		freeChannel0(cp.id);
+		mixerChannelDisconnect(cp.id);
+		removeChannelParam(cp.id);
 	}
 	
 	/**
@@ -455,12 +698,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// TODO 其它规则如果涉及到它的, 要进行更改
 		
-		if (exeId == masterExecutorId) {
-			this.eParams[masterExecutorId].enable = false;
-			this.eParams[masterExecutorId].audio = null;
-		} else {
-			// TODO 删除执行器
-		}
+		// 删除执行器
+		removeExecutorParam(exeId);
 	}
 	
 	/**
@@ -511,7 +750,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	}
 	
 	/**
-	 * <p>为指定的执行器更新播放音频位置, 从指定位置开始播放,
+	 * <p>为指定的执行器更新播放音频位置, 从指定曲目开始播放,
 	 * 且不修改已有的轨道配置
 	 * <p>第一次播放时需要指定 Ftm 音频数据.
 	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
@@ -527,15 +766,58 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 * @throws NullPointerException
 	 *   当先前没有指定音频数据时
 	 */
+	public void updateAudio(int exeId, int track) {
+		ExecutorParam ep = this.eParams[exeId];
+		ep.executor.ready(track);
+	}
+	
+	/**
+	 * <p>为指定的执行器更新播放音频位置, 从指定段开始播放,
+	 * 且不修改已有的轨道配置
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当先前没有指定音频数据时
+	 */
+	public void updateAudio(
+			int exeId,
+			int track,
+			int section) {
+		ExecutorParam ep = this.eParams[exeId];
+		ep.executor.ready(track, section);
+	}
+	
+	/**
+	 * <p>为指定的执行器更新播放音频位置, 从指定位置开始播放,
+	 * 且不修改已有的轨道配置
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当先前没有指定音频数据时
+	 */
 	public void updateAudio(
 			int exeId,
 			int track,
 			int section,
 			int row) {
 		ExecutorParam ep = this.eParams[exeId];
-		ep.executor.ready(track, section);
-		
-		resetMixer();
+		ep.executor.ready(track, section, row);
 	}
 	
 	/**
@@ -548,7 +830,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   曲目号, 从 0 开始
 	 * @param section
 	 *   段号, 从 0 开始
-	 * @param track
+	 * @param row
 	 *   行号, 从 0 开始
 	 * @param remapperChannel
 	 *   是否需要重新分配轨道. 如果重新分配轨道, 就按照 audio 所需要的轨道进行重新分配
@@ -570,13 +852,13 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		ChannelParam[] cps = channelsOfExecutor(exeId);
 		// 断开它们与 mixer 的连接
 		for (ChannelParam cp : cps) {
-			mixerChannelDisconnect0(cp.id);
+			mixerChannelDisconnect(cp.id);
 		}
 		
 		if (remapperChannel) {
 			// 回收它们
 			for (ChannelParam cp : cps) {
-				freeChannel0(cp.id);
+				removeChannelParam(cp.id);
 			}
 
 			ep.executor.ready(audio, track, section);
@@ -599,7 +881,13 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// 重建它们与 mixer 的连接
 		for (ChannelParam cp : cps) {
-			mixerChannelConnect0(cp.id);
+			mixerChannelConnect(cp.id);
+		}
+		
+		// 帧率
+		if (exeId == masterExecutorId) {
+			this.frameRate = ep.executor.getFrameRate();
+			onFrameRateUpdated();
 		}
 	}
 	
@@ -613,7 +901,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   曲目号, 从 0 开始
 	 * @param section
 	 *   段号, 从 0 开始
-	 * @param track
+	 * @param row
 	 *   行号, 从 0 开始
 	 * @param channelCodes
 	 *   NSF 轨道号, 表示哪些轨道需要重新渲染
@@ -635,12 +923,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		ChannelParam[] cps = channelsOfExecutor(exeId);
 		// 断开它们与 mixer 的连接
 		for (ChannelParam cp : cps) {
-			mixerChannelDisconnect0(cp.id);
+			mixerChannelDisconnect(cp.id);
 		}
 		
 		// 回收它们
 		for (ChannelParam cp : cps) {
-			freeChannel0(cp.id);
+			removeChannelParam(cp.id);
 		}
 
 		ep.executor.ready(audio, track, section);
@@ -662,9 +950,14 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// 重建它们与 mixer 的连接
 		for (ChannelParam cp : cps) {
-			mixerChannelConnect0(cp.id);
+			mixerChannelConnect(cp.id);
 		}
 		
+		// 帧率
+		if (exeId == masterExecutorId) {
+			this.frameRate = ep.executor.getFrameRate();
+			onFrameRateUpdated();
+		}
 	}
 	
 	private void checkExecutorId(int exeId) {
@@ -701,6 +994,67 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	}
 	
 	/**
+	 * 创建一个新的执行参数类
+	 * @return
+	 *   执行参数类实体
+	 */
+	private ExecutorParam createExecutorParam() {
+		int i;
+		for (i = 0; i < eParams.length; i++) {
+			ExecutorParam ep = eParams[i];
+			if (ep == null) {
+				ep = eParams[i] = new ExecutorParam(i);
+				ep.enable = true;
+				ep.executor = new FamiTrackerExecutor();
+				return ep;
+			}
+		}
+		
+		eParams = Arrays.copyOf(eParams, i + 1);
+		ExecutorParam ep = eParams[i] = new ExecutorParam(i);
+		ep.enable = true;
+		ep.executor = new FamiTrackerExecutor();
+		return ep;
+	}
+	
+	/**
+	 * <p>删除一个已有的执行参数类, 以及它下属的所有相关轨道.
+	 * <p>如果是主执行器, 仅清空轨道, 将执行器置为【未使用】状态, 而不会删除.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 */
+	private void removeExecutorParam(int exeId) {
+		// 清空轨道
+		for (ChannelParam cp : cParams) {
+			if (cp.executorId == exeId) {
+				mixerChannelDisconnect(cp.id);
+				this.removeChannelParam(cp.id);
+			}
+		}
+		
+		// 处理执行参数类
+		if (exeId == masterExecutorId) {
+			this.eParams[masterExecutorId].enable = false;
+			this.eParams[masterExecutorId].audio = null;
+		} else {
+			this.eParams[exeId] = null;
+			if (exeId + 1 == eParams.length) {
+				// cParams 数组大小需要改变
+				int newLen = 0;
+				for (int i = exeId - 1; i >= 0; i--) {
+					if (eParams[i] != null) {
+						newLen = i + 1;
+						break;
+					}
+				}
+				
+				eParams = Arrays.copyOf(eParams, newLen);
+			}
+		}
+	}
+	
+	/**
 	 * 分配轨道参数类
 	 * @param count
 	 *   个数, 大于0. 也是返回的 ChannelParam 数组的长度
@@ -731,7 +1085,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		}
 		
 		// 重新为 cParams 分配数组大小
-		int maxLen = idxs[count - 1];
+		int maxLen = idxs[count - 1] + 1;
 		if (maxLen > len) {
 			cParams = Arrays.copyOf(cParams, maxLen);
 		}
@@ -749,31 +1103,37 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 * 删除 mixer 的连接
 	 * @param channelId
 	 */
-	private void mixerChannelDisconnect0(int channelId) {
+	private void mixerChannelDisconnect(int channelId) {
 		ChannelParam cp = this.cParams[channelId];
-		// TODO 回收 mixer 的轨道
 		
+		// 回收 mixer 的轨道
+		mixer.detach(cp.mixerId);
 		cp.mixerId = -1;
+		
+		ExecutorParam ep = eParams[cp.executorId];
+		ep.executor.getSound(cp.channelCode).setOut(EmptyMixerChannel.INSTANCE);
 	}
 	
 	/**
 	 * 创建 mixer 的连接
 	 * @param channelId
 	 */
-	private void mixerChannelConnect0(int channelId) {
+	private void mixerChannelConnect(int channelId) {
 		ChannelParam cp = this.cParams[channelId];
 		
-		// TODO 创建 mixer 的轨道
+		// 创建 mixer 的轨道
+		int mixerId = mixer.allocateChannel(cp.channelCode);
+		cp.mixerId = mixerId;
 		
-		// 修改 cp.mixerId
-		cp.mixerId = -1;
+		ExecutorParam ep = eParams[cp.executorId];
+		ep.executor.getSound(cp.channelCode).setOut(mixer.getMixerChannel(mixerId));
 	}
 	
 	/**
 	 * 回收轨道 id 的 ChannelParam
 	 * @param channelId
 	 */
-	private void freeChannel0(int channelId) {
+	private void removeChannelParam(int channelId) {
 		this.cParams[channelId] = null;
 		
 		if (channelId + 1 == cParams.length) {
@@ -795,10 +1155,53 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 ********** */
 	
 	/**
-	 * 重置 Mixer
+	 * <p>当帧率发生变化的时候调用.
+	 * <p>以下事件产生时, 帧率会发生变化:
+	 * 当主渲染器更换音频时.
+	 * <p>该方法工作内容是, 所有非主执行器将强制锁定该帧率、重置帧率和采样的相关计算
+	 * </p>
 	 */
-	private void resetMixer() {
-		mixer.reset();
+	private void onFrameRateUpdated() {
+		for (ExecutorParam ep : this.eParams) {
+			if (ep.id != masterExecutorId) {
+				ep.executor.lockFrameRate(frameRate);
+			}
+		}
+		
+		resetCounterParam(frameRate, param.sampleRate);
+		clearBuffer();
+		rate.onParamUpdate(frameRate, BASE_FREQ_NTSC);
+	}
+	
+	/* **********
+	 *  仪表盘  *
+	 ********** */
+	
+	/**
+	 * <p>采用实际的 frameRate.
+	 * 帧率实际以主执行器的帧率为准, 其它的执行器将强制使用此帧率.
+	 * 默认为 60
+	 * </p>
+	 */
+	private int frameRate = NsfStatic.FRAME_RATE_NTSC;
+	
+	/**
+	 * 播放帧率
+	 * @return
+	 */
+	public int getFrameRate() {
+		return frameRate;
+	}
+
+	@Override
+	public void setSpeed(float speed) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public float getSpeed() {
+		return param.speed;
 	}
 
 }

@@ -391,10 +391,14 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	/**
 	 * 获取执行的帧率, 每秒多少帧. 帧率会随着播放的曲目不同而不同.
 	 * @return
-	 *   帧率
+	 *   实际执行帧率.
+	 *   <br>如果事先锁定帧率, 实际执行帧率即锁定的帧率; 否则为音频默认的帧率.
 	 * @throws NullPointerException
-	 *   当没有调用 {@link #ready(FtmAudio)} 等方法进行初始化时, 会抛出错误.
-	 *   帧率当执行构件感知到 {@link FtmAudio} 时才能计算.
+	 *   当没有调用 {@link #ready(FtmAudio)} 等方法进行初始化时,
+	 *   若没有事先锁定帧率会抛出错误.
+	 *   <br>帧率优先使用锁定的帧率, 当没有事先锁定帧率时,
+	 *   需要通过 {@link FtmAudio} 才能得到.
+	 * @see #lockFrameRate(int)
 	 */
 	public int getFrameRate() {
 		return runtime.fetcher.getFrameRate();
