@@ -112,7 +112,7 @@ public final class FamiTrackerExecutorHandler implements INsfChannelCode {
 	 *   帧率当执行构件感知到 {@link FtmAudio} 时才能计算.
 	 */
 	public int getFrameRate() {
-		return runtime.fetcher.getFrameRate();
+		return runtime.querier.getFrameRate();
 	}
 	
 	/**

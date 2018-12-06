@@ -169,8 +169,27 @@ public class FtmRowFetcher {
 	 */
 	boolean updateRow;
 	
+	/**
+	 * <p>修改的帧率.
+	 * <p>默认为 0, 表示采用音频默认的帧率;
+	 * 如果不为 0, 采用该值指示的帧率
+	 * </p>
+	 * @since v0.3.1
+	 */
+	int frameRate;
+	
 	public int getFrameRate() {
-		return querier.getFrameRate();
+		return frameRate == 0 ? querier.getFrameRate() : frameRate;
+	}
+	
+	/**
+	 * 强制设置帧率
+	 * @param frameRate
+	 *   帧率. 0 表示采用音频默认的帧率
+	 * @since v0.3.1
+	 */
+	public void setFrameRate(int frameRate) {
+		this.frameRate = frameRate;
 	}
 	
 	/* **********
@@ -183,6 +202,7 @@ public class FtmRowFetcher {
 	
 	public void ready(FamiTrackerQuerier querier, int track, int section, int row) {
 		this.querier = querier;
+		this.frameRate = querier.getFrameRate();
 		ready(track, section, row);
 	}
 	
@@ -245,9 +265,9 @@ public class FtmRowFetcher {
 	public void updateState() {
 		// (SoundGen.updatePlayer)
 		if (tempoAccum <= 0) {
-			int ticksPerSec = querier.getFrameRate();
+			int framePerSec = this.getFrameRate();
 			// 将拍 / 秒 -> 拍 / 分钟
-			tempoAccum += (60 * ticksPerSec) - tempoRemainder;
+			tempoAccum += (60 * framePerSec) - tempoRemainder;
 		}
 		tempoAccum -= tempoDecrement;
 	}

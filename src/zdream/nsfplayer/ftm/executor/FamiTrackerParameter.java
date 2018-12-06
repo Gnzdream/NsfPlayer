@@ -39,5 +39,5 @@ public class FamiTrackerParameter {
 	 * 正在播放的段号
 	 */
 	public int curSection;
-
+	
 }

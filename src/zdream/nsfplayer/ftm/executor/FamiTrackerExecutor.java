@@ -401,6 +401,33 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	}
 	
 	/**
+	 * 强制锁定帧率. 后面的歌曲均采用该帧率来渲染,
+	 * 直到下一次调用 {@link #lockFrameRate(int)} 或者 {@link #unlockFrameRate()}
+	 * @param frameRate
+	 *   帧率. 必须在 [50, 300] 范围内.
+	 * @throws NsfPlayerException
+	 *   当 frameRate 不在规定范围内时.
+	 * @see #unlockFrameRate()
+	 * @since v0.3.1
+	 */
+	public void lockFrameRate(int frameRate) {
+		if (frameRate < 50 || frameRate > 300) {
+			throw new NsfPlayerException("锁定帧率 : " + frameRate + " 需要在范围 [50, 300] 范围内");
+		}
+		runtime.fetcher.setFrameRate(frameRate);
+	}
+	
+	/**
+	 * 解锁帧率. 后面的歌曲均采用歌曲使用的默认帧率渲染,
+	 * 直到下一次调用 {@link #lockFrameRate(int)} 或者 {@link #unlockFrameRate()}
+	 * @see #lockFrameRate(int)
+	 * @since v0.3.1
+	 */
+	public void unlockFrameRate() {
+		runtime.fetcher.setFrameRate(0);
+	}
+	
+	/**
 	 * 返回所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出
 	 * @return
 	 *   所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
