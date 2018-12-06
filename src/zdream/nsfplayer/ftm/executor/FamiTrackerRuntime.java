@@ -57,11 +57,13 @@ public class FamiTrackerRuntime {
 	 *   曲目号, 从 0 开始
 	 * @param section
 	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
 	 * @since v0.2.9
 	 */
-	public void ready(FtmAudio audio, int track, int section) {
+	public void ready(FtmAudio audio, int track, int section, int row) {
 		querier = new FamiTrackerQuerier(audio);
-		fetcher.ready(querier, track, section);
+		fetcher.ready(querier, track, section, row);
 		
 		// 向 runtime.effects 中添加 map
 		effects.clear();
@@ -78,10 +80,12 @@ public class FamiTrackerRuntime {
 	 *   曲目号, 从 0 开始
 	 * @param section
 	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
 	 * @since v0.2.9
 	 */
-	public void ready(int track, int section) {
-		fetcher.ready(track, section);
+	public void ready(int track, int section, int row) {
+		fetcher.ready(track, section, row);
 		for (Map<FtmEffectType, IFtmEffect> map : effects.values()) {
 			map.clear();
 		}

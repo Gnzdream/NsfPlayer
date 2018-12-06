@@ -102,7 +102,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * @param audio
 	 */
 	public void ready(FtmAudio audio) throws NsfPlayerException {
-		ready(audio, 0, 0);
+		ready(audio, 0, 0, 0);
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   曲目号, 从 0 开始
 	 */
 	public void ready(FtmAudio audio, int track) throws NsfPlayerException {
-		ready(audio, track, 0);
+		ready(audio, track, 0, 0);
 	}
 	
 	/**
@@ -132,7 +132,29 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 			int track,
 			int section)
 			throws NsfPlayerException {
-		executor.ready(audio, track, section);
+		ready(audio, track, section, 0);
+	}
+	
+	/**
+	 * <p>让该渲染器读取对应的 audio 数据.
+	 * <p>设置播放暂停位置为指定曲目的指定行
+	 * </p>
+	 * @param audio
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
+	 * @since v0.3.1
+	 */
+	public void ready(
+			FtmAudio audio,
+			int track,
+			int section,
+			int row)
+			throws NsfPlayerException {
+		executor.ready(audio, track, section, row);
 		
 		// 重置播放相关的数据
 		int frameRate = executor.getFrameRate();
@@ -168,7 +190,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready(int track) throws NsfPlayerException {
-		ready(track, 0);
+		ready(track, 0, 0);
 	}
 	
 	/**
@@ -184,7 +206,26 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
 	 */
 	public void ready(int track, int section) throws NsfPlayerException {
-		executor.ready(track, section);
+		ready(track, section, 0);
+	}
+	
+	/**
+	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * </p>
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
+	 * @since v0.3.1
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 */
+	public void ready(int track, int section, int row) throws NsfPlayerException {
+		executor.ready(track, section, row);
 		resetMixer();
 	}
 	
@@ -211,6 +252,33 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	public void switchTo(int track, int section) {
 		executor.switchTo(track, section);
+	}
+	
+	/**
+	 * <p>不改变各个轨道参数的情况下, 切换到指定播放位置.
+	 * 切换时, 各轨道的播放音高、音量、效果等均不改变, 这也包括延迟效果 Gxx.
+	 * 混音器不会重置, 这也意味着上一帧播放的音可能继续延长播放下去.
+	 * 而 FTM 文档的播放速度（不是播放速度 speed）会重新根据 tempo 等数值重置.
+	 * <p>请谨慎使用该方法. 如果前面使用了颤音 4xy 或者其它效果, 而没有消除时,
+	 * 切换位置后, 这些效果会仍然保留下来, 导致后面播放会很奇怪.
+	 * 如果想使用更加稳健的方式切换播放位置, 而不会使播放效果发生较大变化,
+	 * 请使用 {@link #ready(int, int)} 或 {@link #skip(int)} 方法.
+	 * <p>需要在调用前确定该渲染器已经成功加载了 {@link FtmAudio} 音频.
+	 * </p>
+	 * @param track
+	 *   曲目号, 从 0 开始
+	 * @param section
+	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
+	 * @throws NullPointerException
+	 *   当调用该方法前未成功加载 {@link FtmAudio} 音频时
+	 * @see #ready(int, int)
+	 * @see #skip(int)
+	 * @since v0.3.1
+	 */
+	public void switchTo(int track, int section, int row) {
+		executor.switchTo(track, section, row);
 	}
 	
 	/* **********

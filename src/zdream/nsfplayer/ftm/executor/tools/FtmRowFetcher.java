@@ -181,20 +181,24 @@ public class FtmRowFetcher {
 		this.param = param;
 	}
 	
-	public void ready(FamiTrackerQuerier querier, int track, int section) {
+	public void ready(FamiTrackerQuerier querier, int track, int section, int row) {
 		this.querier = querier;
-		ready(track, section);
+		ready(track, section, row);
 	}
 	
 	/**
 	 * 不换曲目的 ready
 	 * @param track
+	 *   曲目号, 从 0 开始
 	 * @param section
+	 *   段号, 从 0 开始
+	 * @param row
+	 *   行号, 从 0 开始
 	 */
-	public void ready(int track, int section) {
+	public void ready(int track, int section, int row) {
 		param.trackIdx = track;
 		this.nextSection = section;
-		this.nextRow = 0;
+		this.nextRow = row;
 		
 		resetSpeed();
 	}
