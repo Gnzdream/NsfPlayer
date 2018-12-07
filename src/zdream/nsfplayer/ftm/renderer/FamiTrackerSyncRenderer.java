@@ -65,7 +65,9 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// 采样率数据只有渲染构建需要
 		param.sampleRate = this.config.sampleRate;
-		param.frameRate = this.frameRate;
+		// 采用实际的 frameRate.
+		// 帧率实际以主执行器的帧率为准, 其它的执行器将强制使用此帧率.
+		param.frameRate = NsfStatic.FRAME_RATE_NTSC;
 		param.freqPerSec = NsfStatic.BASE_FREQ_NTSC;
 		
 		// 音量参数只有渲染构建需要
@@ -446,8 +448,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   音频数据
 	 * @return
 	 */
-	public int allocate(FtmAudio audio) {
-		return allocate(audio, 0, 0, 0);
+	public int allocateAll(FtmAudio audio) {
+		return allocateAll(audio, 0, 0, 0);
 	}
 	
 	/**
@@ -461,8 +463,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   曲目号, 从 0 开始
 	 * @return
 	 */
-	public int allocate(FtmAudio audio, int track) {
-		return allocate(audio, track, 0, 0);
+	public int allocateAll(FtmAudio audio, int track) {
+		return allocateAll(audio, track, 0, 0);
 	}
 	
 	/**
@@ -478,8 +480,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   段号, 从 0 开始
 	 * @return
 	 */
-	public int allocate(FtmAudio audio, int track, int section) {
-		return allocate(audio, track, section, 0);
+	public int allocateAll(FtmAudio audio, int track, int section) {
+		return allocateAll(audio, track, section, 0);
 	}
 	
 	/**
@@ -497,7 +499,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   行号, 从 0 开始
 	 * @return
 	 */
-	public int allocate(FtmAudio audio, int track, int section, int row) {
+	public int allocateAll(FtmAudio audio, int track, int section, int row) {
 		// 主执行器
 		ExecutorParam p = eParams[masterExecutorId];
 		if (!p.enable) {
@@ -512,7 +514,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		updateAudio(p.id, audio, track, section, row, true);
 		
 		// 锁定频率
-		p.executor.lockFrameRate(frameRate);
+		p.executor.lockFrameRate(param.frameRate);
 		// 重置入采样计数器
 		
 		return p.id;
@@ -597,7 +599,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		updateAudio(p.id, audio, track, section, row, channelCodes);
 		
 		// 需要锁定频率
-		p.executor.lockFrameRate(frameRate);
+		p.executor.lockFrameRate(param.frameRate);
 		
 		return p.id;
 	}
@@ -617,7 +619,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   当不存在 exeId 对应的执行器时
 	 */
 	public boolean allocate(int exeId, byte channelCode) {
-		checkExecutorId(exeId);
+		getExecutorParam(exeId);
 		
 		// 查询部分
 		for (ChannelParam cp : this.cParams) {
@@ -653,7 +655,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   当不存在 exeId 对应的执行器时
 	 */
 	public boolean free(int exeId, byte channelCode) {
-		checkExecutorId(exeId);
+		getExecutorParam(exeId);
 		
 		// 查询部分
 		for (ChannelParam cp : this.cParams) {
@@ -670,22 +672,6 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	}
 	
 	/**
-	 * <p>指定哪个已经存在的轨道进行回收.
-	 * </p>
-	 * @param channelId
-	 *   轨道标识号
-	 * @throws NsfPlayerException
-	 *   当不存在 channelId 对应的轨道时
-	 */
-	public void free(int channelId) {
-		checkChannelId(channelId);
-		
-		ChannelParam cp = cParams[channelId];
-		mixerChannelDisconnect(cp.id);
-		removeChannelParam(cp.id);
-	}
-	
-	/**
 	 * <p>删除一个正在工作的执行器, 并且该执行器的所有轨道将回收, 并不再渲染.
 	 * </p>
 	 * @param exeId
@@ -694,7 +680,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   当不存在 exeId 对应的执行器时
 	 */
 	public void remove(int exeId) {
-		checkExecutorId(exeId);
+		getExecutorParam(exeId);
 		
 		// TODO 其它规则如果涉及到它的, 要进行更改
 		
@@ -734,7 +720,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   当不存在 exeId 对应的执行器时
 	 */
 	public int getChannelId(int exeId, byte channelCode) {
-		checkExecutorId(exeId);
+		getExecutorParam(exeId);
 		
 		// 查询部分
 		for (ChannelParam cp : this.cParams) {
@@ -747,6 +733,21 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * 询问指定执行器、轨道号的轨道是否已经在渲染了
+	 * @param exeId
+	 *   执行器标识号
+	 * @param channelCode
+	 *   NSF 的轨道号
+	 * @return
+	 *   指定轨道是否正在渲染. 如果已经在渲染了, 返回 true
+	 * @throws NsfPlayerException
+	 *   当不存在 exeId 对应的执行器时
+	 */
+	public boolean isAllocated(int exeId, byte channelCode) {
+		return getChannelId(exeId, channelCode) != -1;
 	}
 	
 	/**
@@ -886,7 +887,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// 帧率
 		if (exeId == masterExecutorId) {
-			this.frameRate = ep.executor.getFrameRate();
+			param.frameRate = ep.executor.getFrameRate();
 			onFrameRateUpdated();
 		}
 	}
@@ -955,21 +956,35 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		
 		// 帧率
 		if (exeId == masterExecutorId) {
-			this.frameRate = ep.executor.getFrameRate();
+			param.frameRate = ep.executor.getFrameRate();
 			onFrameRateUpdated();
 		}
 	}
 	
-	private void checkExecutorId(int exeId) {
+	/**
+	 * 获取执行器参数. 如果没有对应的执行器, 抛出 NsfPlayerException 异常.
+	 * 该方法也用来检查 exeId 是否合理
+	 */
+	private ExecutorParam getExecutorParam(int exeId) {
 		if (exeId >= eParams.length || exeId < 0 || eParams[exeId] == null) {
 			throw new NsfPlayerException("不存在 " + exeId + " 对应的执行器");
 		}
+		return eParams[exeId];
 	}
 	
-	private void checkChannelId(int channelId) {
-		if (channelId >= cParams.length || channelId < 0 || cParams[channelId] == null) {
-			throw new NsfPlayerException("不存在 " + channelId + " 对应的轨道号");
+	/**
+	 * 获取轨道参数. 如果没有对应的轨道, 返回 null.
+	 */
+	private ChannelParam getChannelParam(int exeId, byte channelCode) {
+		for (ChannelParam cp : this.cParams) {
+			if (cp == null) {
+				continue;
+			}
+			if (cp.executorId == exeId && cp.channelCode == channelCode) {
+				return cp;
+			}
 		}
+		return null;
 	}
 	
 	/**
@@ -1162,6 +1177,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 * </p>
 	 */
 	private void onFrameRateUpdated() {
+		int frameRate = param.frameRate;
 		for (ExecutorParam ep : this.eParams) {
 			if (ep.id != masterExecutorId) {
 				ep.executor.lockFrameRate(frameRate);
@@ -1176,32 +1192,202 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	/* **********
 	 *  仪表盘  *
 	 ********** */
-	
+
 	/**
-	 * <p>采用实际的 frameRate.
-	 * 帧率实际以主执行器的帧率为准, 其它的执行器将强制使用此帧率.
-	 * 默认为 60
+	 * <p>为一个已经在工作的执行器, 询问该执行器正在渲染的曲目号.
 	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   对应执行器渲染的曲目号, 从 0 开始
 	 */
-	private int frameRate = NsfStatic.FRAME_RATE_NTSC;
+	public int getCurrentTrack(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.getCurrentTrack();
+	}
 	
 	/**
-	 * 播放帧率
+	 * <p>为一个已经在工作的执行器, 询问该执行器正在渲染的段号.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
 	 * @return
+	 *   对应执行器渲染的段号, 从 0 开始
 	 */
-	public int getFrameRate() {
-		return frameRate;
+	public int getCurrentSection(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.getCurrentSection();
+	}
+	
+	/**
+	 * <p>为一个已经在工作的执行器, 询问该执行器正在渲染的行号.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   对应执行器渲染的行号, 从 0 开始
+	 */
+	public int getCurrentRow(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.getCurrentRow();
+	}
+	
+	/**
+	 * 询问指定执行器, 当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   true, 如果当前行已经播放完毕
+	 */
+	public boolean currentRowRunOut(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.currentRowRunOut();
+	}
+	
+	/**
+	 * <p>获取如果指定执行器, 若跳到下一行（不是下一帧）, 跳到的位置所对应的段号.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   指定执行器下一次跳行后的段号位置
+	 */
+	public int getNextSection(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.getNextSection();
+	}
+	
+	/**
+	 * <p>获取如果指定执行器, 若跳到下一行（不是下一帧）, 跳到的位置所对应的行号.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   指定执行器下一次跳行后的行号位置
+	 */
+	public int getNextRow(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.getNextRow();
+	}
+	
+	/**
+	 * 返回指定执行器的所有的轨道号的集合. 轨道号的参数在 {@link INsfChannelCode} 里面写出
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   指定执行器的所有的轨道号的集合. 如果没有调用 ready(...) 方法时, 返回空集合.
+	 */
+	public Set<Byte> allChannelSet(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.allChannelSet();
+	}
+	
+	/**
+	 * 设置某个轨道的音量
+	 * @param exeId
+	 *   执行器标识号
+	 * @param channelCode
+	 *   轨道号
+	 * @param level
+	 *   音量. 范围 [0, 1]
+	 */
+	public void setLevel(int exeId, byte channelCode, float level) {
+		ChannelParam cp = getChannelParam(exeId, channelCode);
+		if (cp == null) {
+			return;
+		}
+		int mixerId = cp.mixerId;
+		if (mixerId == -1) {
+			return;
+		}
+		
+		if (level < 0) {
+			level = 0;
+		} else if (level > 1) {
+			level = 1;
+		}
+		mixer.setLevel(mixerId, level);
+	}
+	
+	/**
+	 * 获得某个轨道的音量
+	 * @param exeId
+	 *   执行器标识号
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   音量. 范围 [0, 1]
+	 * @throws NullPointerException
+	 *   当不存在 <code>channelCode</code> 对应的轨道时
+	 */
+	public float getLevel(int exeId, byte channelCode) {
+		ChannelParam cp = getChannelParam(exeId, channelCode);
+		if (cp == null) {
+			throw new NullPointerException(
+					"不存在 exeId: " + exeId + ", channelCode: " + channelCode + " 对应的轨道");
+		}
+		int mixerId = cp.mixerId;
+		if (mixerId == -1) {
+			throw new NullPointerException(
+					"不存在 exeId: " + exeId + ", channelCode: " + channelCode + " 对应的轨道");
+		}
+		return mixer.getLevel(mixerId);
+	}
+	
+	/**
+	 * 设置轨道是否发出声音
+	 * @param exeId
+	 *   执行器标识号
+	 * @param channelCode
+	 *   轨道号
+	 * @param muted
+	 *   false, 使该轨道发声; true, 则静音
+	 */
+	public void setChannelMuted(int exeId, byte channelCode, boolean muted) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		AbstractNsfSound sound = ep.executor.getSound(channelCode);
+		if (sound != null) {
+			sound.setMuted(muted);
+		}
+	}
+	
+	/**
+	 * 查看轨道是否能发出声音
+	 * @param exeId
+	 *   执行器标识号
+	 * @param channelCode
+	 *   轨道号
+	 * @return
+	 *   false, 说明该轨道没有被屏蔽; true, 则已经被屏蔽
+	 * @throws NullPointerException
+	 *   当不存在 <code>channelCode</code> 对应的轨道时
+	 * @since v0.2.3
+	 */
+	public boolean isChannelMuted(int exeId, byte channelCode) throws NullPointerException {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.getSound(channelCode).isMuted();
+	}
+	
+	@Override
+	public float getSpeed() {
+		return param.speed;
 	}
 
 	@Override
 	public void setSpeed(float speed) {
-		// TODO Auto-generated method stub
+		if (speed > 10) {
+			speed = 10;
+		} else if (speed < 0.1f) {
+			speed = 0.1f;
+		}
 		
-	}
-
-	@Override
-	public float getSpeed() {
-		return param.speed;
+		param.speed = speed;
+		
+		int frameRate = param.frameRate;
+		resetCounterParam(frameRate, param.sampleRate);
+		rate.onParamUpdate();
 	}
 
 }

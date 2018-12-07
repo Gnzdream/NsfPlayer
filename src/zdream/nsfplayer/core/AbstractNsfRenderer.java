@@ -79,7 +79,7 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 *   false, 使该轨道发声; true, 则静音
 	 * @since v0.2.8
 	 */
-	public abstract void setChannelMask(byte channelCode, boolean mask);
+	public abstract void setChannelMuted(byte channelCode, boolean mask);
 	
 	/**
 	 * 查看轨道是否能发出声音
@@ -91,6 +91,6 @@ public abstract class AbstractNsfRenderer<T extends AbstractNsfAudio>
 	 *   当不存在 <code>channelCode</code> 对应的轨道时
 	 * @since v0.2.8
 	 */
-	public abstract boolean isChannelMask(byte channelCode) throws NullPointerException;
+	public abstract boolean isChannelMuted(byte channelCode) throws NullPointerException;
 
 }

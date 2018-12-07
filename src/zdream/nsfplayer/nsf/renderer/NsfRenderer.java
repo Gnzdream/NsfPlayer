@@ -356,10 +356,10 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   false, 使该轨道发声; true, 则静音
 	 * @since v0.2.4
 	 */
-	public void setChannelMask(byte channelCode, boolean mask) {
+	public void setChannelMuted(byte channelCode, boolean mask) {
 		AbstractNsfSound sound = executor.getSound(channelCode);
 		if (sound != null) {
-			sound.setMask(mask);
+			sound.setMuted(mask);
 		}
 	}
 	
@@ -373,8 +373,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 *   当不存在 <code>channelCode</code> 对应的轨道时
 	 * @since v0.2.4
 	 */
-	public boolean isChannelMask(byte channelCode) throws NullPointerException {
-		return executor.getSound(channelCode).isMask();
+	public boolean isChannelMuted(byte channelCode) throws NullPointerException {
+		return executor.getSound(channelCode).isMuted();
 	}
 	
 	@Override

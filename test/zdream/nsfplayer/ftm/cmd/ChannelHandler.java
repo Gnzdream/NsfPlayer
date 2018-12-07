@@ -106,7 +106,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		Set<Byte> bs = renderer.allChannelSet();
 		
-		bs.forEach(code -> renderer.setChannelMask(code, false));
+		bs.forEach(code -> renderer.setChannelMuted(code, false));
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 */
 	private void muteClear(FtmPlayerConsole env, byte channelCode) {
 		AbstractNsfRenderer<?> renderer = env.getRenderer();
-		renderer.setChannelMask(channelCode, false);
+		renderer.setChannelMuted(channelCode, false);
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	 */
 	private void mute(FtmPlayerConsole env, byte channelCode) {
 		AbstractNsfRenderer<?> renderer = env.getRenderer();
-		renderer.setChannelMask(channelCode, true);
+		renderer.setChannelMuted(channelCode, true);
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		for (Iterator<Byte> it = bs.iterator(); it.hasNext();) {
 			byte channelCode = it.next();
 			float vol = renderer.getLevel(channelCode);
-			if (renderer.isChannelMask(channelCode)) {
+			if (renderer.isChannelMuted(channelCode)) {
 				vol = 0;
 			}
 			
@@ -159,7 +159,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> {
-			renderer.setChannelMask(code, false);
+			renderer.setChannelMuted(code, false);
 			renderer.setLevel(code, 1.0f);
 		});
 	}
@@ -172,7 +172,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 		Set<Byte> bs = renderer.allChannelSet();
 		
 		bs.forEach(code -> {
-			renderer.setChannelMask(code, false);
+			renderer.setChannelMuted(code, false);
 			renderer.setLevel(code, vol);
 		});
 	}
@@ -183,7 +183,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	private void volumePrint(FtmPlayerConsole env, byte channelCode) {
 		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		float vol = renderer.getLevel(channelCode);
-		if (renderer.isChannelMask(channelCode)) {
+		if (renderer.isChannelMuted(channelCode)) {
 			vol = 0;
 		}
 		
@@ -199,7 +199,7 @@ public class ChannelHandler implements ICommandHandler, INsfChannelCode {
 	private void volumeSet(FtmPlayerConsole env, byte channelCode, float vol) {
 		AbstractNsfRenderer<?> renderer = env.getRenderer();
 		
-		renderer.setChannelMask(channelCode, false);
+		renderer.setChannelMuted(channelCode, false);
 		renderer.setLevel(channelCode, vol);
 	}
 	

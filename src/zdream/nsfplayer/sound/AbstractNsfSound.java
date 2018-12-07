@@ -32,7 +32,7 @@ public abstract class AbstractNsfSound implements IResetable, IEnable {
 	 * 如果设置成 true, 将不会把数据送往合成器管道 {@link #out}.
 	 * 不会被 {@link #reset()} 重置.
 	 */
-	private boolean mask = false;
+	private boolean muted = false;
 	
 	/**
 	 * 每帧结束时调用
@@ -67,18 +67,18 @@ public abstract class AbstractNsfSound implements IResetable, IEnable {
 	
 	/**
 	 * @return
-	 *   {@link #mask}
+	 *   {@link #muted}
 	 */
-	public boolean isMask() {
-		return mask;
+	public boolean isMuted() {
+		return muted;
 	}
 
 	/**
 	 * @param mask
-	 *   {@link #mask}
+	 *   {@link #muted}
 	 */
-	public void setMask(boolean mask) {
-		this.mask = mask;
+	public void setMuted(boolean muted) {
+		this.muted = muted;
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public abstract class AbstractNsfSound implements IResetable, IEnable {
 	protected abstract void onProcess(int time);
 	
 	protected void mix(int value) {
-		if (!mask)
+		if (!muted)
 			out.mix(value, time);
 	}
 	
@@ -126,7 +126,7 @@ public abstract class AbstractNsfSound implements IResetable, IEnable {
 	 * @since v0.2.9
 	 */
 	protected void mix(int value, int offset) {
-		if (!mask)
+		if (!muted)
 			out.mix(value, time + offset);
 	}
 

@@ -456,14 +456,14 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 * 设置轨道是否发出声音
 	 * @param channelCode
 	 *   轨道号
-	 * @param mask
+	 * @param muted
 	 *   false, 使该轨道发声; true, 则静音
 	 * @since v0.2.2
 	 */
-	public void setChannelMask(byte channelCode, boolean mask) {
+	public void setChannelMuted(byte channelCode, boolean muted) {
 		AbstractNsfSound sound = executor.getSound(channelCode);
 		if (sound != null) {
-			sound.setMask(mask);
+			sound.setMuted(muted);
 		}
 	}
 	
@@ -477,8 +477,8 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   当不存在 <code>channelCode</code> 对应的轨道时
 	 * @since v0.2.3
 	 */
-	public boolean isChannelMask(byte channelCode) throws NullPointerException {
-		return executor.getSound(channelCode).isMask();
+	public boolean isChannelMuted(byte channelCode) throws NullPointerException {
+		return executor.getSound(channelCode).isMuted();
 	}
 	
 	@Override
