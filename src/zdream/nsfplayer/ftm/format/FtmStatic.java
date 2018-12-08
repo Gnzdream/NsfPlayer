@@ -25,10 +25,10 @@ public class FtmStatic {
 	public static final int MAX_SEQUENCES = 128;
 
 	/**
-	 * 最大支持的 Frame (段落) 数目. 即每个 {@link FtmTrack} 中支持的 Frame 的数量
-	 * <p>Maximum number of frames
+	 * 最大支持的 section (段落, 原工程叫 frame) 数目. 即每个 {@link FtmTrack} 中支持的段的数量
+	 * <p>Maximum number of sections / frames
 	 */
-	public static final int MAX_FRAMES = 128;
+	public static final int MAX_SECTIONS = 128;
 
 	/**
 	 * 最多支持的乐器数量
@@ -55,7 +55,7 @@ public class FtmStatic {
 	 * <p>每条轨道最大的 Pattern 数. 等同于最大段落数目
 	 * <p>Maximum number of patterns per channel
 	 */
-	public static final int MAX_PATTERN = MAX_FRAMES;
+	public static final int MAX_PATTERNS = MAX_SECTIONS;
 	
 	/**
 	 * 最大的 DPCM 数

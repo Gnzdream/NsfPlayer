@@ -737,7 +737,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 		for (; trackIdx < trackCount; ++trackIdx) {
 			// 曲目的所有段数 Frame
 			int frameCount = block.readAsCInt();
-			if (frameCount <= 0 || frameCount > MAX_FRAMES) {
+			if (frameCount <= 0 || frameCount > MAX_SECTIONS) {
 				handleException(block, EX_FRAMES_WRONG_FRAME_COUNT, trackIdx, frameCount);
 			}
 				
@@ -785,7 +785,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 				for (int channelIdx = 0; channelIdx < channelsCount; ++channelIdx) {
 					// order 就类似于索引指针, 告诉你某个曲目第 x 段应该播放第几号段落.
 					int order = block.readUnsignedByte();
-					if (order < 0 || order >= MAX_PATTERN) {
+					if (order < 0 || order >= MAX_PATTERNS) {
 						handleException(block, EX_FRAMES_WRONG_ORDER_NO,
 								trackIdx, frameIdx, channelIdx, order);
 					}
@@ -844,7 +844,7 @@ public class FamiTrackerCreater extends AbstractFamiTrackerCreater<BytesReader> 
 			if (channelIdx < 0) {
 				handleException(block, EX_PAT_WRONG_CHANNEL_NO, trackIdx, channelIdx);
 			}
-			if (patternIdx < 0 || patternIdx >= MAX_PATTERN) {
+			if (patternIdx < 0 || patternIdx >= MAX_PATTERNS) {
 				handleException(block, EX_PAT_WRONG_PATTERN_NO, trackIdx, patternIdx);
 			}
 			if (items <= 0 || items > MAX_PATTERN_LENGTH) {

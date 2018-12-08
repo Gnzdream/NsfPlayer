@@ -10,6 +10,7 @@ import zdream.nsfplayer.core.NsfCommonParameter;
 import zdream.nsfplayer.core.NsfPlayerApplication;
 import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.core.NsfRateConverter;
+import zdream.nsfplayer.ftm.agreement.FtmPosition;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.FamiTrackerParameter;
@@ -210,7 +211,7 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	}
 	
 	/**
-	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号
+	 * <p>在不更改 Ftm 文件的同时, 切换曲目、段号、行号
 	 * <p>第一次播放时需要指定 Ftm 音频数据.
 	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
 	 * </p>
@@ -220,12 +221,26 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 *   段号, 从 0 开始
 	 * @param row
 	 *   行号, 从 0 开始
-	 * @since v0.3.1
 	 * @throws NullPointerException
 	 *   当调用该方法前未指定 {@link FtmAudio} 音频时
+	 * @since v0.3.1
 	 */
 	public void ready(int track, int section, int row) throws NsfPlayerException {
 		executor.ready(track, section, row);
+		resetMixer();
+	}
+	
+	/**
+	 * <p>在不更改 Ftm 文件、曲目号的同时, 切换段号、行号
+	 * <p>第一次播放时需要指定 Ftm 音频数据.
+	 * @param pos
+	 *   播放位置, 不为 null
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时, 或 pos == null 时
+	 * @since v0.3.1
+	 */
+	public void ready(FtmPosition pos) {
+		executor.ready(pos);
 		resetMixer();
 	}
 	
@@ -370,6 +385,15 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	}
 	
 	/**
+	 * @return
+	 *   获取正在执行的位置
+	 * @since v0.3.1
+	 */
+	public FtmPosition currentPosition() {
+		return executor.currentPosition();
+	}
+	
+	/**
 	 * 询问当前行是否播放完毕, 需要跳到下一行 (不是询问当前帧是否播放完)
 	 * @return
 	 *   true, 如果当前行已经播放完毕
@@ -389,6 +413,18 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	public int getNextSection() {
 		return executor.getNextSection();
+	}
+	
+	/**
+	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @return
+	 *   获取下一行执行的位置
+	 * @since v0.3.1
+	 */
+	public FtmPosition nextPosition() {
+		return executor.nextPosition();
 	}
 	
 	/**

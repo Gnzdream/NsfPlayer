@@ -9,6 +9,7 @@ import java.util.Set;
 import zdream.nsfplayer.core.AbstractNsfExecutor;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfPlayerException;
+import zdream.nsfplayer.ftm.agreement.FtmPosition;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
@@ -176,6 +177,21 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	}
 	
 	/**
+	 * <p>在不更改 Ftm 文件、曲目号的同时, 切换段号、行号
+	 * <p>第一次调用时需要指定 Ftm 音频数据.
+	 * 因此第一次需要调用含 {@link FtmAudio} 参数的重载方法
+	 * @param pos
+	 *   播放位置, 不为 null
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时, 或 pos == null 时
+	 * @since v0.3.1
+	 */
+	public void ready(FtmPosition pos) {
+		requireNonNull(pos, "FamiTracker 位置 pos = null");
+		ready(getCurrentTrack(), pos.section, pos.row);
+	}
+	
+	/**
 	 * <p>不改变各个轨道参数的情况下, 切换到指定位置向下执行.
 	 * 切换时, 各轨道的播放音高、音量、效果等均不改变, 这也包括延迟效果 Gxx.
 	 * 混音器不会重置, 这也意味着上一帧播放的音可能继续延长播放下去.
@@ -227,6 +243,24 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		requireNonNull(runtime.querier, "FamiTracker 曲目 audio = null");
 		
 		runtime.ready(track, section, row);
+	}
+	
+	/**
+	 * <p>不改变各个轨道参数的情况下, 切换到指定位置向下执行.
+	 * <p>需要在调用前确定该渲染器已经成功加载了 {@link FtmAudio} 音频.
+	 * </p>
+	 * @param pos
+	 *   播放位置, 不为 null
+	 * @throws NullPointerException
+	 *   当调用该方法前未指定 {@link FtmAudio} 音频时, 或 pos == null 时
+	 * @see #ready(FtmPosition)
+	 * @see #switchTo(int, int)
+	 * @see #switchTo(int, int, int)
+	 * @since v0.3.1
+	 */
+	public void switchTo(FtmPosition pos) {
+		requireNonNull(pos, "FamiTracker 位置 pos = null");
+		switchTo(getCurrentTrack(), pos.section, pos.row);
 	}
 	
 	private void readyChannels() {
@@ -343,7 +377,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 
 	/**
 	 * @return
-	 *   获取正在播放的段号
+	 *   获取正在执行的段号
 	 */
 	public int getCurrentSection() {
 		return runtime.param.curSection;
@@ -351,10 +385,19 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	
 	/**
 	 * @return
-	 *   获取正在播放的行号
+	 *   获取正在执行的行号
 	 */
 	public int getCurrentRow() {
 		return runtime.param.curRow;
+	}
+	
+	/**
+	 * @return
+	 *   获取正在执行的位置
+	 * @since v0.3.1
+	 */
+	public FtmPosition currentPosition() {
+		return new FtmPosition(runtime.param.curSection, runtime.param.curRow);
 	}
 	
 	/**
@@ -386,6 +429,18 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	 */
 	public int getNextRow() {
 		return runtime.fetcher.getNextRow();
+	}
+	
+	/**
+	 * <p>获取如果跳到下一行（不是下一帧）, 跳到的位置.
+	 * <p>如果侦测到有跳转的效果正在触发, 按触发后的结果返回.
+	 * </p>
+	 * @return
+	 *   获取下一行执行的位置
+	 * @since v0.3.1
+	 */
+	public FtmPosition nextPosition() {
+		return new FtmPosition(runtime.fetcher.getNextSection(), runtime.fetcher.getNextRow());
 	}
 	
 	/**

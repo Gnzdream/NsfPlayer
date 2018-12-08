@@ -4,7 +4,7 @@ import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 
 /**
- * {@link FtmAudio} 解析时产生的错误
+ * {@link FtmAudio} 解析时, 或其它结构产生时发生的错误
  * 
  * @author Zdream
  * @since v0.1
