@@ -17,6 +17,8 @@ import zdream.nsfplayer.core.NsfRateConverter;
 import zdream.nsfplayer.core.NsfStatic;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
+import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
+import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
 import zdream.nsfplayer.mixer.EmptyMixerChannel;
 import zdream.nsfplayer.mixer.IMixerConfig;
 import zdream.nsfplayer.mixer.ISoundMixer;
@@ -1363,7 +1365,6 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 *   false, 说明该轨道没有被屏蔽; true, 则已经被屏蔽
 	 * @throws NullPointerException
 	 *   当不存在 <code>channelCode</code> 对应的轨道时
-	 * @since v0.2.3
 	 */
 	public boolean isChannelMuted(int exeId, byte channelCode) throws NullPointerException {
 		ExecutorParam ep = getExecutorParam(exeId);
@@ -1388,6 +1389,75 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		int frameRate = param.frameRate;
 		resetCounterParam(frameRate, param.sampleRate);
 		rate.onParamUpdate();
+	}
+	
+	/* **********
+	 *  监听器  *
+	 ********** */
+	
+	/**
+	 * <p>为指定的执行器添加获取音键的监听器.
+	 * <p>如果指定执行器被删除, 监听器将被一并删除.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @param l
+	 *   获取音键的监听器
+	 * @throws NullPointerException
+	 *   当监听器 <code>l == null</code> 时
+	 * @throws NsfPlayerException
+	 *   当不存在 exeId 对应的执行器时
+	 */
+	public void addFetchListener(int exeId, IFtmFetchListener l) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		ep.executor.addFetchListener(l);
+	}
+	
+	/**
+	 * 为指定的执行器移除获取音键的监听器
+	 * @param exeId
+	 *   执行器标识号
+	 * @param l
+	 *   移除音键的监听器
+	 * @throws NsfPlayerException
+	 *   当不存在 exeId 对应的执行器时
+	 */
+	public void removeFetchListener(int exeId, IFtmFetchListener l) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		ep.executor.removeFetchListener(l);
+	}
+	
+	/**
+	 * <p>为指定的执行器添加执行结束的监听器.
+	 * 该监听器会在效果执行结束, 但还未写入 sound 时唤醒.
+	 * <p>如果指定执行器被删除, 监听器将被一并删除.
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @param l
+	 *   执行结束的监听器
+	 * @throws NullPointerException
+	 *   当监听器 <code>l == null</code> 时
+	 * @throws NsfPlayerException
+	 *   当不存在 exeId 对应的执行器时
+	 */
+	public void addExecuteFinishedListener(int exeId, IFtmExecutedListener l) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		ep.executor.addExecuteFinishedListener(l);
+	}
+	
+	/**
+	 * 为指定的执行器移除执行结束的监听器
+	 * @param exeId
+	 *   执行器标识号
+	 * @param l
+	 *   执行结束的监听器
+	 * @throws NsfPlayerException
+	 *   当不存在 exeId 对应的执行器时
+	 */
+	public void removeExecuteFinishedListener(int exeId, IFtmExecutedListener l) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		ep.executor.removeExecuteFinishedListener(l);
 	}
 
 }
