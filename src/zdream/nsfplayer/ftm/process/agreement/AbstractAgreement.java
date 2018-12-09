@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.agreement;
+package zdream.nsfplayer.ftm.process.agreement;
 
 import zdream.nsfplayer.core.NsfPlayerException;
 
@@ -8,7 +8,15 @@ import zdream.nsfplayer.core.NsfPlayerException;
  * @author Zdream
  * @since v0.3.1
  */
-public abstract class TimeoutAgreement {
+public abstract class AbstractAgreement {
+	
+	public abstract String name();
+	
+	/**
+	 * 产生内容实体
+	 * @return
+	 */
+	public abstract AbstractAgreementEntry createEntry();
 	
 	/* **********
 	 * 超时时间 *
@@ -44,5 +52,29 @@ public abstract class TimeoutAgreement {
 		}
 		this.timeout = timeout;
 	}
-
+	
+	/* **********
+	 *   提交   *
+	 ********** */
+	/*
+	 * 协议当提交之后将不能够修改了
+	 */
+	private volatile boolean commited = false;
+	
+	public synchronized void commit() {
+		setCommited(true);
+	}
+	
+	/**
+	 * <p>询问该协议是否已经被提交处理.
+	 * <p>当该协议已经提交之后, 如果对它的基础属性修改, 会拒绝并抛出异常.
+	 * </p>
+	 */
+	public synchronized boolean isCommited() {
+		return commited;
+	}
+	
+	protected synchronized void setCommited(boolean commited) {
+		this.commited = commited;
+	}
 }

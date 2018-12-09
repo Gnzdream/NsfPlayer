@@ -9,12 +9,12 @@ import java.util.Set;
 import zdream.nsfplayer.core.AbstractNsfExecutor;
 import zdream.nsfplayer.core.INsfChannelCode;
 import zdream.nsfplayer.core.NsfPlayerException;
-import zdream.nsfplayer.ftm.agreement.FtmPosition;
 import zdream.nsfplayer.ftm.audio.FamiTrackerQuerier;
 import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
 import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
+import zdream.nsfplayer.ftm.process.base.FtmPosition;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
 /**

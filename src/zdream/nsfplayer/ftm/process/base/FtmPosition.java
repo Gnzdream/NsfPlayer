@@ -1,4 +1,4 @@
-package zdream.nsfplayer.ftm.agreement;
+package zdream.nsfplayer.ftm.process.base;
 
 import static zdream.nsfplayer.ftm.format.FtmStatic.*;
 
@@ -77,14 +77,15 @@ public class FtmPosition implements Cloneable, Comparable<FtmPosition> {
 	public String toString() {
 		return "FtmPosition [section=" + section + ", row=" + row + "]";
 	}
+	
+	private int hash = -1;
 
 	@Override
 	public int hashCode() {
-		final int prime = 211;
-		int result = 1;
-		result = prime * result + section;
-		result = prime * result + row;
-		return result;
+		if (hash == -1) {
+			return hash = section + row * 131;
+		}
+		return hash;
 	}
 
 	@Override

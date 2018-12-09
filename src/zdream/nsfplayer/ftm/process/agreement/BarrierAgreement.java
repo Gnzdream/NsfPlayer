@@ -1,9 +1,11 @@
-package zdream.nsfplayer.ftm.agreement;
+package zdream.nsfplayer.ftm.process.agreement;
 
 import static java.util.Objects.requireNonNull;
 
 import java.util.HashMap;
 
+import zdream.nsfplayer.ftm.process.base.AgreementCommitedException;
+import zdream.nsfplayer.ftm.process.base.FtmPosition;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerSyncRenderer;
 
 /**
@@ -22,7 +24,19 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerSyncRenderer;
  * @author Zdream
  * @since v0.3.1
  */
-public class BarrierAgreement extends TimeoutAgreement {
+public class BarrierAgreement extends AbstractAgreement {
+	
+	public static final String NAME = "BARRIER";
+
+	@Override
+	public String name() {
+		return NAME;
+	}
+	
+	@Override
+	public AbstractAgreementEntry createEntry() {
+		return BarrierAgreementEntry.create(this);
+	}
 	
 	/* **********
 	 * 协议内容 *
@@ -37,8 +51,29 @@ public class BarrierAgreement extends TimeoutAgreement {
 		return new HashMap<>(poses);
 	}
 	
-	public void put(int exeId, FtmPosition pos) {
+	/**
+	 * 往协议中添加同步位置.
+	 * @param exeId
+	 *   执行器 ID
+	 * @param pos
+	 *   需要栅栏进行同步的执行位置
+	 * @throws AgreementCommitedException
+	 *   如果在调用该方法时已经提交了本协议, 将拒绝修改并抛出该异常
+	 */
+	public void put(int exeId, FtmPosition pos) throws AgreementCommitedException {
 		requireNonNull(pos, "pos == null");
-		poses.put(exeId, pos);
+		synchronized (this) {
+			if (isCommited()) {
+				throw new AgreementCommitedException("协议已经提交, 不允许修改: " + this);
+			} else {
+				poses.put(exeId, pos);
+			}
+		}
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("协议 %s: %s", NAME, poses);
+	}
+	
 }
