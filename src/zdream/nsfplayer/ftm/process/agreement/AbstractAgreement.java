@@ -1,6 +1,7 @@
 package zdream.nsfplayer.ftm.process.agreement;
 
 import zdream.nsfplayer.core.NsfPlayerException;
+import zdream.nsfplayer.ftm.process.base.AgreementCommitedException;
 
 /**
  * <p>拥有超时时间的抽象协议
@@ -44,9 +45,17 @@ public abstract class AbstractAgreement {
 	 * 设置超时时间
 	 * @param timeout
 	 *   超时时间, 正数.
+	 * @throws AgreementCommitedException
+	 *   如果在调用该方法时已经提交了本协议, 将拒绝修改并抛出该异常
 	 * @see #timeout
 	 */
 	public void setTimeout(int timeout) {
+		synchronized (this) {
+			if (commited) {
+				throw new AgreementCommitedException("协议已经提交, 不允许修改: " + this);
+			}
+		}
+		
 		if (timeout < 1) {
 			throw new NsfPlayerException("超时时间: " + timeout + " 必须为正数");
 		}

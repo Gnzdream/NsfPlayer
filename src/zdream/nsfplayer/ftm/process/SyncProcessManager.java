@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.process;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 
 import zdream.nsfplayer.ftm.process.agreement.AbstractAgreementEntry;
 import zdream.nsfplayer.ftm.process.agreement.BarrierAgreementEntry;
@@ -107,7 +108,10 @@ public class SyncProcessManager {
 				continue;
 			}
 			
-			for (AbstractAgreementEntry e0 : state.bounds) {
+			ListIterator<AbstractAgreementEntry> it = state.bounds.listIterator();
+			
+			while (it.hasNext()) {
+				AbstractAgreementEntry e0 = it.next();
 				if (e0 instanceof WaitingAgreementEntry) {
 					WaitingAgreementEntry e = (WaitingAgreementEntry) e0;
 					
@@ -115,7 +119,7 @@ public class SyncProcessManager {
 					if (e.dependPos.equals(depend.pos)) {
 						// 结束等待
 						e.countdown = -1;
-						state.bounds.remove(e);
+						it.remove();
 						continue;
 					}
 					
@@ -124,7 +128,7 @@ public class SyncProcessManager {
 						e.countdown = e.baseTimeout;
 					} else if (e.countdown == 0) {
 						// 超时了, 放行
-						state.bounds.remove(e);
+						it.remove();
 						continue;
 					} else {
 						e.countdown--;
@@ -139,17 +143,19 @@ public class SyncProcessManager {
 		}
 		
 		// 对所有栅栏进行更新
-		for (BarrierAgreementEntry entry : barriers) {
-			// TODO
-			
-			if (entry.countdown == -1) {
-				entry.countdown = entry.baseTimeout;
-			} else if (entry.countdown == 0) {
-				// 超时了, 放行 TODO
-//				state.bounds.remove(e);
-				continue;
-			} else {
-				entry.countdown--;
+		if (barriers != null) {
+			for (BarrierAgreementEntry entry : barriers) {
+				// TODO
+				
+				if (entry.countdown == -1) {
+					entry.countdown = entry.baseTimeout;
+				} else if (entry.countdown == 0) {
+					// 超时了, 放行 TODO
+//					state.bounds.remove(e);
+					continue;
+				} else {
+					entry.countdown--;
+				}
 			}
 		}
 	}

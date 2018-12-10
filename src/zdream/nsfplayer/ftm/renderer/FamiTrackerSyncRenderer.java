@@ -19,6 +19,9 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.FamiTrackerExecutor;
 import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
 import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
+import zdream.nsfplayer.ftm.process.SyncProcessManager;
+import zdream.nsfplayer.ftm.process.agreement.WaitingAgreement;
+import zdream.nsfplayer.ftm.process.base.FtmPosition;
 import zdream.nsfplayer.mixer.EmptyMixerChannel;
 import zdream.nsfplayer.mixer.IMixerConfig;
 import zdream.nsfplayer.mixer.ISoundMixer;
@@ -46,6 +49,11 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	 * 音频混音器
 	 */
 	private ISoundMixer mixer;
+	
+	/**
+	 * 执行、等待管理
+	 */
+	private SyncProcessManager process = new SyncProcessManager();
 	
 	private FamiTrackerConfig config;
 	
@@ -286,11 +294,22 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			if (ep == null || !ep.enable || ep.stop) {
 				continue;
 			}
+			if (process.isWaiting(ep.id)) {
+				// 协议: 等待中
+				continue;
+			}
 			ep.executor.tick();
 			if (ep.executor.isFinished()) {
 				ep.stop = true;
 			}
+			
+			// 位置更新
+			if (ep.executor.isRowUpdated()) {
+				process.updatePosition(ep.id, ep.executor.currentPosition());
+			}
 		}
+		
+		process.updateStates();
 	}
 	
 	/**
@@ -505,7 +524,13 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		// 主执行器
 		ExecutorParam p = eParams[masterExecutorId];
 		if (!p.enable) {
-			updateAudio(masterExecutorId, audio, track, section, row, true);
+			try {
+				process.addExecutor(masterExecutorId, new FtmPosition(section, row));
+				updateAudio(masterExecutorId, audio, track, section, row, true);
+			} catch (RuntimeException e) {
+				process.removeExecutor(masterExecutorId);
+				throw e;
+			}
 			p.enable = true;
 			return masterExecutorId;
 		}
@@ -513,7 +538,13 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		// 新的执行器
 		p = createExecutorParam();
 		p.audio = audio;
-		updateAudio(p.id, audio, track, section, row, true);
+		try {
+			process.addExecutor(p.id, p.executor.currentPosition());
+			updateAudio(p.id, audio, track, section, row, true);
+		} catch (RuntimeException e) {
+			process.removeExecutor(masterExecutorId);
+			throw e;
+		}
 		
 		// 锁定频率
 		p.executor.lockFrameRate(param.frameRate);
@@ -592,6 +623,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		if (!p.enable) {
 			updateAudio(masterExecutorId, audio, track, section, row, channelCodes);
 			p.enable = true;
+			process.addExecutor(masterExecutorId, p.executor.currentPosition());
 			return masterExecutorId;
 		}
 		
@@ -599,6 +631,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		p = createExecutorParam();
 		p.audio = audio;
 		updateAudio(p.id, audio, track, section, row, channelCodes);
+		process.addExecutor(p.id, p.executor.currentPosition());
 		
 		// 需要锁定频率
 		p.executor.lockFrameRate(param.frameRate);
@@ -684,7 +717,8 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	public void remove(int exeId) {
 		getExecutorParam(exeId);
 		
-		// TODO 其它规则如果涉及到它的, 要进行更改
+		// 其它规则如果涉及到它的, 要进行更改
+		process.removeExecutor(exeId);
 		
 		// 删除执行器
 		removeExecutorParam(exeId);
@@ -892,6 +926,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			param.frameRate = ep.executor.getFrameRate();
 			onFrameRateUpdated();
 		}
+		process.updatePosition(exeId, ep.executor.currentPosition());
 	}
 	
 	/**
@@ -961,6 +996,7 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			param.frameRate = ep.executor.getFrameRate();
 			onFrameRateUpdated();
 		}
+		process.updatePosition(exeId, ep.executor.currentPosition());
 	}
 	
 	/**
@@ -1473,6 +1509,28 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	public void removeExecuteFinishedListener(int exeId, IFtmExecutedListener l) {
 		ExecutorParam ep = getExecutorParam(exeId);
 		ep.executor.removeExecuteFinishedListener(l);
+	}
+	
+	/* **********
+	 * 等待协议 *
+	 ********** */
+	
+	/**
+	 * 添加等待协议
+	 * @param a
+	 *   协议数据
+	 */
+	public void addWaitingAgreement(WaitingAgreement a) {
+		process.addWaitingAgreement(a);
+	}
+	
+	/**
+	 * 删除等待协议
+	 * @param a
+	 *   协议数据
+	 */
+	public void removeWaitingAgreement(WaitingAgreement a) {
+		process.removeWaitingAgreement(a);
 	}
 
 }
