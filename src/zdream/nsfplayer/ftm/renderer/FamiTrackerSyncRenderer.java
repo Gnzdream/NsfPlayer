@@ -1194,6 +1194,21 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	/* **********
 	 *  仪表盘  *
 	 ********** */
+	
+	/**
+	 * <p>询问指定执行器, 当前帧是否更新了行.
+	 * <p>无论是手动切换执行位置, 还是执行器自动切换下一行,
+	 * 均认为是更新了行
+	 * </p>
+	 * @param exeId
+	 *   执行器标识号
+	 * @return
+	 *   true, 如果指定执行器当前帧更新了行
+	 */
+	public boolean isRowUpdated(int exeId) {
+		ExecutorParam ep = getExecutorParam(exeId);
+		return ep.executor.isRowUpdated();
+	}
 
 	/**
 	 * <p>为一个已经在工作的执行器, 询问该执行器正在渲染的曲目号.

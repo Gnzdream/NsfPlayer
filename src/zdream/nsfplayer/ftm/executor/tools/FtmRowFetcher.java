@@ -257,6 +257,16 @@ public class FtmRowFetcher {
 	}
 	
 	/**
+	 * 询问当前帧是否更新了行
+	 * @return
+	 *   true, 如果当前帧更新了行
+	 * @since v0.3.1
+	 */
+	public boolean isRowUpdated() {
+		return updateRow;
+	}
+	
+	/**
 	 * <p>更新播放状态
 	 * <p>这个调用是在 {@link FtmNote} 的效果处理完之后调用的.
 	 * 这样可以确保改变 speed 的效果可以被计算进去.

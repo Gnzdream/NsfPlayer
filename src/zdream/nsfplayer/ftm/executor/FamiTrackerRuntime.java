@@ -39,6 +39,15 @@ public class FamiTrackerRuntime {
 	 */
 	public final HashMap<Byte, AbstractFtmChannel> channels = new HashMap<>();
 	
+	/**
+	 * 该帧进行手动切换执行位置的标示
+	 */
+	public boolean switchFlag;
+	/**
+	 * 该帧执行位置切换的标示. 含自动换行和手动切换位置.
+	 */
+	public boolean updateFlag;
+	
 	/* **********
 	 *  初始化  *
 	 ********** */
@@ -182,6 +191,20 @@ public class FamiTrackerRuntime {
 			
 			converter.convert(note, channelType, effects.get(channel), geffect, querier);
 		}
+	}
+	
+	/**
+	 * 更新是否换行的标示. 每帧末尾时调用.
+	 * @since v0.3.1
+	 */
+	public void updateFlag() {
+		if (switchFlag) {
+			updateFlag = true;
+		} else {
+			updateFlag = fetcher.isRowUpdated();
+		}
+		
+		this.switchFlag = false;
 	}
 	
 	/* **********

@@ -14,6 +14,7 @@ import zdream.nsfplayer.ftm.audio.FtmAudio;
 import zdream.nsfplayer.ftm.executor.effect.IFtmEffect;
 import zdream.nsfplayer.ftm.executor.hook.IFtmExecutedListener;
 import zdream.nsfplayer.ftm.executor.hook.IFtmFetchListener;
+import zdream.nsfplayer.ftm.executor.tools.FtmRowFetcher;
 import zdream.nsfplayer.ftm.process.base.FtmPosition;
 import zdream.nsfplayer.sound.AbstractNsfSound;
 
@@ -110,6 +111,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		
 		runtime.ready(audio, track, section, row);
 		readyChannels();
+		runtime.switchFlag = true;
 	}
 	
 	/**
@@ -174,6 +176,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		
 		runtime.ready(track, section, row);
 		runtime.resetAllChannels();
+		runtime.switchFlag = true;
 	}
 	
 	/**
@@ -243,6 +246,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		requireNonNull(runtime.querier, "FamiTracker 曲目 audio = null");
 		
 		runtime.ready(track, section, row);
+		runtime.switchFlag = true;
 	}
 	
 	/**
@@ -293,6 +297,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 		updateChannels();
 
 		runtime.fetcher.updateState();
+		runtime.updateFlag();
 	}
 	
 	/**
@@ -305,6 +310,7 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	public void tickBlock() {
 		updateChannels();
 		runtime.fetcher.updateState();
+		runtime.updateFlag();
 	}
 
 	/**
@@ -354,6 +360,19 @@ public class FamiTrackerExecutor extends AbstractNsfExecutor<FtmAudio> {
 	/* **********
 	 * 参数指标 *
 	 ********** */
+	
+	/**
+	 * <p>询问当前帧是否更新了行.
+	 * <p>无论是手动切换执行位置, 还是 {@link FtmRowFetcher} 自动切换下一行,
+	 * 均认为是更新了行
+	 * </p>
+	 * @return
+	 *   true, 如果当前帧更新了行
+	 * @since v0.3.1
+	 */
+	public boolean isRowUpdated() {
+		return runtime.updateFlag;
+	}
 	
 	/**
 	 * <p>询问是否已经播放完毕

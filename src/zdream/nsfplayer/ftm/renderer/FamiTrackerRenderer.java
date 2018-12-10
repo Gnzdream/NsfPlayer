@@ -361,6 +361,19 @@ public class FamiTrackerRenderer extends AbstractNsfRenderer<FtmAudio> {
 	 */
 	
 	/**
+	 * <p>询问当前帧是否更新了行.
+	 * <p>无论是手动切换执行位置, 还是执行器自动切换下一行,
+	 * 均认为是更新了行
+	 * </p>
+	 * @return
+	 *   true, 如果当前帧更新了行
+	 * @since v0.3.1
+	 */
+	public boolean isRowUpdated() {
+		return executor.isRowUpdated();
+	}
+	
+	/**
 	 * @return
 	 *   获取正在播放的曲目号
 	 */
