@@ -62,6 +62,14 @@ public abstract class AbstractAgreement {
 		this.timeout = timeout;
 	}
 	
+	/**
+	 * 设置超时时间为永远, 即永远不超时
+	 * @see #setTimeout(int)
+	 */
+	public void setTimeoutForever() {
+		setTimeout(Integer.MAX_VALUE);
+	}
+	
 	/* **********
 	 *   提交   *
 	 ********** */
