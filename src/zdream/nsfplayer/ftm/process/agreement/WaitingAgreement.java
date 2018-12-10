@@ -2,6 +2,7 @@ package zdream.nsfplayer.ftm.process.agreement;
 
 import static java.util.Objects.requireNonNull;
 
+import zdream.nsfplayer.core.NsfPlayerException;
 import zdream.nsfplayer.ftm.process.base.FtmPosition;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerSyncRenderer;
 
@@ -26,13 +27,20 @@ public class WaitingAgreement extends AbstractAgreement {
 	
 	public static final String NAME = "WAITING";
 	
+	/**
+	 * @throws NsfPlayerException
+	 *   当 <code>waitExeId == dependExeId</code> 时
+	 */
 	public WaitingAgreement(
 			int waitExeId,
 			FtmPosition waitPos,
 			int dependExeId,
 			FtmPosition dependPos) {
 		requireNonNull(waitPos, "waitPos == null");
-		requireNonNull(dependPos, "waitPos == null");
+		requireNonNull(dependPos, "dependPos == null");
+		if (waitExeId == dependExeId) {
+			throw new NsfPlayerException("waitExeId == dependExeId");
+		}
 		this.waitExeId = waitExeId;
 		this.waitPos = waitPos;
 		this.dependExeId = dependExeId;
@@ -49,9 +57,9 @@ public class WaitingAgreement extends AbstractAgreement {
 		return WaitingAgreementEntry.create(this);
 	}
 	
-	final int waitExeId;
-	final FtmPosition waitPos;
-	final int dependExeId;
-	final FtmPosition dependPos;
+	public final int waitExeId;
+	public final FtmPosition waitPos;
+	public final int dependExeId;
+	public final FtmPosition dependPos;
 
 }

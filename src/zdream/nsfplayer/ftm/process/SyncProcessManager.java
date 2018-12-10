@@ -6,6 +6,7 @@ import java.util.List;
 
 import zdream.nsfplayer.ftm.process.agreement.AbstractAgreementEntry;
 import zdream.nsfplayer.ftm.process.agreement.BarrierAgreementEntry;
+import zdream.nsfplayer.ftm.process.agreement.WaitingAgreement;
 import zdream.nsfplayer.ftm.process.agreement.WaitingAgreementEntry;
 import zdream.nsfplayer.ftm.process.base.FtmPosition;
 import zdream.nsfplayer.ftm.renderer.FamiTrackerSyncRenderer;
@@ -13,7 +14,7 @@ import zdream.nsfplayer.ftm.renderer.FamiTrackerSyncRenderer;
 /**
  * <p>处理各个执行器依据协议内容协调执行位置、速度的管理者
  * <p>在 {@link FamiTrackerSyncRenderer} 中使用.
- * 支持栅栏、信号协议.
+ * 支持信号协议. 在版本 v0.3.1 暂不支持栅栏协议
  * </p>
  * 
  * @author Zdream
@@ -55,6 +56,7 @@ public class SyncProcessManager {
 	 *   执行器标识号
 	 */
 	public void removeExecutor(int exeId) {
+		clearAgreement(exeId);
 		states.remove(getState(exeId));
 	}
 	
@@ -159,6 +161,97 @@ public class SyncProcessManager {
 	 */
 	public boolean isWaiting(int exeId) {
 		return !getState(exeId).bounds.isEmpty();
+	}
+	
+	/* **********
+	 *   协议   *
+	 ********** */
+	
+	/**
+	 * 添加等待协议
+	 * @param a
+	 *   协议数据
+	 */
+	public void addWaitingAgreement(WaitingAgreement a) {
+		WaitingAgreementEntry entry = a.createEntry();
+		
+		int waitExeId = entry.waitExeId;
+		int dependExeId = entry.dependExeId;
+		
+		ExecutorProcessState waitExe = getState(waitExeId);
+		ExecutorProcessState dependExe = getState(dependExeId);
+		
+		List<AbstractAgreementEntry> list = waitExe.agreements.get(entry.waitPos);
+		if (list == null) {
+			list = new ArrayList<>();
+			list.add(entry);
+			waitExe.agreements.put(entry.waitPos, list);
+		} else {
+			list.add(entry);
+		}
+		
+		dependExe.refs.add(entry);
+	}
+	
+	/**
+	 * 删除等待协议
+	 * @param a
+	 *   协议数据
+	 */
+	public void removeWaitingAgreement(WaitingAgreement a) {
+		int dependExeId = a.dependExeId;
+		ExecutorProcessState dependExe = getState(dependExeId);
+		
+		final int len = dependExe.refs.size();
+		for (int i = 0; i < len; i++) {
+			AbstractAgreementEntry e = dependExe.refs.get(i);
+			if (e.is(a)) {
+				removeWaitingAgreement((WaitingAgreementEntry) e);
+				break;
+			}
+		}
+	}
+	
+	private void removeWaitingAgreement(WaitingAgreementEntry entry) {
+		// 删除 dependExe 中的引用
+		int dependExeId = entry.dependExeId;
+		ExecutorProcessState dependExe = getState(dependExeId);
+		dependExe.refs.remove(entry);
+		
+		// 删除 waitExe 中的引用
+		int waitExeId = entry.waitExeId;
+		ExecutorProcessState waitExe = getState(waitExeId);
+		List<AbstractAgreementEntry> list = waitExe.agreements.get(entry.waitPos);
+		if (list != null) {
+			list.remove(entry);
+		}
+		if (list.isEmpty()) {
+			waitExe.agreements.remove(entry.waitPos);
+		}
+		
+		if (entry.waitPos.equals(waitExe.pos)) {
+			waitExe.bounds.remove(entry);
+		}
+	}
+	
+	/**
+	 * <p>清除指定执行器的所有协议内容.
+	 * <p>如果该执行器签订了等待协议, 无论是等待方还是依据方, 该协议都将取消.
+	 * 另一个对象中的该协议也将删除
+	 * </p>
+	 * @param exeId
+	 */
+	private void clearAgreement(int exeId) {
+		ExecutorProcessState exe = getState(exeId);
+		
+		ArrayList<AbstractAgreementEntry> lists =
+				new ArrayList<>(exe.agreements.size() + (exe.agreements.size() << 1));
+		
+		for (AbstractAgreementEntry entry : lists) {
+			if (entry instanceof WaitingAgreementEntry) {
+				removeWaitingAgreement((WaitingAgreementEntry) entry);
+			}
+		}
 	}
 
 }

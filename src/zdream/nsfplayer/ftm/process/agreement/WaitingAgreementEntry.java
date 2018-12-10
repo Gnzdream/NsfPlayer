@@ -12,10 +12,6 @@ import zdream.nsfplayer.ftm.process.base.FtmPosition;
 public class WaitingAgreementEntry extends AbstractAgreementEntry {
 
 	public static WaitingAgreementEntry create(WaitingAgreement ref) {
-		if (ref.dependExeId == ref.waitExeId) {
-			return null;
-		}
-		
 		return new WaitingAgreementEntry(ref);
 	}
 	
