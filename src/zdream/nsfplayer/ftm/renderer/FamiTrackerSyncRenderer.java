@@ -310,6 +310,15 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		}
 		
 		process.updateStates();
+
+		// 更新 started 值. 该值只能在第一帧全跑完之后确定. 所以放在这里
+		for (ExecutorParam ep : eParams) {
+			if (process.isWaiting(ep.id)) {
+				// 协议: 等待中
+				continue;
+			}
+			ep.started = true;
+		}
 	}
 	
 	/**
@@ -335,7 +344,9 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			
 			byte channelCode = cp.channelCode;
 			AbstractNsfSound s = ep.executor.getSound(channelCode);
-			s.process(cp.delay = delay);
+			if (ep.started) {
+				s.process(cp.delay = delay);
+			}
 			
 			delay += 100;
 			if (delay >= clock) {
@@ -365,7 +376,10 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			
 			byte channelCode = cp.channelCode;
 			AbstractNsfSound s = ep.executor.getSound(channelCode);
-			s.process(clock - cp.delay);
+
+			if (ep.started) {
+				s.process(clock - cp.delay);
+			}
 			s.endFrame();
 			cp.delay = 0;
 		}
@@ -402,6 +416,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		 * 是否正在启用
 		 */
 		boolean enable;
+		/**
+		 * 是否启动.
+		 * 开始为 false. 如果执行器在执行的第一帧由于等待协议而等待时,
+		 * 该值一直为 false, 直到它放行. 在该值为 false 时, 该执行器的音频不会被渲染.
+		 */
+		boolean started;
 		
 		public ExecutorParam(int id) {
 			this.id = id;
@@ -806,6 +826,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 	public void updateAudio(int exeId, int track) {
 		ExecutorParam ep = this.eParams[exeId];
 		ep.executor.ready(track);
+		
+		// process 管理
+		process.updatePosition(exeId, ep.executor.currentPosition());
+		
+		// started 参数
+		ep.started = false;
 	}
 	
 	/**
@@ -829,6 +855,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			int section) {
 		ExecutorParam ep = this.eParams[exeId];
 		ep.executor.ready(track, section);
+		
+		// process 管理
+		process.updatePosition(exeId, ep.executor.currentPosition());
+		
+		// started 参数
+		ep.started = false;
 	}
 	
 	/**
@@ -855,6 +887,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			int row) {
 		ExecutorParam ep = this.eParams[exeId];
 		ep.executor.ready(track, section, row);
+		
+		// process 管理
+		process.updatePosition(exeId, ep.executor.currentPosition());
+		
+		// started 参数
+		ep.started = false;
 	}
 	
 	/**
@@ -926,7 +964,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			param.frameRate = ep.executor.getFrameRate();
 			onFrameRateUpdated();
 		}
+		
+		// process 管理
 		process.updatePosition(exeId, ep.executor.currentPosition());
+		
+		// started 参数
+		ep.started = false;
 	}
 	
 	/**
@@ -996,7 +1039,12 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 			param.frameRate = ep.executor.getFrameRate();
 			onFrameRateUpdated();
 		}
+		
+		// process 管理
 		process.updatePosition(exeId, ep.executor.currentPosition());
+		
+		// started 参数
+		ep.started = false;
 	}
 	
 	/**

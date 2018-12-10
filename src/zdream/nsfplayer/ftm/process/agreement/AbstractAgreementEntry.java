@@ -4,6 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.ref.WeakReference;
 
+import zdream.nsfplayer.core.IResetable;
+
 /**
  * <p>协议包含的内容数据
  * </p>
@@ -11,7 +13,7 @@ import java.lang.ref.WeakReference;
  * @author Zdream
  * @since v0.3.1
  */
-public abstract class AbstractAgreementEntry {
+public abstract class AbstractAgreementEntry implements IResetable {
 	
 	/**
 	 * 对原来实例的弱引用.
@@ -36,6 +38,11 @@ public abstract class AbstractAgreementEntry {
 	
 	public boolean is(AbstractAgreement a) {
 		return a == ref.get();
+	}
+	
+	@Override
+	public void reset() {
+		countdown = baseTimeout;
 	}
 
 }

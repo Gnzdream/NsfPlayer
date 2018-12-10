@@ -85,6 +85,7 @@ public class SyncProcessManager {
 	 * @param state
 	 */
 	private void updateExecutorBound(ExecutorProcessState state) {
+		state.bounds.forEach(a -> a.reset()); // TODO 同步等待可以这样做, 但是栅栏不行.
 		state.bounds.clear();
 		List<AbstractAgreementEntry> agreements = state.agreements.get(state.pos);
 		
@@ -197,6 +198,11 @@ public class SyncProcessManager {
 		}
 		
 		dependExe.refs.add(entry);
+		
+		// 查看该协议是否现在就要触发
+		if (waitExe.pos.equals(entry.waitPos)) {
+			waitExe.bounds.add(entry);
+		}
 	}
 	
 	/**
