@@ -266,7 +266,7 @@ while (true) {
 
 *	版本(Version)
 
-当前版本为 v0.2.10
+当前版本为 v0.3.1
 
 [版本更新历史 0.3.x](doc/version-0.3.md)
 
