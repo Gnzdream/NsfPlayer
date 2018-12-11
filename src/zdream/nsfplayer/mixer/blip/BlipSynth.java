@@ -123,6 +123,9 @@ public class BlipSynth {
 		final int rev = fwd + quality - 2;
 		
 		{
+			if (bufptr + fwd >= buf.buffer_.length) {
+				System.out.println();
+			}
 			long t0 = i0 * delta + buf.buffer_ [bufptr + fwd];
 			long t1 = impulses [impptr + blip_res] * delta + buf.buffer_ [bufptr + fwd + 1];
 			i0 = impulses [impptr + blip_res * 2];

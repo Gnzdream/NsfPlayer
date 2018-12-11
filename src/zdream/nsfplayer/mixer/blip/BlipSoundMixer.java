@@ -151,6 +151,10 @@ public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 			buffer.setSampleRate(sampleRate, newSize);
 			oldSize = newSize;
 		}
+		
+		if (buffer.factor_ == Integer.MAX_VALUE) {
+			throw new IllegalStateException("");
+		}
 	}
 
 	@Override

@@ -137,14 +137,13 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	private void ready0(NsfAudio audio, int track) {
 		executor.ready(audio, track);
 		
-		mixer.reset();
-		connectChannels();
-		
 		super.resetCounterParam(frameRate, param.sampleRate);
-		clearBuffer();
-		
 		rate.onParamUpdate(frameRate, executor.cycleRate());
 		apuCounter.setParam(countCycle(param.speed), param.sampleRate);
+		
+		mixer.reset();
+		connectChannels();
+		clearBuffer();
 	}
 	
 	/**
