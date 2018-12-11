@@ -52,9 +52,11 @@ public class NsfMixerSoundConvertor implements INsfChannelCode {
 	
 	/**
 	 * 适用于 FDS 轨道
+	 * @param x
+	 *   范围 [0, 2016]
 	 */
 	public static int fds(final int x) {
-		return (x > 0) ? (int) (x / 1.9) : 0;
+		return (x > 0) ? (int) (x / 21.1f) : 0;
 	}
 	
 	/**

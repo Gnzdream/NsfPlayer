@@ -3,7 +3,9 @@ package zdream.nsfplayer.sound;
 import java.util.Arrays;
 
 /**
- * FDS 轨道的发声器.
+ * <p>FDS 轨道的发声器
+ * <p>该发声器输出的值的范围是 [0, 2016]
+ * </p>
  * 
  * @author Zdream
  * @since v0.2.4

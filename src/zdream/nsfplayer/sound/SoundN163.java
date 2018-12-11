@@ -3,7 +3,9 @@ package zdream.nsfplayer.sound;
 import java.util.Arrays;
 
 /**
- * N163 轨道的发声器, 在 NSF 中最多有 8 个轨道
+ * <p>N163 轨道的发声器, 在 NSF 中最多有 8 个轨道
+ * <p>该发声器输出的值的范围是 [0, 120]
+ * </p>
  * 
  * @author Zdream
  * @since v0.2.6

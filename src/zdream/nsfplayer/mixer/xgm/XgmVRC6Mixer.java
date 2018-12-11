@@ -10,7 +10,7 @@ public class XgmVRC6Mixer extends AbstractXgmMultiMixer {
 	
 	final XgmLinearChannel pulse1, pulse2, sawtooth;
 	private boolean enable1, enable2, enableSaw;
-	private final int MASTER = (int) (256.0 * 1223.0 / 1920.0);
+	private final int MASTER = (int) (256.0 * 1223.0 / 1920.0); // 163.067
 
 	public XgmVRC6Mixer() {
 		pulse1 = new XgmLinearChannel();

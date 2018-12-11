@@ -109,18 +109,18 @@ public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 		
 		case CHANNEL_TYPE_FDS:
 		{
-			mixer.updateSetting(12, -3500);
+			mixer.updateSetting(12, -420);
 		} break;
 		
 		case CHANNEL_TYPE_N163:
 		case CHANNEL_TYPE_VRC7:
 		{
-			mixer.updateSetting(12, -800);
+			mixer.updateSetting(12, -600);
 		} break;
 		
 		case CHANNEL_TYPE_S5B:
 		{
-			mixer.updateSetting(12, -1200);
+			mixer.updateSetting(12, -800);
 		} break;
 		
 		default:
@@ -150,10 +150,6 @@ public class BlipSoundMixer extends AbstractNsfSoundMixer<BlipMixerChannel> {
 		if (newSize > oldSize + 4 || newSize < oldSize - 4) {
 			buffer.setSampleRate(sampleRate, newSize);
 			oldSize = newSize;
-		}
-		
-		if (buffer.factor_ == Integer.MAX_VALUE) {
-			throw new IllegalStateException("");
 		}
 	}
 
