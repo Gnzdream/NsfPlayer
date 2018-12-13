@@ -440,6 +440,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		@Override
 		public void onReattach(int n163ChannelCount) {
 			NsfRenderer.this.n163ChannelCount = n163ChannelCount;
+			System.out.println(n163ChannelCount);
 			if (channelInit) {
 				return;
 			}
@@ -479,7 +480,7 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		private ChannelParam searchParam(byte code) {
 			for (ChannelParam p : channels) {
 				if (p == null) {
-					break;
+					continue;
 				}
 				if (p.channelCode == code) {
 					return p;
