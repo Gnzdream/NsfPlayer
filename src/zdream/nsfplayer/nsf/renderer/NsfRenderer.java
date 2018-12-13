@@ -56,6 +56,24 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	 */
 	public ISoundMixer mixer;
 	
+	/**
+	 * <p>N163 轨道数.
+	 * <p>如果未确定, 该值为 -1.
+	 * </p>
+	 * @since v0.3.2
+	 */
+	private int n163ChannelCount = -1;
+	
+	/**
+	 * <p>是否正在轨道初始化中.
+	 * <p>该值仅用于在 N163 轨道初始化时使用. N163 轨道数量的确定在 reset() 或者运行时确定,
+	 * 如果在 reset() 时确定则会直接操作没有初始化过的轨道, 发生异常.
+	 * 因此需要该值来确定该渲染器的状态.
+	 * </p>
+	 * @since v0.3.2
+	 */
+	private boolean channelInit;
+	
 	public NsfRenderer() {
 		this(new NsfRendererConfig());
 	}
@@ -135,6 +153,8 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 	}
 	
 	private void ready0(NsfAudio audio, int track) {
+		n163ChannelCount = -1;
+		channelInit = true;
 		executor.ready(audio, track);
 		
 		super.resetCounterParam(frameRate, param.sampleRate);
@@ -142,21 +162,30 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		apuCounter.setParam(countCycle(param.speed), param.sampleRate);
 		
 		mixer.reset();
-		connectChannels();
+		connectChannels(audio.useN163());
 		clearBuffer();
+		
+		channelInit = false;
 	}
 	
 	/**
 	 * <p>连接执行构件中的 sound 和渲染构件的轨道.
 	 * <p>这个方法可以暂时确定所有轨道号
 	 * </p>
+	 * @param useN163
+	 *   该音频是否使用了 N163 芯片
 	 */
-	private void connectChannels() {
+	private void connectChannels(boolean useN163) {
 		mixer.detachAll();
 		Set<Byte> channels = executor.allChannelSet();
 		
-		// 计算总轨道数. 总数 + 8 为了 N163 轨道的数据能补上.
-		this.channels = new ChannelParam[channels.size() + 8];
+		// 计算总轨道数.
+		// 当使用了 N163 轨道, 但轨道数量不确定时, 总数 + 8 为了 N163 轨道的数据能补上.
+		if (useN163 && n163ChannelCount == -1) {
+			this.channels = new ChannelParam[channels.size() + 8];
+		} else {
+			this.channels = new ChannelParam[channels.size()];
+		}
 		
 		int index = 0;
 		int mixerChannel = -1;
@@ -410,6 +439,11 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 
 		@Override
 		public void onReattach(int n163ChannelCount) {
+			NsfRenderer.this.n163ChannelCount = n163ChannelCount;
+			if (channelInit) {
+				return;
+			}
+			
 			for (int i = 0; i < 8; i++) {
 				byte channelCode = (byte) (NesN163.CHANNEL_N163_1 + i);
 				AbstractNsfSound sound = executor.getSound(channelCode);
