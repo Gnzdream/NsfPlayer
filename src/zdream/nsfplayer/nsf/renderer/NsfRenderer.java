@@ -440,7 +440,6 @@ public class NsfRenderer extends AbstractNsfRenderer<NsfAudio> {
 		@Override
 		public void onReattach(int n163ChannelCount) {
 			NsfRenderer.this.n163ChannelCount = n163ChannelCount;
-			System.out.println(n163ChannelCount);
 			if (channelInit) {
 				return;
 			}
