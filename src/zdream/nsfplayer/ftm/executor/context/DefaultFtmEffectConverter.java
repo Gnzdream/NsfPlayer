@@ -117,7 +117,9 @@ public class DefaultFtmEffectConverter implements IFtmEffectConverter {
 		}
 		
 		if (note.instrument != MAX_INSTRUMENTS) {
-			handleInst(channelType, note, effects, querier);
+			// 如果 note 该部分为 release 或者 halt, 也不生效
+			if (note.note != NOTE_RELEASE && note.note != NOTE_HALT)
+				handleInst(channelType, note, effects, querier);
 		}
 		
 		// 其它效果
