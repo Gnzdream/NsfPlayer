@@ -142,6 +142,7 @@ public class DPCMSound extends Sound2A03 {
 		deltaCounter = -1;
 		offsetAddress = 0;
 		length = 0;
+		sample = null;
 
 		// 辅助参数
 		counter = 0;

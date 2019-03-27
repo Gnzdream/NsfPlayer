@@ -117,6 +117,9 @@ public class ChannelDPCM extends AbstractFtmChannel {
 		offset = 0;
 		
 		super.reset();
+		
+		// 额外需要发声器也重置
+		sound.reset();
 	}
 	
 	@Override
