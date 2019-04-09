@@ -225,7 +225,7 @@ public class FtmAudio extends AbstractNsfAudio {
 	
 	public FtmSequence getSequence(FtmChipType chip, FtmSequenceType type, int index) {
 		ArrayList<FtmSequence> list = seqs.get(chip.ordinal() * FtmSequenceType.values().length + type.ordinal());
-		if (list == null) {
+		if (list == null || index >= list.size()) {
 			return null;
 		}
 		return list.get(index);
