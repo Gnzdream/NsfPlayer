@@ -81,9 +81,9 @@ public class XgmS5BMixer extends AbstractXgmMultiMixer {
 	@Override
 	public int render(int index) {
 		float sum = 
-				(enable1 ? ch1.readValue(index) * ch1.getLevel() : 0)
-				+ (enable2 ? ch2.readValue(index) * ch2.getLevel() : 0)
-				+ (enable3 ? ch3.readValue(index) * ch3.getLevel() : 0);
+				(enable1 ? ch1.read(index) * ch1.getLevel() : 0)
+				+ (enable2 ? ch2.read(index) * ch2.getLevel() : 0)
+				+ (enable3 ? ch3.read(index) * ch3.getLevel() : 0);
 		int value = (int) (sum * MASTER);
 		value = intercept(value, 1);
 		return value;

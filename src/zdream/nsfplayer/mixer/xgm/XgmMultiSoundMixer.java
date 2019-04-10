@@ -373,9 +373,8 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	
 	/**
 	 * 处理单声道的情况
-	 * @param chs
-	 * @param chCount
 	 * @param length
+	 *   采样数
 	 */
 	private void handleMonoBuffer(int length) {
 		int v;
@@ -383,7 +382,7 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 		ISoundInterceptor[] itcpts = this.interceptorArray[0];
 		
 		for (int i = 0; i < length; i++) {
-			// 渲染一帧的流程
+			// 渲染一个采样的流程
 			v = 0;
 			
 			final int mlen = multiArray.length;
@@ -404,9 +403,8 @@ public class XgmMultiSoundMixer extends AbstractNsfSoundMixer<AbstractXgmAudioCh
 	
 	/**
 	 * 处理多声道的情况
-	 * @param chs
-	 * @param chCount
 	 * @param length
+	 *   采样数
 	 */
 	private void handleMultiTrackBuffer(int length) {
 		int v;
