@@ -10,7 +10,17 @@ import zdream.nsfplayer.mixer.IMixerConfig;
  */
 public class XgmMixerConfig implements IMixerConfig {
 	
+	/**
+	 * <p>合并轨道播放. 默认值
+	 * </p>
+	 */
 	public static final int TYPE_MULTI = 0;
+	
+	/**
+	 * <p>单一轨道播放. 所有轨道相互独立, 各不受其它轨道影响.
+	 * <p>对 N163 轨道的影响比较大. 设置为单一轨道播放后, 需要对 N163 轨道单独配置音量
+	 * </p>
+	 */
 	public static final int TYPE_SINGER = 1;
 	
 	/**

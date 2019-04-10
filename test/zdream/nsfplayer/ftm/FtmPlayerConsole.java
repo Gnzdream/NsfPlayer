@@ -61,7 +61,7 @@ public class FtmPlayerConsole {
 
 	public FtmPlayerConsole() {
 		XgmMixerConfig c = new XgmMixerConfig();
-		c.channelType = XgmMixerConfig.TYPE_SINGER;
+		c.channelType = XgmMixerConfig.TYPE_MULTI;
 		
 		FamiTrackerConfig config1 = new FamiTrackerConfig();
 		config1.mixerConfig = c;
