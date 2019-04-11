@@ -324,17 +324,6 @@ public class FamiTrackerHandler implements INsfChannelCode {
 			channelCode[codePtr++] = CHANNEL_VRC6_PULSE2;
 			channelCode[codePtr++] = CHANNEL_VRC6_SAWTOOTH;
 		}
-		if (audio.useVcr7) {
-			channelCode[codePtr++] = CHANNEL_VRC7_FM1;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM2;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM3;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM4;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM5;
-			channelCode[codePtr++] = CHANNEL_VRC7_FM6;
-		}
-		if (audio.useFds) {
-			channelCode[codePtr++] = CHANNEL_FDS;
-		}
 		if (audio.useMmc5) {
 			channelCode[codePtr++] = CHANNEL_MMC5_PULSE1;
 			channelCode[codePtr++] = CHANNEL_MMC5_PULSE2;
@@ -354,6 +343,17 @@ public class FamiTrackerHandler implements INsfChannelCode {
 			for (int i = 0; i < length; i++) {
 				channelCode[codePtr++] = cs[i];
 			}
+		}
+		if (audio.useFds) {
+			channelCode[codePtr++] = CHANNEL_FDS;
+		}
+		if (audio.useVcr7) {
+			channelCode[codePtr++] = CHANNEL_VRC7_FM1;
+			channelCode[codePtr++] = CHANNEL_VRC7_FM2;
+			channelCode[codePtr++] = CHANNEL_VRC7_FM3;
+			channelCode[codePtr++] = CHANNEL_VRC7_FM4;
+			channelCode[codePtr++] = CHANNEL_VRC7_FM5;
+			channelCode[codePtr++] = CHANNEL_VRC7_FM6;
 		}
 		if (audio.useS5b) {
 			channelCode[codePtr++] = CHANNEL_S5B_SQUARE1;

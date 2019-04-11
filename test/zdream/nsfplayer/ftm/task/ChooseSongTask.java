@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm.task;
 import zdream.nsfplayer.core.AbstractNsfAudio;
 import zdream.nsfplayer.core.AbstractNsfRenderer;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
 
 /**
  * 发起切歌动作的任务
@@ -50,7 +51,11 @@ public class ChooseSongTask implements IFtmTask {
 		renderer.ready(song);
 		
 		// 输出提示文字
-		env.printOut("[SONG] 切换到歌曲: %s", song);
+		if (env.getType() == OpenType.FTM) {
+			env.printOut("[SONG] 切换到歌曲: %d [%s]", song, ((FtmAudio)audio).getTrack(song).name);
+		} else {
+			env.printOut("[SONG] 切换到歌曲: %d", song);
+		}
 		
 		// 放入播放的 task
 		env.putTask(PlayTask.getOne());
