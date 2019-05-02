@@ -359,7 +359,7 @@ public class FtmRowFetcher {
 	 */
 	private void confirmNextSectionBegin() {
 		nextRow = 0;
-		nextSection++;
+		nextSection = param.curSection + 1;
 		
 		// Loop
 		if (nextSection >= querier.trackCount(param.trackIdx)) {
