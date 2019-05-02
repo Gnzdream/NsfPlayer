@@ -32,7 +32,12 @@ public class PortamentoOnState extends NoteSlideState {
 		
 		int masterNote = ch.getMasterNote();
 		if (masterNote != baseNote) {
-			if (speed != 0) {
+			if (baseNote == 0) {
+				// 该效果出现时, 原来的轨道的 note 还没有设置,
+				// 此时先不产生滑音效果
+				baseNote = masterNote;
+				delta = 0;
+			} else if (speed != 0) {
 				delta += ch.periodTable(baseNote) - ch.periodTable(masterNote);
 				baseNote = masterNote;
 			} else {
