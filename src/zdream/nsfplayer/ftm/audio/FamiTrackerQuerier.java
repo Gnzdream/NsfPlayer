@@ -269,7 +269,7 @@ public class FamiTrackerQuerier implements INsfChannelCode {
 	public FtmNote getNote(int track, int section, int channel, int row) {
 		FtmTrack t = audio.getTrack(track);
 		int order = t.orders[section][channel];
-		if (order > t.patterns.length) {
+		if (order >= t.patterns.length) {
 			return null;
 		}
 		FtmPattern p = t.patterns[order][channel];
