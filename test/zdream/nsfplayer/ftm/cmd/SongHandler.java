@@ -1,7 +1,9 @@
 package zdream.nsfplayer.ftm.cmd;
 
-import zdream.nsfplayer.ftm.task.ChooseSongTask;
 import zdream.nsfplayer.ftm.FtmPlayerConsole;
+import zdream.nsfplayer.ftm.audio.FtmAudio;
+import zdream.nsfplayer.ftm.task.ChooseSongTask;
+import zdream.nsfplayer.ftm.task.OpenType;
 
 /**
  * <p>关于歌曲切换的处理器
@@ -42,8 +44,24 @@ public class SongHandler implements ICommandHandler {
 
 	private void handleChoose(String[] args, FtmPlayerConsole env) {
 		if (args.length != 2) {
-			env.printOut("[SONG] 使用 \"song <曲目号>\". 切换曲目。 [ 0 - %d ]\n[SONG] 现在播放曲目 %d。",
-					env.getAudio().getTrackCount() - 1, env.getRenderer().getCurrentTrack());
+			if (env.getType() == OpenType.FTM) {
+				FtmAudio audio = (FtmAudio) env.getAudio();
+				int song = env.getRenderer().getCurrentTrack();
+				int size = audio.getTrackCount() - 1;
+				env.printOut("[SONG] 使用 \"song <曲目号>\". 切换曲目。 [ 0 - %d ]\n[SONG] 现在播放曲目 %d [%s]。",
+						size, song, audio.getTrack(song).name);
+				
+				// 罗列所有曲目
+				env.printOut("       ----  --------");
+				for (int i = 0; i <= size; i++) {
+					env.printOut("       [%2d]  %s",
+							i, audio.getTrack(i).name);
+				}
+				env.printOut("       ----  --------");
+			} else {
+				env.printOut("[SONG] 使用 \"song <曲目号>\". 切换曲目。 [ 0 - %d ]\n[SONG] 现在播放曲目 %d。",
+						env.getAudio().getTrackCount() - 1, env.getRenderer().getCurrentTrack());
+			}
 			return;
 		}
 		
