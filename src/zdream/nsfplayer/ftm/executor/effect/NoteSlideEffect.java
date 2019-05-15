@@ -117,7 +117,7 @@ public class NoteSlideEffect implements IFtmEffect {
 		
 		if (!set.isEmpty()) {
 			s = (NoteSlideState) set.iterator().next();
-			if (s instanceof PortamentoOnState) {
+			if (s instanceof PortamentoOnState || ch.isNoteUpdated()) {
 				ch.removeState(s);
 				s = new NoteSlideState(speed, pitchDelta);
 				ch.addState(s);
