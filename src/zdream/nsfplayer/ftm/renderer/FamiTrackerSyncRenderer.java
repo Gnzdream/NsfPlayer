@@ -641,17 +641,17 @@ public class FamiTrackerSyncRenderer extends AbstractRenderer<FtmAudio>
 		// 主执行器
 		ExecutorParam p = eParams[masterExecutorId];
 		if (!p.enable) {
+			process.addExecutor(masterExecutorId, p.executor.currentPosition());
 			updateAudio(masterExecutorId, audio, track, section, row, channelCodes);
 			p.enable = true;
-			process.addExecutor(masterExecutorId, p.executor.currentPosition());
 			return masterExecutorId;
 		}
 		
 		// 新的执行器
 		p = createExecutorParam();
 		p.audio = audio;
-		updateAudio(p.id, audio, track, section, row, channelCodes);
 		process.addExecutor(p.id, p.executor.currentPosition());
+		updateAudio(p.id, audio, track, section, row, channelCodes);
 		
 		// 需要锁定频率
 		p.executor.lockFrameRate(param.frameRate);
