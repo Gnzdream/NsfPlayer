@@ -132,8 +132,14 @@ public class ChannelDPCM extends AbstractFtmChannel {
 	}
 	
 	@Override
+	public void doHalt() {
+		super.doHalt();
+		sound.sample = null;
+	}
+	
+	@Override
 	public void doRelease() {
-		this.playing = false;
+		this.doHalt();
 	}
 	
 	@Override
