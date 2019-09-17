@@ -139,6 +139,15 @@ public class FtmRowFetcher {
 		skipRow = row;
 	}
 	
+	/**
+	 * <p>清空跳转指令的数据.
+	 * </p>
+	 * @since v0.3.1
+	 */
+	public void clearJump() {
+		jumpSection = skipRow = -1;
+	}
+	
 	/* **********
 	 * 状态参数 *
 	 ********** */

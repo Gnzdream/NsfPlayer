@@ -73,6 +73,7 @@ public class FamiTrackerRuntime {
 	public void ready(FtmAudio audio, int track, int section, int row) {
 		querier = new FamiTrackerQuerier(audio);
 		fetcher.ready(querier, track, section, row);
+		fetcher.clearJump();
 		
 		// 向 runtime.effects 中添加 map
 		effects.clear();
@@ -95,6 +96,7 @@ public class FamiTrackerRuntime {
 	 */
 	public void ready(int track, int section, int row) {
 		fetcher.ready(track, section, row);
+		fetcher.clearJump();
 		for (Map<FtmEffectType, IFtmEffect> map : effects.values()) {
 			map.clear();
 		}
