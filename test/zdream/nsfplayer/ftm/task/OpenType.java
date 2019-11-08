@@ -8,6 +8,8 @@ package zdream.nsfplayer.ftm.task;
  */
 public enum OpenType {
 	
+	UNKNOWED,
+	
 	FTM,
 	
 	TXT,

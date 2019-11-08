@@ -25,7 +25,7 @@ public class OpenTask implements IFtmTask {
 	 * 是否按照 txt 形式打开文件
 	 * @since v0.2.5-test
 	 */
-	OpenType type = FTM;
+	OpenType type = UNKNOWED;
 	
 	public OpenTask() {}
 
@@ -61,6 +61,23 @@ public class OpenTask implements IFtmTask {
 
 	@Override
 	public void execute(FtmPlayerConsole env) {
+		if (filename == null || filename.length() == 0) {
+			env.printOut("[OPEN] 使用 open [file] 读取文件");
+			return;
+		}
+		
+		if (type == UNKNOWED) {
+			if (filename.endsWith(".ftm")) {
+				type = FTM;
+			} else if (filename.endsWith(".nsf")) {
+				type = NSF;
+			} else if (filename.endsWith(".txt")) {
+				type = TXT;
+			} else { // 默认 ftm
+				type = FTM;
+			}
+		}
+		
 		try {
 			switch (type) {
 			case FTM: {

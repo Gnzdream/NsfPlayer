@@ -3,6 +3,7 @@ package zdream.nsfplayer.ftm;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Scanner;
 
 import zdream.nsfplayer.core.AbstractNsfAudio;
@@ -21,6 +22,8 @@ import zdream.nsfplayer.ftm.task.OpenTask;
 import zdream.nsfplayer.ftm.task.OpenType;
 import zdream.nsfplayer.ftm.task.PauseTask;
 import zdream.nsfplayer.ftm.task.PlayTask;
+import zdream.nsfplayer.mixer.IMixerConfig;
+import zdream.nsfplayer.mixer.blip.BlipMixerConfig;
 import zdream.nsfplayer.mixer.xgm.XgmMixerConfig;
 import zdream.nsfplayer.nsf.audio.NsfAudio;
 import zdream.nsfplayer.nsf.renderer.NsfRenderer;
@@ -58,10 +61,20 @@ public class FtmPlayerConsole {
 
 	// 指令解析
 	Map<String, ICommandHandler> handlers = new HashMap<String, ICommandHandler>();
-
+	
 	public FtmPlayerConsole() {
-		XgmMixerConfig c = new XgmMixerConfig();
-		c.channelType = XgmMixerConfig.TYPE_MULTI;
+		this(new Properties());
+	}
+
+	public FtmPlayerConsole(Properties prop) {
+		String mixerProp = prop.getProperty("mixer");
+		IMixerConfig c;
+		if (mixerProp != null && mixerProp.equals("blip")) {
+			c = new BlipMixerConfig();
+		} else {
+			c = new XgmMixerConfig();
+			((XgmMixerConfig) c).channelType = XgmMixerConfig.TYPE_MULTI;
+		}
 		
 		FamiTrackerConfig config1 = new FamiTrackerConfig();
 		config1.mixerConfig = c;
@@ -156,6 +169,10 @@ public class FtmPlayerConsole {
 			text = scan.nextLine();
 			
 			String[] args = CodeSpliter.split(text);
+			if (args.length < 1) {
+				continue;
+			}
+			
 			try {
 				String cmd = args[0] = args[0].toLowerCase();
 				ICommandHandler h = handlers.get(cmd);
