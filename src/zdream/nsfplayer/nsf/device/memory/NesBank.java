@@ -90,16 +90,16 @@ public class NesBank implements IDevice {
 				bankswitch[addr & 7] = value & 0xff;
 				return true;
 			}
-	    }
-		
-		if (0 <= bankswitch[addr >> 12] && 0x6000 <= addr && addr < 0xe000) {
-			int idx = bank[bankswitch[addr >> 12]];
-			if (idx == -1) {
-				return false;
+			
+			if (0 <= bankswitch[addr >> 12] && 0x6000 <= addr && addr < 0xe000) {
+				int idx = bank[bankswitch[addr >> 12]];
+				if (idx == -1) {
+					return false;
+				}
+				image[idx + (addr & 0x0fff)] = (byte) (value & 0xff);
+		        return true;
 			}
-			image[idx + (addr & 0x0fff)] = (byte) (value & 0xff);
-	        return true;
-		}
+	    }
 		
 		return false;
 	}
