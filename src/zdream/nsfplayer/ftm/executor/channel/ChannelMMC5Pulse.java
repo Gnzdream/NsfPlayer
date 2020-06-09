@@ -4,7 +4,7 @@ import static zdream.nsfplayer.sound.Sound2A03.LENGTH_TABLE;
 
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
-import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.SoundPulse;
 
 /**
  * MMC5 一号 / 二号矩形轨道
@@ -81,10 +81,10 @@ public class ChannelMMC5Pulse extends ChannelMMC5 {
 	/**
 	 * MMC5 Pulse 音频发声器
 	 */
-	public final PulseSound sound = new PulseSound();
+	public final SoundPulse sound = new SoundPulse();
 
 	@Override
-	public PulseSound getSound() {
+	public SoundPulse getSound() {
 		return sound;
 	}
 	

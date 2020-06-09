@@ -8,7 +8,7 @@ import zdream.nsfplayer.core.IFrameSequence;
  * @author Zdream
  * @since v0.2.9
  */
-public class LinearSoundTriangle extends SoundTriangle implements IFrameSequence {
+public class SoundLinearTriangle extends SoundTriangle implements IFrameSequence {
 	
 	/* **********
 	 *   参数   *

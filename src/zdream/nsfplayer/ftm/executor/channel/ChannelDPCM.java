@@ -3,7 +3,7 @@ package zdream.nsfplayer.ftm.executor.channel;
 import zdream.nsfplayer.ftm.executor.AbstractFtmChannel;
 import zdream.nsfplayer.ftm.format.FtmDPCMSample;
 import zdream.nsfplayer.ftm.format.FtmInstrument2A03;
-import zdream.nsfplayer.sound.DPCMSound;
+import zdream.nsfplayer.sound.SoundDPCM;
 
 /**
  * <p>DPCM 轨道
@@ -200,10 +200,10 @@ public class ChannelDPCM extends AbstractFtmChannel {
 	 *  发声器  *
 	 ********** */
 	
-	DPCMSound sound = new DPCMSound();
+	SoundDPCM sound = new SoundDPCM();
 
 	@Override
-	public DPCMSound getSound() {
+	public SoundDPCM getSound() {
 		return sound;
 	}
 

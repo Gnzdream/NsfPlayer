@@ -5,7 +5,7 @@ package zdream.nsfplayer.sound;
  * @author Zdream
  * @since v0.2.1
  */
-public class PulseSound extends Sound2A03 {
+public class SoundPulse extends Sound2A03 {
 	
 	protected static final boolean[][] DUTY_TABLE = {
 			{ false, false,  true,  true, false, false, false, false, false, false, false, false, false, false, false, false },
@@ -14,7 +14,7 @@ public class PulseSound extends Sound2A03 {
 			{  true,  true, false, false, false, false,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true }
 	};
 	
-	public PulseSound() {
+	public SoundPulse() {
 		reset();
 	}
 	

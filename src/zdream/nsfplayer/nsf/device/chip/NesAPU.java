@@ -7,9 +7,9 @@ import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.EnvelopeSoundNoise;
-import zdream.nsfplayer.sound.PulseSound;
-import zdream.nsfplayer.sound.SweepSoundPulse;
+import zdream.nsfplayer.sound.SoundEnvelopeNoise;
+import zdream.nsfplayer.sound.SoundPulse;
+import zdream.nsfplayer.sound.SoundSweepPulse;
 
 /**
  * APU 音频设备, 管理输出 Pulse1 和 Pulse2 轨道的音频
@@ -19,7 +19,7 @@ import zdream.nsfplayer.sound.SweepSoundPulse;
  */
 public class NesAPU extends AbstractSoundChip {
 	
-	private SweepSoundPulse pulse1, pulse2;
+	private SoundSweepPulse pulse1, pulse2;
 	
 	/**
 	 * 记录放置的参数
@@ -29,8 +29,8 @@ public class NesAPU extends AbstractSoundChip {
 	
 	public NesAPU(NsfRuntime runtime) {
 		super(runtime);
-		pulse1 = new SweepSoundPulse(true);
-		pulse2 = new SweepSoundPulse(false);
+		pulse1 = new SoundSweepPulse(true);
+		pulse2 = new SoundSweepPulse(false);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class NesAPU extends AbstractSoundChip {
 		return true;
 	}
 	
-	public void writeToPulse(int adr, int value, SweepSoundPulse pulse) {
+	public void writeToPulse(int adr, int value, SoundSweepPulse pulse) {
 		switch (adr) {
 		case 0:
 			pulse.dutyLength = (value >> 6);
@@ -91,7 +91,7 @@ public class NesAPU extends AbstractSoundChip {
 		case 3: {
 			int period = (pulse.period & 0xFF) + ((value & 7) << 8);
 			pulse.period = period;
-			pulse.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			pulse.lengthCounter = SoundPulse.LENGTH_TABLE[(value & 0xF8) >> 3];
 			pulse.onEnvelopeUpdated();
 			pulse.onSweepUpdated();
 		} break;
@@ -137,10 +137,10 @@ public class NesAPU extends AbstractSoundChip {
 		pulse2.reset();
 		pulse1.setSequenceStep(
 				getRuntime().manager.getRegion() == ERegion.PAL ?
-						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
+						SoundEnvelopeNoise.SEQUENCE_STEP_PAL : SoundEnvelopeNoise.SEQUENCE_STEP_NTSC);
 		pulse2.setSequenceStep(
 				getRuntime().manager.getRegion() == ERegion.PAL ?
-						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
+						SoundEnvelopeNoise.SEQUENCE_STEP_PAL : SoundEnvelopeNoise.SEQUENCE_STEP_NTSC);
 
 		Arrays.fill(mem, (byte) 0);
 		mem4015 = 0x7F;

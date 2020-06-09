@@ -3,7 +3,7 @@ package zdream.nsfplayer.sound;
 /**
  * <p>噪音发声器
  * <p>该发声器不处理 Envelope 包络相关的参数. 如果确实需要使用这类数据,
- * 你需要使用 {@link EnvelopeSoundNoise}.
+ * 你需要使用 {@link SoundEnvelopeNoise}.
  * </p>
  * 
  * @author Zdream

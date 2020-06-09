@@ -6,7 +6,7 @@ import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.SoundPulse;
 
 /**
  * MMC5 音频芯片, 管理输出 MMC5 Pulse1, MMC5 Pulse2 轨道的音频
@@ -17,7 +17,7 @@ import zdream.nsfplayer.sound.PulseSound;
  */
 public class NesMMC5 extends AbstractSoundChip {
 	
-	private final PulseSound pulse1, pulse2;
+	private final SoundPulse pulse1, pulse2;
 	
 	/**
 	 * 记录放置的参数
@@ -27,8 +27,8 @@ public class NesMMC5 extends AbstractSoundChip {
 
 	public NesMMC5(NsfRuntime runtime) {
 		super(runtime);
-		pulse1 = new PulseSound();
-		pulse2 = new PulseSound();
+		pulse1 = new SoundPulse();
+		pulse2 = new SoundPulse();
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class NesMMC5 extends AbstractSoundChip {
 		return true;
 	}
 
-	private void writeToPulse(PulseSound pulse, int adr, int value) {
+	private void writeToPulse(SoundPulse pulse, int adr, int value) {
 		switch (adr) {
 		case 0:
 			pulse.dutyLength = (value >> 6);
@@ -81,7 +81,7 @@ public class NesMMC5 extends AbstractSoundChip {
 		case 3: {
 			int period = (pulse.period & 0xFF) + ((value & 7) << 8);
 			pulse.period = period;
-			pulse.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			pulse.lengthCounter = SoundPulse.LENGTH_TABLE[(value & 0xF8) >> 3];
 		} break;
 		}
 	}

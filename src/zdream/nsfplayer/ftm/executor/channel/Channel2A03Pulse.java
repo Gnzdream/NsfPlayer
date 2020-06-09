@@ -5,8 +5,8 @@ import static zdream.nsfplayer.sound.Sound2A03.LENGTH_TABLE;
 import zdream.nsfplayer.ftm.executor.tools.NoteLookupTable;
 import zdream.nsfplayer.ftm.format.FtmSequence;
 import zdream.nsfplayer.ftm.format.FtmSequenceType;
-import zdream.nsfplayer.sound.PulseSound;
-import zdream.nsfplayer.sound.SweepSoundPulse;
+import zdream.nsfplayer.sound.SoundPulse;
+import zdream.nsfplayer.sound.SoundSweepPulse;
 
 /**
  * 2A03 矩形轨道 1 / 2
@@ -26,7 +26,7 @@ public final class Channel2A03Pulse extends ChannelTone {
 	 */
 	public Channel2A03Pulse(boolean isPulse1) {
 		super(isPulse1 ? CHANNEL_2A03_PULSE1 : CHANNEL_2A03_PULSE2);
-		sound = new SweepSoundPulse(isPulse1);
+		sound = new SoundSweepPulse(isPulse1);
 	}
 
 	@Override
@@ -151,10 +151,10 @@ public final class Channel2A03Pulse extends ChannelTone {
 	/**
 	 * 2A03 Pulse 1 音频发声器
 	 */
-	public final SweepSoundPulse sound;
+	public final SoundSweepPulse sound;
 
 	@Override
-	public PulseSound getSound() {
+	public SoundPulse getSound() {
 		return sound;
 	}
 	

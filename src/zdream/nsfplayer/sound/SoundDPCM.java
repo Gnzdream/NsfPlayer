@@ -11,13 +11,13 @@ import zdream.nsfplayer.ftm.format.FtmDPCMSample;
  * @author Zdream
  * @since v0.2.2
  */
-public class DPCMSound extends Sound2A03 {
+public class SoundDPCM extends Sound2A03 {
 	
 	public static final short[] DMC_PERIODS_NTSC = {
 			428, 380, 340, 320, 286, 254, 226, 214, 190, 160, 142, 128, 106, 84, 72, 54
 	};
 
-	public DPCMSound() {
+	public SoundDPCM() {
 		reset();
 	}
 	

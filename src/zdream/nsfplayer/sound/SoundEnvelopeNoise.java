@@ -8,7 +8,7 @@ import zdream.nsfplayer.core.IFrameSequence;
  * @author Zdream
  * @since v0.2.8
  */
-public class EnvelopeSoundNoise extends SoundNoise implements IFrameSequence {
+public class SoundEnvelopeNoise extends SoundNoise implements IFrameSequence {
 	
 	/* **********
 	 *   参数   *

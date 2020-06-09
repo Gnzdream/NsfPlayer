@@ -8,10 +8,10 @@ import zdream.nsfplayer.nsf.device.AbstractSoundChip;
 import zdream.nsfplayer.nsf.device.cpu.IntHolder;
 import zdream.nsfplayer.nsf.renderer.NsfRuntime;
 import zdream.nsfplayer.sound.AbstractNsfSound;
-import zdream.nsfplayer.sound.DPCMSound;
-import zdream.nsfplayer.sound.EnvelopeSoundNoise;
-import zdream.nsfplayer.sound.LinearSoundTriangle;
-import zdream.nsfplayer.sound.PulseSound;
+import zdream.nsfplayer.sound.SoundDPCM;
+import zdream.nsfplayer.sound.SoundEnvelopeNoise;
+import zdream.nsfplayer.sound.SoundLinearTriangle;
+import zdream.nsfplayer.sound.SoundPulse;
 
 /**
  * 一种 2A03 音频设备, 管理输出 Triangle, Noise 和 DPCM 轨道的音频
@@ -21,9 +21,9 @@ import zdream.nsfplayer.sound.PulseSound;
  */
 public class NesDMC extends AbstractSoundChip {
 	
-	private LinearSoundTriangle triangle;
-	private EnvelopeSoundNoise noise;
-	private DPCMSound dpcm;
+	private SoundLinearTriangle triangle;
+	private SoundEnvelopeNoise noise;
+	private SoundDPCM dpcm;
 	
 	/**
 	 * 记录放置的参数
@@ -33,9 +33,9 @@ public class NesDMC extends AbstractSoundChip {
 
 	public NesDMC(NsfRuntime runtime) {
 		super(runtime);
-		triangle = new LinearSoundTriangle();
-		noise = new EnvelopeSoundNoise();
-		dpcm = new DPCMSound();
+		triangle = new SoundLinearTriangle();
+		noise = new SoundEnvelopeNoise();
+		dpcm = new SoundDPCM();
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class NesDMC extends AbstractSoundChip {
 		case 3: {
 			int period = (triangle.period & 0xFF) + ((value & 7) << 8);
 			triangle.period = period;
-			triangle.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			triangle.lengthCounter = SoundPulse.LENGTH_TABLE[(value & 0xF8) >> 3];
 			triangle.onEnvelopeUpdated();
 		} break;
 		
@@ -110,11 +110,11 @@ public class NesDMC extends AbstractSoundChip {
 		case 2: {
 			noise.periodIndex = (value & 0xF);
 			noise.dutySampleRate = ((value & 0x80) != 0) ?
-					EnvelopeSoundNoise.DUTY_SAMPLE_RATE1 : EnvelopeSoundNoise.DUTY_SAMPLE_RATE0;
+					SoundEnvelopeNoise.DUTY_SAMPLE_RATE1 : SoundEnvelopeNoise.DUTY_SAMPLE_RATE0;
 		} break;
 			
 		case 3: {
-			noise.lengthCounter = PulseSound.LENGTH_TABLE[(value & 0xF8) >> 3];
+			noise.lengthCounter = SoundPulse.LENGTH_TABLE[(value & 0xF8) >> 3];
 			noise.onEnvelopeUpdated();
 		} break;
 		
@@ -212,10 +212,10 @@ public class NesDMC extends AbstractSoundChip {
 		noise.reset();
 		triangle.setSequenceStep(
 				getRuntime().manager.getRegion() == ERegion.PAL ?
-						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
+						SoundEnvelopeNoise.SEQUENCE_STEP_PAL : SoundEnvelopeNoise.SEQUENCE_STEP_NTSC);
 		noise.setSequenceStep(
 				getRuntime().manager.getRegion() == ERegion.PAL ?
-						EnvelopeSoundNoise.SEQUENCE_STEP_PAL : EnvelopeSoundNoise.SEQUENCE_STEP_NTSC);
+						SoundEnvelopeNoise.SEQUENCE_STEP_PAL : SoundEnvelopeNoise.SEQUENCE_STEP_NTSC);
 		dpcm.reset();
 		
 		Arrays.fill(mem, (byte) 0);

@@ -8,9 +8,9 @@ import zdream.nsfplayer.core.IFrameSequence;
  * @author Zdream
  * @since v0.2.9
  */
-public class SweepSoundPulse extends PulseSound implements IFrameSequence {
+public class SoundSweepPulse extends SoundPulse implements IFrameSequence {
 	
-	public SweepSoundPulse() {
+	public SoundSweepPulse() {
 		super();
 		this.isFirstChannel = true;
 	}
@@ -19,7 +19,7 @@ public class SweepSoundPulse extends PulseSound implements IFrameSequence {
 	 * @param isFirstChannel
 	 *   2A03 有两个轨道. 如果是第一个轨道, 请输入 true; 如果是第二个轨道, 请输入 false
 	 */
-	public SweepSoundPulse(boolean isFirstChannel) {
+	public SoundSweepPulse(boolean isFirstChannel) {
 		super();
 		this.isFirstChannel = isFirstChannel;
 	}
@@ -244,7 +244,7 @@ public class SweepSoundPulse extends PulseSound implements IFrameSequence {
 	
 	/**
 	 * <p>计算目标扫音效果导致的真实频率值.
-	 * <p>真实频率数将放在变量 {@link #sweepResult} 中, 使用时替换 {@link PulseSound#period}.
+	 * <p>真实频率数将放在变量 {@link #sweepResult} 中, 使用时替换 {@link SoundPulse#period}.
 	 * </p>
 	 */
 	private void calcSweepPeriod() {
